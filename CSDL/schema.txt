@@ -1,0 +1,320 @@
+-- Khởi tạo Database chuẩn hỗ trợ Tiếng Việt (UTF-8)
+DROP DATABASE IF EXISTS KinhDoanhMoHinh;
+CREATE DATABASE KinhDoanhMoHinh DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE KinhDoanhMoHinh;
+
+-- 1. Bảng Quyền
+CREATE TABLE Quyen (
+    MaQuyen INT PRIMARY KEY AUTO_INCREMENT,
+    TenQuyen VARCHAR(50) NOT NULL
+);
+
+-- 2. Bảng Tài khoản
+CREATE TABLE TaiKhoan (
+    MaTK INT PRIMARY KEY AUTO_INCREMENT,
+    TenDN VARCHAR(50) NOT NULL,
+    MatKhau VARCHAR(255) NOT NULL,
+    Email VARCHAR(100),
+    MaQuyen INT,
+    AnhDaiDien VARCHAR(100),
+    FOREIGN KEY (MaQuyen) REFERENCES Quyen(MaQuyen)
+);
+
+-- 3. Bảng Khách hàng
+CREATE TABLE KhachHang (
+    MaKH INT PRIMARY KEY AUTO_INCREMENT,
+    TenKH VARCHAR(100) NOT NULL,
+    Email VARCHAR(100),
+    DiaChi VARCHAR(255),
+    SDT VARCHAR(15),
+    MaTK INT,
+    FOREIGN KEY (MaTK) REFERENCES TaiKhoan(MaTK)
+);
+
+-- 4. Bảng Nhân viên
+CREATE TABLE NhanVien (
+    MaNV INT PRIMARY KEY AUTO_INCREMENT,
+    TenNV VARCHAR(100) NOT NULL,
+    Email VARCHAR(100),
+    DiaChi VARCHAR(255),
+    SDT VARCHAR(15),
+    MaTK INT,
+    FOREIGN KEY (MaTK) REFERENCES TaiKhoan(MaTK)
+);
+
+-- 5. Bảng Hãng sản xuất
+CREATE TABLE HangSanXuat (
+    MaHSX INT PRIMARY KEY AUTO_INCREMENT,
+    TenHSX VARCHAR(100) NOT NULL
+);
+
+-- 6. Bảng Danh mục
+CREATE TABLE DanhMuc (
+    MaDM INT PRIMARY KEY AUTO_INCREMENT,
+    TenDM VARCHAR(100) NOT NULL,
+    MoTa TEXT
+);
+
+-- 7. Bảng Chi tiết Danh mục
+CREATE TABLE ChiTietDanhMuc (
+    MaChiTietDM INT PRIMARY KEY AUTO_INCREMENT,
+    MaDM INT NOT NULL,
+    TenChiTietDM VARCHAR(100) NOT NULL,
+    MoTa TEXT,
+    FOREIGN KEY (MaDM) REFERENCES DanhMuc(MaDM)
+);
+
+-- 8. Bảng Mô hình (Sản phẩm danh mục)
+CREATE TABLE MoHinh (
+    MaMoHinh INT PRIMARY KEY AUTO_INCREMENT,
+    TenMH VARCHAR(255) NOT NULL,
+    MaHSX INT,
+    MaDM INT,
+    MaChiTietDM INT NULL,
+    ChatLieu VARCHAR(100),
+    DonGia DECIMAL(12,2) NOT NULL CHECK (DonGia >= 0),
+    TrangThai VARCHAR(50),
+    ThongTinChiTiet TEXT,
+    AnhDaiDien VARCHAR(255),
+    KichThuoc VARCHAR(50),
+    NgayPhatHanh DATE,
+    LoaiHinhBan VARCHAR(50), 
+    TienCocToiThieu DECIMAL(12,2) CHECK (TienCocToiThieu >= 0),
+    FOREIGN KEY (MaHSX) REFERENCES HangSanXuat(MaHSX),
+    FOREIGN KEY (MaDM) REFERENCES DanhMuc(MaDM),
+    FOREIGN KEY (MaChiTietDM) REFERENCES ChiTietDanhMuc(MaChiTietDM)
+);
+
+-- 8.5 Bảng phân loại mô hình
+CREATE TABLE Phanloai (
+    MaPhanLoai INT PRIMARY KEY AUTO_INCREMENT,
+    ChiTietPhanLoai VARCHAR(100) NOT NULL,
+    MaMoHinh INT NOT NULL,
+    DonGia DECIMAL(12,2) NOT NULL CHECK (DonGia >= 0),
+    SoLuong INT DEFAULT 0 CHECK (SoLuong >= 0),
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+);
+
+-- 9. Bảng Ảnh mô hình
+CREATE TABLE AnhMoHinh (
+    MaAnh INT PRIMARY KEY AUTO_INCREMENT,
+    LinkAnh VARCHAR(255) NOT NULL,
+    MaMoHinh INT,
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+);
+
+-- 10. Bảng Nhà cung cấp
+CREATE TABLE NhaCungCap (
+    MaNCC INT PRIMARY KEY AUTO_INCREMENT,
+    TenNCC VARCHAR(100) NOT NULL,
+    SDT VARCHAR(15),
+    DiaChi VARCHAR(255)
+);
+
+-- 11. Bảng Phiếu nhập
+CREATE TABLE PhieuNhap (
+    MaPN INT PRIMARY KEY AUTO_INCREMENT,
+    NgayNhap DATETIME,
+    MaNV INT,
+    MaNCC INT,
+    TongTienNhap DECIMAL(12,2) CHECK (TongTienNhap >= 0),
+    FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV),
+    FOREIGN KEY (MaNCC) REFERENCES NhaCungCap(MaNCC)
+);
+
+-- 12. Bảng Chi tiết phiếu nhập
+CREATE TABLE ChiTietPhieuNhap (
+    MaPN INT,
+    MaMoHinh INT,
+    SoLuong INT CHECK (SoLuong > 0),
+    DonGiaNhap DECIMAL(12,2) CHECK (DonGiaNhap >= 0),
+    PRIMARY KEY (MaPN, MaMoHinh),
+    FOREIGN KEY (MaPN) REFERENCES PhieuNhap(MaPN),
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+);
+
+-- 13. Bảng Giỏ hàng
+CREATE TABLE GioHang (
+    MaGH INT PRIMARY KEY AUTO_INCREMENT,
+    MaKH INT,
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+-- 14. Bảng Chi tiết giỏ hàng
+CREATE TABLE ChiTietGioHang (
+    MaGH INT,
+    MaMoHinh INT,
+    SoLuong INT CHECK (SoLuong > 0),
+    PRIMARY KEY (MaGH, MaMoHinh),
+    FOREIGN KEY (MaGH) REFERENCES GioHang(MaGH),
+    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+);
+
+-- 15. Bảng Đơn hàng
+CREATE TABLE DonHang (
+    MaDH INT PRIMARY KEY AUTO_INCREMENT,
+    MaKH INT,
+    MaNV INT,
+    NgayLapDon DATETIME,
+    TongTien DECIMAL(12,2) CHECK (TongTien >= 0),
+    ThanhTien DECIMAL(12,2) CHECK (ThanhTien >= 0),
+    TrangThaiDonHang VARCHAR(50),
+    TenNguoiNhan VARCHAR(100),
+    SDTNguoiNhan VARCHAR(15),
+    DiaChiGiao VARCHAR(255),
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
+    FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
+);
+
+-- 16. Bảng Chi tiết đơn hàng
+CREATE TABLE ChiTietDonHang (
+    MaDH INT,
+    MaMoHinh INT,
+    SoLuong INT CHECK (SoLuong > 0),
+    DonGiaBan DECIMAL(12,2) CHECK (DonGiaBan >= 0),
+    PRIMARY KEY (MaDH, MaMoHinh),
+    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
+    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+);
+
+-- 17. Bảng Phương thức thanh toán
+CREATE TABLE PhuongThucThanhToan (
+    MaPT INT PRIMARY KEY AUTO_INCREMENT,
+    TenPhuongThuc VARCHAR(100) NOT NULL
+);
+
+-- 18. Bảng Thanh toán
+CREATE TABLE ThanhToan (
+    MaTT INT PRIMARY KEY AUTO_INCREMENT,
+    MaPT INT,
+    MaDH INT,
+    NgayThanhToan DATETIME,
+    SoTienGiaoDich DECIMAL(12,2), 
+    LoaiGiaoDich VARCHAR(50), 
+    FOREIGN KEY (MaPT) REFERENCES PhuongThucThanhToan(MaPT),
+    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
+);
+
+-- 19. Bảng Khuyến mãi
+CREATE TABLE KhuyenMai (
+    MaKM INT PRIMARY KEY AUTO_INCREMENT,
+    TenKM VARCHAR(100) NOT NULL,
+    ThoiGianBD DATETIME,
+    ThoiGianKT DATETIME,
+    LoaiKM VARCHAR(50),
+    DieuKien VARCHAR(255)
+);
+
+-- 20. Bảng Chi tiết khuyến mãi
+CREATE TABLE ChiTietKhuyenMai (
+    MaKM INT,
+    MaMoHinh INT,
+    ChietKhau DECIMAL(5,2),
+    PRIMARY KEY (MaKM, MaMoHinh),
+    FOREIGN KEY (MaKM) REFERENCES KhuyenMai(MaKM),
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+);
+
+-- 21. Bảng Tin tức
+CREATE TABLE TinTuc (
+    MaTT INT PRIMARY KEY AUTO_INCREMENT,
+    NoiDung TEXT,
+    MaNV INT,
+    TrangThai VARCHAR(50),
+    FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
+);
+
+-- 22. Bảng Ảnh tin tức
+CREATE TABLE AnhTinTuc (
+    MaAnh INT PRIMARY KEY AUTO_INCREMENT,
+    LinkAnh VARCHAR(255),
+    MaTT INT,
+    FOREIGN KEY (MaTT) REFERENCES TinTuc(MaTT)
+);
+
+-- 23. Bảng Bảo hành
+CREATE TABLE BaoHanh (
+    MaPBH INT PRIMARY KEY AUTO_INCREMENT,
+    MaDH INT,
+    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
+);
+
+-- 24. Bảng Chi tiết bảo hành
+CREATE TABLE ChiTietBaoHanh (
+    MaPBH INT,
+    MaMoHinh INT,
+    NgayBatDau DATE,
+    NgayKetThuc DATE,
+    PRIMARY KEY (MaPBH, MaMoHinh),
+    FOREIGN KEY (MaPBH) REFERENCES BaoHanh(MaPBH),
+    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+);
+
+-- 25. Bảng Đánh giá
+CREATE TABLE DanhGia (
+    MaDG INT PRIMARY KEY AUTO_INCREMENT,
+    MaKH INT,
+    MaMoHinh INT,
+    NoiDung TEXT,
+    SoSao INT CHECK (SoSao >= 1 AND SoSao <= 5),
+    ThoiGianDG DATETIME,
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
+    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+);
+
+-- 26. Bảng Vận chuyển
+CREATE TABLE VanChuyen (
+    MaVC INT PRIMARY KEY AUTO_INCREMENT,
+    MaDH INT,
+    ThongTinVC VARCHAR(255),
+    DonViVC VARCHAR(100),
+    PhiVanChuyen DECIMAL(12,2) CHECK (PhiVanChuyen >= 0),
+    GhiChu TEXT,
+    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
+);
+
+-- 27. Bảng Sản phẩm vật lý
+CREATE TABLE SanPhamVatLy (
+    MaMoHinhVL INT PRIMARY KEY AUTO_INCREMENT,
+    MaMoHinh INT,
+    MaVach_Serial VARCHAR(100) UNIQUE NOT NULL,
+    TrangThai VARCHAR(50),
+    Is_Minted BOOLEAN DEFAULT 0,
+    MaDH INT NULL,
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh),
+    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
+);
+
+-- 28. Bảng Lịch sử Blockchain
+CREATE TABLE LichSuBlockchain (
+    MaBanGhi INT PRIMARY KEY AUTO_INCREMENT,
+    MaMoHinhVL INT,
+    DiaChiSmartContract VARCHAR(255) NOT NULL,
+    MaToken VARCHAR(100) NOT NULL,
+    MaGiaoDich VARCHAR(255) UNIQUE NOT NULL, 
+    LinkQR VARCHAR(255),
+    ThoiGianGhiNhan DATETIME,
+    LoaiSuKien VARCHAR(50), 
+    FOREIGN KEY (MaMoHinhVL) REFERENCES SanPhamVatLy(MaMoHinhVL)
+);
+
+-- 29. Bảng Phiên chat
+CREATE TABLE PhienChat (
+    MaPC INT PRIMARY KEY AUTO_INCREMENT,
+    MaKH INT,
+    ThoiGianBD DATETIME,
+    TrangThai VARCHAR(50),
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+-- 30. Bảng Chi tiết đoạn chat
+CREATE TABLE ChiTietDoanChat (
+    MaTN INT PRIMARY KEY AUTO_INCREMENT,
+    MaPC INT,
+    NguoiGui VARCHAR(50), 
+    NoiDung TEXT,
+    NhanDienYDinh VARCHAR(100),
+    ThoiGianGui DATETIME,
+    FOREIGN KEY (MaPC) REFERENCES PhienChat(MaPC)
+);
+

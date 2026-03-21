@@ -1,0 +1,347 @@
+<template>
+  <div class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen">
+    
+    <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
+      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-12">
+          <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">FigureCollect</a>
+          <div class="hidden md:flex items-center gap-8">
+            <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/category')">Cửa hàng</a>
+            <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Hàng mới về</a>
+            <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Pre-order</a>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="hidden lg:flex items-center bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 focus-within:border-primary/50 transition-colors">
+            <span class="material-symbols-outlined text-outline text-xl mr-2">search</span>
+            <input class="bg-transparent border-none focus:ring-0 text-sm w-64 placeholder:text-outline text-on-surface" placeholder="Tìm kiếm mô hình..." type="text"/>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">favorite</span></button>
+            <button class="hover:text-primary relative transition-colors">
+              <span class="material-symbols-outlined">shopping_cart</span>
+              <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-1.5 rounded-full">{{ cartCount }}</span>
+            </button>
+            
+            <div v-if="authStore.user" class="flex items-center gap-3 ml-2 border-l border-outline-variant/30 pl-4">
+              <span class="text-sm font-bold text-primary hidden md:block">
+                Chào, {{ authStore.user.username || authStore.user.TenKH || 'Collector' }}!
+              </span>
+              
+              <div @click="handleLogout" class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-red-500 transition-colors" title="Bấm để đăng xuất">
+                <img alt="User Profile" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
+              </div>
+            </div>
+
+            <div v-else class="ml-2 border-l border-outline-variant/30 pl-4">
+              <button @click="router.push('/login')" class="px-5 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
+                Đăng nhập
+              </button>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <section class="relative h-[85vh] overflow-hidden bg-surface-container-lowest">
+      <div class="absolute inset-0 opacity-60">
+        <img class="w-full h-full object-cover object-[60%_20%]" alt="Premium Gundam" src="https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&q=80"/>
+        <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80 lg:hidden"></div>
+      </div>
+      <div class="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center items-start">
+        <span class="font-headline text-primary font-bold tracking-[0.3em] text-sm mb-4">PREMIUM ARTIFACTS</span>
+        <h1 class="font-headline text-6xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tighter mb-6 max-w-2xl">
+          FIGURE <br/> <span class="text-gradient">COLLECT</span>
+        </h1>
+        <p class="text-on-surface-variant text-lg md:text-xl max-w-lg mb-10 leading-relaxed">
+          Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn từ các studio hàng đầu thế giới.
+        </p>
+        <div class="flex flex-wrap items-center gap-4 md:gap-6">
+          <button class="hero-gradient text-on-primary font-bold px-8 py-4 rounded-lg flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+            Khám phá ngay
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+          <button class="border border-outline-variant px-8 py-4 rounded-lg font-bold hover:bg-surface-bright active:scale-95 transition-all">
+            Xem bộ sưu tập
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-surface-container-low py-12 border-y border-outline-variant/10">
+      <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-bold text-lg text-on-surface">100% Verified</h3>
+            <p class="text-on-surface-variant text-sm mt-1">Chính hãng từ các nhà phân phối lớn</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 md:border-x border-outline-variant/10 md:px-8">
+          <div class="w-12 h-12 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary shrink-0">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">public</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-bold text-lg text-on-surface">Global Shipping</h3>
+            <p class="text-on-surface-variant text-sm mt-1">Vận chuyển quốc tế an toàn & nhanh chóng</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 md:pl-8">
+          <div class="w-12 h-12 rounded-full bg-secondary-dim/10 flex items-center justify-center text-secondary-dim shrink-0">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">support_agent</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-bold text-lg text-on-surface">24/7 Support</h3>
+            <p class="text-on-surface-variant text-sm mt-1">Đội ngũ hỗ trợ chuyên nghiệp tận tâm</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 py-24">
+      <div class="flex justify-between items-end mb-12 border-b border-outline-variant/15 pb-4">
+        <div>
+          <h2 class="font-headline text-3xl md:text-4xl font-bold mb-2 text-on-surface">Danh mục nổi bật</h2>
+          <div class="h-1 w-20 bg-primary rounded-full"></div>
+        </div>
+        <a @click="router.push('/category')" class="text-primary text-sm font-bold flex items-center gap-1 hover:underline cursor-pointer underline-offset-4">
+          Tất cả danh mục <span class="material-symbols-outlined text-lg">chevron_right</span>
+        </a>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
+        <div @click="router.push('/category/1')" class="md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[300px] md:h-full cursor-pointer">
+          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gundam" src="https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&q=80"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent opacity-90"></div>
+          <div class="absolute bottom-8 left-8">
+            <h3 class="font-headline text-4xl font-bold mb-2 text-on-surface">Gundam</h3>
+            <p class="text-on-surface-variant mb-6 text-sm">Gunpla kits & Metal Build series</p>
+            <span class="px-6 py-2 bg-primary text-on-primary text-sm font-bold rounded-lg group-hover:bg-primary-container transition-colors shadow-lg shadow-primary/20">Xem ngay</span>
+          </div>
+        </div>
+        <div @click="router.push('/category/2')" class="md:col-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
+          <img class="w-full h-full object-cover object-[60%_20%] transition-transform duration-700 group-hover:scale-110" alt="Anime Figures" src="https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?auto=format&fit=crop&q=80"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
+          <div class="absolute bottom-6 left-6">
+            <h3 class="font-headline text-2xl font-bold mb-1 text-on-surface">Anime Figures</h3>
+            <span class="text-sm font-bold text-primary group-hover:underline underline-offset-4">Khám phá</span>
+          </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
+          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" src="https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&q=80"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
+          <div class="absolute bottom-4 left-4">
+            <h3 class="font-headline text-xl font-bold text-on-surface">Limited Edition</h3>
+          </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
+          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Accessories" src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&q=80"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
+          <div class="absolute bottom-4 left-4">
+            <h3 class="font-headline text-xl font-bold text-on-surface">Phụ kiện</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-24 bg-surface-container-low">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex justify-between items-center mb-12 border-b border-outline-variant/15 pb-4">
+          <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface">Hàng mới cập bến</h2>
+          <div class="flex gap-2">
+            <button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-bright hover:text-primary transition-colors">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-bright hover:text-primary transition-colors">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div v-for="sp in productList" :key="sp.MaMoHinh" @click="goToDetail(sp.MaMoHinh)" class="group cursor-pointer">
+            <div class="relative bg-surface-container-highest aspect-[3/4] rounded-lg overflow-hidden mb-5 border border-outline-variant/10">
+              
+              <span class="absolute top-4 left-4 z-10 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest bg-primary text-on-primary">
+                NEW
+              </span>
+              
+              <img :src="'/Images_product/' + sp.AnhDaiDien" :alt="sp.TenMH" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+              <div class="absolute inset-0 bg-surface/0 group-hover:bg-surface/20 transition-colors"></div>
+              
+              <button class="absolute bottom-4 right-4 w-12 h-12 bg-primary text-on-primary rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all shadow-lg shadow-primary/30">
+                <span class="material-symbols-outlined">shopping_cart</span>
+              </button>
+            </div>
+            
+            <div class="space-y-3">
+              <h3 class="font-headline font-bold text-base md:text-lg leading-snug group-hover:text-primary transition-colors text-on-surface line-clamp-2">
+                {{ sp.TenMH }}
+              </h3>
+              <div class="flex justify-between items-end">
+                <span class="text-xl md:text-2xl font-bold text-primary">{{ formatPrice(sp.DonGia) }}</span>
+                <span class="text-[10px] text-outline uppercase tracking-widest font-bold">Còn: {{ sp.SoLuong }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 py-24">
+      <div class="relative rounded-2xl overflow-hidden min-h-[400px] flex items-center justify-center border border-tertiary/20 shadow-2xl shadow-tertiary/5">
+        <img class="absolute inset-0 w-full h-full object-cover" alt="Neon background" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80"/>
+        <div class="absolute inset-0 glass-panel bg-surface/60"></div>
+        <div class="relative z-10 flex flex-col justify-center items-center text-center p-8 md:p-12 w-full">
+          <span class="font-headline text-tertiary font-bold tracking-[0.4em] text-xs md:text-sm mb-4">MEMBER EXCLUSIVE</span>
+          <h2 class="font-headline text-4xl md:text-5xl font-bold mb-6 text-on-surface">Special Member Rewards Program</h2>
+          <p class="text-base md:text-lg text-on-surface-variant max-w-2xl mb-10 leading-relaxed">
+            Tích lũy điểm cho mỗi đơn hàng, nhận ưu tiên Pre-order các phiên bản cực hiếm và voucher giảm giá độc quyền dành riêng cho Collector.
+          </p>
+          <button class="bg-on-surface text-surface font-bold px-10 py-4 rounded-lg hover:bg-primary hover:text-on-primary active:scale-95 transition-all shadow-xl">
+            Tham gia ngay
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-surface-container-lowest border-t border-outline-variant/15 pt-20 pb-10">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          <div class="lg:col-span-1">
+            <a class="font-headline text-2xl font-bold tracking-tighter text-primary mb-6 block" href="#">FigureCollect</a>
+            <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
+              Điểm đến hàng đầu cho cộng đồng đam mê sưu tập mô hình tại Việt Nam. Chúng tôi mang đến những artifact giá trị nhất từ khắp nơi trên thế giới.
+            </p>
+            <div class="flex gap-3">
+              <a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant" href="#">
+                <span class="material-symbols-outlined text-xl">social_leaderboard</span>
+              </a>
+              <a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant" href="#">
+                <span class="material-symbols-outlined text-xl">camera</span>
+              </a>
+              <a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant" href="#">
+                <span class="material-symbols-outlined text-xl">play_circle</span>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Hỗ trợ khách hàng</h4>
+            <ul class="space-y-4 text-on-surface-variant text-sm">
+              <li><a class="hover:text-primary transition-colors" href="#">Hướng dẫn đặt hàng</a></li>
+              <li><a class="hover:text-primary transition-colors" href="#">Chính sách vận chuyển</a></li>
+              <li><a class="hover:text-primary transition-colors" href="#">Chính sách đổi trả</a></li>
+              <li><a class="hover:text-primary transition-colors" href="#">Tra cứu đơn hàng</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Về chúng tôi</h4>
+            <ul class="space-y-4 text-on-surface-variant text-sm">
+              <li><a class="hover:text-primary transition-colors" href="#">Về FigureCollect</a></li>
+              <li><a class="hover:text-primary transition-colors" href="#">Chính sách bảo mật</a></li>
+              <li><a class="hover:text-primary transition-colors" href="#">Điều khoản dịch vụ</a></li>
+              <li><a class="hover:text-primary transition-colors" href="#">Liên hệ</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Đăng ký nhận tin</h4>
+            <p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Nhận thông báo sớm nhất về các đợt Pre-order giới hạn.</p>
+            <div class="relative">
+              <input class="w-full bg-surface-container border border-outline-variant/20 rounded-lg py-3.5 pl-4 pr-12 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="Email của bạn" type="email"/>
+              <button class="absolute right-1.5 top-1.5 bottom-1.5 bg-primary text-on-primary px-3 rounded flex items-center justify-center hover:brightness-110 transition-all">
+                <span class="material-symbols-outlined text-[18px]">send</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-outline-variant/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-outline font-bold tracking-widest uppercase">
+          <div>© 2026 FigureCollect. All rights reserved.</div>
+          <div class="flex gap-6">
+            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" class="hover:text-primary transition-colors">Sitemap</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth.js';
+const authStore = useAuthStore();
+
+const router = useRouter();
+
+const cartCount = ref(0);
+const productList = ref([]);
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+};
+
+// HÀM XỬ LÝ ĐĂNG XUẤT NÀY SẼ CỨU TRANG WEB KHỎI MÀN HÌNH ĐEN
+const handleLogout = () => {
+  authStore.logout(); // Gọi hàm dọn dẹp chuyên nghiệp từ Pinia
+  router.push('/login'); 
+};
+
+onMounted(async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/products');
+    const dataJSON = await response.json(); // Lấy toàn bộ gói hàng
+    
+    if (response.ok) {
+      productList.value = dataJSON.data; // Chỉ lấy phần mảng dữ liệu nhét vào list
+    }
+  } catch (error) {
+    console.error("Lỗi:", error);
+  }
+});
+
+const goToDetail = (id) => {
+  router.push(`/product/${id}`); 
+};
+</script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+.font-headline { 
+  font-family: 'Space Grotesk', sans-serif; 
+}
+
+.font-body {
+  font-family: 'Manrope', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+.glass-panel {
+  background: rgba(28, 31, 43, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.hero-gradient {
+  background: linear-gradient(45deg, #ff8f73 0%, #ff7856 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(45deg, #ff8f73, #e9aaff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+</style>
