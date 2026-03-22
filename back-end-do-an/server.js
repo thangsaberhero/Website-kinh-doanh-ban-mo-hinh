@@ -30,3 +30,6 @@ app.use('/api/auth', authRoutes);
 const homeviewRoutes = require('./routes/homeview.route.js');
 app.use('/api/products', homeviewRoutes);
 
+//Thêm đơn hàng
+const add_cartRoutes = require('./routes/donhang_user.route.js');
+app.use('/api/add_cart',add_cartRoutes);

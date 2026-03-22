@@ -107,7 +107,7 @@
                   <span class="w-12 text-center font-bold text-lg">{{ buyQuantity }}</span>
                   <button @click="buyQuantity < product.SoLuong && buyQuantity++" class="px-4 hover:text-primary transition-colors"><span class="material-symbols-outlined">add</span></button>
                 </div>
-                <button class="flex-1 h-14 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold uppercase tracking-widest rounded shadow-[0_0_20px_rgba(255,143,115,0.3)] hover:brightness-110 active:scale-95 transition-all">THÊM VÀO GIỎ HÀNG</button>
+                <button @click="addToCart" class="flex-1 h-14 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold uppercase tracking-widest rounded shadow-[0_0_20px_rgba(255,143,115,0.3)] hover:brightness-110 active:scale-95 transition-all">THÊM VÀO GIỎ HÀNG</button>
               </div>
             </div>
 
@@ -240,6 +240,54 @@ onMounted(async () => {
     console.error("Lỗi:", error);
   }
 });
+
+// Hàm xử lý khi khách bấm nút "THÊM VÀO GIỎ HÀNG"
+const addToCart = async () => {
+  // 1. Lấy Token và Mã Khách Hàng (MaKH) mà lúc Đăng nhập bạn đã lưu vào máy khách
+  // (Giả sử bạn lưu trong localStorage, nếu dùng Pinia thì gọi từ store ra nhé)
+  const token = localStorage.getItem('token');
+  const maKH = localStorage.getItem('MaKH'); 
+
+  // 2. Bảo vệ vòng ngoài (Front-end): Nếu chưa có vé thì đuổi sang trang Đăng nhập luôn
+  if (!token || !maKH) {
+    alert("Bạn cần đăng nhập để thêm mô hình vào giỏ nhé!");
+    router.push('/login'); // Tự động lái xe sang trang đăng nhập
+    return;
+  }
+
+  try {
+    // 3. Đóng gói dữ liệu (Body) y hệt như bạn làm trên Thunder Client
+    const payload = {
+      MaKH: parseInt(maKH),
+      maPhanLoai: product.value.MaMoHinh, // Lấy ID của con mô hình đang hiện trên màn hình
+      soluong: buyQuantity.value          // Lấy con số mà khách vừa bấm dấu + -
+    };
+
+    // 4. Gọi API bằng phương thức POST
+    const response = await fetch('http://localhost:3000/api/add_cart', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Báo cho Lễ tân biết đây là gói hàng JSON
+        'Authorization': `Bearer ${token}`  // Chìa cái vé (Token) ra cho ông bảo vệ Middleware kiểm tra
+      },
+      body: JSON.stringify(payload)         // Đóng gói payload thành chuỗi gửi đi
+    });
+
+    const data = await response.json();
+
+    // 5. Xử lý kết quả trả về
+    if (response.ok) {
+      alert("🎉 " + data.message); // Báo thành công ("Thêm hàng mới..." hoặc "Cập nhật...")
+      // Ở đây bạn có thể code thêm tính năng cộng số trên icon Giỏ hàng ở Header (cartCount.value++)
+    } else {
+      alert("⚠️ Lỗi: " + data.message); // Báo lỗi nếu có (ví dụ: vé hết hạn, lỗi server)
+    }
+
+  } catch (error) {
+    console.error("Lỗi khi kết nối API thêm giỏ hàng:", error);
+    alert("Có lỗi mạng xảy ra, vui lòng thử lại sau!");
+  }
+};
 </script>
 
 <style scoped>
