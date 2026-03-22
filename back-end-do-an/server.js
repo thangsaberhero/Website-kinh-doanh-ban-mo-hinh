@@ -26,6 +26,7 @@ const authRoutes = require('./routes/auth.route.js');
 // Sử dụng Route Auth
 app.use('/api/auth', authRoutes);
 
-//Get thông tin sản phẩm
+//Lấy thông tin sản phẩm
 const homeviewRoutes = require('./routes/homeview.route.js');
 app.use('/api/products', homeviewRoutes);
+

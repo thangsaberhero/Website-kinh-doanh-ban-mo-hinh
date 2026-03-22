@@ -218,10 +218,23 @@ onMounted(async () => {
   const spId = route.params.id; 
   try {
     const res = await fetch(`http://localhost:3000/api/products/${spId}`);
+    const dataJSON = await res.json(); // Lấy cả gói hàng từ Backend
+
     if (res.ok) {
-      product.value = await res.json();
-      allImages.value = [...new Set([product.value.AnhDaiDien, ...product.value.danhSachAnhPhu])];
-      mainImage.value = product.value.AnhDaiDien;
+      // 1. Bóc vỏ hộp, lấy đúng cục dữ liệu Mô hình ở vị trí [0]
+      product.value = dataJSON.data[0]; 
+
+      // 2. Xử lý danh sách ảnh
+      // Nếu có DanhSachAnh (do GROUP_CONCAT tạo ra), ta dùng lệnh split(',') để cắt chuỗi thành 1 mảng. 
+      // Nếu không có, ta dùng luôn cái AnhDaiDien.
+      if (product.value.DanhSachAnh) {
+        // Dùng Set để loại bỏ các ảnh bị trùng lặp (nếu có)
+        allImages.value = [...new Set(product.value.DanhSachAnh.split(','))];
+      } else {
+        allImages.value = [product.value.AnhDaiDien];
+      }
+      
+      mainImage.value = allImages.value[0]; // Gán ảnh chính là ảnh đầu tiên
     }
   } catch (error) {
     console.error("Lỗi:", error);

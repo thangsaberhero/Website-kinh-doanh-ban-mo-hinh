@@ -6,7 +6,7 @@ const authController = {
     // 1. ĐĂNG KÝ
     register: async (req, res) => {
         try {
-            const { TenDN, MatKhau, Email } = req.body;
+            const { TenDN, MatKhau} = req.body;
 
             // Kiểm tra xem Tên đăng nhập đã tồn tại chưa
             const [checkUser] = await db.query('SELECT * FROM TaiKhoan WHERE TenDN = ?', [TenDN]);
@@ -18,12 +18,19 @@ const authController = {
             const salt = await bcrypt.genSalt(10);
             const hashedPass = await bcrypt.hash(MatKhau, salt);
 
-            // Lưu vào Database (Giả sử MaQuyen = 2 là Khách hàng bình thường)
-            const sql = 'INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES (?, ?, ?, 2)';
-            const [result] = await db.query(sql, [TenDN, hashedPass
-                
-                
-                , Email]);
+            // Lưu vào Database (Giả sử MaQuyen = 3 là Khách hàng bình thường)
+            const sqltk = 'INSERT INTO TaiKhoan (TenDN, MatKhau, MaQuyen) VALUES (?, ?, 3)';
+            const [resultTK] = await db.query(sqltk, [TenDN, hashedPass]);
+            
+            const maTK = resultTK.insertId;
+
+            const sqlkh = 'INSERT INTO KhanhHang (TenKH, MaKH) VALUES(?,?)';
+            const [resulKH] = await db.query(sqlkh, [TenDN,maTK]);
+
+            const maKH = resultKH.insertId;
+
+            const sql_giohang = 'INSERT INTO GioHang (MaKH) VALUES (?)'
+            const [result_giohang] = await db.query(sql_giohang, [maKH]);
 
             res.status(201).json({ message: "Đăng ký thành công!" });
         } catch (error) {
