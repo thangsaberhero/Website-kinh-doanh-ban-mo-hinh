@@ -1,36 +1,7 @@
 <template>
   <div class="bg-background text-on-surface selection:bg-primary selection:text-on-primary min-h-screen flex flex-col">
+    <TheHeader />
     
-    <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
-      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div class="flex items-center gap-12">
-          <a @click="router.push('/')" class="cursor-pointer font-headline text-2xl font-bold tracking-tighter text-primary">FigureCollect</a>
-          <div class="hidden md:flex items-center gap-8">
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Cửa hàng</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Hàng mới về</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Pre-order</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Phụ kiện</a>
-          </div>
-        </div>
-        <div class="flex items-center gap-6">
-          <div class="hidden lg:flex items-center bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 focus-within:border-primary/50 transition-colors">
-            <span class="material-symbols-outlined text-outline text-xl mr-2">search</span>
-            <input class="bg-transparent border-none focus:ring-0 text-sm w-64 placeholder:text-outline text-on-surface" placeholder="Tìm kiếm mô hình..." type="text"/>
-          </div>
-          <div class="flex items-center gap-4">
-            <button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">favorite</span></button>
-            <button class="hover:text-primary relative transition-colors">
-              <span class="material-symbols-outlined">shopping_cart</span>
-              <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-1.5 rounded-full">{{ cartCount }}</span>
-            </button>
-            <div class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-primary transition-colors">
-              <img alt="User Profile" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
     <main v-if="product" class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
         
@@ -200,6 +171,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import TheHeader from '@/components/TheHeader.vue';
 
 const route = useRoute();
 const router = useRouter();

@@ -1,53 +1,9 @@
 <template>
   <div class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen">
-    
-    <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
-      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div class="flex items-center gap-12">
-          <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">FigureCollect</a>
-          <div class="hidden md:flex items-center gap-8">
-            <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/category')">Cửa hàng</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Hàng mới về</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Pre-order</a>
-          </div>
-        </div>
-        <div class="flex items-center gap-6">
-          <div class="hidden lg:flex items-center bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 focus-within:border-primary/50 transition-colors">
-            <span class="material-symbols-outlined text-outline text-xl mr-2">search</span>
-            <input class="bg-transparent border-none focus:ring-0 text-sm w-64 placeholder:text-outline text-on-surface" placeholder="Tìm kiếm mô hình..." type="text"/>
-          </div>
-          
-          <div class="flex items-center gap-4">
-            <button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">favorite</span></button>
-            <button class="hover:text-primary relative transition-colors">
-              <span class="material-symbols-outlined">shopping_cart</span>
-              <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-1.5 rounded-full">{{ cartCount }}</span>
-            </button>
-            
-            <div v-if="authStore.user" class="flex items-center gap-3 ml-2 border-l border-outline-variant/30 pl-4">
-              <span class="text-sm font-bold text-primary hidden md:block">
-                Chào, {{ authStore.user.username || authStore.user.TenKH || 'Collector' }}!
-              </span>
-              
-              <div @click="handleLogout" class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-red-500 transition-colors" title="Bấm để đăng xuất">
-                <img alt="User Profile" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
-              </div>
-            </div>
-
-            <div v-else class="ml-2 border-l border-outline-variant/30 pl-4">
-              <button @click="router.push('/login')" class="px-5 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
-                Đăng nhập
-              </button>
-            </div>
-            
-          </div>
-        </div>
-      </div>
-    </nav>
-
+    <TheHeader />
     <section class="relative h-[85vh] overflow-hidden bg-surface-container-lowest">
       <div class="absolute inset-0 opacity-60">
-        <img class="w-full h-full object-cover object-[60%_20%]" alt="Premium Gundam" src="https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&q=80"/>
+        <img class="w-full h-full object-cover object-[60%_20%]" alt="Premium Gundam" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGfQ6Typ978uv1QahrmCG7PbPFg5_MLWN4K6DDmh69N5IlhPUhPKmdIfvIvZrQ_rFT9xyW1urq37KsPg2Topn02qR3hXUA9h7RKAdw21cNNpg8-yJQ6L0mjub5hU8TJtnUbmNtH8CjWKlWU8MxvHE6W3LhxEOF4NzXIHMRv8vtmkqkPsfFUx4xRlv2TAaL2OMN0YNVoCa7_nDFZbJA-PHZBV_Hn6rkXodnc9YmQHIGun8C0b2cmKxBFeAEweP0SjPODlAbMN4Gzr-E"/>
         <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80 lg:hidden"></div>
       </div>
@@ -116,7 +72,7 @@
       
       <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
         <div @click="router.push('/category/1')" class="md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[300px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gundam" src="https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&q=80"/>
+          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gundam" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTN9R9WoKtJr-Z5C2HbDfdYQSUUkkan2weN7m276fs-9-P0MfXSkCIutOHsUECJDPFQTvK7WMzUqmDd7bE6EbBQ89NU6GX846dACqtgAtgxNK6oJEpDisoDWtFfq3l73MKMynANeKevX-NoaASnwF0HCk8biBUPgrslgf68Qd1QOuQOFk1jgWRReU69L9wU8cRhfpQ93BHmkgka3p0nAD4K85Ie9dapTkJZe3UYbtPbS9RMZmkQTdxDIvG9EB1qF59TskilCVBv7gV"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent opacity-90"></div>
           <div class="absolute bottom-8 left-8">
             <h3 class="font-headline text-4xl font-bold mb-2 text-on-surface">Gundam</h3>
@@ -125,7 +81,7 @@
           </div>
         </div>
         <div @click="router.push('/category/2')" class="md:col-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover object-[60%_20%] transition-transform duration-700 group-hover:scale-110" alt="Anime Figures" src="https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?auto=format&fit=crop&q=80"/>
+          <img class="w-full h-full object-cover object-[60%_20%] transition-transform duration-700 group-hover:scale-110" alt="Anime Figures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc9EefOKRtW9P5T9dmvXGNNq8MFtz_sLJ9wqkmeXpy4Cdu580eR8eUS0-CjohhwjyysehekPNkihEdDiy3Lw9JhKVgfrThzIsgSKiH_MBybuB-tlXDjDNF8i19e2Cw7KR9eGecbSCuziwDfkCZv1kHBGiqbNyAOxX-qol3qeRhPaPgwhXF0KAIIhcociO5EhmEl-_AqVhbCf77Ki9aRhIKkrcvFv_mFoQLeRxXtI0IB2U4e4fSsux_bHpIxOZDb9F6Hxf10RqO5MlC"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
           <div class="absolute bottom-6 left-6">
             <h3 class="font-headline text-2xl font-bold mb-1 text-on-surface">Anime Figures</h3>
@@ -133,14 +89,14 @@
           </div>
         </div>
         <div class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" src="https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?auto=format&fit=crop&q=80"/>
+          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYfZUKfGvIVYtGGesAxpJgnoXAyTLnTvBXgmRQJY_Zo3kOuXB8YgxJHlwWsAeLk2LH87_2Km4PNjLiG2SzLXi84AJUW5_0pAbjOR-OmDmpX6PqeHvLRa6L3a1zy72GqbFmhWBWh0D5lvwErV46i2zlhf6xG5Qj4b0-PYNf-tbQiUpqlG7U1WNXEfr8agsAa-KG09-bGSmRwLXD5S_Lqa6Qq2M5kFwGSOmixajDgDZ0KgjjQT5W4zJhYmHiNEkd8vxQYYq2VPm665xL"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
           <div class="absolute bottom-4 left-4">
             <h3 class="font-headline text-xl font-bold text-on-surface">Limited Edition</h3>
           </div>
         </div>
         <div class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Accessories" src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&q=80"/>
+          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Accessories" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgmPpWW6OB7MYZv-uu7oXIkdQrQzvMqrYbvIXWVmaTRXlZvzLwnzhI_idJrgvEG6ElViJqHJmFtYpmNn9EZwuebx308XKoAdA2Esjv_oB7_qlBNqJEJYnS2ett-ZFgM12M9lHFZ6N6oZJCUt4cacKs3O6xOpQzlrBpKNHVaQV4VDwvYHBRk6IzpwHJftf9AGxIauIEKwH2jylx2-yscCboBK2-Rf7XZNgQ-yaFqpMkzoCx6QPNbm8eYwjWcaEzy6neqzGJesfFOqiK"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
           <div class="absolute bottom-4 left-4">
             <h3 class="font-headline text-xl font-bold text-on-surface">Phụ kiện</h3>
@@ -274,6 +230,7 @@
 </template>
 
 <script setup>
+import TheHeader from '@/components/TheHeader.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
@@ -281,17 +238,10 @@ const authStore = useAuthStore();
 
 const router = useRouter();
 
-const cartCount = ref(0);
 const productList = ref([]);
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-};
-
-// HÀM XỬ LÝ ĐĂNG XUẤT NÀY SẼ CỨU TRANG WEB KHỎI MÀN HÌNH ĐEN
-const handleLogout = () => {
-  authStore.logout(); // Gọi hàm dọn dẹp chuyên nghiệp từ Pinia
-  router.push('/login'); 
 };
 
 onMounted(async () => {
