@@ -1,36 +1,7 @@
 <template>
   <div class="bg-background text-on-surface selection:bg-primary selection:text-on-primary min-h-screen flex flex-col">
+    <TheHeader />
     
-    <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
-      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div class="flex items-center gap-12">
-          <a @click="router.push('/')" class="cursor-pointer font-headline text-2xl font-bold tracking-tighter text-primary">FigureCollect</a>
-          <div class="hidden md:flex items-center gap-8">
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Cửa hàng</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Hàng mới về</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Pre-order</a>
-            <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Phụ kiện</a>
-          </div>
-        </div>
-        <div class="flex items-center gap-6">
-          <div class="hidden lg:flex items-center bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 focus-within:border-primary/50 transition-colors">
-            <span class="material-symbols-outlined text-outline text-xl mr-2">search</span>
-            <input class="bg-transparent border-none focus:ring-0 text-sm w-64 placeholder:text-outline text-on-surface" placeholder="Tìm kiếm mô hình..." type="text"/>
-          </div>
-          <div class="flex items-center gap-4">
-            <button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">favorite</span></button>
-            <button class="hover:text-primary relative transition-colors">
-              <span class="material-symbols-outlined">shopping_cart</span>
-              <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-1.5 rounded-full">{{ cartCount }}</span>
-            </button>
-            <div class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-primary transition-colors">
-              <img alt="User Profile" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
     <main v-if="product" class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
         
@@ -100,14 +71,43 @@
               
             </div>
 
-            <div class="space-y-4 pt-6">
+            <div v-if="variants.length > 1" class="pt-6 border-t border-outline-variant/15">
+              <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-3">CHỌN PHÂN LOẠI</span>
+              <div class="flex flex-wrap gap-3">
+                <button
+                  v-for="variant in variants"
+                  :key="variant.MaPhanLoai"
+                  @click="selectedVariant = variant; buyQuantity = 1;"
+                  :class="[
+                    'px-4 py-2 border-2 rounded-md font-semibold transition-all text-sm',
+                    selectedVariant?.MaPhanLoai === variant.MaPhanLoai
+                      ? 'border-primary text-primary bg-primary/10'
+                      : 'border-outline-variant/30 text-outline hover:border-primary/50'
+                  ]"
+                >
+                  {{ variant.TenPhanLoai }}
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-4 pt-6 border-t border-outline-variant/15">
               <div class="flex items-center gap-4">
                 <div class="flex items-center bg-surface-container-highest rounded border border-outline-variant/20 h-14">
                   <button @click="buyQuantity > 1 && buyQuantity--" class="px-4 hover:text-primary transition-colors"><span class="material-symbols-outlined">remove</span></button>
                   <span class="w-12 text-center font-bold text-lg">{{ buyQuantity }}</span>
-                  <button @click="buyQuantity < product.SoLuong && buyQuantity++" class="px-4 hover:text-primary transition-colors"><span class="material-symbols-outlined">add</span></button>
+                  <button @click="buyQuantity < (selectedVariant ? selectedVariant.SoLuong : 0) && buyQuantity++" class="px-4 hover:text-primary transition-colors"><span class="material-symbols-outlined">add</span></button>
                 </div>
-                <button @click="addToCart" class="flex-1 h-14 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold uppercase tracking-widest rounded shadow-[0_0_20px_rgba(255,143,115,0.3)] hover:brightness-110 active:scale-95 transition-all">THÊM VÀO GIỎ HÀNG</button>
+                <button 
+                  @click="addToCart" 
+                  :disabled="!selectedVariant || selectedVariant.SoLuong === 0"
+                  :class="['flex-1 h-14 font-headline font-bold uppercase tracking-widest rounded transition-all', 
+                    (!selectedVariant || selectedVariant.SoLuong === 0) 
+                      ? 'bg-surface-container-high text-outline cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-[0_0_20px_rgba(255,143,115,0.3)] hover:brightness-110 active:scale-95'
+                  ]"
+                >
+                  {{ (!selectedVariant || selectedVariant.SoLuong === 0) ? 'HẾT HÀNG' : 'THÊM VÀO GIỎ HÀNG' }}
+                </button>
               </div>
             </div>
 
@@ -200,6 +200,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import TheHeader from '@/components/TheHeader.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -209,6 +210,9 @@ const allImages = ref([]);
 const mainImage = ref('');
 const buyQuantity = ref(1);
 const cartCount = ref(0); // Khai báo biến này để Header không bị báo lỗi
+
+const variants = ref([]);
+const selectedVariant = ref(null);
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -239,48 +243,73 @@ onMounted(async () => {
   } catch (error) {
     console.error("Lỗi:", error);
   }
+  try {
+    // Lưu ý: Đảm bảo đường link này khớp với Route bạn đã cấu hình bên Backend nhé
+    // Ví dụ: router.get('/products/variants/:id', getVariantProductById)
+    const resVar = await fetch(`http://localhost:3000/api/products/variants/${spId}`);
+    const varJSON = await resVar.json();
+    
+    if (resVar.ok) {
+      variants.value = varJSON.data;
+      // Gán mặc định luôn chọn loại đầu tiên khi web load xong
+      if (variants.value.length > 0) {
+        selectedVariant.value = variants.value[0];
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi tải phân loại:", error);
+  }
 });
 
 // Hàm xử lý khi khách bấm nút "THÊM VÀO GIỎ HÀNG"
 const addToCart = async () => {
-  // 1. Lấy Token và Mã Khách Hàng (MaKH) mà lúc Đăng nhập bạn đã lưu vào máy khách
-  // (Giả sử bạn lưu trong localStorage, nếu dùng Pinia thì gọi từ store ra nhé)
+  // 1. Lấy Token
   const token = localStorage.getItem('token');
-  const maKH = localStorage.getItem('MaKH'); 
+  
+  // 2. Lấy chuỗi user từ localStorage và bóc tách lấy ID
+  const userString = localStorage.getItem('user');
+  let maKH = null;
+  
+  if (userString) {
+    const userObj = JSON.parse(userString); // Mở hộp user
+    maKH = userObj.MaKH; // Lấy cái id số 4 ra
+  }
 
-  // 2. Bảo vệ vòng ngoài (Front-end): Nếu chưa có vé thì đuổi sang trang Đăng nhập luôn
+  // THÊM 2 DÒNG NÀY ĐỂ DEBUG (Kiểm tra xem code nó đọc được gì)
+  console.log("Mật mã Token:", token ? "Đã có" : "Trống rỗng");
+  console.log("Mã Khách Hàng (id):", maKH);
+
+  // 3. Kiểm tra bảo vệ vòng ngoài
   if (!token || !maKH) {
     alert("Bạn cần đăng nhập để thêm mô hình vào giỏ nhé!");
-    router.push('/login'); // Tự động lái xe sang trang đăng nhập
+    router.push('/login'); 
     return;
   }
 
   try {
-    // 3. Đóng gói dữ liệu (Body) y hệt như bạn làm trên Thunder Client
     const payload = {
-      MaKH: parseInt(maKH),
-      maPhanLoai: product.value.MaMoHinh, // Lấy ID của con mô hình đang hiện trên màn hình
-      soluong: buyQuantity.value          // Lấy con số mà khách vừa bấm dấu + -
+      MaKH: parseInt(maKH), // Chắc chắn lúc này maKH đang là số 4
+      MaPhanLoai: selectedVariant.value.MaPhanLoai, 
+      soluong: buyQuantity.value          
     };
 
-    // 4. Gọi API bằng phương thức POST
-    const response = await fetch('http://localhost:3000/api/add_cart', {
+    // ... (Phần gọi API fetch('http://localhost:3000/api/add_cart', ...) bên dưới bạn giữ nguyên)
+    const response = await fetch('http://localhost:3000/api/add_cart/add', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json', // Báo cho Lễ tân biết đây là gói hàng JSON
-        'Authorization': `Bearer ${token}`  // Chìa cái vé (Token) ra cho ông bảo vệ Middleware kiểm tra
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
       },
-      body: JSON.stringify(payload)         // Đóng gói payload thành chuỗi gửi đi
+      body: JSON.stringify(payload) 
     });
 
     const data = await response.json();
 
-    // 5. Xử lý kết quả trả về
     if (response.ok) {
-      alert("🎉 " + data.message); // Báo thành công ("Thêm hàng mới..." hoặc "Cập nhật...")
-      // Ở đây bạn có thể code thêm tính năng cộng số trên icon Giỏ hàng ở Header (cartCount.value++)
+      alert("🎉 " + data.message); 
+      cartCount.value++; 
     } else {
-      alert("⚠️ Lỗi: " + data.message); // Báo lỗi nếu có (ví dụ: vé hết hạn, lỗi server)
+      alert("⚠️ Lỗi: " + data.message); 
     }
 
   } catch (error) {

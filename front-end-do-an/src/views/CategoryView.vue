@@ -1,59 +1,7 @@
 <template>
   <div class="bg-background text-on-background selection:bg-primary selection:text-on-primary-fixed min-h-screen flex flex-col font-body">
+    <TheHeader />
     
-    <nav class="sticky top-0 z-50 border-b border-outline-variant/30 glass-panel h-20 flex items-center justify-center">
-      <div class="w-full max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <div class="flex items-center gap-12">
-          <span @click="router.push('/')" class="cursor-pointer text-2xl font-bold font-headline tracking-tighter text-primary uppercase">FigureCollect</span>
-          <div class="hidden md:flex gap-8">
-            <a @click="router.push('/category')" class="cursor-pointer text-sm font-bold tracking-wide hover:text-primary transition-colors text-white">Cửa hàng</a>
-            
-            <a 
-              v-for="cat in categories.slice(0, 3)" 
-              :key="'nav-'+cat.MaDM"
-              @click="router.push(`/category/${cat.MaDM}`)"
-              class="cursor-pointer text-sm font-bold tracking-wide hover:text-primary transition-colors text-gray-300"
-            >
-              {{ cat.TenDM }}
-            </a>
-          </div>
-        </div>
-        <div class="flex items-center gap-6">
-          <div class="relative hidden lg:block">
-            <input 
-              v-model="searchQuery"
-              class="bg-surface-container border border-outline-variant/30 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary w-64 transition-all text-white placeholder:text-gray-500" 
-              placeholder="Tìm kiếm bảo vật..." 
-              type="text"
-            />
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
-          </div>
-          <div class="flex gap-4 items-center">
-            <button class="relative hover:text-primary transition-colors text-white"><span class="material-symbols-outlined">favorite</span></button>
-            <button class="relative hover:text-primary transition-colors text-white">
-              <span class="material-symbols-outlined">shopping_cart</span>
-              <span class="absolute -top-1 -right-1 bg-primary text-on-primary-fixed text-[10px] font-bold px-1 rounded-full">3</span>
-            </button>
-            
-            <div v-if="authStore && authStore.user" class="flex items-center gap-3 ml-2 border-l border-outline-variant/30 pl-4">
-              <span class="text-sm font-bold text-primary hidden md:block">
-                Chào, {{ authStore.user.username || authStore.user.TenKH || 'Collector' }}!
-              </span>
-              <div @click="handleLogout" class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-red-500 transition-colors" title="Bấm để đăng xuất">
-                <img alt="User Profile" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
-              </div>
-            </div>
-            <div v-else class="ml-2 border-l border-outline-variant/30 pl-4">
-              <button @click="router.push('/login')" class="px-5 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
-                Đăng nhập
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </nav>
-
     <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">
       
       <aside class="w-72 hidden lg:flex flex-col border-r border-outline-variant/30 bg-surface-container-low overflow-y-auto custom-scrollbar">
@@ -124,8 +72,8 @@
           
           <div 
             v-for="sp in filteredProducts" 
-            :key="sp.MaSP"
-            @click="router.push(`/product/${sp.MaSP}`)"
+            :key="sp.MaMoHinh"
+            @click="router.push(`/product/${sp.MaMoHinh}`)"
             class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full"
           >
             <div class="absolute top-7 left-7 z-10 flex flex-col gap-2">
@@ -226,6 +174,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // IMPORT THÊM AUTH STORE ĐỂ HEADER HOẠT ĐỘNG
 import { useAuthStore } from '../stores/auth.js';
+import TheHeader from '@/components/TheHeader.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -267,27 +216,34 @@ const getCategoryNumber = () => {
 
 const fetchCategories = async () => {
   try {
-    const res = await fetch('http://localhost:3000/api/categories');
+    // Gọi ĐÚNG đường link /api/products/danhmuc như trong file homeview.route.js
+    const res = await fetch('http://localhost:3000/api/products/danhmuc');
+    const dataJSON = await res.json();
+    
     if (res.ok) {
-      categories.value = await res.json();
+      // Dùng || để phòng hờ trường hợp BE không có bọc biến data
+      categories.value = dataJSON.data || dataJSON; 
     }
   } catch (error) {
-    console.error("Lỗi:", error);
+    console.error("Lỗi lấy danh mục:", error);
   }
 };
 
 const fetchProducts = async (id) => {
   try {
+    // Sửa lại đường link khớp với dòng 13 trong file homeview.route.js của bạn
     const apiUrl = id 
-      ? `http://localhost:3000/api/products/category/${id}` 
+      ? `http://localhost:3000/api/products/danhmuc/${id}/products` 
       : 'http://localhost:3000/api/products';
       
     const response = await fetch(apiUrl);
+    const dataJSON = await response.json();
+    
     if (response.ok) {
-      productList.value = await response.json();
+      productList.value = dataJSON.data || dataJSON;
     }
   } catch (error) {
-    console.error("Lỗi:", error);
+    console.error("Lỗi lấy sản phẩm:", error);
   }
 };
 

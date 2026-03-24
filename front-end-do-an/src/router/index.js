@@ -4,6 +4,15 @@ import LoginView from '../views/Login.vue';
 import HomeView from '../views/Home.vue';
 import ProductDetail from '../views/Product_detail.vue';
 import CategoryView from '../views/CategoryView.vue';
+import RegisterView from '../views/RegisterView.vue';
+import ProfileView from '../views/ProfileView.vue';
+import ChangePassword from '../views/ChangePassword.vue';
+import CartView from '../views/CartView.vue';
+import CheckoutView from '../views/CheckoutView.vue';
+import OrderSuccessView from '../views/OrderSuccessView.vue';
+import OrderHistoryView from '../views/OrderHistoryView.vue';
+import OrderDetailView from '../views/OrderDetailView.vue';
+import WishlistView from '../views/WishlistView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +28,53 @@ const router = createRouter({
       ProductDetail },
     { path: '/category/:id?', 
       name: 'category', component: 
-      CategoryView }
+      CategoryView },
+    {
+      path: '/register',
+      name: 'Register',
+      component: RegisterView
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: ProfileView
+    },
+    {
+      path: '/change-password',
+      name: 'ChangePassword',
+      component: ChangePassword
+    },
+    {
+      path: '/cart',
+      name: 'Cart',
+      component: CartView
+    },
+    {
+      path: '/checkout',
+      name: 'Checkout',
+      component: CheckoutView
+    },
+    {
+      path: '/ordersuccess',
+      name: 'Ordersuccess',
+      component: OrderSuccessView
+    },
+    {
+      path: '/orders',
+      name: 'Order',
+      component: OrderHistoryView
+    },
+    {
+      path: '/orders/:id',
+      name: 'Order-detail',
+      component: OrderDetailView
+    }
+    ,
+    {
+      path: '/wishlist',
+      name: 'Wishlist',
+      component: WishlistView
+    }
   ]
 });
 

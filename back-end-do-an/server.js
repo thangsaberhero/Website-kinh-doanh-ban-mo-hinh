@@ -26,6 +26,10 @@ const authRoutes = require('./routes/auth.route.js');
 // Sử dụng Route Auth
 app.use('/api/auth', authRoutes);
 
+// Thay đổi thông tin khách hàng
+const user_info = require('./routes/info_user.route.js');
+app.use('/api/info_user', user_info);
+
 //Lấy thông tin sản phẩm
 const homeviewRoutes = require('./routes/homeview.route.js');
 app.use('/api/products', homeviewRoutes);
@@ -33,3 +37,5 @@ app.use('/api/products', homeviewRoutes);
 //Thêm đơn hàng
 const add_cartRoutes = require('./routes/donhang_user.route.js');
 app.use('/api/add_cart',add_cartRoutes);
+
+//

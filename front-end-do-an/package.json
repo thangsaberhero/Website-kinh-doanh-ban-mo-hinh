@@ -13,12 +13,14 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "axios": "^1.13.6",
     "pinia": "^3.0.4",
     "vue": "^3.5.29",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/forms": "^0.5.11",
     "@vitejs/plugin-vue": "^6.0.4",
     "autoprefixer": "^10.4.27",
     "eslint": "^10.0.2",

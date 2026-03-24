@@ -1,10 +1,10 @@
 <template>
   <div class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen flex items-center justify-center relative overflow-hidden">
     
-    <a href="#" class="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
+    <router-link to = "/" class="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
       <span class="material-symbols-outlined text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
       <span class="text-sm font-bold text-white/90 tracking-wide">Quay lại</span>
-    </a>
+    </router-link>
 
     <div class="fixed inset-0 z-0 pointer-events-none">
       <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-tertiary/5"></div>
@@ -210,14 +210,15 @@ const handleLogin = async () => {
 
     // Nếu có thông tin user -> Đăng nhập thành công -> Hất sang Trang chủ
     if (authStore.user) {
-      router.push('/'); 
+      router.push('/');
     } else {
       // Nếu authStore.user không có, tức là đăng nhập xịt
       toastMessage.value = 'Sai tên đăng nhập hoặc mật khẩu!';
     }
   } catch (error) {
     console.error(error);
-    toastMessage.value = 'Lỗi kết nối đến máy chủ Backend!';
+    
+    toastMessage.value = error.message;
   } finally {
     isLoading.value = false; // Tắt trạng thái load
   }

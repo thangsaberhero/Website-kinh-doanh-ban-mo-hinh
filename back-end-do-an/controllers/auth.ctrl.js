@@ -24,8 +24,8 @@ const authController = {
             
             const maTK = resultTK.insertId;
 
-            const sqlkh = 'INSERT INTO KhanhHang (TenKH, MaKH) VALUES(?,?)';
-            const [resulKH] = await db.query(sqlkh, [TenDN,maTK]);
+            const sqlkh = 'INSERT INTO KhachHang (TenKH, MaTK) VALUES(?,?)';
+            const [resultKH] = await db.query(sqlkh, [TenDN,maTK]);
 
             const maKH = resultKH.insertId;
 
@@ -44,8 +44,16 @@ const authController = {
         try {
             const { TenDN, MatKhau } = req.body;
 
-            // Tìm user trong CSDL
-            const [users] = await db.query('SELECT * FROM TaiKhoan WHERE TenDN = ?', [TenDN]);
+            // [SỬA Ở ĐÂY]: Nối bảng TaiKhoan với KhachHang để lấy được MaKH
+            const sql_login = `
+                SELECT tk.*, kh.MaKH 
+                FROM TaiKhoan tk
+                LEFT JOIN khachhang kh ON tk.MaTK = kh.MaTK
+                WHERE tk.TenDN = ?
+            `;
+            const [users] = await db.query(sql_login, [TenDN]);
+            
+            // Đã sửa lỗi khoảng trắng 'lengt h' thành 'length'
             if (users.length === 0) {
                 return res.status(404).json({ message: "Tài khoản không tồn tại!" });
             }
@@ -72,7 +80,8 @@ const authController = {
                 user: {
                     id: user.MaTK,
                     username: user.TenDN,
-                    email: user.Email
+                    // [SỬA Ở ĐÂY]: Gói thêm MaKH để Frontend cất vào Local Storage
+                    MaKH: user.MaKH 
                 }
             });
         } catch (error) {
