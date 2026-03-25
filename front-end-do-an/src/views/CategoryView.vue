@@ -19,20 +19,31 @@
               <span>Category</span>
             </div>
             <div class="space-y-3">
-              <label @click.prevent="goToCategory('')" class="flex items-center justify-between group cursor-pointer">
+              <label @click.prevent="goToCategory('')" class="flex items-center justify-between group cursor-pointer py-1">
                 <span :class="['text-sm transition-colors', !categoryId ? 'text-primary font-bold' : 'group-hover:text-white text-gray-300 font-medium']">Tất cả sản phẩm</span>
                 <input :checked="!categoryId" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none" type="checkbox"/>
               </label>
-              
-              <label 
-                v-for="cat in categories" 
-                :key="cat.MaDM"
-                @click.prevent="goToCategory(cat.MaDM)" 
-                class="flex items-center justify-between group cursor-pointer"
-              >
-                <span :class="['text-sm transition-colors', categoryId == cat.MaDM ? 'text-primary font-bold' : 'group-hover:text-white text-gray-300 font-medium']">{{ cat.TenDM }}</span>
-                <input :checked="categoryId == cat.MaDM" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none" type="checkbox"/>
-              </label>
+
+              <div v-for="cat in categories" :key="cat.MaDM" class="flex flex-col">
+                <label @click.prevent="goToCategory(cat.MaDM)" class="flex items-center justify-between group cursor-pointer py-2">
+                  <span :class="['text-sm transition-colors', categoryId == cat.MaDM ? 'text-primary font-bold' : 'group-hover:text-white text-gray-300 font-medium']">{{ cat.TenDM }}</span>
+                  <input :checked="categoryId == cat.MaDM && !subCategoryId" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none" type="checkbox"/>
+                </label>
+
+                <div v-if="categoryId == cat.MaDM && cat.subCategories?.length > 0" class="pl-4 flex flex-col space-y-3 mt-1 mb-2 border-l border-outline-variant/30 ml-2">
+                  <label 
+                    v-for="sub in cat.subCategories" 
+                    :key="sub.MaChiTietDM"
+                    @click.prevent="selectSubCategory(cat.MaDM, sub.MaChiTietDM)"
+                    class="flex items-center justify-between group cursor-pointer"
+                  >
+                    <span :class="['text-[13px] transition-colors', subCategoryId == sub.MaChiTietDM ? 'text-primary font-bold' : 'group-hover:text-white text-gray-400']">
+                      - {{ sub.TenChiTietDM }}
+                    </span>
+                    <input :checked="subCategoryId == sub.MaChiTietDM" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none w-3 h-3" type="checkbox"/>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -183,6 +194,7 @@ const authStore = useAuthStore();
 const productList = ref([]);
 const categories = ref([]);
 const categoryId = ref(route.params.id || '');
+const subCategoryId = ref('');
 const searchQuery = ref('');
 
 const formatPrice = (price) => {
@@ -195,13 +207,23 @@ const handleLogout = () => {
   router.push('/login');
 };
 
-const goToCategory = async (id) => {
-  if(id) {
-    router.push(`/category/${id}`);
+const goToCategory = (id) => {
+  if (id) {
+    // Nếu bấm vào đúng Danh mục cha đang hiển thị, VÀ đang có Danh mục con được chọn
+    if (categoryId.value == id && subCategoryId.value !== '') {
+      // 1. Reset thằng con về rỗng (tắt dấu check của con, bật dấu check của cha)
+      subCategoryId.value = '';
+      
+      // 2. Gọi lại API lấy tất cả sản phẩm của thằng cha
+      fetchProducts(id);
+    } else {
+      // Nếu bấm sang một Danh mục cha KHÁC, thì cứ chuyển link như bình thường
+      router.push(`/category/${id}`);
+    }
   } else {
+    // Nếu bấm "Tất cả sản phẩm"
     router.push(`/category`);
   }
-  ///danhmuc/:maDM/chitiet
 };
 
 const getCategoryName = () => {
@@ -217,25 +239,49 @@ const getCategoryNumber = () => {
 
 const fetchCategories = async () => {
   try {
-    // Gọi ĐÚNG đường link /api/products/danhmuc như trong file homeview.route.js
     const res = await fetch('http://localhost:3000/api/products/danhmuc');
     const dataJSON = await res.json();
     
     if (res.ok) {
-      // Dùng || để phòng hờ trường hợp BE không có bọc biến data
-      categories.value = dataJSON.data || dataJSON; 
+      const mainCats = dataJSON.data || dataJSON; 
+      
+      // Vòng lặp: Đi hỏi Backend xem từng Danh mục cha có Danh mục con nào không
+      for (let cat of mainCats) {
+        try {
+          const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
+          const subJSON = await subRes.json();
+          if (subRes.ok) {
+            cat.subCategories = subJSON.data || subJSON; // Gắn đàn con vào mảng cha
+          }
+        } catch (err) {
+          cat.subCategories = []; 
+        }
+      }
+      categories.value = mainCats; // Lưu lại toàn bộ dữ liệu
     }
   } catch (error) {
     console.error("Lỗi lấy danh mục:", error);
   }
 };
 
-const fetchProducts = async (id) => {
+// Xử lý khi bấm danh mục con
+const selectSubCategory = (maDM, maCTDM) => {
+  subCategoryId.value = maCTDM; // Lưu lại mã thằng con
+  fetchProducts(maDM, maCTDM);  // Gọi API lấy sản phẩm của thằng con
+};
+
+// Có thể lấy theo Cha hoặc theo Con
+const fetchProducts = async (maDM, maCTDM = null) => {
   try {
-    // Sửa lại đường link khớp với dòng 13 trong file homeview.route.js của bạn
-    const apiUrl = id 
-      ? `http://localhost:3000/api/products/danhmuc/${id}/products` 
-      : 'http://localhost:3000/api/products';
+    let apiUrl = 'http://localhost:3000/api/products'; // Mặc định lấy tất cả
+
+    if (maCTDM) {
+      // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
+      apiUrl = `http://localhost:3000/api/products/chitietdm/${maCTDM}/products`;
+    } else if (maDM) {
+      // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
+      apiUrl = `http://localhost:3000/api/products/danhmuc/${maDM}/products`;
+    }
       
     const response = await fetch(apiUrl);
     const dataJSON = await response.json();
@@ -247,6 +293,14 @@ const fetchProducts = async (id) => {
     console.error("Lỗi lấy sản phẩm:", error);
   }
 };
+
+// 5. Cập nhật Watcher: Khi bấm sang Danh mục cha khác, phải Reset thằng con
+watch(() => route.params.id, (newId) => {
+  categoryId.value = newId || '';
+  subCategoryId.value = ''; // Reset thằng con về rỗng
+  fetchProducts(newId);
+  searchQuery.value = ''; 
+});
 
 const filteredProducts = computed(() => {
   if (!searchQuery.value) return productList.value;

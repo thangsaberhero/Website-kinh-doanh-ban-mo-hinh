@@ -142,7 +142,7 @@ const product_view = {
     getProductsByDetailVariant: async(req, res) => {
         try {
             const maCTDM = req.params.maCTDM;
-            const sql = 'SELECT MoHinh.* FROM MoHinh inner join ChiTietDanhMuc on MoHinh.MaChiTietDM = ChiTietDanhMuc.MaChiTietDM where MaChiTietDM = ? ORDER BY MaMoHinh DESC';
+            const sql = 'SELECT MoHinh.* FROM MoHinh inner join ChiTietDanhMuc on MoHinh.MaChiTietDM = ChiTietDanhMuc.MaChiTietDM where MoHinh.MaChiTietDM = ? ORDER BY MaMoHinh DESC';
             const [products] = await db.query(sql, [maCTDM]);
 
             res.status(200).json({

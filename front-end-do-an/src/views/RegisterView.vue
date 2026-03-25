@@ -77,7 +77,7 @@
                 <label class="text-xs font-medium text-on-surface-variant ml-1">Email</label>
                 <div class="relative group">
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">alternate_email</span>
-                  <input 
+                    <input 
                     v-model="form.email" 
                     type="email" 
                     required
@@ -167,11 +167,10 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
 
 const router = useRouter();
 
-// Form đăng ký có thêm trường email và confirmPassword
+// Dữ liệu Form
 const form = reactive({
   username: '',
   email: '',
@@ -182,9 +181,9 @@ const form = reactive({
 const showPassword = ref(false);
 const isLoading = ref(false);
 
-// Xử lý Toast (Thêm type để biết là lỗi hay thành công)
+// Xử lý Toast thông báo
 const toastMessage = ref('');
-const toastType = ref('error'); // 'error' hoặc 'success'
+const toastType = ref('error');
 let toastTimeout = null;
 
 const showToast = (message, type = 'error') => {
@@ -196,9 +195,9 @@ const showToast = (message, type = 'error') => {
   }, 3500); 
 };
 
-// Hàm xử lý Đăng ký
+// Hàm xử lý Đăng ký chính
 const handleRegister = async () => {
-  // 1. Kiểm tra mật khẩu nhập lại có khớp không trước khi gọi server
+  // 1. Kiểm tra mật khẩu khớp nhau
   if (form.password !== form.confirmPassword) {
     showToast('Mật khẩu xác nhận không khớp!', 'error');
     return;
@@ -208,28 +207,41 @@ const handleRegister = async () => {
   toastMessage.value = '';
 
   try {
-    // Delay nhẹ tạo cảm giác đang xử lý mượt mà
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Gọi API sang Backend (Hiện tại API này bạn chưa viết, tôi cứ để sẵn)
-    const response = await axios.post('http://localhost:3000/api/auth/register', {
+    // 2. Đóng gói dữ liệu ĐÚNG VỚI BACKEND (Chỉ gồm TenDN và MatKhau)
+    const payload = {
       TenDN: form.username,
-      Email: form.email,
+      email: form.email,
       MatKhau: form.password
+    };
+
+    // 3. Gọi API bằng fetch (Chuẩn hóa với phần còn lại của dự án)
+    const response = await fetch('http://localhost:3000/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
     });
-    
-    // Báo thành công màu xanh lá
+
+    const data = await response.json();
+
+    // 4. Xử lý kết quả trả về
+    if (!response.ok) {
+      // Bắt lỗi từ Server (Ví dụ: Tên đăng nhập đã tồn tại)
+      throw new Error(data.message || 'Lỗi đăng ký từ Server!');
+    }
+
+    // 5. Nếu đăng ký thành công
     showToast('Đăng ký thành công! Đang chuyển hướng...', 'success');
     
-    // Tự động chuyển về trang Đăng nhập sau 2 giây
+    // Tự động đá khách sang trang Đăng nhập sau 2 giây
     setTimeout(() => {
       router.push('/login');
     }, 2000);
 
   } catch (error) {
-    // Hiển thị lỗi từ server (VD: Tên đăng nhập đã tồn tại)
-    const errorMsg = error.response?.data?.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.';
-    showToast(errorMsg, 'error');
+    console.error("Lỗi đăng ký:", error);
+    showToast(error.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.', 'error');
   } finally {
     isLoading.value = false;
   }

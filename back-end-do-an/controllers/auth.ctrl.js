@@ -6,7 +6,7 @@ const authController = {
     // 1. ĐĂNG KÝ
     register: async (req, res) => {
         try {
-            const { TenDN, MatKhau} = req.body;
+            const { TenDN, email, MatKhau} = req.body;
 
             // Kiểm tra xem Tên đăng nhập đã tồn tại chưa
             const [checkUser] = await db.query('SELECT * FROM TaiKhoan WHERE TenDN = ?', [TenDN]);
@@ -19,8 +19,8 @@ const authController = {
             const hashedPass = await bcrypt.hash(MatKhau, salt);
 
             // Lưu vào Database (Giả sử MaQuyen = 3 là Khách hàng bình thường)
-            const sqltk = 'INSERT INTO TaiKhoan (TenDN, MatKhau, MaQuyen) VALUES (?, ?, 3)';
-            const [resultTK] = await db.query(sqltk, [TenDN, hashedPass]);
+            const sqltk = 'INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES (?, ?, ?, 3)';
+            const [resultTK] = await db.query(sqltk, [TenDN, hashedPass, email]);
             
             const maTK = resultTK.insertId;
 
