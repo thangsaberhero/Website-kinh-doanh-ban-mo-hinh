@@ -16,7 +16,7 @@
           <div class="mb-10">
             <div class="flex items-center gap-2 mb-4 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
               <span class="material-symbols-outlined text-sm">category</span>
-              <span>Category</span>
+              <span>Danh mục</span>
             </div>
             <div class="space-y-3">
               <label @click.prevent="goToCategory('')" class="flex items-center justify-between group cursor-pointer py-1">
@@ -50,10 +50,10 @@
           <div class="mb-10">
             <div class="flex items-center gap-2 mb-4 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
               <span class="material-symbols-outlined text-sm">payments</span>
-              <span>Price</span>
+              <span>Mức giá tối đa</span>
             </div>
             <div class="space-y-4">
-              <input class="w-full h-1 bg-surface-container-highest accent-primary rounded-lg appearance-none cursor-pointer" type="range"/>
+              <input v-model.number="maxPrice" min="0" max="20000000" step="500000" class="w-full h-1 bg-surface-container-highest accent-primary rounded-lg appearance-none cursor-pointer" type="range"/>
               <div class="flex justify-between text-[10px] font-mono text-gray-400 font-bold">
                 <span>0 VND</span>
                 <span>20M VND</span>
@@ -71,51 +71,70 @@
             </h1>
             <p class="text-gray-400 max-w-xl font-medium">Khám phá những tạo tác tinh xảo nhất từ thế giới Anime và Mecha. Mỗi mô hình là một câu chuyện huyền thoại.</p>
           </div>
-          <div class="flex items-center gap-4 text-sm">
+          <div class="flex flex-row items-center gap-4 text-sm shrink-0">
             <span class="text-gray-400 font-bold">Sắp xếp:</span>
-            <button class="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px] bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/30 text-white hover:border-primary hover:text-primary transition-colors">
-              Mới nhất <span class="material-symbols-outlined text-xs">expand_more</span>
-            </button>
+            <select 
+                v-model="sortBy" 
+                class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
+            >
+                <option value="newest">Mới nhất</option>
+                <option value="price_asc">Giá Thấp đến Cao</option>
+                <option value="price_desc">Giá Cao đến Thấp</option>
+            </select>
           </div>
         </header>
 
         <div v-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-          
           <div 
-            v-for="sp in filteredProducts" 
-            :key="sp.MaMoHinh"
+            v-for="sp in filteredProducts" :key="sp.MaMoHinh"
             @click="router.push(`/product/${sp.MaMoHinh}`)"
-            class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full"
+            class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full overflow-hidden"
           >
+            <div v-if="sp.SoLuong === 0" class="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl">
+              <span class="border-2 border-outline text-outline px-6 py-2 text-sm font-bold tracking-widest uppercase rounded">HẾT HÀNG</span>
+            </div>
+
             <div class="absolute top-7 left-7 z-10 flex flex-col gap-2">
-              <span class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-on-primary-fixed shadow-md">
-                {{ sp.LoaiHinhBan || 'Limited' }}
+              <span v-if="sp.TrangThai" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-on-primary-fixed shadow-md">
+                {{ sp.TrangThai }}
+              </span>
+              <span v-if="sp.LoaiHinhBan" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-tertiary text-on-tertiary-fixed shadow-md">
+                {{ sp.LoaiHinhBan }}
               </span>
             </div>
             
             <div class="relative h-72 w-full mb-6 overflow-hidden rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40"></div>
-              <img :src="'/Images_product/' + sp.AnhDaiDien" class="h-full w-full object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-700"/>
+              <img :src="'/Images_product/' + sp.AnhDaiDien" 
+                   :alt="sp.TenMH"
+                   :class="['h-full w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110', sp.SoLuong === 0 ? 'grayscale opacity-50' : '']"
+              />
             </div>
             
             <div class="space-y-3 flex-1 flex flex-col justify-end">
               <div>
-                <p class="text-[11px] text-primary font-bold uppercase tracking-[0.2em] mb-2">
-                  {{ sp.TenHSX || 'THƯƠNG HIỆU' }} • {{ sp.KichThuoc || 'N/A' }}
+                <p class="text-[10px] text-outline font-bold uppercase tracking-[0.2em] mb-2">
+                  {{ sp.TenHSX || 'UNKNOWN' }} • {{ sp.KichThuoc || 'N/A' }}
                 </p>
                 <h3 class="text-xl font-headline font-bold leading-snug group-hover:text-primary transition-colors text-white line-clamp-2">
                   {{ sp.TenMH }}
                 </h3>
               </div>
-              <div class="pt-4 mt-auto border-t border-outline-variant/30 flex justify-between items-center">
-                <span class="text-2xl font-headline font-bold text-white tracking-tight">{{ formatPrice(sp.DonGia) }}</span>
-                <button @click.stop="addToCart" class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-on-primary-fixed hover:bg-white hover:text-primary transition-all shadow-lg shadow-primary/30">
+              
+              <div class="pt-4 mt-auto border-t border-outline-variant/30 flex justify-between items-center relative z-10">
+                <span :class="['text-2xl font-headline font-bold tracking-tight', sp.SoLuong === 0 ? 'text-outline' : 'text-white']">
+                  {{ formatPrice(sp.DonGia) }}
+                </span>
+                <button 
+                  :disabled="sp.SoLuong === 0"
+                  @click.stop="sp.SoLuong > 0 ? addToCart() : null" 
+                  :class="['w-12 h-12 rounded-xl flex items-center justify-center transition-all', sp.SoLuong === 0 ? 'bg-surface-container text-outline cursor-not-allowed' : 'bg-primary text-on-primary-fixed hover:bg-white hover:text-primary shadow-lg shadow-primary/30']"
+                >
                   <span class="material-symbols-outlined font-bold">add_shopping_cart</span>
                 </button>
               </div>
             </div>
           </div>
-
         </div>
 
         <div v-else class="text-center py-20 border border-dashed border-outline-variant/40 rounded-2xl bg-surface-container-low">
@@ -146,37 +165,6 @@
       </main>
     </div>
 
-    <footer class="bg-surface-container-lowest border-t border-outline-variant/30 py-12 px-6 lg:px-12 z-10 relative mt-auto">
-      <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-12">
-        <div>
-          <span class="text-2xl font-bold font-headline tracking-tighter text-primary uppercase mb-4 block">FigureCollect</span>
-          <p class="text-gray-400 text-xs max-w-sm font-medium leading-relaxed">© 2026 FigureCollect. Neon Vault Edition. Điểm đến tin cậy cho những nhà sưu tầm mô hình cao cấp tại Việt Nam.</p>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-12">
-          <div class="space-y-4">
-            <h4 class="text-[10px] font-bold uppercase tracking-widest text-primary">Thông tin</h4>
-            <ul class="space-y-2 text-sm text-gray-400 font-medium">
-              <li><a class="hover:text-primary transition-colors" href="#">Chính sách bảo mật</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Điều khoản dịch vụ</a></li>
-            </ul>
-          </div>
-          <div class="space-y-4">
-            <h4 class="text-[10px] font-bold uppercase tracking-widest text-primary">Hỗ trợ</h4>
-            <ul class="space-y-2 text-sm text-gray-400 font-medium">
-              <li><a class="hover:text-primary transition-colors" href="#">Giao hàng</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Liên hệ</a></li>
-            </ul>
-          </div>
-          <div class="space-y-4">
-            <h4 class="text-[10px] font-bold uppercase tracking-widest text-primary">Mạng xã hội</h4>
-            <div class="flex gap-4">
-              <a class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant/30 flex items-center justify-center hover:bg-primary hover:text-on-primary-fixed transition-all text-white" href="#"><span class="material-symbols-outlined text-lg">public</span></a>
-              <a class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant/30 flex items-center justify-center hover:bg-primary hover:text-on-primary-fixed transition-all text-white" href="#"><span class="material-symbols-outlined text-lg">alternate_email</span></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -196,6 +184,8 @@ const categories = ref([]);
 const categoryId = ref(route.params.id || '');
 const subCategoryId = ref('');
 const searchQuery = ref('');
+const sortBy = ref('newest');
+const maxPrice = ref(20000000);
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -227,9 +217,9 @@ const goToCategory = (id) => {
 };
 
 const getCategoryName = () => {
-  if (!categoryId.value) return 'NEON VAULT';
+  if (!categoryId.value) return 'FIGURE COLLECTION';
   const currentCat = categories.value.find(c => c.MaDM == categoryId.value);
-  return currentCat ? currentCat.TenDM : 'NEON VAULT';
+  return currentCat ? currentCat.TenDM : 'FIGURE COLLECTION';
 };
 
 const getCategoryNumber = () => {
@@ -303,10 +293,20 @@ watch(() => route.params.id, (newId) => {
 });
 
 const filteredProducts = computed(() => {
-  if (!searchQuery.value) return productList.value;
-  return productList.value.filter(sp => 
-    sp.TenMH.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
+  let result = productList.value;
+  if(searchQuery.value){
+    result = result.filter(sp => 
+      sp.TenMH.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
+
+  result = result.filter(sp => Number(sp.DonGia) <= maxPrice.value);
+
+  return result.slice().sort((a, b) => {
+    if (sortBy.value === 'price_asc') return Number(a.DonGia - b.DonGia);
+    if (sortBy.value === 'price_desc') return Number(b.DonGia - a.DonGia);
+    return b.MaMoHinh - a.MaMoHinh; 
+  });
 });
 
 const addToCart = () => {

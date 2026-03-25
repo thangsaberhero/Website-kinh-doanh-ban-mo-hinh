@@ -3,7 +3,7 @@ const db = require('../config/db');
 const product_view = {
     getAllProduct: async(req, res) => {
         try {
-            const sql = 'SELECT * FROM MoHinh ORDER BY MaMoHinh DESC';
+            const sql = 'SELECT MoHinh.*,TenHSX FROM MoHinh INNER JOIN HangSanXuat ON MoHinh.MaHSX = HangSanXuat.MaHSX ORDER BY MoHinh.MaMoHinh DESC';
             const [products] = await db.query(sql);
 
             res.status(200).json({
@@ -176,6 +176,38 @@ const product_view = {
             });
         }
     },
+
+    // Hàm tìm kiếm sản phẩm theo tên
+    searchProducts : async (req, res) => {
+        try {
+            const keyword = req.query.keyword;
+            
+            if (!keyword) {
+                return res.status(400).json({ message: "Vui lòng nhập từ khóa tìm kiếm" });
+            }
+
+            // Lệnh SQL: Tìm những mô hình có tên chứa từ khóa (Không phân biệt hoa thường)
+            // LIMIT 10: Chỉ lấy tối đa 10 sản phẩm thả xuống cho nhẹ
+            const sql = `
+                SELECT MaMoHinh, TenMH, AnhDaiDien, DonGia 
+                FROM MoHinh 
+                WHERE TenMH LIKE ? 
+                LIMIT 10
+            `;
+            
+            // Thêm % vào 2 đầu từ khóa để tìm chuỗi con
+            const [results] = await db.query(sql, [`%${keyword}%`]);
+
+            res.status(200).json({
+                message: "Tìm kiếm thành công",
+                data: results
+            });
+
+        } catch (error) {
+            console.error("Lỗi API tìm kiếm:", error);
+            res.status(500).json({ message: "Lỗi server khi tìm kiếm" });
+        }
+    }
 }
 module.exports = product_view;
 

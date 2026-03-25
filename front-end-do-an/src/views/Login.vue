@@ -182,10 +182,11 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js'; // Nhớ kiểm tra đường dẫn đúng thư mục nhé
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 // 1. Khai báo các biến mà giao diện đang đòi hỏi
@@ -210,7 +211,10 @@ const handleLogin = async () => {
 
     // Nếu có thông tin user -> Đăng nhập thành công -> Hất sang Trang chủ
     if (authStore.user) {
-      router.push('/');
+      const redirectPath = route.query.redirect || '/'; // Nếu không có redirect thì mặc định về Trang chủ '/'
+    
+    // 3. Đưa khách về đúng nơi quy định
+    router.push(redirectPath);
     } else {
       // Nếu authStore.user không có, tức là đăng nhập xịt
       toastMessage.value = 'Sai tên đăng nhập hoặc mật khẩu!';

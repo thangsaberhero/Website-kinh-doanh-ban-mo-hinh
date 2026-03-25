@@ -13,6 +13,7 @@ import OrderSuccessView from '../views/OrderSuccessView.vue';
 import OrderHistoryView from '../views/OrderHistoryView.vue';
 import OrderDetailView from '../views/OrderDetailView.vue';
 import WishlistView from '../views/WishlistView.vue';
+import SearchView from '../views/SearchView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,12 +53,14 @@ const router = createRouter({
     {
       path: '/checkout',
       name: 'Checkout',
-      component: CheckoutView
+      component: CheckoutView,
+      meta: { useMinimalFooter: true }
     },
     {
       path: '/ordersuccess',
       name: 'Ordersuccess',
-      component: OrderSuccessView
+      component: OrderSuccessView,
+      meta: { useMinimalFooter: true }
     },
     {
       path: '/orders',
@@ -68,12 +71,16 @@ const router = createRouter({
       path: '/orders/:id',
       name: 'Order-detail',
       component: OrderDetailView
-    }
-    ,
+    },
     {
       path: '/wishlist',
       name: 'Wishlist',
       component: WishlistView
+    },
+    {
+      path: '/search',
+      name: 'Search',
+      component: SearchView
     }
   ]
 });
