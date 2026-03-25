@@ -123,7 +123,7 @@ const product_view = {
     getProductsByVariant: async(req, res) => {
         try {
             const maDM = req.params.maDM;
-            const sql = 'SELECT MoHinh.* FROM MoHinh inner join DanhMuc on MoHinh.MaDM = DanhMuc.MaDM where Ma ORDER BY MaMoHinh DESC';
+            const sql = 'SELECT * FROM MoHinh where MaDM = ? ORDER BY MaMoHinh DESC';
             const [products] = await db.query(sql, [maDM]);
 
             res.status(200).json({

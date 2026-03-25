@@ -195,12 +195,13 @@ const handleLogout = () => {
   router.push('/login');
 };
 
-const goToCategory = (id) => {
+const goToCategory = async (id) => {
   if(id) {
     router.push(`/category/${id}`);
   } else {
     router.push(`/category`);
   }
+  ///danhmuc/:maDM/chitiet
 };
 
 const getCategoryName = () => {
