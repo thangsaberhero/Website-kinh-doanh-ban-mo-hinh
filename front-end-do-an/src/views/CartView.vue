@@ -376,7 +376,7 @@ const decreaseQty = async (item) => {
   try {
     const payload = {
       MaKH: parseInt(maKH),
-      maPhanLoai: item.MaPhanLoai, // Gửi đúng mã phân loại của món đó
+      MaPhanLoai: item.MaPhanLoai, // Gửi đúng mã phân loại của món đó
       soluong: item.SoLuong        // Gửi con số MỚI NHẤT xuống Database
     };
 

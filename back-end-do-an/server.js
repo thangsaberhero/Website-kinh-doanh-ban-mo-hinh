@@ -38,4 +38,7 @@ app.use('/api/products', homeviewRoutes);
 const add_cartRoutes = require('./routes/donhang_user.route.js');
 app.use('/api/add_cart',add_cartRoutes);
 
-//
+//Lấy đường dẫn ảnh đại diện
+const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
+// Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
+app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));

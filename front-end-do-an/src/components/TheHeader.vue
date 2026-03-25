@@ -77,7 +77,7 @@
             </span>
             
             <div @click="showUserMenu = !showUserMenu" class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-primary transition-all duration-300" :class="{'ring-2 ring-primary ring-offset-2 ring-offset-background': showUserMenu}">
-              <img alt="User Profile" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
+              <img alt="User Profile" class="w-full h-full object-cover" :src="userAvatar"/>
             </div>
 
             <div v-if="showUserMenu" @click="showUserMenu = false" class="fixed inset-0 z-40"></div>
@@ -132,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref , computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth'; 
 
@@ -142,6 +142,16 @@ const authStore = useAuthStore();
 // Biến điều khiển ẩn/hiện User Menu Dropdown
 const showUserMenu = ref(false);
 const cartCount = ref(0);
+
+const defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80';
+
+// Computed tự động theo dõi: Hễ authStore thay đổi là link ảnh đổi theo
+const userAvatar = computed(() => {
+  if (authStore.user && authStore.user.AnhDaiDien) {
+    return `http://localhost:3000/Images_user/${authStore.user.AnhDaiDien}`;
+  }
+  return defaultAvatar;
+});
 
 // Hàm Đăng xuất
 const handleLogout = () => {

@@ -158,24 +158,36 @@ const product_view = {
         }
     },
     // Lấy thông tin các sản phẩm theo tìm kiếm
-    getProductsBySearch: async(req, res) => {
+    getProductsBySearch_trenthanhtimkiem : async (req, res) => {
         try {
-            const search = req.params.thongtin;
-            const sql = 'SELECT * from MoHinh where MoHinh.TenMH like %?%';
-            const [products] = await db.query(sql, [search]);
+            const keyword = req.query.keyword;
+            
+            if (!keyword) {
+                return res.status(400).json({ message: "Vui lòng nhập từ khóa tìm kiếm" });
+            }
+
+            // Lệnh SQL: Tìm những mô hình có tên chứa từ khóa (Không phân biệt hoa thường)
+            // LIMIT 10: Chỉ lấy tối đa 10 sản phẩm thả xuống cho nhẹ
+            const sql = `
+                SELECT MaMoHinh, TenMH, AnhDaiDien, DonGia 
+                FROM MoHinh 
+                WHERE TenMH LIKE ? 
+                LIMIT 10
+            `;
+            
+            // Thêm % vào 2 đầu từ khóa để tìm chuỗi con
+            const [results] = await db.query(sql, [`%${keyword}%`]);
 
             res.status(200).json({
-                message: "Lấy danh sách sản phẩm thành công",
-                data: products
+                message: "Tìm kiếm thành công",
+                data: results
             });
+
+        } catch (error) {
+            console.error("Lỗi API tìm kiếm:", error);
+            res.status(500).json({ message: "Lỗi server khi tìm kiếm" });
         }
-        catch (error){
-            console.error("Lỗi khi lấy danh sách sản phẩm theo danh mục:,", error);
-            res.status(500).json({
-                message: "Lỗi server khi lấy dữ liệu danh sách danh mục!"
-            });
-        }
-    },
+    }
 }
 module.exports = product_view;
 

@@ -9,7 +9,7 @@
         <div class="px-6 flex flex-col items-center gap-3 mb-8">
           <div class="relative group cursor-pointer">
             <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-              <img class="w-full h-full rounded-full object-cover" alt="User Profile" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
+              <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="avatarPreview"/>
             </div>
             <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
               <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
@@ -64,21 +64,26 @@
             <div class="flex flex-col sm:flex-row items-center gap-8 pb-8 border-b border-outline-variant/15">
               <div class="relative group cursor-pointer shrink-0">
                 <div class="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-surface-container-highest overflow-hidden neon-glow transition-all duration-300 group-hover:border-primary/50">
-                  <img class="w-full h-full object-cover" alt="Avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
+                  <img class="w-full h-full object-cover" alt="Avatar" :src="avatarPreview"/>
                 </div>
-                <div class="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center rounded-full">
-                  <span class="material-symbols-outlined text-primary mb-1">photo_camera</span>
-                  <span class="text-[10px] font-bold uppercase tracking-widest text-white">Sửa ảnh</span>
                 </div>
-              </div>
+
               <div class="space-y-3 text-center sm:text-left">
                 <h4 class="text-xl font-headline font-bold text-white">Ảnh đại diện</h4>
                 <p class="text-sm text-on-surface-variant">Tải lên hình ảnh mới. Hỗ trợ: JPG, PNG (Max 5MB).</p>
                 <div class="flex gap-3 justify-center sm:justify-start pt-2">
-                  <button type="button" class="px-5 py-2 text-xs font-bold uppercase tracking-widest bg-surface-container-highest text-white border border-outline-variant/30 rounded-lg hover:bg-primary hover:border-primary hover:text-on-primary-fixed transition-all">
+                  
+                  <input type="file" ref="fileInput" class="hidden" accept="image/jpeg, image/png" @change="onFileSelected" />
+                  
+                  <button 
+                    type="button" 
+                    @click="triggerFileInput" 
+                    class="px-5 py-2 text-xs font-bold uppercase tracking-widest bg-surface-container-highest text-white border border-outline-variant/30 rounded-lg hover:bg-primary hover:border-primary hover:text-on-primary-fixed transition-all"
+                  >
                     Tải ảnh lên
                   </button>
-                  <button type="button" class="px-5 py-2 text-xs font-bold uppercase tracking-widest text-error hover:bg-error/10 rounded-lg transition-all">
+                  
+                  <button type="button" @click="removeAvatar" class="px-5 py-2 text-xs font-bold uppercase tracking-widest text-error hover:bg-error/10 rounded-lg transition-all">
                     Gỡ bỏ
                   </button>
                 </div>
@@ -100,15 +105,6 @@
               <div class="space-y-2">
                 <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Số điện thoại</label>
                 <input v-model="form.phone" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" type="tel" placeholder="Ví dụ: 0901234567"/>
-              </div>
-
-              <div class="space-y-2">
-                <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Giới tính</label>
-                <select v-model="form.gender" class="w-full bg-surface-container-low border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-3 rounded-t-lg font-medium cursor-pointer">
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
-                  <option value="other">Khác</option>
-                </select>
               </div>
 
               <div class="space-y-2 md:col-span-2">
@@ -154,11 +150,11 @@
 </template>
 
 <script setup>
-import TheHeader from '@/components/TheHeader.vue';
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useToastStore } from '@/stores/toast';
+import TheHeader from '@/components/TheHeader.vue';
 
 const toastStore = useToastStore();
 const router = useRouter();
@@ -166,37 +162,148 @@ const authStore = useAuthStore();
 
 const isSaving = ref(false);
 
-// Đã thêm biến address vào form
+// 1. Mở két sắt lấy Mã Tài Khoản (để biết phải hỏi thông tin của ai)
+const userString = localStorage.getItem('user');
+const currentUser = userString ? JSON.parse(userString) : null;
+
+// Quản lý file ảnh và đường dẫn ảnh mặc định
+const fileInput = ref(null); 
+const selectedFile = ref(null); 
+const defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80';
+
+// Ảnh Preview lúc đầu cứ gán mặc định, lát gọi API xong sẽ đè lên sau
+const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
+
+// Khởi tạo Form rỗng
 const form = reactive({
-  name: authStore.user?.username || authStore.user?.TenKH || '',
-  email: authStore.user?.email || '', 
+  name: '',
+  email: '', 
   phone: '', 
-  gender: 'male',
   address: '' 
 });
 
+// ==========================================
+// THÊM MỚI: HÀM TỰ ĐỘNG KÉO THÔNG TIN TỪ SERVER VỀ
+// ==========================================
+const fetchUserData = async () => {
+  if (!currentUser) return;
+  
+  try {
+    // Gọi đường link API lấy thông tin bạn vừa viết (truyền MaTK vào đuôi)
+    const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
+    const dataJSON = await res.json();
+    
+    if (res.ok && dataJSON.data) {
+      const userData = dataJSON.data;
+      
+      // Đổ dữ liệu từ Server vào Form
+      form.name = userData.TenKH || userData.TenDN || '';
+      form.email = userData.Email || ''; 
+      form.phone = userData.SDT || '';
+      form.address = userData.diachi || '';
+      
+      // Đổ ảnh đại diện ra màn hình (nếu có)
+      if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
+        avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi kéo thông tin người dùng:", error);
+  }
+};
+
+// ==========================================
+// CHẠY NGAY KHI VỪA MỞ TRANG PROFILE LÊN
+// ==========================================
 onMounted(() => {
-  if (!authStore.user && !localStorage.getItem('token')) {
+  if (!currentUser && !localStorage.getItem('token')) {
     router.push('/login');
+  } else {
+    // Nếu đã đăng nhập thì gọi hàm kéo dữ liệu
+    fetchUserData();
   }
 });
 
+// Các hàm chọn ảnh (Giữ nguyên)
+const triggerFileInput = () => {
+  if (fileInput.value) fileInput.value.click();
+};
+
+const onFileSelected = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 5 * 1024 * 1024) {
+    toastStore.showToast("Dung lượng ảnh quá lớn! Tối đa 5MB.", "error");
+    return;
+  }
+  selectedFile.value = file; 
+  avatarPreview.value = URL.createObjectURL(file); 
+};
+
+const removeAvatar = () => {
+  selectedFile.value = null;
+  avatarPreview.value = defaultAvatar;
+  if(fileInput.value) fileInput.value.value = ''; 
+};
+
 const handleLogout = () => {
-  if (authStore.logout) authStore.logout();
-  else localStorage.removeItem('token');
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
   router.push('/login');
 };
 
+// Hàm lưu Profile (Giữ nguyên như bản hoàn chỉnh trước đó)
 const saveProfile = async () => {
+  const token = localStorage.getItem('token');
+  if (!token || !currentUser) {
+    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+    return;
+  }
+
   isSaving.value = true;
   
-  // In ra log để bạn thấy dữ liệu chuẩn bị gửi đi có đầy đủ Email và Địa chỉ
-  console.log("Dữ liệu chuẩn bị lưu:", form);
+  try {
+    const formData = new FormData();
+    formData.append('MaTK', currentUser.id);
+    formData.append('TenKH', form.name);
+    formData.append('email', form.email);
+    formData.append('SDT', form.phone);
+    formData.append('DiaChi', form.address);
+    
+    if (selectedFile.value) {
+      formData.append('avatar', selectedFile.value); 
+    }
 
-  setTimeout(() => {
+    const response = await fetch('http://localhost:3000/api/info_user/change_info', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData 
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Lỗi khi lưu thông tin");
+
+    // Cập nhật lại két sắt Local Storage để Header đồng bộ
+    const updatedUser = {
+      ...currentUser,
+      TenKH: form.name,
+      username: form.name
+    };
+    if (data.newAvatarName) {
+      updatedUser.AnhDaiDien = data.newAvatarName;
+    }
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    if (authStore.user) authStore.user = updatedUser;
+
+    toastStore.showToast("🎉 Đã cập nhật hồ sơ thành công!", "success");
+
+  } catch (error) {
+    console.error("Lỗi cập nhật profile:", error);
+    toastStore.showToast(error.message, "error");
+  } finally {
     isSaving.value = false;
-    toastStore.showToast("🎉 Đã lưu thông tin hồ sơ thành công!", "success")
-  }, 1000);
+  }
 };
 </script>
 

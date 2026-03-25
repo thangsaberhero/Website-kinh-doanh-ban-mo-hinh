@@ -95,12 +95,12 @@
             <div class="space-y-6 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
               <div v-for="item in checkoutItems" :key="item.id" class="flex gap-4">
                 <div class="w-20 h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
-                  <img :src="item.image" :alt="item.name" class="w-full h-full object-contain p-2"/>
+                  <img :src="'/Images_product/'+ item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-contain p-2"/>
                 </div>
                 <div class="flex-grow flex flex-col justify-center">
-                  <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.name }}</h4>
-                  <p class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">SL: {{ item.qty }}</p>
-                  <div class="mt-1 text-primary font-headline font-bold">{{ formatPrice(item.price) }}</div>
+                  <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
+                  <p class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">SL: {{ item.SoLuong }}</p>
+                  <div class="mt-1 text-primary font-headline font-bold">{{ formatPrice(item.DonGia) }}</div>
                 </div>
               </div>
             </div>
@@ -173,9 +173,11 @@ const authStore = useAuthStore();
 const toastStore = useToastStore();
 
 const isProcessing = ref(false);
-const paymentMethod = ref('card'); // Mặc định chọn thẻ
+const paymentMethod = ref('card'); 
+const checkoutItems = ref([]); // Đổi thành mảng rỗng để chứa dữ liệu thật
+const discount = ref(0); // Tạm thời set giảm giá về 0, bạn có thể tự thêm logic mã giảm giá sau
 
-// Dữ liệu Form
+// Dữ liệu Form giao hàng
 const shippingInfo = reactive({
   name: '',
   phone: '',
@@ -183,38 +185,115 @@ const shippingInfo = reactive({
   address: ''
 });
 
-// Tự động điền dữ liệu nếu khách đã đăng nhập
-onMounted(() => {
-  if (authStore.user) {
-    shippingInfo.name = authStore.user.username || authStore.user.TenKH || '';
-    shippingInfo.email = authStore.user.email || '';
-    // shippingInfo.phone và address sẽ fill nếu API auth trả về
+// Hàm định dạng tiền tệ
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+// Tính toán tự động dựa trên dữ liệu thật
+const subtotal = computed(() => {
+  return checkoutItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0);
+});
+const totalPrice = computed(() => Math.max(0, subtotal.value - discount.value));
+
+// ===============================================
+// HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
+// ===============================================
+onMounted(async () => {
+  const token = localStorage.getItem('token');
+  const userString = localStorage.getItem('user');
+
+  if (!token || !userString) {
+    toastStore.showToast("Vui lòng đăng nhập để đặt hàng!", "error");
+    router.push('/login');
+    return;
+  }
+
+  const userObj = JSON.parse(userString);
+  const maTK = userObj.MaTK || userObj.id;
+  const maKH = userObj.MaKH || userObj.id;
+
+  try {
+    // 1. GỌI API LẤY THÔNG TIN CÁ NHÂN (Để điền tự động vào Form)
+    const resInfo = await fetch(`http://localhost:3000/api/info_user/laythongtin/${maTK}`);
+    const dataInfo = await resInfo.json();
+    
+    if (resInfo.ok && dataInfo.data) {
+      const userData = dataInfo.data;
+      shippingInfo.name = userData.TenKH || userData.TenDN || '';
+      shippingInfo.email = userData.Email || userData.email || '';
+      shippingInfo.phone = userData.SDT || '';
+      shippingInfo.address = userData.diachi || userData.DiaChi || '';
+    }
+
+    // 2. GỌI API LẤY GIỎ HÀNG (Dùng lại hàm watch cart ở trang Giỏ Hàng)
+    const resCart = await fetch(`http://localhost:3000/api/add_cart/watch/${maKH}`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const dataCart = await resCart.json();
+
+    if (resCart.ok) {
+      checkoutItems.value = dataCart.data;
+      
+      // Nếu giỏ hàng rỗng, đá khách về trang Giỏ Hàng
+      if (checkoutItems.value.length === 0) {
+        toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
+        router.push('/cart');
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải dữ liệu Checkout:", error);
+    toastStore.showToast("Không thể tải thông tin đặt hàng, vui lòng thử lại!", "error");
   }
 });
 
-// Mock Dữ liệu đơn hàng (Truyền từ Giỏ hàng sang)
-const checkoutItems = ref([
-  { id: 1, name: 'Gundam Aerial - Full Mechanics 1/100', price: 1450000, qty: 1, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD36oVCAtOB1Zf5vujeklLZjTZdqnll_rL5pyZDwpxWBqcca_LTg9dt12UHWtU8TxDpSEW5w_SjGUe5rrcvBdG6lC_NKfJQaVCWV9UNJGfh3LONPLlxYPx4R6c5R2tosmbS8ybnn27aq6tfctliCyvS5qhN4aF-SHSOGoI6GPQX8nGoD6N1IpIJ2HDEQ1pckMswiMblYisG5iUnrBCQiIH3qjNLvaIpBV-YXzpzClOocZwsFlrYE-_kDrCeDoekGv-BGGrs9l8Gh9Jx' },
-  { id: 2, name: 'Rimuru Tempest - Ultimate Form', price: 4200000, qty: 1, image: 'https://ohgatcha.com/cdn/shop/products/that-time-i-got-reincarnated-as-a-slime-rimuru-tempest-ultimate-ver-1-7-scale-figure-shibuya-scramble-figure-23602494570673_1200x.jpg?v=1681034593' }
-]);
-
-const discount = ref(150000);
-const subtotal = computed(() => checkoutItems.value.reduce((sum, item) => sum + (item.price * item.qty), 0));
-const totalPrice = computed(() => Math.max(0, subtotal.value - discount.value));
-
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-
-// Xử lý Đặt hàng
+// ===============================================
+// XỬ LÝ ĐẶT HÀNG (Gọi API Tạo Đơn)
+// ===============================================
 const processCheckout = async () => {
+  // Kiểm tra sơ bộ Form
+  if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
+    toastStore.showToast("Vui lòng điền đầy đủ thông tin giao hàng!", "error");
+    return;
+  }
+
   isProcessing.value = true;
   
-  // Giả lập gọi API tạo đơn hàng mất 2 giây
-  setTimeout(() => {
+  const token = localStorage.getItem('token');
+  const userString = localStorage.getItem('user');
+  const maKH = JSON.parse(userString).MaKH || JSON.parse(userString).id;
+
+  try {
+    // Tạo gói dữ liệu đơn hàng (Bạn sẽ phải viết API hứng gói này bên Backend)
+    const payload = {
+      MaKH: maKH,
+      TenNguoiNhan: shippingInfo.name,
+      SDTNguoiNhan: shippingInfo.phone,
+      DiaChiGiao: shippingInfo.address,
+      HinhThucThanhToan: paymentMethod.value,
+      TongTien: totalPrice.value,
+      // Gửi kèm danh sách hàng để Backend trừ tồn kho và ghi vào ChiTietDonHang
+      ChiTiet: checkoutItems.value.map(item => ({
+        MaPhanLoai: item.MaPhanLoai,
+        SoLuong: item.SoLuong,
+        DonGia: item.DonGia
+      }))
+    };
+
+    // GIẢ LẬP GỌI API (Chỗ này bạn sẽ thay bằng link thật khi viết xong Backend)
+    // const res = await fetch('http://localhost:3000/api/donhang/taodon', { ... })
+    
+    setTimeout(() => {
+      isProcessing.value = false;
+      toastStore.showToast("🎉 Đặt hàng thành công!", "success");
+      // Chuyển tới trang Lịch sử đơn hàng
+      router.push('/orders'); 
+    }, 2000);
+
+  } catch (error) {
+    console.error("Lỗi đặt hàng:", error);
+    toastStore.showToast("Lỗi hệ thống khi đặt hàng!", "error");
     isProcessing.value = false;
-    toastStore.showToast("🎉 Đặt hàng thành công!", "success");
-    // Chuyển tới trang Lịch sử đơn hàng hoặc Success Page
-    router.push('/ordersuccess'); 
-  }, 2000);
+  }
 };
 </script>
 
