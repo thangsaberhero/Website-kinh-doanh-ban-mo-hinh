@@ -249,49 +249,78 @@ onMounted(async () => {
 // ===============================================
 // XỬ LÝ ĐẶT HÀNG (Gọi API Tạo Đơn)
 // ===============================================
+// ===============================================
+// XỬ LÝ ĐẶT HÀNG (Gọi API Xác Nhận Đơn Hàng)
+// ===============================================
 const processCheckout = async () => {
-  // Kiểm tra sơ bộ Form
+  // 1. KIỂM TRA BẢO VỆ VÒNG NGOÀI
   if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
     toastStore.showToast("Vui lòng điền đầy đủ thông tin giao hàng!", "error");
     return;
   }
 
+  if (checkoutItems.value.length === 0) {
+    toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
+    return;
+  }
+
   isProcessing.value = true;
   
+  // 2. LẤY THÔNG TIN XÁC THỰC
   const token = localStorage.getItem('token');
   const userString = localStorage.getItem('user');
+  
+  if (!token || !userString) {
+    toastStore.showToast("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!", "error");
+    router.push('/login');
+    return;
+  }
+
+  // Lấy đúng mã Khách Hàng (Tương thích cả 2 trường hợp id hoặc MaKH)
   const maKH = JSON.parse(userString).MaKH || JSON.parse(userString).id;
 
   try {
-    // Tạo gói dữ liệu đơn hàng (Bạn sẽ phải viết API hứng gói này bên Backend)
+    // 3. ĐÓNG GÓI DỮ LIỆU CỰC KỲ ĐƠN GIẢN
+    // Vì Backend của bạn chỉ yêu cầu MaKH (nhìn dòng: const { MaKH } = req.body;)
     const payload = {
-      MaKH: maKH,
+      MaKH: parseInt(maKH),
+      
+      // Bổ sung thêm các trường này vào Payload (Nếu Backend của bạn sau này cần lưu địa chỉ, SĐT)
+      // Hiện tại Backend của bạn chưa thấy có lệnh UPDATE thông tin giao hàng vào bảng DonHang
       TenNguoiNhan: shippingInfo.name,
       SDTNguoiNhan: shippingInfo.phone,
       DiaChiGiao: shippingInfo.address,
-      HinhThucThanhToan: paymentMethod.value,
-      TongTien: totalPrice.value,
-      // Gửi kèm danh sách hàng để Backend trừ tồn kho và ghi vào ChiTietDonHang
-      ChiTiet: checkoutItems.value.map(item => ({
-        MaPhanLoai: item.MaPhanLoai,
-        SoLuong: item.SoLuong,
-        DonGia: item.DonGia
-      }))
+      TongTien: totalPrice.value
     };
 
-    // GIẢ LẬP GỌI API (Chỗ này bạn sẽ thay bằng link thật khi viết xong Backend)
-    // const res = await fetch('http://localhost:3000/api/donhang/taodon', { ... })
+    console.log("Gói hàng gửi đi:", payload);
+
+    // 4. GỌI API ĐẾN BACKEND
+    const response = await fetch('http://localhost:3000/api/add_cart/xacnhan', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Có lỗi xảy ra khi tạo đơn hàng!");
+    }
+
+    // 5. XỬ LÝ KHI THÀNH CÔNG
+    toastStore.showToast("🎉 " + data.message, "success");
     
-    setTimeout(() => {
-      isProcessing.value = false;
-      toastStore.showToast("🎉 Đặt hàng thành công!", "success");
-      // Chuyển tới trang Lịch sử đơn hàng
-      router.push('/orders'); 
-    }, 2000);
+    // Chuyển hướng khách hàng về trang Lịch sử đơn hàng để xem lại
+    router.push('/orders'); 
 
   } catch (error) {
-    console.error("Lỗi đặt hàng:", error);
-    toastStore.showToast("Lỗi hệ thống khi đặt hàng!", "error");
+    console.error("Lỗi quá trình đặt hàng:", error);
+    toastStore.showToast(error.message, "error");
+  } finally {
     isProcessing.value = false;
   }
 };

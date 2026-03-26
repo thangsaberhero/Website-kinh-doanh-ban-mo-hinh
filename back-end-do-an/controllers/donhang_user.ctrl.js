@@ -151,9 +151,8 @@ const donhang_user = {
         const connection = await db.getConnection(); 
 
         try {
-            const { MaKH } = req.body;
-            
-            // Sửa lỗi chính tả onst -> const
+            const { MaKH, TongTien, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao } = req.body;
+           
             const sql_laymagiohang = 'SELECT MaGH FROM GioHang WHERE MaKH = ?';
             const [result_giohang] = await connection.query(sql_laymagiohang, [MaKH]);
 
@@ -173,9 +172,10 @@ const donhang_user = {
             // ================= BẮT ĐẦU TRANSACTION =================
             await connection.beginTransaction(); 
 
-            // 2. Tạo Đơn hàng mới (Giả sử bảng DonHang có cột MaKH, NgayDat, TrangThai)
-            const sql_tao_don = `INSERT INTO DonHang (MaKH, NgayDat, TrangThai) VALUES (?, NOW(), 'Chờ Duyệt')`;
-            const [tao_don] = await connection.query(sql_tao_don, [MaKH]);
+            // 2. Tạo Đơn hàng mới 
+            const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, NgayLapDon, TrangThaiDonHang, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao) 
+            VALUES (?, ?, NOW(), 'Chờ Duyệt', ?, ? ,?)`;
+            const [tao_don] = await connection.query(sql_tao_don, [MaKH, TongTien, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao]);
             
             // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động
             const maDH_moi = tao_don.insertId; 
@@ -184,7 +184,7 @@ const donhang_user = {
             // LƯU Ý: Sửa lại chữ MaPhanLoai hoặc MaMoHinh cho khớp với thiết kế CSDL của bạn nhé
             const sql_chuyen_hang = `
                 INSERT INTO ChiTietDonHang (MaDH, MaMoHinh, SoLuong)
-                SELECT ?, MaPhanLoai, SoLuong 
+                SELECT ?, MaMoHinh, SoLuong 
                 FROM ChiTietGioHang 
                 WHERE MaGH = ?
             `;
@@ -220,9 +220,17 @@ const donhang_user = {
             console.error("Lỗi khi xác nhận đơn hàng: ", error);
             res.status(500).json({ message: "Lỗi server khi thao tác đơn hàng!"});
         }
-    }
+    },
 
-    
+    // xem_don_hang: async(req, res) => {
+    //     try{
+    //         const maKH = req.params.MaKH;
+    //         const [thong_tin_gio_hang] = await db.query('Sele')
+    //     }
+    //     catch (error){
+
+    //     }
+    // }
     
 
 

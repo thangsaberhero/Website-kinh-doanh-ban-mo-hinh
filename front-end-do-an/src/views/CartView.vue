@@ -37,7 +37,7 @@
                   <div class="flex justify-between items-start">
                     <div>
                       <span class="text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-3 inline-block text-tertiary bg-tertiary/10 border border-tertiary/20">
-                        Phân loại: {{ item.ChiTietPhanLoai || 'Mặc định' }}
+                        Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}
                       </span>
                       
                       <h3 @click="goToProduct(item.MaMoHinh)" class="text-2xl font-headline font-bold text-white leading-tight cursor-pointer hover:text-primary transition-colors">
