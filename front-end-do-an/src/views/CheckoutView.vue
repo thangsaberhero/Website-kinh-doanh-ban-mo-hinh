@@ -151,13 +151,6 @@
         </aside>
       </form>
     </main>
-
-    <footer class="bg-surface-container-low mt-auto py-8 border-t border-outline-variant/15">
-      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="text-lg font-black text-primary font-headline tracking-tighter uppercase">FigureCollect</div>
-        <div class="text-[10px] font-bold tracking-widest text-outline uppercase">© 2026 FIGURECOLLECT. THE NEON VAULT PROTOCOL.</div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -315,7 +308,7 @@ const processCheckout = async () => {
     toastStore.showToast("🎉 " + data.message, "success");
     
     // Chuyển hướng khách hàng về trang Lịch sử đơn hàng để xem lại
-    router.push('/orders'); 
+    router.push('/ordersuccess'); 
 
   } catch (error) {
     console.error("Lỗi quá trình đặt hàng:", error);

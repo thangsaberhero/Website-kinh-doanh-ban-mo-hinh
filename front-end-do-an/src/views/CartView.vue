@@ -75,6 +75,16 @@
             </div>
           </TransitionGroup>
 
+          <div class = "mt-6 flex justify-end">
+            <button 
+              @click="clearCart" 
+              class="flex items-center gap-2 px-5 py-2.5 text-sm uppercase font-bold text-error hover:bg-error/20 rounded-xl transition-all active:scale-95"
+            >
+              <span class="material-symbols-outlined text-[20px]">delete_sweep</span>
+              Xóa tất cả
+            </button>
+          </div>
+          
         </div>
 
         <div class="lg:col-span-4">
@@ -150,65 +160,6 @@
       </section>
 
     </main>
-    <footer class="bg-surface-container-lowest border-t border-outline-variant/15 pt-20 pb-10">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          <div class="lg:col-span-1">
-            <a class="font-headline text-2xl font-bold tracking-tighter text-primary mb-6 block" href="#">FigureCollect</a>
-            <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
-              Điểm đến hàng đầu cho cộng đồng đam mê sưu tập mô hình tại Việt Nam. Chúng tôi mang đến những artifact giá trị nhất từ khắp nơi trên thế giới.
-            </p>
-            <div class="flex gap-3">
-              <a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant" href="#">
-                <span class="material-symbols-outlined text-xl">social_leaderboard</span>
-              </a>
-              <a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant" href="#">
-                <span class="material-symbols-outlined text-xl">camera</span>
-              </a>
-              <a class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant" href="#">
-                <span class="material-symbols-outlined text-xl">play_circle</span>
-              </a>
-            </div>
-          </div>
-          <div>
-            <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Hỗ trợ khách hàng</h4>
-            <ul class="space-y-4 text-on-surface-variant text-sm">
-              <li><a class="hover:text-primary transition-colors" href="#">Hướng dẫn đặt hàng</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Chính sách vận chuyển</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Chính sách đổi trả</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Tra cứu đơn hàng</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Về chúng tôi</h4>
-            <ul class="space-y-4 text-on-surface-variant text-sm">
-              <li><a class="hover:text-primary transition-colors" href="#">Về FigureCollect</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Chính sách bảo mật</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Điều khoản dịch vụ</a></li>
-              <li><a class="hover:text-primary transition-colors" href="#">Liên hệ</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Đăng ký nhận tin</h4>
-            <p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Nhận thông báo sớm nhất về các đợt Pre-order giới hạn.</p>
-            <div class="relative">
-              <input class="w-full bg-surface-container border border-outline-variant/20 rounded-lg py-3.5 pl-4 pr-12 text-sm text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="Email của bạn" type="email"/>
-              <button class="absolute right-1.5 top-1.5 bottom-1.5 bg-primary text-on-primary px-3 rounded flex items-center justify-center hover:brightness-110 transition-all">
-                <span class="material-symbols-outlined text-[18px]">send</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="border-t border-outline-variant/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-outline font-bold tracking-widest uppercase">
-          <div>© 2026 FigureCollect. All rights reserved.</div>
-          <div class="flex gap-6">
-            <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
-            <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
-            <a href="#" class="hover:text-primary transition-colors">Sitemap</a>
-          </div>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -284,6 +235,58 @@ const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.valu
 
 // Các hàm xử lý
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+const clearCart = async () => {
+  // 1. Hỏi lại cho chắc chắn, tránh khách bấm nhầm
+  if (!confirm("Bạn có chắc chắn muốn xóa toàn bộ sản phẩm khỏi giỏ hàng không?")) {
+    return;
+  }
+
+  // 2. Lấy thông tin user
+  const token = localStorage.getItem('token');
+  const userString = localStorage.getItem('user');
+  
+  if (!token || !userString) {
+    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+    return;
+  }
+  const maKH = JSON.parse(userString).MaKH;
+
+  // 3. Xóa trên giao diện trước cho mượt (lưu lại mảng cũ để phòng hờ)
+  const oldCart = [...cartItems.value];
+  cartItems.value = [];
+
+  // 4. Gọi API xuống Backend
+  try {
+    const payload = {
+      MaKH: parseInt(maKH)
+    };
+
+    const response = await fetch('http://localhost:3000/api/add_cart/deleteAll', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Lỗi xóa giỏ hàng từ Server");
+    }
+
+    toastStore.showToast("Đã làm sạch giỏ hàng!", "success");
+    
+  } catch (error) {
+    console.error("Lỗi xóa toàn bộ giỏ hàng:", error);
+    toastStore.showToast("Không thể xóa lúc này!", "error");
+    
+    // Phục hồi lại nếu API lỗi
+    cartItems.value = oldCart; 
+  }
+};
 
 const increaseQty = async (item) => {
   // 1. Lưu lại số lượng cũ phòng trường hợp API bị lỗi để còn phục hồi

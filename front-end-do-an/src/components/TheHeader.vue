@@ -6,18 +6,19 @@
         <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">FigureCollect</a>
         <div class="hidden md:flex items-center gap-8">
           <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/category')">Cửa hàng</a>
-          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Hàng mới về</a>
-          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Pre-order</a>
+          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Tin tức</a>
+          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Liên hệ</a>
         </div>
       </div>
 
       <div class="flex items-center gap-6">
         
-        <div class="hidden lg:flex items-center relative bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 focus-within:border-primary/50 transition-colors z-50">
+        <div class="w-96 hidden lg:flex items-center relative bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 focus-within:border-primary/50 transition-colors z-50">
           <span class="material-symbols-outlined text-outline text-xl mr-2">search</span>
           <input 
               v-model="searchQuery" 
               @input="handleSearch"
+              @keyup.enter="submitSearch"
               class="bg-transparent border-none focus:ring-0 text-sm w-64 pr-8 placeholder:text-outline text-on-surface" 
               placeholder="Tìm kiếm mô hình..." 
               type="text"
@@ -73,7 +74,7 @@
           
           <div v-if="authStore.user" class="flex items-center gap-3 ml-2 border-l border-outline-variant/30 pl-4 relative">
             <span class="text-sm font-bold text-primary hidden md:block">
-              Chào, {{ authStore.user.username || authStore.user.TenKH || 'Collector' }}!
+              Chào, {{ authStore.user.TenKH || authStore.user.username || 'Collector' }}!
             </span>
             
             <div @click="showUserMenu = !showUserMenu" class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-primary transition-all duration-300" :class="{'ring-2 ring-primary ring-offset-2 ring-offset-background': showUserMenu}">
@@ -120,7 +121,7 @@
           </div>
 
           <div v-else class="ml-2 border-l border-outline-variant/30 pl-4">
-            <button @click="router.push('/login')" class="px-5 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
+            <button @click="router.push({ path: '/login', query: { redirect: route.fullPath } })" class="px-5 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
               Đăng nhập
             </button>
           </div>
@@ -133,10 +134,11 @@
 
 <script setup>
 import { ref , computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth'; 
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 // Biến điều khiển ẩn/hiện User Menu Dropdown
@@ -208,6 +210,13 @@ const handleSearch = () => {
     }
   }, 500); 
 };
+
+const submitSearch = () => {
+  if(searchQuery.value.trim() !== ''){
+    router.push({ path: "/search", query: {q: searchQuery.value.trim() } });
+    searchQuery.value = '';
+  }
+}
 
 // Chuyển trang và xóa chữ ở tìm kiếm
 const goToProduct = (id) => {

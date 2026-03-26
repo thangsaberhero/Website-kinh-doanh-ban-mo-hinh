@@ -1,8 +1,18 @@
 <template>
-  <RouterView /> <TheToast />
+  <RouterView /> 
+  <TheToast />
+  
+  <template v-if="!route.meta.hideFooter">
+    <FooterMinimal v-if="route.meta.useMinimalFooter" />
+    <FooterFull v-else />
+  </template>
 </template>
 
 <script setup>
-import { RouterView } from 'vue-router';
+import { RouterView, useRoute } from 'vue-router';
 import TheToast from '@/components/TheToast.vue';
+import FooterFull from '@/components/FooterFull.vue';
+import FooterMinimal from '@/components/FooterMinimal.vue';
+
+const route = useRoute();
 </script>

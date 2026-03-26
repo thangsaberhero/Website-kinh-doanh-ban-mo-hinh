@@ -3,7 +3,7 @@ const db = require('../config/db');
 const product_view = {
     getAllProduct: async(req, res) => {
         try {
-            const sql = 'SELECT * FROM MoHinh ORDER BY MaMoHinh DESC';
+            const sql = 'SELECT MoHinh.*,TenHSX FROM MoHinh INNER JOIN HangSanXuat ON MoHinh.MaHSX = HangSanXuat.MaHSX ORDER BY MoHinh.MaMoHinh DESC';
             const [products] = await db.query(sql);
 
             res.status(200).json({
@@ -123,7 +123,7 @@ const product_view = {
     getProductsByVariant: async(req, res) => {
         try {
             const maDM = req.params.maDM;
-            const sql = 'SELECT * FROM MoHinh where MaDM = ? ORDER BY MaMoHinh DESC';
+            const sql = 'SELECT MoHinh.*, TenHSX FROM MoHinh INNER JOIN HangSanXuat ON MoHinh.MaHSX = HangSanXuat.MaHSX where MaDM = ? ORDER BY MaMoHinh DESC';
             const [products] = await db.query(sql, [maDM]);
 
             res.status(200).json({
@@ -142,7 +142,10 @@ const product_view = {
     getProductsByDetailVariant: async(req, res) => {
         try {
             const maCTDM = req.params.maCTDM;
-            const sql = 'SELECT MoHinh.* FROM MoHinh inner join ChiTietDanhMuc on MoHinh.MaChiTietDM = ChiTietDanhMuc.MaChiTietDM where MoHinh.MaChiTietDM = ? ORDER BY MaMoHinh DESC';
+            const sql = `SELECT MoHinh.*, TenHSX FROM MoHinh 
+            inner join ChiTietDanhMuc on MoHinh.MaChiTietDM = ChiTietDanhMuc.MaChiTietDM 
+            INNER JOIN HangSanXuat ON MoHinh.MaHSX = HangSanXuat.MaHSX
+            where MoHinh.MaChiTietDM = ? ORDER BY MaMoHinh DESC`;
             const [products] = await db.query(sql, [maCTDM]);
 
             res.status(200).json({
@@ -158,7 +161,7 @@ const product_view = {
         }
     },
     // Lấy thông tin các sản phẩm theo tìm kiếm
-    getProductsBySearch_trenthanhtimkiem : async (req, res) => {
+    getProductsBySearch: async (req, res) => {
         try {
             const keyword = req.query.keyword;
             
@@ -188,6 +191,8 @@ const product_view = {
             res.status(500).json({ message: "Lỗi server khi tìm kiếm" });
         }
     }
+    
+
 }
 module.exports = product_view;
 
