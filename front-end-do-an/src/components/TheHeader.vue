@@ -6,8 +6,8 @@
         <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">FigureCollect</a>
         <div class="hidden md:flex items-center gap-8">
           <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/category')">Cửa hàng</a>
-          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Tin tức</a>
-          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer">Liên hệ</a>
+          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/news')">Tin tức</a>
+          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/contact')">Liên hệ</a>
         </div>
       </div>
 
@@ -163,7 +163,7 @@ const handleLogout = () => {
   } else {
     localStorage.removeItem('token'); 
   }
-  router.push('/login');
+  router.push(redirectPath);
 };
 
 // ---- LOGIC TÌM KIẾM ----

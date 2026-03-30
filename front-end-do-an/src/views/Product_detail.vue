@@ -133,8 +133,6 @@
         <span class="font-headline text-outline tracking-widest uppercase">Đang tải dữ liệu...</span>
       </div>
     </div>
-
-
   </div>
 </template>
 

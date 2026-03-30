@@ -14,6 +14,8 @@ import OrderHistoryView from '../views/OrderHistoryView.vue';
 import OrderDetailView from '../views/OrderDetailView.vue';
 import WishlistView from '../views/WishlistView.vue';
 import SearchView from '../views/SearchView.vue';
+import NewsView from '../views/NewsView.vue';
+import ContactView from '../views/ContactView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,13 +27,13 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
-      meta: { hideFooter: true }
+      meta: { hideFooter: true, hidePhone: true }
     },
     {
       path: '/register',
       name: 'register',
       component: RegisterView,
-      meta: { hideFooter: true }
+      meta: { hideFooter: true, hidePhone: true }
     },
     { path: '/product/:id', 
       name: 'product-detail', component: 
@@ -85,6 +87,16 @@ const router = createRouter({
       path: '/search',
       name: 'Search',
       component: SearchView
+    },
+    {
+      path: '/news',
+      name: 'News',
+      component: NewsView
+    },
+    {
+      path: '/contact',
+      name: 'Contact',
+      component: ContactView
     }
   ]
 });
