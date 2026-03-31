@@ -9,7 +9,7 @@
         <div class="px-6 flex flex-col items-center gap-3 mb-8">
           <div class="relative group cursor-pointer">
             <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-              <img class="w-full h-full rounded-full object-cover" alt="User Profile" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
+              <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="avatarPreview"/>
             </div>
             <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
               <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
@@ -60,7 +60,7 @@
 
         <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-4 mb-8">
           <button 
-            v-for="tab in ['Tất cả', 'Chờ xử lý', 'Đang vận chuyển', 'Đã giao', 'Đã hủy']" 
+            v-for="tab in ['Tất cả', 'Chờ duyệt', 'Chờ xử lý', 'Đang vận chuyển', 'Đã giao', 'Đã hủy']" 
             :key="tab"
             @click="activeTab = tab"
             :class="['px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300', activeTab === tab ? 'bg-primary text-on-primary-fixed shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container border border-outline-variant/20 text-outline hover:text-white hover:border-outline-variant']"
@@ -73,46 +73,54 @@
           <TransitionGroup name="list">
             <div 
               v-for="order in filteredOrders" 
-              :key="order.id"
+              :key="order.MaDH"
               class="group bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/20 rounded-2xl p-6 transition-all duration-300 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden"
             >
               <div class="absolute top-0 right-0 w-32 h-32 bg-primary/0 blur-3xl -z-10 group-hover:bg-primary/10 transition-colors"></div>
               
               <div class="flex items-center gap-6">
                 <div class="w-20 h-20 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex-shrink-0 p-2 overflow-hidden relative">
-                  <div v-if="order.totalItems > 1" class="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-sm z-10">
-                    <span class="font-bold text-white text-sm">+{{ order.totalItems - 1 }}</span>
+                  <div v-if="order.TongSoSanPham > 1" class="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-sm z-10">
+                    <span class="font-bold text-white text-sm">+{{ order.TongSoSanPham - 1 }}</span>
                   </div>
-                  <img :src="order.thumbnail" alt="Product" class="w-full h-full object-contain"/>
+                  <img 
+                      v-if="order.Thumbnail" 
+                      :src="'/Images_product/' + order.Thumbnail" 
+                      alt="Product" 
+                      class="w-full h-full object-contain"
+                  />
+                  <div v-else class="w-full h-full flex items-center justify-center text-outline/50">
+                      <span class="material-symbols-outlined text-4xl">inventory_2</span>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 flex-grow">
                   <div class="flex flex-col gap-1">
                     <span class="text-[10px] font-bold text-primary tracking-widest uppercase">Mã đơn</span>
-                    <span class="text-lg font-headline font-bold text-white tracking-tight">{{ order.id }}</span>
+                    <span class="text-lg font-headline font-bold text-white tracking-tight">{{ order.MaDH }}</span>
                   </div>
                   
                   <div class="flex flex-col gap-1">
                     <span class="text-[10px] font-bold text-outline uppercase tracking-widest">Ngày đặt</span>
-                    <span class="text-sm font-medium text-on-surface-variant">{{ order.date }}</span>
+                    <span class="text-sm font-medium text-on-surface-variant">{{ formatDate(order.NgayLapDon) }}</span>
                   </div>
                   
                   <div class="flex flex-col gap-1">
                     <span class="text-[10px] font-bold text-outline uppercase tracking-widest">Tổng tiền</span>
-                    <span class="text-base font-bold text-white">{{ formatPrice(order.total) }}</span>
+                    <span class="text-base font-bold text-white">{{ formatPrice(order.TongTien) }}</span>
                   </div>
                   
                   <div class="flex flex-col gap-1 items-start">
                     <span class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Trạng thái</span>
-                    <span :class="`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(order.status)}`">
-                      {{ order.status }}
+                    <span :class="`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(order.TrangThaiDonHang)}`">
+                      {{ order.TrangThaiDonHang }}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div class="flex lg:flex-col gap-3 shrink-0 border-t lg:border-t-0 lg:border-l border-outline-variant/20 pt-4 lg:pt-0 lg:pl-6">
-                <button @click="router.push(`/orders/${order.id.replace('#', '')}`)" class="flex-1 lg:w-36 px-4 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all text-center shadow-lg shadow-primary/20">
+                <button @click="router.push(`/orders/${order.MaDH}`)" class="flex-1 lg:w-36 px-4 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all text-center shadow-lg shadow-primary/20">
                   Xem chi tiết
                 </button>
                 <button v-if="order.status === 'Đã giao'" class="flex-1 lg:w-36 px-4 py-2 border border-outline-variant text-outline rounded-lg font-bold text-xs uppercase tracking-widest hover:text-white hover:border-white transition-all text-center">
@@ -145,15 +153,13 @@ const authStore = useAuthStore();
 
 const activeTab = ref('Tất cả');
 
+const userString = localStorage.getItem('user');
+const currentUser = userString ? JSON.parse(userString) : null;
 // Dữ liệu giả lập Đơn hàng
-const orders = ref([
-  { id: '#FC-8899', date: '14 Tháng 10, 2023', total: 12500000, status: 'Đang vận chuyển', totalItems: 2, thumbnail: 'https://images.unsplash.com/photo-1618331835717-801e976710b2?auto=format&fit=crop&q=80' },
-  { id: '#FC-8742', date: '02 Tháng 10, 2023', total: 8200000, status: 'Đã giao', totalItems: 1, thumbnail: 'https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?auto=format&fit=crop&q=80' },
-  { id: '#FC-8611', date: '28 Tháng 09, 2023', total: 24000000, status: 'Chờ xử lý', totalItems: 3, thumbnail: 'https://images.unsplash.com/photo-1599409636295-e27e852d7e90?auto=format&fit=crop&q=80' },
-  { id: '#FC-8520', date: '15 Tháng 09, 2023', total: 5400000, status: 'Đã hủy', totalItems: 1, thumbnail: 'https://images.unsplash.com/photo-1615529182904-14819c35db37?auto=format&fit=crop&q=80' }
-]);
+const orders = ref([]);
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
 
 // Hàm chọn màu Badge dựa trên trạng thái
 const getStatusColor = (status) => {
@@ -161,6 +167,7 @@ const getStatusColor = (status) => {
     case 'Đang vận chuyển': return 'bg-tertiary/10 text-tertiary border-tertiary/20';
     case 'Đã giao': return 'bg-green-500/10 text-green-400 border-green-500/20';
     case 'Chờ xử lý': return 'bg-secondary/10 text-secondary border-secondary/20';
+    case 'Chờ duyệt': return 'bg-secondary/10 text-secondary border-secondary/20';  
     case 'Đã hủy': return 'bg-error/10 text-error border-error/20';
     default: return 'bg-outline/10 text-outline border-outline/20';
   }
@@ -169,14 +176,84 @@ const getStatusColor = (status) => {
 // Lọc đơn hàng theo Tab
 const filteredOrders = computed(() => {
   if (activeTab.value === 'Tất cả') return orders.value;
-  return orders.value.filter(order => order.status === activeTab.value);
+  return orders.value.filter(order => order.TrangThaiDonHang === activeTab.value);
 });
 
-onMounted(() => {
-  if (!authStore.user && !localStorage.getItem('token')) {
+const fetchOrderdata = async () => {
+  const token = localStorage.getItem('token');
+  const userString = localStorage.getItem('user');
+  if (!token || !userString) {
     router.push('/login');
+    return;
   }
+  const maKH = JSON.parse(userString).MaKH;
+  try {
+    const response = await fetch(`http://localhost:3000/api/add_cart/watch_order/${maKH}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      orders.value = result.data; 
+    } else {
+      console.error(result.message);
+      orders.value = [];
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải giỏ hàng:", error);
+  }
+}
+
+const avatarPreview = ref(
+  currentUser && currentUser.AnhDaiDien 
+    ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` 
+    : defaultAvatar
+);
+
+const fetchUserData = async () => {
+  if (!currentUser) return;
+  
+  try {
+    // Gọi đường link API lấy thông tin bạn vừa viết (truyền MaTK vào đuôi)
+    const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
+    const dataJSON = await res.json();
+    
+    if (res.ok && dataJSON.data) {
+      const userData = dataJSON.data;
+      if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
+        avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi kéo thông tin người dùng:", error);
+  }
+};
+
+onMounted(() => {
+  fetchOrderdata();
+  fetchUserData();
 });
+
+// Hàm chuyển đổi ngày tháng từ MySQL sang định dạng thân thiện
+const formatDate = (dateString) => {
+  if (!dateString) return 'Đang cập nhật';
+  
+  const date = new Date(dateString);
+  
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  // Bạn có thể tùy chỉnh hiển thị ở đây. Hiện tại đang là: 26/03/2026 - 15:37
+  return `${day}/${month}/${year} - ${hours}:${minutes}`;
+};
 
 const handleLogout = () => {
   if (authStore.logout) authStore.logout();

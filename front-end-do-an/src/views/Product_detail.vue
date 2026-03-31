@@ -46,7 +46,9 @@
             </div>
             <h1 class="font-headline text-4xl lg:text-5xl font-bold tracking-tight mb-4 leading-[1.1]">{{ product.TenMH }}</h1>
             <div class="flex items-baseline gap-4 mt-6">
-              <span class="font-headline text-3xl font-bold text-on-surface">{{ formatPrice(product.DonGia) }}</span>
+              <span class="font-headline text-3xl font-bold text-on-surface">
+                {{ formatPrice(selectedVariant ? selectedVariant.DonGia : product.DonGia) }}
+              </span>
             </div>
           </header>
 
@@ -66,7 +68,9 @@
               </div>
               <div class="bg-surface-container-low p-4">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Kho hàng</span>
-                <span class="text-on-surface font-semibold">{{ product.SoLuong }} hộp</span>
+                <span class="text-on-surface font-semibold">
+                  {{ selectedVariant ? selectedVariant.SoLuong : product.SoLuong }} hộp
+                </span>
               </div>
               
             </div>
@@ -85,7 +89,7 @@
                       : 'border-outline-variant/30 text-outline hover:border-primary/50'
                   ]"
                 >
-                  {{ variant.TenPhanLoai }}
+                  {{ variant.ChiTietPhanLoai === 'NONE' ? 'Bình thường' : variant.ChiTietPhanLoai}}
                 </button>
               </div>
             </div>
@@ -160,6 +164,7 @@ const formatPrice = (price) => {
 };
 
 onMounted(async () => {
+  window.scrollTo(0, 0);
   const spId = route.params.id; 
   try {
     const res = await fetch(`http://localhost:3000/api/products/${spId}`);

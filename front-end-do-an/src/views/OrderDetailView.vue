@@ -15,7 +15,7 @@
         <div>
           <span class="font-headline text-primary tracking-widest text-xs uppercase font-bold mb-2 block">Chi Tiết Giao Dịch</span>
           <h1 class="text-5xl md:text-6xl font-headline font-black tracking-tighter text-white">
-            {{ order.id }}
+            {{ "Mã đơn: " + route.params.id }}
           </h1>
         </div>
         <div class="flex flex-wrap gap-4">
@@ -73,22 +73,21 @@
               Danh Sách Sản Phẩm
             </h3>
             
-            <div v-for="item in order.items" :key="item.id" @click="router.push(`/product/${item.id}`)" class="glass-panel group cursor-pointer overflow-hidden flex flex-col md:flex-row items-center border border-outline-variant/10 rounded-xl transition-all hover:bg-surface-container-high/60 hover:border-primary/30">
+            <div v-for="item in orderItems" :key="item.MaMoHinh" @click="router.push(`/product/${item.MaMoHinh}`)" class="glass-panel group cursor-pointer overflow-hidden flex flex-col md:flex-row items-center border border-outline-variant/10 rounded-xl transition-all hover:bg-surface-container-high/60 hover:border-primary/30">
               <div class="w-full md:w-48 h-48 bg-surface-container-lowest overflow-hidden flex items-center justify-center p-4">
-                <img :src="item.image" :alt="item.name" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"/>
+                <img :src="/Images_product/+item.AnhDaiDien" :alt="item.name" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"/>
               </div>
               <div class="flex-1 p-6 flex flex-col md:flex-row justify-between w-full">
                 <div class="space-y-2">
                   <div class="flex gap-2 mb-1">
-                    <span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/20 text-[10px] font-black uppercase rounded-full">{{ item.type }}</span>
-                    <span class="px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 text-[10px] font-black uppercase rounded-full">Scale {{ item.scale }}</span>
+                    <span class="px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 text-[10px] font-black uppercase rounded-full">{{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</span>
                   </div>
-                  <h4 class="font-headline text-xl font-bold text-white group-hover:text-primary transition-colors">{{ item.name }}</h4>
-                  <p class="text-sm text-outline font-medium tracking-tight">Mã định danh: {{ item.sku }}</p>
+                  <h4 class="font-headline text-xl font-bold text-white group-hover:text-primary transition-colors">{{ item.TenMH }}</h4>
+                  <p class="text-sm text-outline font-medium tracking-tight">Mã định danh: {{ item.MaPhanLoai }}</p>
                 </div>
                 <div class="mt-4 md:mt-0 md:text-right flex flex-col justify-between">
-                  <span class="text-xs text-outline font-bold uppercase tracking-widest">Số lượng: 0{{ item.qty }}</span>
-                  <span class="text-2xl font-headline font-black text-primary">{{ formatPrice(item.price) }}</span>
+                  <span class="text-xs text-outline font-bold uppercase tracking-widest">Số lượng: 0{{ item.SoLuong }}</span>
+                  <span class="text-2xl font-headline font-black text-primary">{{ formatPrice(item.DonGia) }}</span>
                 </div>
               </div>
             </div>
@@ -111,15 +110,15 @@
             <div class="space-y-4">
               <div>
                 <label class="text-[10px] text-outline font-black uppercase tracking-widest">Họ và tên</label>
-                <p class="font-bold text-white mt-1">{{ order.shipping.name }}</p>
+                <p class="font-bold text-white mt-1">{{ orderInfo.TenNguoiNhan }}</p>
               </div>
               <div>
                 <label class="text-[10px] text-outline font-black uppercase tracking-widest">Số điện thoại</label>
-                <p class="font-bold text-white mt-1">{{ order.shipping.phone }}</p>
+                <p class="font-bold text-white mt-1">{{ orderInfo.SDTNguoiNhan }}</p>
               </div>
               <div>
                 <label class="text-[10px] text-outline font-black uppercase tracking-widest">Địa chỉ chi tiết</label>
-                <p class="text-sm text-on-surface-variant leading-relaxed mt-1">{{ order.shipping.address }}</p>
+                <p class="text-sm text-on-surface-variant leading-relaxed mt-1">{{ orderInfo.DiaChiGiao }}</p>
               </div>
             </div>
           </section>
@@ -133,7 +132,7 @@
             <div class="space-y-4 mb-8">
               <div class="flex justify-between items-center text-sm">
                 <span class="text-outline">Tạm tính</span>
-                <span class="font-bold text-white">{{ formatPrice(order.payment.subtotal) }}</span>
+                <span class="font-bold text-white">{{ formatPrice(orderInfo.TongTien) }}</span>
               </div>
               <div class="flex justify-between items-center text-sm">
                 <span class="text-outline">Phí vận chuyển</span>
@@ -146,7 +145,7 @@
               
               <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end">
                 <span class="font-headline font-bold text-white uppercase tracking-widest text-xs">Tổng cộng</span>
-                <span class="text-3xl font-headline font-black text-primary">{{ formatPrice(order.payment.total) }}</span>
+                <span class="text-3xl font-headline font-black text-primary">{{ formatPrice(orderInfo.TongTien) }}</span>
               </div>
             </div>
             
@@ -168,38 +167,18 @@
 import TheHeader from '@/components/TheHeader.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
 
 const router = useRouter();
 const route = useRoute();
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-// Dữ liệu giả lập 1 Đơn hàng chi tiết
-const order = ref({
-  id: '#FC-8899',
-  currentStepIndex: 2, // 0: Xác nhận, 1: Đóng gói, 2: Vận chuyển, 3: Hoàn tất
-  items: [
-    {
-      id: 1,
-      name: 'MGEX 1/100 Strike Freedom Gundam',
-      sku: 'UC-77291-SF',
-      type: 'Limited Edition',
-      scale: '1:100',
-      qty: 1,
-      price: 12500000,
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCWMkCcMbEOyT1f10B4_0Xd3StB_qwSzvJCk8QjXWqRnJ7oyyNgoVyGxPMCj5a7KNxgoMdKRAc59UPlIe9d_6QFOnFlNUzOavKjlBklZWkme7S_w1o-2QEGt6mcy9lsF6vvQlpYSQKZ3fuJ0HD33e80zQsUpGeLj4fsyuuKzSXQa6oPRZ8mSDjqyLVwlE8LNmVSazlN6SoDMQojjFSXweeo8PJi4jSkA8nfhkH8H4k9t7E5thW4tOrLQexqggReSrosOlaTsekuNO5d'
-    }
-  ],
-  shipping: {
-    name: 'Vũ Hồng Phong',
-    phone: '(+84) 987 654 321',
-    address: 'Phường Ngô Quyền, TP Hải Phòng'
-  },
-  payment: {
-    subtotal: 12500000,
-    total: 12500000
-  }
-});
+const orderItems = ref([]); 
+const orderInfo = ref({});
+const order = ref([]);
 
 // Logic Lộ trình động
 const timelineDef = [
@@ -224,8 +203,47 @@ const progressWidth = computed(() => {
   return `${(current / stepCount) * 100}%`;
 });
 
+const subtotal = computed(() => {
+  return orderItems.value.reduce((sum, item) => sum + item.ThanhTien, 0);
+});
+
+const fetchOrderdata = async () => {
+  const token = localStorage.getItem('token');
+  const userString = localStorage.getItem('user');
+  if (!token || !userString) {
+    router.push('/login');
+    return;
+  }
+  const maKH = JSON.parse(userString).MaKH;
+  const maDH = route.params.id;
+  try {
+    const response = await fetch(`http://localhost:3000/api/add_cart/watch_detail_order/${maKH}/${maDH}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      orderInfo.value = result.data.ThongTinGiaoHang; 
+      orderItems.value = result.data.DanhSachHang;
+    } else {
+      console.error(result.message);
+      order.value = [];
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải thông tin đơn hàng:", error);
+  }
+}
+
 onMounted(() => {
-  // Thực tế ở đây bạn sẽ gọi: fetch(`/api/orders/${route.params.id}`)
+  fetchOrderdata();
+  if (!authStore.user) {
+    const userString = localStorage.getItem('user');
+    if (userString) authStore.user = JSON.parse(userString);
+  }
   window.scrollTo(0, 0); // Đảm bảo luôn cuộn lên top khi vào trang
 });
 </script>

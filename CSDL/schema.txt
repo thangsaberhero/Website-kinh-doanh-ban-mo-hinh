@@ -93,6 +93,22 @@ CREATE TABLE Phanloai (
     FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
 );
 
+-- Bảng sản phẩm yêu thích
+CREATE TABLE DanhMucYeuThich (
+	MaYeuThich INT PRIMARY KEY AUTO_INCREMENT,
+	MaKH INT NOT NULL,
+	FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+-- Bảng chi tiết sản phẩm yêu thích
+CREATE TABLE ChiTietYeuThich (
+	MaYeuThich INT NOT NULL,
+	MaMoHinh INT NOT NULL,
+	FOREIGN KEY (MaYeuThich) REFERENCES DanhMucYeuThich(MaYeuThich),
+	FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai),
+	PRIMARY KEY (MaYeuThich, MaMoHinh)
+);
+
 -- 9. Bảng Ảnh mô hình
 CREATE TABLE AnhMoHinh (
     MaAnh INT PRIMARY KEY AUTO_INCREMENT,
@@ -173,6 +189,22 @@ CREATE TABLE ChiTietDonHang (
     PRIMARY KEY (MaDH, MaMoHinh),
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
     FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+);
+
+-- Bảng trạng thái đơn hàng 
+CREATE TABLE TrangThai (
+	MaTrangThai INT PRIMARY KEY AUTO_INCREMENT,
+	TenTrangThai VARCHAR(100) NOT NULL
+);
+		
+-- Bảng chi tiết trạng thái đơn hàng 
+CREATE TABLE ChiTietTrangThai (
+	MaDH INT NOT NULL,
+	MaTrangThai INT NOT NULL,
+	Thoigian DATETIME Default NULL,
+	FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
+	FOREIGN KEY (MaTrangThai) REFERENCES TrangThai(MaTrangThai),
+	PRIMARY KEY (MaDH, MaTrangThai)
 );
 
 -- 17. Bảng Phương thức thanh toán

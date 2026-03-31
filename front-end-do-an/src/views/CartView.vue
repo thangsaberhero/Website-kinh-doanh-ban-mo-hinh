@@ -189,8 +189,6 @@ const fetchCartData = async () => {
   const maKH = JSON.parse(userString).MaKH;
 
   try {
-    // Gọi API bạn đã viết (Nhớ kiểm tra lại đường link có đúng tuyến đường bạn cấu hình chưa)
-    // Ví dụ: GET http://localhost:3000/api/add_cart/watch/:maKH
     const response = await fetch(`http://localhost:3000/api/add_cart/watch/${maKH}`, {
       method: 'GET',
       headers: {
@@ -422,9 +420,6 @@ const removeItem = async (maPL) => {
     return;
   }
   const maKH = JSON.parse(userString).MaKH;
-
-  // Xóa trên giao diện TRƯỚC cho mượt (tuỳ chọn, nhưng rất khuyến khích)
-  // Lưu lại mảng cũ phòng khi Backend lỗi thì phục hồi lại
   const oldCart = [...cartItems.value];
   
   // Lọc bỏ món hàng có Mã Phân Loại trùng với mã vừa bấm xóa

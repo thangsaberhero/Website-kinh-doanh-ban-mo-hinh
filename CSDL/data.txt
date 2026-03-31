@@ -1,11 +1,6 @@
 -- THÊM DỮ LIỆU MẪU --
 INSERT INTO Quyen (TenQuyen) VALUES ('Quản lý'), ('Nhân viên bán hàng'), ('Khách hàng');
 
-INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES 
-('admin', '123456', 'thang.admin@gmail.com', 1),
-('phong', '123456', 'phong.nv@gmail.com', 2),
-('toan', '123456', 'toan.nv@gmail.com', 2);
-
 INSERT INTO HangSanXuat (TenHSX) VALUES
 ('GoodSmileCompany'), ('Gift+'), ('Furyu'), ('SEGA'), ('BANDAI'), ('Max Factory'), ('Hobby stock');
 
@@ -36,3 +31,10 @@ INSERT INTO AnhMoHinh(LinkAnh, MaMoHinh) VALUES
 ('3_1.jpeg',3), ('3_2.jpeg',3), ('3_3.jpeg',3), ('3_4.jpeg',3), ('3_5.jpeg',3), ('3_6.jpeg',3),
 ('4_1.jpeg',4), ('4_2.jpeg',4), ('4_3.jpeg',4), ('4_4.jpeg',4), ('4_5.jpeg',4), ('4_6.jpeg',4), ('4_7.jpeg',4),
 ('5_1.jpeg',5), ('5_2.jpeg',5), ('5_3.jpeg',5), ('5_4.jpeg',5), ('5_5.jpeg',5), ('5_6.jpeg',5);
+
+INSERT INTO TrangThai (TenTrangThai) VALUES 
+('Chờ Duyệt'),
+('Chờ xử lý'),
+('Đang vận chuyển'),
+('Đã giao'),
+('Đã hủy');

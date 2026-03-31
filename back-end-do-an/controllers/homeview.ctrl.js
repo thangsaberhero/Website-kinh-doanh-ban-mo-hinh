@@ -3,7 +3,15 @@ const db = require('../config/db');
 const product_view = {
     getAllProduct: async(req, res) => {
         try {
-            const sql = 'SELECT MoHinh.*,TenHSX FROM MoHinh INNER JOIN HangSanXuat ON MoHinh.MaHSX = HangSanXuat.MaHSX ORDER BY MoHinh.MaMoHinh DESC';
+            const sql = `SELECT mh.*,TenHSX ,
+            (
+                SELECT COALESCE(SUM(SoLuong), 0) 
+                FROM PhanLoai 
+                WHERE MaMoHinh = mh.MaMoHinh
+            ) AS SoLuong
+            FROM MoHinh mh
+            INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
+            ORDER BY mh.MaMoHinh DESC`;
             const [products] = await db.query(sql);
 
             res.status(200).json({
@@ -27,7 +35,12 @@ const product_view = {
                 SELECT 
                     mh.*, 
                     hsx.TenHSX, 
-                    GROUP_CONCAT(anh.LinkAnh) AS DanhSachAnh
+                    GROUP_CONCAT(anh.LinkAnh) AS DanhSachAnh,
+                    (
+                        SELECT COALESCE(SUM(SoLuong), 0) 
+                        FROM PhanLoai 
+                        WHERE MaMoHinh = mh.MaMoHinh
+                    ) AS SoLuong
                 FROM MoHinh mh
                 LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
                 LEFT JOIN AnhMoHinh anh ON mh.MaMoHinh = anh.MaMoHinh
@@ -191,6 +204,7 @@ const product_view = {
             res.status(500).json({ message: "Lỗi server khi tìm kiếm" });
         }
     }
+    
     
 
 }

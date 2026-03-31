@@ -53,10 +53,10 @@
               <span>Mức giá tối đa</span>
             </div>
             <div class="space-y-4">
-              <input v-model.number="maxPrice" min="0" max="5000000" step="500000" class="w-full h-1 bg-surface-container-highest accent-primary rounded-lg appearance-none cursor-pointer" type="range"/>
+              <input v-model.number="maxPrice" min="0" max="10000000" step="500000" class="w-full h-1 bg-surface-container-highest accent-primary rounded-lg appearance-none cursor-pointer" type="range"/>
               <div class="flex justify-between text-[10px] font-mono text-gray-400 font-bold">
                 <span>0 VND</span>
-                <span>20M VND</span>
+                <span>10M VND</span>
               </div>
             </div>
           </div>
@@ -293,6 +293,7 @@ watch(() => route.params.id, (newId) => {
 });
 
 const filteredProducts = computed(() => {
+  window.scroll(0,0)
   let result = productList.value;
   if(searchQuery.value){
     result = result.filter(sp => 
@@ -314,6 +315,7 @@ const addToCart = () => {
 };
 
 onMounted(() => {
+  window.scroll(0,0)
   fetchCategories();
   fetchProducts(categoryId.value);
 });

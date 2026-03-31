@@ -216,6 +216,7 @@ const fetchUserData = async () => {
 // CHẠY NGAY KHI VỪA MỞ TRANG PROFILE LÊN
 // ==========================================
 onMounted(() => {
+  window.scroll(0,0);
   if (!currentUser && !localStorage.getItem('token')) {
     router.push('/login');
   } else {

@@ -180,6 +180,9 @@ const donhang_user = {
             // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động
             const maDH_moi = tao_don.insertId; 
 
+            // Thêm trạng thái "chờ duyệt cho đơn hàng"
+            await connection.query(`Insert into ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) Values (?, 1, NOW())`, [maDH_moi]);
+
             // 3. COPY hàng từ Giỏ sang Đơn (Dùng chiêu INSERT INTO ... SELECT siêu nhanh của SQL)
             // LƯU Ý: Sửa lại chữ MaPhanLoai hoặc MaMoHinh cho khớp với thiết kế CSDL của bạn nhé
             const sql_chuyen_hang = `
@@ -222,18 +225,87 @@ const donhang_user = {
         }
     },
 
-    // xem_don_hang: async(req, res) => {
-    //     try{
-    //         const maKH = req.params.MaKH;
-    //         const [thong_tin_gio_hang] = await db.query('Sele')
-    //     }
-    //     catch (error){
-
-    //     }
-    // }
+    xem_don_hang: async(req, res) => {
+        try{
+            const maKH = req.params.MaKH;
+            const [thong_tin_gio_hang] = await db.query(`Select DonHang.*,
+                COALESCE(COUNT(ct.MaMoHinh), 0) AS TongSoSanPham,
+                (SELECT mh.AnhDaiDien 
+                        FROM ChiTietDonHang ctdh 
+                        Join Phanloai pl on pl.MaPhanLoai = ctdh.MaMoHinh
+                        JOIN MoHinh mh ON mh.MaMoHinh = pl.MaMoHinh
+                        WHERE ctdh.MaDH = DonHang.MaDH 
+                        LIMIT 1) as Thumbnail,
+                (SELECT tt.TenTrangThai
+                        FROM ChiTietTrangThai cttt 
+                        JOIN TrangThai tt ON tt.MaTrangThai = cttt.MaTrangThai
+                        WHERE cttt.MaDH = DonHang.MaDH 
+                        Order by cttt.MaTrangThai Desc
+                        LIMIT 1) as TrangThai
+                    
+                from DonHang left join ChiTietDonHang ct on DonHang.MaDH = ct.MaDH
+                where MaKH = ?
+                GROUP BY DonHang.MaDH
+                ORDER BY DonHang.NgayLapDon DESC`,[maKH]);
+            res.status(200).json({
+                message: "Lấy danh sách đơn hàng thành công",
+                data: thong_tin_gio_hang
+            });
+        }
+        catch (error){
+            console.error("Lỗi khi lấy thông tin danh sách đơn hàng: ", error);
+            res.status(500).json({
+                message: "Lỗi server khi lấy thông tin danh sách đơn hàng!"
+            });
+        }
+    },
     
+    xem_hang_trong_don_hang: async(req, res) =>{
+        try {
+            const MaKH = req.params.MaKH;
+            const MaDH = req.params.MaDH;
+            const sql_donhang = `
+                SELECT TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien
+                FROM DonHang WHERE MaDH = ? AND MaKH = ?
+            `;
+            const [donhang_info] = await db.query(sql_donhang, [MaDH, MaKH]);
 
+            if (donhang_info.length === 0) {
+                return res.status(404).json({ message: "Không tìm thấy đơn hàng!"});
+            }
 
+            const sql = `SELECT 
+            mh.MaMoHinh,
+            mh.TenMH,
+            mh.AnhDaiDien, 
+            pl.DonGia, 
+            pl.MaPhanLoai,
+            pl.ChiTietPhanLoai,
+            ct.SoLuong,
+            (pl.DonGia * ct.SoLuong) AS ThanhTien,
+            pl.SoLuong AS TonKho
+            FROM MoHinh mh
+            inner join PhanLoai pl on mh.MaMoHinh = pl.MaMoHinh
+            inner join ChiTietDonHang ct on pl.MaPhanLoai = ct.MaMoHinh
+            where ct.MaDH = ?
+            ORDER BY mh.MaMoHinh DESC`;
+            const [products] = await db.query(sql,[MaDH]);
+
+            res.status(200).json({
+                message: "Lấy danh sách sản phẩm trong đơn hàng thành công",
+                data: {
+                    ThongTinGiaoHang: donhang_info[0],
+                    DanhSachHang: products
+                }
+            });
+        } 
+        catch (error){
+            console.error("Lỗi khi xem đơn hàng: ", error);
+            res.status(500).json({ message: "Lỗi server khi thao tác đơn hàng!"});
+        }
+    }
+    
+    
 }
 
 module.exports = donhang_user;
