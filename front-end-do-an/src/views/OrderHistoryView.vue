@@ -234,6 +234,7 @@ const fetchUserData = async () => {
 };
 
 onMounted(() => {
+  window.scroll(0,0);
   fetchOrderdata();
   fetchUserData();
 });
