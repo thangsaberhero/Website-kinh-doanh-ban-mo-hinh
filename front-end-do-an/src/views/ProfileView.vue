@@ -169,7 +169,7 @@ const currentUser = userString ? JSON.parse(userString) : null;
 // Quản lý file ảnh và đường dẫn ảnh mặc định
 const fileInput = ref(null); 
 const selectedFile = ref(null); 
-const defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80';
+const defaultAvatar = 'default_avatar.jpg';
 
 // Ảnh Preview lúc đầu cứ gán mặc định, lát gọi API xong sẽ đè lên sau
 const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);

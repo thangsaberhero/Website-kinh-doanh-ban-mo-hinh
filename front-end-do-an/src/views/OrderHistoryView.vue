@@ -211,7 +211,7 @@ const fetchOrderdata = async () => {
 const avatarPreview = ref(
   currentUser && currentUser.AnhDaiDien 
     ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` 
-    : defaultAvatar
+    : 'default_avatar.jpg'
 );
 
 const fetchUserData = async () => {

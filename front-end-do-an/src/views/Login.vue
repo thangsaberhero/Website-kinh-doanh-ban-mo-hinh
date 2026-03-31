@@ -183,7 +183,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '../stores/auth.js'; // Nhớ kiểm tra đường dẫn đúng thư mục nhé
+import { useAuthStore } from '../stores/auth.js'
 
 const router = useRouter();
 const route = useRoute();

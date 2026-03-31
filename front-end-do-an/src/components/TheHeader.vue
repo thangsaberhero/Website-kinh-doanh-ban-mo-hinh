@@ -145,7 +145,7 @@ const authStore = useAuthStore();
 const showUserMenu = ref(false);
 const cartCount = ref(0);
 
-const defaultAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80';
+const defaultAvatar = 'default_avatar.jpg';
 
 // Computed tự động theo dõi: Hễ authStore thay đổi là link ảnh đổi theo
 const userAvatar = computed(() => {
