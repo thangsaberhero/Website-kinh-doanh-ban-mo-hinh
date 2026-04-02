@@ -29,16 +29,16 @@
             <div class="flex flex-col h-full justify-between relative z-10">
               <div class="mb-6">
                 <span class="text-[10px] uppercase tracking-[0.2em] text-primary mb-2 block font-bold">Mã đơn hàng</span>
-                <h2 class="font-headline text-4xl font-bold text-white tracking-tight">{{ orderId }}</h2>
+                <h2 class="font-headline text-4xl font-bold text-white tracking-tight">Mã: {{ route.query.orderId }}</h2>
               </div>
               <div class="grid grid-cols-2 gap-8">
                 <div>
                   <span class="text-[10px] uppercase tracking-[0.2em] text-outline mb-1 block font-bold">Ngày đặt</span>
-                  <p class="text-white font-medium">{{ orderDate }}</p>
+                  <p class="text-white font-medium">{{ formatTime(orderInfo.NgayLapDon) }}</p>
                 </div>
                 <div>
                   <span class="text-[10px] uppercase tracking-[0.2em] text-outline mb-1 block font-bold">Thanh toán</span>
-                  <p class="text-white font-medium">Đã xác nhận</p>
+                  <p class="text-white font-medium">Chờ duyệt</p>
                 </div>
               </div>
             </div>
@@ -49,15 +49,15 @@
             <div class="space-y-4">
               <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
                 <span class="text-sm text-on-surface-variant font-medium">Số lượng</span>
-                <span class="text-white font-bold">02 SP</span>
+                <span class="text-white font-bold">{{ totalQty < 10 ? '0' + totalQty : totalQty }} SP</span>
               </div>
               <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
                 <span class="text-sm text-on-surface-variant font-medium">Vận chuyển</span>
-                <span class="text-white font-bold">Miễn phí</span>
+                <span class="text-white font-bold">Chưa rõ</span>
               </div>
               <div class="pt-2">
                 <span class="text-[10px] uppercase tracking-[0.2em] text-outline mb-1 block font-bold">Tổng thanh toán</span>
-                <span class="text-3xl font-headline font-black text-primary tracking-tighter">12.500.000đ</span>
+                <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(orderInfo.TongTien || 0) }}</span>
               </div>
             </div>
           </div>
@@ -114,23 +114,77 @@
 <script setup>
 import TheHeader from '@/components/TheHeader.vue';
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router'; // THÊM useRoute ĐỂ LẤY URL
+import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
+const route = useRoute(); // Lấy biến từ URL
 
-// Tạo dữ liệu giả lập cho ngày tháng và Mã đơn hàng
-const orderId = ref('');
-const orderDate = ref('');
+const orderInfo = ref({});
+const orderItems = ref([]);
+const totalQty = ref(0);
+
+// Hàm format tiền
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+// Hàm format thời gian giống mấy trang trước
+const formatTime = (dateString) => {
+  if (!dateString) return 'Đang cập nhật';
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes} - ${day}/${month}/${year}`;
+};
+
+const fetchOrderdata = async () => {
+  const token = localStorage.getItem('token');
+  const userString = localStorage.getItem('user');
+  
+  if (!token || !userString) {
+    router.push('/login');
+    return;
+  }
+  
+  const maKH = JSON.parse(userString).MaKH;
+  
+  // Hứng cái ID mã đơn hàng từ thanh URL (do trang Checkout ném sang)
+  const maDH = route.query.orderId; 
+
+  if (!maDH) {
+    // Nếu ai đó cố tình vào thẳng trang này mà không mua hàng, đá văng về trang chủ
+    router.push('/');
+    return;
+  }
+
+  try {
+    // Gọi API quen thuộc mà bạn đã viết cực xịn ở trang Chi Tiết Đơn Hàng
+    const response = await fetch(`http://localhost:3000/api/add_cart/watch_detail_order/${maKH}/${maDH}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      orderInfo.value = result.data.ThongTinGiaoHang; 
+      orderItems.value = result.data.DanhSachHang;
+      
+      // Tính tổng số lượng hộp sản phẩm (Để in ra chỗ "02 SP")
+      totalQty.value = orderItems.value.reduce((sum, item) => sum + item.SoLuong, 0);
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải thông tin hóa đơn:", error);
+  }
+}
 
 onMounted(() => {
-  // Tạo mã đơn hàng ngẫu nhiên kiểu #FC-XXXX
-  const randomNum = Math.floor(1000 + Math.random() * 9000);
-  orderId.value = `#FC-${randomNum}`;
-
-  // Lấy ngày hôm nay định dạng tiếng Việt
-  const today = new Date();
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  orderDate.value = today.toLocaleDateString('vi-VN', options);
+  window.scrollTo(0, 0); 
+  fetchOrderdata(); // Chạy hàm kéo data
 });
 </script>
 

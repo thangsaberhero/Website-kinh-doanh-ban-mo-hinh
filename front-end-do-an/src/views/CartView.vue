@@ -67,7 +67,13 @@
                   </div>
                   <div class="text-right">
                     <span class="block text-primary font-headline font-bold text-2xl tracking-tighter">
-                      {{ formatPrice(item.ThanhTien) }}
+                      <div v-if="item.dongiakhuyenmai">
+                        <span class="text-primary font-bold">{{ formatPrice(item.dongiakhuyenmai) }}</span>
+                        <span class="text-outline line-through text-sm">{{ formatPrice(item.DonGia) }}</span>
+                      </div>
+                      <div v-else>
+                          <span class="text-on-surface font-bold">{{ formatPrice(item.DonGia) }}</span>
+                      </div>
                     </span>
                   </div>
                 </div>
@@ -95,10 +101,6 @@
               <div class="flex justify-between text-on-surface-variant">
                 <span>Tạm tính ({{ totalItems }} SP)</span>
                 <span class="text-white">{{ formatPrice(subtotal) }}</span>
-              </div>
-              <div class="flex justify-between text-on-surface-variant">
-                <span>Phí vận chuyển</span>
-                <span class="text-primary font-bold">Miễn phí</span>
               </div>
               <div class="flex justify-between text-on-surface-variant">
                 <span>Giảm giá</span>
@@ -223,12 +225,18 @@ const suggestions = ref([
   { id: 104, name: 'Panel Line Accent Color', price: 95000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC4msE71U7jgRXWIVdkIHSFSJ9awutXqqs3QqtvKWLBa7QTf3kJf0-L5mA7EFGMoerQ4Y_-Ge6IMnjGbzYrzuX41xPXyZ4UUGWY6RCx1JC6kemzKRqCguW9ryd3KNV-HXuWpjcwMqxP67rWms51Br5i_2vIoCF7lOW_Ieo_HuuUvoYqUiVvW7sdxv2hbfhBv6fQUWOXqoaKmYyzKwvXkevMAezc854KJPQQqXaFd_rqs0BMPWuXlIz62AYeEteiQxMO3JB-84bnh24-' }
 ]);
 
-const discount = ref(0); // Giảm giá cố định để demo
+//const discount = ref(0); // Giảm giá cố định để demo
 
 // Tính toán tự động (Reactivity)
 // Thay 'price' thành 'DonGia', thay 'qty' thành 'SoLuong'
 const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.SoLuong, 0));
 const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0));
+const discount = computed(() => {
+  return cartItems.value.reduce((sum, item) => {
+    const mucGiamGiaCuaItem = item.dongiakhuyenmai ? (item.DonGia - item.dongiakhuyenmai) : 0;
+    return sum + (mucGiamGiaCuaItem * item.SoLuong);
+  }, 0);
+});
 const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.value - discount.value) : 0);
 
 // Các hàm xử lý

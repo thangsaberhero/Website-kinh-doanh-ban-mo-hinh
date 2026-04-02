@@ -100,7 +100,13 @@
                 <div class="flex-grow flex flex-col justify-center">
                   <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
                   <p class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">SL: {{ item.SoLuong }}</p>
-                  <div class="mt-1 text-primary font-headline font-bold">{{ formatPrice(item.DonGia) }}</div>
+                  <div v-if="item.dongiakhuyenmai">
+                        <span class="mt-1 text-primary font-headline font-bold">{{ formatPrice(item.dongiakhuyenmai) }}</span>
+                        <span class="mt-1 text-outline line-through text-sm">{{ formatPrice(item.DonGia) }}</span>
+                      </div>
+                      <div v-else>
+                          <span class="mt-1 text-primary font-headline font-bold">{{ formatPrice(item.DonGia) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -168,7 +174,7 @@ const toastStore = useToastStore();
 const isProcessing = ref(false);
 const paymentMethod = ref('card'); 
 const checkoutItems = ref([]); // Đổi thành mảng rỗng để chứa dữ liệu thật
-const discount = ref(0); // Tạm thời set giảm giá về 0, bạn có thể tự thêm logic mã giảm giá sau
+
 
 // Dữ liệu Form giao hàng
 const shippingInfo = reactive({
@@ -182,10 +188,14 @@ const shippingInfo = reactive({
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 // Tính toán tự động dựa trên dữ liệu thật
-const subtotal = computed(() => {
-  return checkoutItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0);
+const subtotal = computed(() => checkoutItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0));
+const discount = computed(() => {
+  return checkoutItems.value.reduce((sum, item) => {
+    const mucGiamGiaCuaItem = item.dongiakhuyenmai ? (item.DonGia - item.dongiakhuyenmai) : 0;
+    return sum + (mucGiamGiaCuaItem * item.SoLuong);
+  }, 0);
 });
-const totalPrice = computed(() => Math.max(0, subtotal.value - discount.value));
+const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.value - discount.value) : 0);
 
 // ===============================================
 // HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
@@ -301,14 +311,17 @@ const processCheckout = async () => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Có lỗi xảy ra khi tạo đơn hàng!");
+      toastStore.showToast(data.message, "error");
+      isProcessing.value = false;
+      return;
     }
 
     // 5. XỬ LÝ KHI THÀNH CÔNG
     toastStore.showToast("🎉 " + data.message, "success");
     
     // Chuyển hướng khách hàng về trang Lịch sử đơn hàng để xem lại
-    router.push('/ordersuccess'); 
+    // Data ở đây là kết quả từ Backend trả về, có chứa MaDonHang: maDH_moi
+    router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
 
   } catch (error) {
     console.error("Lỗi quá trình đặt hàng:", error);

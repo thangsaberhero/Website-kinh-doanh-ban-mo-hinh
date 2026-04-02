@@ -122,7 +122,16 @@ const donhang_user = {
             mh.MaMoHinh,
             mh.TenMH,
             mh.AnhDaiDien, 
-            pl.DonGia, 
+            pl.DonGia,
+            (
+                Select (pl.DonGia - ctkm.ChietKhau)
+                from MoHinh mh
+                inner join ChiTietKhuyenMai ctkm
+                inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
+                order by ctkm.ChietKhau desc
+                limit 1
+            ) As dongiakhuyenmai,
             pl.MaPhanLoai,
             pl.ChiTietPhanLoai,
             ct.SoLuong,
@@ -172,6 +181,24 @@ const donhang_user = {
             // ================= BẮT ĐẦU TRANSACTION =================
             await connection.beginTransaction(); 
 
+            //Kiểm tra số lượng tồn kho trước khi đặt hàng:
+
+            const sql_kiem_tra_ton_kho = `select mh.TenMH, ctgh.Soluong as Mua, pl.SoLuong as TonKho, pl.ChiTietPhanLoai
+                                        from MoHinh mh
+                                        inner join Phanloai pl on mh.MaMoHinh = pl.MaMoHinh
+                                        inner join ChiTietGioHang ctgh on ctgh.MaMoHinh = pl.MaPhanLoai
+                                        where ctgh.MaGH = ?`
+            const [kiem_tra] = await connection.query(sql_kiem_tra_ton_kho,[maGH]);
+            for (let item of kiem_tra){
+                if(item.Mua > item.TonKho){
+                    await connection.rollback();
+                    connection.release();
+                    return res.status(400).json({
+                        message: `Sản phẩm ${item.TenMH} phân loại ${item.ChiTietPhanLoai} chỉ còn ${item.TonKho}, vui lòng cập nhật lại giỏ hàng!`
+                    });
+                }
+            }
+
             // 2. Tạo Đơn hàng mới 
             const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, NgayLapDon, TrangThaiDonHang, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao) 
             VALUES (?, ?, NOW(), 'Chờ Duyệt', ?, ? ,?)`;
@@ -184,11 +211,21 @@ const donhang_user = {
             await connection.query(`Insert into ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) Values (?, 1, NOW())`, [maDH_moi]);
 
             // 3. COPY hàng từ Giỏ sang Đơn (Dùng chiêu INSERT INTO ... SELECT siêu nhanh của SQL)
-            // LƯU Ý: Sửa lại chữ MaPhanLoai hoặc MaMoHinh cho khớp với thiết kế CSDL của bạn nhé
             const sql_chuyen_hang = `
-                INSERT INTO ChiTietDonHang (MaDH, MaMoHinh, SoLuong)
-                SELECT ?, MaMoHinh, SoLuong 
-                FROM ChiTietGioHang 
+                INSERT INTO ChiTietDonHang (MaDH, MaMoHinh, SoLuong, DonGiaBan)
+                SELECT ?, ctgh.MaMoHinh, ctgh.SoLuong , 
+                Coalesce((
+                    Select (pl.DonGia - ctkm.ChietKhau)
+                    from MoHinh mh
+                    inner join ChiTietKhuyenMai ctkm on ctkm.MaMoHinh = mh.MaMoHinh
+                    inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                    where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
+                    order by ctkm.ChietKhau desc
+                    limit 1
+                ),
+                pl.DonGia)
+                FROM ChiTietGioHang ctgh
+                inner join PhanLoai pl on pl.MaPhanLoai = ctgh.MaMoHinh
                 WHERE MaGH = ?
             `;
             await connection.query(sql_chuyen_hang, [maDH_moi, maGH]);
@@ -241,7 +278,7 @@ const donhang_user = {
                         JOIN TrangThai tt ON tt.MaTrangThai = cttt.MaTrangThai
                         WHERE cttt.MaDH = DonHang.MaDH 
                         Order by cttt.MaTrangThai Desc
-                        LIMIT 1) as TrangThai
+                        LIMIT 1) as TrangThaiDonHang
                     
                 from DonHang left join ChiTietDonHang ct on DonHang.MaDH = ct.MaDH
                 where MaKH = ?
@@ -265,7 +302,7 @@ const donhang_user = {
             const MaKH = req.params.MaKH;
             const MaDH = req.params.MaDH;
             const sql_donhang = `
-                SELECT TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien
+                SELECT TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien, NgayLapDon
                 FROM DonHang WHERE MaDH = ? AND MaKH = ?
             `;
             const [donhang_info] = await db.query(sql_donhang, [MaDH, MaKH]);
@@ -278,11 +315,12 @@ const donhang_user = {
             mh.MaMoHinh,
             mh.TenMH,
             mh.AnhDaiDien, 
-            pl.DonGia, 
+            pl.DonGia,
+            ct.DonGiaBan,
             pl.MaPhanLoai,
             pl.ChiTietPhanLoai,
             ct.SoLuong,
-            (pl.DonGia * ct.SoLuong) AS ThanhTien,
+            ((pl.DonGia - ct.DonGiaBan) * ct.SoLuong) AS KhuyenMai,
             pl.SoLuong AS TonKho
             FROM MoHinh mh
             inner join PhanLoai pl on mh.MaMoHinh = pl.MaMoHinh
@@ -290,13 +328,23 @@ const donhang_user = {
             where ct.MaDH = ?
             ORDER BY mh.MaMoHinh DESC`;
             const [products] = await db.query(sql,[MaDH]);
+            
+            const sql_trangthai =  `Select
+            tt.TenTrangThai,
+            cttt.ThoiGian
+            from TrangThai tt
+            inner join ChiTietTrangThai cttt on tt.MaTrangThai = cttt.MaTrangThai
+            where cttt.MaDH = ?`;
+
+            const [trangthai] = await db.query(sql_trangthai,[MaDH]);
 
             res.status(200).json({
                 message: "Lấy danh sách sản phẩm trong đơn hàng thành công",
                 data: {
                     ThongTinGiaoHang: donhang_info[0],
-                    DanhSachHang: products
-                }
+                    DanhSachHang: products,
+                    Trang_thai_don_hang: trangthai
+                    }
             });
         } 
         catch (error){

@@ -239,7 +239,7 @@ CREATE TABLE KhuyenMai (
 CREATE TABLE ChiTietKhuyenMai (
     MaKM INT,
     MaMoHinh INT,
-    ChietKhau DECIMAL(5,2),
+    ChietKhau DECIMAL(10,2),
     PRIMARY KEY (MaKM, MaMoHinh),
     FOREIGN KEY (MaKM) REFERENCES KhuyenMai(MaKM),
     FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)

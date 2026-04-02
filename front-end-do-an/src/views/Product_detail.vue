@@ -47,7 +47,13 @@
             <h1 class="font-headline text-4xl lg:text-5xl font-bold tracking-tight mb-4 leading-[1.1]">{{ product.TenMH }}</h1>
             <div class="flex items-baseline gap-4 mt-6">
               <span class="font-headline text-3xl font-bold text-on-surface">
-                {{ formatPrice(selectedVariant ? selectedVariant.DonGia : product.DonGia) }}
+                <div v-if="product.dongiakhuyenmai">
+                  <span class="text-primary font-bold">{{ formatPrice(selectedVariant.dongiakhuyenmai) }}</span>
+                  <span class="text-outline line-through text-sm">{{ formatPrice(selectedVariant.DonGia) }}</span>
+                </div>
+                <div v-else>
+                    <span class="text-on-surface font-bold">{{ formatPrice(selectedVariant.DonGia) }}</span>
+                </div>
               </span>
             </div>
           </header>

@@ -3,12 +3,20 @@ const db = require('../config/db');
 const product_view = {
     getAllProduct: async(req, res) => {
         try {
-            const sql = `SELECT mh.*,TenHSX ,
+            const sql = `SELECT mh.*,TenHSX , 
             (
                 SELECT COALESCE(SUM(SoLuong), 0) 
                 FROM PhanLoai 
                 WHERE MaMoHinh = mh.MaMoHinh
-            ) AS SoLuong
+            ) AS SoLuong,
+            (
+                Select (mh.DonGia - ctkm.ChietKhau)
+                from ChiTietKhuyenMai ctkm
+                inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
+                order by ctkm.ChietKhau desc
+                limit 1
+            ) As dongiakhuyenmai
             FROM MoHinh mh
             INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
             ORDER BY mh.MaMoHinh DESC`;
@@ -40,7 +48,15 @@ const product_view = {
                         SELECT COALESCE(SUM(SoLuong), 0) 
                         FROM PhanLoai 
                         WHERE MaMoHinh = mh.MaMoHinh
-                    ) AS SoLuong
+                    ) AS SoLuong,
+                    (
+                        Select (mh.DonGia - ctkm.ChietKhau)
+                        from ChiTietKhuyenMai ctkm
+                        inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                        where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
+                        order by ctkm.ChietKhau desc
+                        limit 1
+                    ) As dongiakhuyenmai
                 FROM MoHinh mh
                 LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
                 LEFT JOIN AnhMoHinh anh ON mh.MaMoHinh = anh.MaMoHinh
@@ -72,7 +88,16 @@ const product_view = {
             const id = req.params.id;
 
             const sql = `
-                SELECT pl.*
+                SELECT pl.*,
+                (
+                        Select (pl.DonGia - ctkm.ChietKhau)
+                        from MoHinh mh
+                        inner join ChiTietKhuyenMai ctkm
+                        inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                        where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
+                        order by ctkm.ChietKhau desc
+                        limit 1
+                    ) As dongiakhuyenmai
                 FROM PhanLoai pl
                 WHERE pl.MaMoHinh = ?
             `;

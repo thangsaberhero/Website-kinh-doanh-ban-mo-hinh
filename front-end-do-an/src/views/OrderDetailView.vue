@@ -15,7 +15,7 @@
         <div>
           <span class="font-headline text-primary tracking-widest text-xs uppercase font-bold mb-2 block">Chi Tiết Giao Dịch</span>
           <h1 class="text-5xl md:text-6xl font-headline font-black tracking-tighter text-white">
-            {{ "Mã đơn: " + route.params.id }}
+            {{ "Mã: " + route.params.id }}
           </h1>
         </div>
         <div class="flex flex-wrap gap-4">
@@ -87,7 +87,7 @@
                 </div>
                 <div class="mt-4 md:mt-0 md:text-right flex flex-col justify-between">
                   <span class="text-xs text-outline font-bold uppercase tracking-widest">Số lượng: 0{{ item.SoLuong }}</span>
-                  <span class="text-2xl font-headline font-black text-primary">{{ formatPrice(item.DonGia) }}</span>
+                  <span class="text-2xl font-headline font-black text-primary">{{ formatPrice(item.DonGiaBan) }}</span>
                 </div>
               </div>
             </div>
@@ -132,16 +132,16 @@
             <div class="space-y-4 mb-8">
               <div class="flex justify-between items-center text-sm">
                 <span class="text-outline">Tạm tính</span>
-                <span class="font-bold text-white">{{ formatPrice(orderInfo.TongTien) }}</span>
+                <span class="font-bold text-white">{{ formatPrice(subtotal) }}</span>
               </div>
               <div class="flex justify-between items-center text-sm">
-                <span class="text-outline">Phí vận chuyển</span>
-                <span class="text-primary font-bold">Miễn phí</span>
+                <span class="text-outline">Khuyến mãi</span>
+                <span class="text-primary font-bold">- {{ formatPrice(discount) }}</span>
               </div>
-              <div class="flex justify-between items-center text-sm">
+              <!-- <div class="flex justify-between items-center text-sm">
                 <span class="text-outline">Bảo hiểm</span>
                 <span class="font-bold text-white">0₫</span>
-              </div>
+              </div> -->
               
               <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end">
                 <span class="font-headline font-bold text-white uppercase tracking-widest text-xs">Tổng cộng</span>
@@ -174,37 +174,80 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
+const discount = computed(() => {
+  return orderItems.value.reduce((sum, item) => {
+    // Nếu item.KhuyenMai bị null/undefined, nó sẽ tự động biến thành 0
+    return sum + (Number(item.KhuyenMai) || 0);
+  }, 0);
+});
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 const orderItems = ref([]); 
 const orderInfo = ref({});
+const orderStatus = ref([]);
 const order = ref([]);
 
-// Logic Lộ trình động
-const timelineDef = [
-  { name: 'Đã xác nhận', icon: 'receipt_long', time: '10:30, 24/05' },
-  { name: 'Đang đóng gói', icon: 'inventory_2', time: '14:15, 24/05' },
-  { name: 'Đang vận chuyển', icon: 'local_shipping', time: null },
-  { name: 'Hoàn tất', icon: 'flag', time: null }
+//format time từ sql lên giao diện
+const formatTime = (dateString) => {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${hours}:${minutes}, ${day}/${month}`;
+};
+
+const baseSteps = [
+  { name: 'Chờ duyệt', icon: 'receipt_long' },
+  { name: 'Đang đóng gói', icon: 'inventory_2' },
+  { name: 'Đang vận chuyển', icon: 'local_shipping' },
+  { name: 'Đã giao', icon: 'check_circle' }
 ];
 
+// Logic Lộ trình động
 const timeline = computed(() => {
-  return timelineDef.map((step, index) => {
-    if (index < order.value.currentStepIndex) return { ...step, status: 'completed' };
-    if (index === order.value.currentStepIndex) return { ...step, status: 'active' };
-    return { ...step, status: 'pending' };
+  // Bọc lót an toàn khi lấy trạng thái mới nhất
+  const latestStepName = (orderStatus.value && orderStatus.value.length > 0) 
+    ? orderStatus.value[orderStatus.value.length - 1].TenTrangThai 
+    : '';
+
+  return baseSteps.map((step) => {
+    // Thêm mảng rỗng [] dự phòng nếu orderStatus.value bị undefined
+    const safeOrderStatus = orderStatus.value || [];
+    const dbRecord = safeOrderStatus.find(s => s.TenTrangThai === step.name);
+    
+    let currentStatus = 'pending';
+    let timeString = null;
+
+    if (dbRecord) {
+      timeString = formatTime(dbRecord.ThoiGian);
+      currentStatus = (step.name === latestStepName) ? 'active' : 'completed';
+    }
+
+    return {
+      ...step,
+      status: currentStatus,
+      time: timeString
+    };
   });
 });
 
-// Tính toán độ dài thanh tiến trình màu cam
+// 4. Tính toán độ dài thanh tiến trình màu cam ĐỘNG
 const progressWidth = computed(() => {
-  const stepCount = timelineDef.length - 1;
-  const current = order.value.currentStepIndex;
-  return `${(current / stepCount) * 100}%`;
+  if (!orderStatus.value || orderStatus.value.length === 0) return '0%';
+  
+  const latestStepName = orderStatus.value[orderStatus.value.length - 1].TenTrangThai;
+  let currentIndex = baseSteps.findIndex(s => s.name === latestStepName);
+  
+  if (currentIndex === -1) currentIndex = 0;
+  const stepCount = baseSteps.length - 1;
+  
+  return `${(currentIndex / stepCount) * 100}%`;
 });
 
 const subtotal = computed(() => {
-  return orderItems.value.reduce((sum, item) => sum + item.ThanhTien, 0);
+  return orderItems.value.reduce((sum, item) => sum + item.DonGia * item.SoLuong, 0);
 });
 
 const fetchOrderdata = async () => {
@@ -229,6 +272,7 @@ const fetchOrderdata = async () => {
     if (response.ok) {
       orderInfo.value = result.data.ThongTinGiaoHang; 
       orderItems.value = result.data.DanhSachHang;
+      orderStatus.value = result.data.Trang_thai_don_hang;
     } else {
       console.error(result.message);
       order.value = [];
