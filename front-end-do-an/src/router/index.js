@@ -16,6 +16,7 @@ import WishlistView from '../views/WishlistView.vue';
 import SearchView from '../views/SearchView.vue';
 import NewsView from '../views/NewsView.vue';
 import ContactView from '../views/ContactView.vue';
+import ForgotPasswordView from '@/views/ForgotPasswordView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -97,6 +98,12 @@ const router = createRouter({
       path: '/contact',
       name: 'Contact',
       component: ContactView
+    },
+    {
+      path: '/forgot-password',
+      name: 'ForgotPassword',
+      component: ForgotPasswordView,
+      meta: { hideFooter: true, hidePhone: true }
     }
   ]
 });
