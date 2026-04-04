@@ -3,7 +3,7 @@
     <TheHeader />
 
     <main class="flex-1">
-      <section class="relative w-full h-[70vh] min-h-[500px] overflow-hidden">
+      <section v-if="heroNews.id" class="relative w-full h-[70vh] min-h-[500px] overflow-hidden">
         <div class="absolute inset-0">
           <img :src="heroNews.image" :alt="heroNews.title" class="w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
@@ -12,7 +12,7 @@
         <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-6 pb-20">
           <div class="flex items-center space-x-3 mb-4">
             <span class="px-3 py-1 bg-primary border border-primary text-black text-[10px] font-black tracking-[0.2em] uppercase rounded shadow-[0_0_15px_rgba(255,61,0,0.5)]">
-              {{ heroNews.tag }}
+              {{ heroNews.category }}
             </span>
             <span class="text-on-surface-variant text-xs font-bold tracking-widest uppercase">• {{ heroNews.readTime }} phút đọc</span>
           </div>
@@ -75,7 +75,7 @@
             </div>
 
             <div v-if="filteredNews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              <article v-for="post in filteredNews" :key="post.id" @click="router.push(`/news/${post.id}`)"
+              <article v-for="post in displayNews" :key="post.id" @click="router.push(`/news/${post.id}`)"
                        class="group flex flex-col cursor-pointer relative mt-4">
                 
                 <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-4 shadow-md group-hover:shadow-primary/20 group-hover:shadow-lg transition-all duration-300 border border-outline-variant/20 group-hover:border-primary/50">
@@ -111,8 +111,8 @@
               <p class="text-on-surface-variant text-sm">Chưa có bài viết nào thuộc chuyên mục này.</p>
             </div>
 
-            <div v-if="filteredNews.length > 0" class="mt-12 flex justify-center">
-              <button class="px-10 py-3 border border-outline-variant hover:border-primary text-white hover:text-primary font-headline font-bold text-[11px] tracking-[0.2em] uppercase rounded-lg transition-all">
+            <div v-if="filteredNews.length > 0 && visibleCount < filteredNews.length" class="mt-12 flex justify-center">
+              <button @click = "loadMore" class="px-10 py-3 border border-outline-variant hover:border-primary text-white hover:text-primary font-headline font-bold text-[11px] tracking-[0.2em] uppercase rounded-lg transition-all">
                 Tải thêm bài viết
               </button>
             </div>
@@ -151,52 +151,106 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import TheHeader from '@/components/TheHeader.vue';
 
 const router = useRouter();
 
-// --- MOCK DATA ---
-const heroNews = ref({
-  id: 1,
-  tag: 'Đánh giá chi tiết',
-  titleHtml: 'PG Unleashed RX-78-2: <br/><span class="text-primary italic">Đỉnh Cao Cơ Khí</span>',
-  summary: 'Bandai đã định nghĩa lại hoàn toàn chuẩn mực của dòng Perfect Grade. Cùng mổ xẻ từng lớp khung xương và cơ chế LED đỉnh cao của huyền thoại này.',
-  readTime: 8,
-  image: 'https://shopkeycap.com/wp-content/uploads/2021/06/Perfect-Grade-Unleashed-RX-78-2-ft.png'
-});
+// 1. KHỞI TẠO CÁC BIẾN CHỨA DỮ LIỆU RỖNG
+const heroNews = ref({});         // Khu vực 1: Bài to nhất trên cùng
+const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
+const mainArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
+const popularNews = ref([]);      // Khu vực 4: Sidebar Đọc nhiều nhất (Cột phải)
 
-const trendingNews = ref([
-{ id: 2, title: 'Top 5 Nendoroid hiếm nhất đang bị săn lùng', category: 'Thị trường', image: 'https://file.hstatic.net/1000231532/file/20220206-choi-nendoroid-sao-cho-dung_nshop-hobby11_d577ca1b2adc48418e80fed2291b7c81.jpg' },
-  { id: 3, title: 'Wonder Festival: Tương lai ngành figure', category: 'Sự kiện', image: 'https://i.ytimg.com/vi/Y3BAQabxcTw/maxresdefault.jpg' },
-  { id: 4, title: 'Bí quyết bảo quản nhựa PVC không bị chảy nhớt', category: 'Kiến thức', image: 'https://file.hstatic.net/200000462939/article/bao-quan-mo-hinh-pvc_4215ac9e512548edb7ecc62e4337f9ac.jpg' },
-  { id: 5, title: 'Xu hướng Figure kim loại (Die-cast) lên ngôi', category: 'Thị trường', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8EdqfhHO1MmqYvBjqyF537FJ0LAeWwQqmEQ&s' },
-]);
-
-const mainArticles = ref([
-  { id: 6, title: 'Mở hộp Hatsune Miku 1/7 - Digital Future Edition', summary: 'Phiên bản kỷ niệm với hệ thống LED RGB tích hợp dưới chân đế và chi tiết tóc trong suốt tuyệt đẹp từ GoodSmile.', category: 'Anime Figure', date: '26/03/2026', readTime: 5, image: 'https://product.hstatic.net/200000462939/product/4399653_7b748166b9c6458eb8c6a1450c3469f6_master.jpeg' },
-  { id: 7, title: 'Nàng Elf Bunny Girl Rabbi – Mỗi đường cong là một cám dỗ', summary: 'Siêu phẩm scale 1/4 từ B-Style đã chính thức cập bến. Đánh giá chi tiết chất liệu lưới tất chân thật và độ hoàn thiện màu sơn.', category: 'Anime Figure', date: '25/03/2026', readTime: 4, image: 'https://pos.nvncdn.com/f625c0-33854/art/20250906_DjoKD7Js.jpeg?v=1757140733' },
-  { id: 8, title: 'Metal Build Evangelion EVA-01: Có đáng tiền?', summary: 'Sự kết hợp giữa chất liệu kim loại nặng tay và thiết kế sinh học độc đáo. Liệu đây có phải là bản EVA hoàn hảo nhất?', category: 'Mecha & Robot', date: '20/03/2026', readTime: 7, image: 'https://bizweb.dktcdn.net/100/503/392/products/1-2830abed-41d0-4b6a-a6fc-4b71f827b943.jpg?v=1706807367323' },
-  { id: 9, title: 'Phân biệt mô hình thật (Auth) và hàng giả (Bootleg)', summary: 'Hướng dẫn chi tiết cách soi tem seal, màu sơn và khớp nối để không mua phải hàng nhái kém chất lượng trên thị trường.', category: 'Kiến thức', date: '15/03/2026', readTime: 6, image: 'https://khomohinh.com/wp-content/uploads/2023/01/cach-phan-biet-mo-hinh-real-fake-thumb.jpg' },
-  { id: 10, title: 'Lịch phát hành mô hình Gundam (Gunpla) Quý 3/2026', summary: 'Tổng hợp danh sách các mẫu MG, RG và HG sắp ra mắt. Đặc biệt chú ý siêu phẩm MGEX Strike Freedom.', category: 'Gundam', date: '10/03/2026', readTime: 3, image: 'https://preview.redd.it/hg-1-144-tx-ff104-gundam-alyzeus-announced-release-date-v0-ive5786le2hg1.jpeg?width=640&crop=smart&auto=webp&s=066fda75065791f116de60557f3afa720aeecef9' },
-]);
-
-const popularNews = ref([
-  { id: 11, title: 'Cách setup tủ trưng bày LED chuẩn bảo tàng mini', date: '01/03/2026' },
-  { id: 12, title: 'Tại sao mô hình cũ (Rare) lại có giá trên trời?', date: '28/02/2026' },
-  { id: 13, title: 'Top 10 hãng sản xuất mô hình uy tín nhất thế giới', date: '20/02/2026' },
-]);
-
-const trendingTags = ['Bandai', 'GoodSmile', 'Metal_Build', 'Pre_Order', 'Unboxing', 'Cyberpunk', 'Gundam_Seed'];
-
-// --- LOGIC LỌC ---
 const categories = ['Tất cả', 'Gundam', 'Anime Figure', 'Mecha & Robot', 'Thị trường'];
 const activeCategory = ref('Tất cả');
+const trendingTags = ['Bandai', 'GoodSmile', 'Metal_Build', 'Pre_Order', 'Unboxing', 'Cyberpunk', 'Gundam_Seed'];
 
+const itemsPerPage = 6;
+const visibleCount = ref(itemsPerPage);
+
+const loadMore = () => {
+  visibleCount.value += itemsPerPage;
+};
+
+watch(activeCategory, () => {
+  visibleCount.value = itemsPerPage;
+});
+
+const formatTitle = (rawTitle) => {
+  if (!rawTitle) return '';
+  if (rawTitle.includes(':')) {
+    const parts = rawTitle.split(':');
+    return `${parts[0]}:<br><span class="text-primary">${parts.slice(1).join(':').trim()}</span>`;
+  }
+  
+  if (rawTitle.includes(' - ')) {
+    const parts = rawTitle.split(' - ');
+    return `${parts[0]}<br><span class="text-primary">${parts.slice(1).join(' - ').trim()}</span>`;
+  }
+  return rawTitle;
+};
+// 2. HÀM FETCH DỮ LIỆU TỪ BACKEND VÀ "CHIA BÀI"
+const fetchNewsData = async () => {
+  try {
+    // Gọi API (Giả sử API này trả về đủ 3 mảng: latest, trending, popular)
+    const response = await fetch('http://localhost:3000/api/news');
+    const data = await response.json();
+    
+    if (response.ok) {
+      // BƯỚC 1: XỬ LÝ DANH SÁCH BÀI MỚI NHẤT (latestList)
+      const allLatest = data.latestList.map(item => ({
+        id: item.MaTT,
+        title: item.TieuDe,
+        titleHtml: formatTitle(item.TieuDe),
+        summary: item.TomTat,
+        category: item.TheLoai,
+        date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),
+        readTime: 5, 
+        image: item.AnhDaiDien
+      }));
+
+      // KHU VỰC 1 (HERO): Bốc bài viết MỚI NHẤT (vị trí số 0) để đưa lên Banner to nhất
+      if (allLatest.length > 0) {
+        heroNews.value = allLatest[0];
+      }
+
+      // KHU VỰC 3 (MAIN LIST): Lấy phần còn lại (từ vị trí số 1 trở đi) để đưa xuống danh sách bên dưới, tránh hiển thị trùng bài Banner
+      mainArticles.value = allLatest.slice(1);
+
+      // KHU VỰC 2 (TRENDING): Gắn thẳng vào biến trendingNews
+      trendingNews.value = data.trendingList.map(item => ({
+        id: item.MaTT,
+        title: item.TieuDe,
+        category: item.TheLoai,
+        image: item.AnhDaiDien
+      }));
+
+      // KHU VỰC 4 (POPULAR): Gắn vào sidebar Đọc nhiều nhất
+      popularNews.value = data.popularList.map(item => ({
+        id: item.MaTT,
+        title: item.TieuDe,
+        date: new Date(item.NgayDang).toLocaleDateString('vi-VN')
+      }));
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải tin tức:", error);
+  }
+};
+
+// 3. LOGIC LỌC BÀI VIẾT BÊN TRONG MAIN LIST
 const filteredNews = computed(() => {
   if (activeCategory.value === 'Tất cả') return mainArticles.value;
   return mainArticles.value.filter(post => post.category === activeCategory.value);
+});
+
+const displayNews = computed(() => {
+  return filteredNews.value.slice(0, visibleCount.value);
+});
+// Gọi hàm ngay khi mở trang
+onMounted(() => {
+  fetchNewsData();
 });
 </script>
 
