@@ -62,7 +62,7 @@
                   {{ step.name }}
                 </span>
                 <span v-if="step.time" class="text-[10px] text-outline mt-1">{{ step.time }}</span>
-                <span v-if="step.status === 'active'" class="text-[10px] text-primary/70 mt-1 italic">Hôm nay</span>
+                <!-- <span v-if="step.status === 'active'" class="text-[10px] text-primary/70 mt-1 italic">Hôm nay</span> -->
               </div>
             </div>
           </section>

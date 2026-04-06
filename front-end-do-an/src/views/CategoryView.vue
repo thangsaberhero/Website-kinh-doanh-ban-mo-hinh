@@ -19,29 +19,29 @@
               <span>Danh mục</span>
             </div>
             <div class="space-y-3">
-              <label @click.prevent="goToCategory('')" class="flex items-center justify-between group cursor-pointer py-1">
+              <div @click="goToCategory('')" class="flex items-center justify-between group cursor-pointer py-1">
                 <span :class="['text-sm transition-colors', !categoryId ? 'text-primary font-bold' : 'group-hover:text-white text-gray-300 font-medium']">Tất cả sản phẩm</span>
                 <input :checked="!categoryId" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none" type="checkbox"/>
-              </label>
+              </div>
 
               <div v-for="cat in categories" :key="cat.MaDM" class="flex flex-col">
-                <label @click.prevent="goToCategory(cat.MaDM)" class="flex items-center justify-between group cursor-pointer py-2">
+                <div @click="goToCategory(cat.MaDM)" class="flex items-center justify-between group cursor-pointer py-2">
                   <span :class="['text-sm transition-colors', categoryId == cat.MaDM ? 'text-primary font-bold' : 'group-hover:text-white text-gray-300 font-medium']">{{ cat.TenDM }}</span>
                   <input :checked="categoryId == cat.MaDM && !subCategoryId" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none" type="checkbox"/>
-                </label>
+                </div>
 
                 <div v-if="categoryId == cat.MaDM && cat.subCategories?.length > 0" class="pl-4 flex flex-col space-y-3 mt-1 mb-2 border-l border-outline-variant/30 ml-2">
-                  <label 
+                  <div
                     v-for="sub in cat.subCategories" 
                     :key="sub.MaChiTietDM"
-                    @click.prevent="selectSubCategory(cat.MaDM, sub.MaChiTietDM)"
+                    @click="selectSubCategory(cat.MaDM, sub.MaChiTietDM)"
                     class="flex items-center justify-between group cursor-pointer"
                   >
                     <span :class="['text-[13px] transition-colors', subCategoryId == sub.MaChiTietDM ? 'text-primary font-bold' : 'group-hover:text-white text-gray-400']">
                       - {{ sub.TenChiTietDM }}
                     </span>
                     <input :checked="subCategoryId == sub.MaChiTietDM" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none w-3 h-3" type="checkbox"/>
-                  </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -286,6 +286,7 @@ const fetchProducts = async (maDM, maCTDM = null) => {
 
 // 5. Cập nhật Watcher: Khi bấm sang Danh mục cha khác, phải Reset thằng con
 watch(() => route.params.id, (newId) => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   categoryId.value = newId || '';
   subCategoryId.value = ''; // Reset thằng con về rỗng
   fetchProducts(newId);
@@ -293,7 +294,7 @@ watch(() => route.params.id, (newId) => {
 });
 
 const filteredProducts = computed(() => {
-  window.scroll(0,0)
+  //window.scroll(0,0)
   let result = productList.value;
   if(searchQuery.value){
     result = result.filter(sp => 

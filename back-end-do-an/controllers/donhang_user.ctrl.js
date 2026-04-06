@@ -1,4 +1,7 @@
 const db = require('../config/db');
+//const PayOS = require("@payos/node");
+// Thay 3 chuỗi bên dưới bằng 3 mã bạn vừa lấy ở Bước 1
+// /const payos = new PayOS("YOUR_CLIENT_ID", "YOUR_API_KEY", "YOUR_CHECKSUM_KEY");
 
 const donhang_user = {
     them_hang_vao_gio: async(req, res) =>{
@@ -25,8 +28,23 @@ const donhang_user = {
             });
                 }
             else{
-                const sql_themhangvaogio = 'Update ChiTietGioHang set SoLuong = SoLuong + ? where MaGH = ? and MaMoHinh = ?'
-                await db.query(sql_themhangvaogio,[soluong,maGH,MaPhanLoai])
+                const sql_kiemtra = `Select ctgh.SoLuong as TrongGio, pl.SoLuong as TonKho
+                    from ChiTietGioHang ctgh
+                    inner join Phanloai pl on ctgh.MaMoHinh = pl.MaPhanLoai
+                    where ctgh.MaGH = ? and ctgh.MaMoHinh = ?`;
+                const [kiem_tra] = await db.query(sql_kiemtra,[maGH, MaPhanLoai]);
+                const tronggio = kiem_tra[0].TrongGio;
+                const tonkho = kiem_tra[0].TonKho;
+                let so_luong_moi = tronggio + soluong;
+                let thongBao = "Cập nhật giỏ hàng thành công!";
+
+                if (so_luong_moi >= tonkho) {
+                    so_luong_moi = tonkho;
+                    thongBao = `Đã đạt giới hạn! Kho hiện chỉ còn ${tonkho} sản phẩm.`;
+                }
+
+                const sql_themhangvaogio = 'Update ChiTietGioHang set SoLuong = ? where MaGH = ? and MaMoHinh = ?'
+                await db.query(sql_themhangvaogio,[so_luong_moi,maGH,MaPhanLoai])
 
                 res.status(200).json({
                 message: "Cập nhật giỏ hàng thành công!",
@@ -160,7 +178,7 @@ const donhang_user = {
         const connection = await db.getConnection(); 
 
         try {
-            const { MaKH, TongTien, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao } = req.body;
+            const { MaKH, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao } = req.body;
            
             const sql_laymagiohang = 'SELECT MaGH FROM GioHang WHERE MaKH = ?';
             const [result_giohang] = await connection.query(sql_laymagiohang, [MaKH]);
@@ -171,6 +189,23 @@ const donhang_user = {
             }
             const maGH = result_giohang[0].MaGH;
 
+            // Truyền giá trị tính tiền riêng tránh việc bị sửa thông tin
+            const sql_tinh_tong_tien =  `select SUM( 
+                                        Coalesce(
+                                            Select (pl.DonGia - ctkm.ChietKhau)
+                                            from MoHinh mh
+                                            inner join ChiTietKhuyenMai ctkm on ctkm.MaMoHinh = mh.MaMoHinh
+                                            inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                                            where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
+                                            order by ctkm.ChietKhau desc
+                                            limit 1), 
+                                        pl.DonGia) * ctgh.SoLuong) 
+                                        as TongTien
+                                        from ChiTietGioHang ctgh
+                                        inner join Phanloai on Phanloai.MaPhanLoai = ctgh.MaMoHinh
+                                        where ctgh.MaGH = ?`;
+            const [result_tong_tien] = await connection.query(sql_tinh_tong_tien,[maGH]);
+            const TongTien = result_tong_tien[0].TongTien;
             // 1. Kiểm tra giỏ hàng có đồ không? Giỏ trống thì không cho đặt!
             const [hang_trong_gio] = await connection.query('SELECT * FROM ChiTietGioHang WHERE MaGH = ?', [maGH]);
             if (hang_trong_gio.length === 0) {
@@ -200,8 +235,8 @@ const donhang_user = {
             }
 
             // 2. Tạo Đơn hàng mới 
-            const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, NgayLapDon, TrangThaiDonHang, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao) 
-            VALUES (?, ?, NOW(), 'Chờ Duyệt', ?, ? ,?)`;
+            const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, NgayLapDon, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao) 
+            VALUES (?, ?, NOW(), ?, ? ,?)`;
             const [tao_don] = await connection.query(sql_tao_don, [MaKH, TongTien, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao]);
             
             // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động
@@ -351,7 +386,11 @@ const donhang_user = {
             console.error("Lỗi khi xem đơn hàng: ", error);
             res.status(500).json({ message: "Lỗi server khi thao tác đơn hàng!"});
         }
-    }
+    },
+
+    //Thanh Toán
+
+
     
     
 }

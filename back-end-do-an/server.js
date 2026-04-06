@@ -34,6 +34,11 @@ app.use('/api/info_user', user_info);
 const homeviewRoutes = require('./routes/homeview.route.js');
 app.use('/api/products', homeviewRoutes);
 
+//Lấy thông tin tin tức
+const newsRoutes = require('./routes/news.route.js');
+app.use('/api/news', newsRoutes);
+
+
 //Thêm đơn hàng
 const add_cartRoutes = require('./routes/donhang_user.route.js');
 app.use('/api/add_cart',add_cartRoutes);
@@ -42,3 +47,7 @@ app.use('/api/add_cart',add_cartRoutes);
 const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
+
+// --- THÊM ROUTE CHATBOT ---
+const chatRoutes = require('./routes/chat.route.js');
+app.use('/api/chatbot', chatRoutes);

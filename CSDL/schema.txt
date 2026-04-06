@@ -251,6 +251,11 @@ CREATE TABLE TinTuc (
     NoiDung TEXT,
     MaNV INT,
     TrangThai VARCHAR(50),
+    TieuDe VARCHAR(255) NOT NULL,
+    TomTat TEXT,
+    TheLoai VARCHAR(100),
+    NgayDang DATETIME DEFAULT CURRENT_TIMESTAMP,
+    LuotXem INT DEFAULT 0,
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
 );
 
