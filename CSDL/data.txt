@@ -1,0 +1,40 @@
+-- THÊM DỮ LIỆU MẪU --
+INSERT INTO Quyen (TenQuyen) VALUES ('Quản lý'), ('Nhân viên bán hàng'), ('Khách hàng');
+
+INSERT INTO HangSanXuat (TenHSX) VALUES
+('GoodSmileCompany'), ('Gift+'), ('Furyu'), ('SEGA'), ('BANDAI'), ('Max Factory'), ('Hobby stock');
+
+INSERT INTO DanhMuc (TenDM) VALUES
+('Mô hình'), ('Nendoroid'), ('Nhồi bông'), ('PRE-ORDER'), ('Phụ kiện khác');
+
+INSERT INTO ChiTietDanhMuc (MaDM, TenChiTietDM) VALUES
+(1, 'Gameprize'), (1, 'Mô hình scale'), (1, 'Mô hình Chibi'), (1, 'Mô hình lắp ráp'), (1, 'Action figure'),
+(2, 'Nedoroid Nam'), (2, 'Nendoroid nữ'), (4, 'Pre-order 2026'), (4, 'Pre-order 2027');
+
+INSERT INTO MoHinh (TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, AnhDaiDien, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu) VALUES
+('Mô Hình Nendoroid Lancer/Mélusine - Nendoroid 2190 Fate/Grand Order',1,2,7,'PVC',1700000,'Còn Hàng',' ','1_1.jpeg','10 cm',NULL,'Bình thường',1000000),
+('Mô Hình Ruler/Mélusine - Fate/Grand Order Ver 1/6 Scale Figure Chính Hãng (GSC)',1,1,2,'PVC',3900000,'Còn Hàng',' ','2_1.jpeg','10 cm',NULL,'Bình thường',1500000),
+('Mô Hình Hatsune Miku - Hatsune Miku EXPO 10th Anniversary Ver. - 1/7 Scale Figure Chính Hãng (Hobby Stock)',7,1,2,'PVC',5500000,'Còn Hàng',' ','3_1.jpeg','25,5 cm',NULL,'Có sẵn',1500000),
+('Mô Hình Hatsune Miku Happy 16th Birthday Ver. 1/7 Figure (GSC)',1,1,2,'PVC',5400000,'Còn Hàng',' ','4_1.jpeg','31 cm',NULL,'Có sẵn',2000000),
+('Mô hình Hatsune Miku - Sakura Hanami Outfit Ver Scale 1/6 Figure Chính Hãng (GSC)',1,1,2,'PVC',5500000,'Còn Hàng',' ','5_1.jpeg','28 cm',NULL,'Có sẵn',2000000);
+
+INSERT INTO Phanloai (ChiTietPhanLoai, MaMoHinh, DonGia, SoLuong) VALUES
+('NONE', 1, 1700000, 5),
+('NONE', 2, 3900000, 5),
+('NONE', 3, 5500000, 5),
+('NONE', 4, 5400000, 5),
+('NONE', 5, 5500000, 5);
+
+INSERT INTO AnhMoHinh(LinkAnh, MaMoHinh) VALUES
+('1_1.jpeg',1), ('1_2.jpeg',1), ('1_3.jpeg',1), ('1_4.jpeg',1), ('1_5.jpeg',1),
+('2_1.jpeg',2), ('2_2.jpeg',2), ('2_3.jpeg',2), ('2_4.jpeg',2),
+('3_1.jpeg',3), ('3_2.jpeg',3), ('3_3.jpeg',3), ('3_4.jpeg',3), ('3_5.jpeg',3), ('3_6.jpeg',3),
+('4_1.jpeg',4), ('4_2.jpeg',4), ('4_3.jpeg',4), ('4_4.jpeg',4), ('4_5.jpeg',4), ('4_6.jpeg',4), ('4_7.jpeg',4),
+('5_1.jpeg',5), ('5_2.jpeg',5), ('5_3.jpeg',5), ('5_4.jpeg',5), ('5_5.jpeg',5), ('5_6.jpeg',5);
+
+INSERT INTO TrangThai (TenTrangThai) VALUES 
+('Chờ Duyệt'),
+('Chờ xử lý'),
+('Đang vận chuyển'),
+('Đã giao'),
+('Đã hủy');

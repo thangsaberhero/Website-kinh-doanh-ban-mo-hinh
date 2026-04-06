@@ -1,0 +1,293 @@
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+console.log("Key của tôi là:", process.env.GEMINI_API_KEY);
+const pool = require('../config/db')
+// Khởi tạo Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// --- Thay thế hàm chatWithAI cũ bằng hàm này ---
+const chatWithAI = async (req, res) => {
+    try {
+        const { message } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ message: "Tin nhắn không được để trống" });
+        }
+
+        console.log("\n--- BƯỚC 1: PHÂN TÍCH Ý ĐỊNH ---");
+        const ketQuaPhanTich = await phanLoaiYdinh(message);
+        console.log(ketQuaPhanTich);
+
+        const { intent, keywords, min_price, max_price, phone, customer_name, address } = ketQuaPhanTich;
+
+        // ======================================================
+        // BƯỚC 2: GỌI DATABASE TƯƠNG ỨNG VỚI Ý ĐỊNH
+        // ======================================================
+        let dbData = null;
+        let dbMessage = ""; // Lời nhắc phụ cho AI (VD: Thiếu thông tin thì bảo AI đòi thêm)
+
+        switch (intent) {
+            case "hoi_thong_tin_san_pham":
+            case "kiem_tra_ton_kho":
+                if (keywords) dbData = await timSanPham(keywords);
+                else dbMessage = "Hãy hỏi khách muốn tìm mô hình nhân vật nào.";
+                break;
+            case "tu_van_theo_gia":
+                dbData = await timSanPhamTheoGia(keywords, min_price, max_price);
+                break;
+            case "tra_cuu_don_hang":
+                if (phone) dbData = await traCuuDonHang(phone);
+                else dbMessage = "Xin khách số điện thoại để tra cứu.";
+                break;
+            case "tra_cuu_bao_hanh":
+                if (phone) dbData = await traCuuBaoHanh(phone);
+                else dbMessage = "Xin khách số điện thoại để kiểm tra bảo hành.";
+                break;
+            case "hoi_khuyen_mai":
+                dbData = await layKhuyenMaiHienTai();
+                break;
+            case "chot_don_hang":
+                if (keywords && customer_name && phone && address) {
+                    dbData = await taoDonHang(keywords, customer_name, phone, address);
+                } else {
+                    dbMessage = "Khách đang muốn chốt đơn nhưng thiếu thông tin. Hãy yêu cầu khách cung cấp đầy đủ: Tên mô hình, Tên người nhận, Số điện thoại và Địa chỉ giao hàng.";
+                }
+                break;
+            case "giao_tiep_co_ban":
+            default:
+                // Không cần gọi Database, để AI tự chào hỏi
+                break;
+        }
+
+        // ======================================================
+        // BƯỚC 3: ĐƯA DỮ LIỆU CHO AI TẠO CÂU TRẢ LỜI TỰ NHIÊN
+        // ======================================================
+        console.log("--- BƯỚC 3: AI ĐANG SOẠN CÂU TRẢ LỜI ---");
+        const finalResponse = await taoCauTraLoiTuNhien(message, intent, dbData, dbMessage);
+        console.log("=> KẾT QUẢ AI TRẢ VỀ:", finalResponse);
+
+        // Tạo bộ lọc: Chỉ những intent này mới được xem là danh sách sản phẩm
+        const cacIntentSanPham = ["hoi_thong_tin_san_pham", "kiem_tra_ton_kho", "tu_van_theo_gia"];
+        const laIntentSanPham = cacIntentSanPham.includes(intent);
+        return res.status(200).json({ 
+            message: finalResponse, 
+            products: Array.isArray(dbData) ? dbData : []
+        });
+
+    } catch (error) {
+        console.error("Lỗi Chatbot:", error);
+        return res.status(500).json({ message: "Dạ hệ thống đang quá tải một chút, bạn thử lại sau nhé!" });
+    }
+};
+
+// --- Thêm hàm này vào dưới cùng (trước module.exports) ---
+const taoCauTraLoiTuNhien = async (userMessage, intent, dbData, dbMessage) => {
+    try {
+        const aiGenerator = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        const prompt = `
+        Bạn là một nhân viên chăm sóc khách hàng cực kỳ nhiệt tình, dễ thương và chuyên nghiệp của Shop Mô Hình. 
+        Hãy trả lời khách hàng dựa trên các thông tin sau:
+        
+        1. Câu hỏi của khách: "${userMessage}"
+        2. Ý định của khách: "${intent}"
+        3. Dữ liệu tra cứu từ hệ thống (JSON): ${JSON.stringify(dbData || "Không có")}
+        4. Ghi chú bắt buộc từ hệ thống: "${dbMessage}"
+
+        QUY TẮC TRẢ LỜI:
+        - Tuyệt đối không để lộ mã code hay chuỗi JSON cho khách thấy. Chỉ lấy thông tin trong JSON để nói chuyện.
+        - Trình bày đẹp mắt, dùng thẻ <b> để in đậm tên sản phẩm/giá tiền, dùng <br> để xuống dòng.
+        - Xưng hô là "Shop" hoặc "Em", gọi khách là "Bạn" hoặc "Anh/Chị".
+        - Đối với intent "giao_tiep_co_ban" (như xin chào, cảm ơn), hãy đáp lại thật thân thiện và hỏi xem khách cần tìm mô hình nào.
+        - Nếu "Dữ liệu tra cứu" là mảng rỗng (không tìm thấy SP/đơn hàng), hãy xin lỗi khéo léo.
+        - Nếu "Ghi chú bắt buộc" có yêu cầu đòi thêm thông tin (như xin SĐT, địa chỉ), phải hỏi khách thông tin đó.
+
+        LƯU Ý QUAN TRỌNG VỀ CÁCH TRẢ LỜI:
+        1. KHÔNG liệt kê quá chi tiết các sản phẩm (không đọc tên, không báo giá, không chèn link ảnh).
+        2. Hệ thống giao diện đã tự động hiển thị thẻ sản phẩm ở ngay bên dưới tin nhắn của bạn rồi.
+        3. Hãy trả lời cực kỳ NGẮN GỌN (tối đa 2-3 câu), thân thiện để dẫn dắt khách xem sản phẩm bên dưới.
+        
+        - Nếu khách hỏi "huong_dan_mua_hang", hãy tóm tắt ngắn gọn 4 bước sau một cách thân thiện:
+            + Bước 1: Chọn mô hình ưng ý và bấm "Thêm vào giỏ hàng" hoặc "Mua ngay".
+            + Bước 2: Bấm vào biểu tượng Giỏ hàng ở góc phải màn hình để kiểm tra sản phẩm.
+            + Bước 3: Điền thông tin nhận hàng (Tên, SĐT, Địa chỉ).
+            + Bước 4: Chọn phương thức thanh toán và bấm "Đặt hàng".
+            (Có thể dặn khách nếu gặp khó khăn thì cứ nhắn tin để Shop hỗ trợ trực tiếp).
+        `;
+
+        const result = await aiGenerator.generateContent(prompt);
+        return result.response.text();
+    } catch (error) {
+        console.error("Lỗi khi tạo câu trả lời tự nhiên:", error);
+        return "Dạ mạng của shop đang hơi chậm, bạn nhắc lại giúp shop nghen! 😅";
+    }
+};
+
+
+const phanLoaiYdinh = async (userMessage) => {
+    try {
+        const aiAnalyzer = genAI.getGenerativeModel({ 
+            model: "gemini-2.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const prompt = `
+        Bạn là AI CSKH cho shop mô hình. Hãy phân tích câu nói của khách và trả về 1 file JSON chuẩn.
+        Các loại intent:
+        - "hoi_thong_tin_san_pham": Khách muốn tìm mua, hỏi giá, xem mô hình nhân vật nào đó.
+        - "kiem_tra_ton_kho": Khách hỏi xem sản phẩm còn hàng không.
+        - "tu_van_theo_gia": Khách muốn tìm mô hình trong một khoảng giá (ví dụ: dưới 1 triệu, từ 500k đến 2 triệu).
+        - "tra_cuu_don_hang": Khách muốn kiểm tra đơn hàng (thường kèm số điện thoại).
+        - "hoi_khuyen_mai": Khách hỏi về ưu đãi, giảm giá.
+        - "tra_cuu_bao_hanh": Khách hỏi về thời gian bảo hành sản phẩm.
+        - "chot_don_hang": Khách chốt mua, cung cấp thông tin giao hàng (tên, sđt, địa chỉ).
+        - "huong_dan_mua_hang": Khách hỏi về cách thức, các bước để đặt mua hàng.
+        - "giao_tiep_co_ban": Lời chào, cảm ơn.
+
+        Cấu trúc JSON bắt buộc:
+        {
+            "intent": "tên_intent",
+            "keywords": "tên nhân vật/mô hình khách nhắc đến (rỗng nếu không có)",
+            "min_price": số nguyên (giá tối thiểu khách muốn, mặc định 0),
+            "max_price": số nguyên (giá tối đa khách muốn, mặc định 0),
+            "phone": "số điện thoại khách cung cấp (rỗng nếu không có)",
+            "customer_name": "tên người nhận hàng khách cung cấp (rỗng nếu không có)",
+            "address": "địa chỉ giao hàng khách cung cấp (rỗng nếu không có)"
+        }
+
+        Tin nhắn của khách: "${userMessage}"
+        `;
+
+        const result = await aiAnalyzer.generateContent(prompt);
+        return JSON.parse(result.response.text());
+    } catch (error) {
+        console.error("Lỗi phân tích Intent:", error);
+        return { intent: "giao_tiep_co_ban" };
+    }
+};
+
+const timSanPham = async (keywords) => {
+    const sql = `
+        SELECT m.MaMoHinh, m.TenMH, m.DonGia AS GiaGoc, m.TrangThai,
+               (SELECT LinkAnh FROM AnhMoHinh WHERE MaMoHinh = m.MaMoHinh LIMIT 1) AS LinkAnh, 
+               h.TenHSX, p.ChiTietPhanLoai, p.DonGia AS GiaPhienBan, p.SoLuong
+        FROM MoHinh m
+        LEFT JOIN HangSanXuat h ON m.MaHSX = h.MaHSX
+        LEFT JOIN Phanloai p ON m.MaMoHinh = p.MaMoHinh
+        WHERE m.TenMH LIKE ? OR m.ThongTinChiTiet LIKE ?
+    `;
+    const [rows] = await pool.query(sql, [`%${keywords}%`, `%${keywords}%`]);
+    return rows;
+};
+
+const timSanPhamTheoGia = async (keywords, minPrice, maxPrice) => {
+    let sql = `
+        SELECT m.MaMoHinh, m.TenMH, m.TrangThai, 
+               (SELECT LinkAnh FROM AnhMoHinh WHERE MaMoHinh = m.MaMoHinh LIMIT 1) AS LinkAnh,
+               MIN(COALESCE(p.DonGia, m.DonGia)) AS GiaThucTe
+        FROM MoHinh m
+        LEFT JOIN Phanloai p ON m.MaMoHinh = p.MaMoHinh
+        WHERE 1=1
+    `;
+    const params = [];
+
+    if (keywords) {
+        sql += ` AND (m.TenMH LIKE ? OR m.ThongTinChiTiet LIKE ?)`;
+        params.push(`%${keywords}%`, `%${keywords}%`);
+    }
+
+    sql += ` GROUP BY m.MaMoHinh, m.TenMH, m.TrangThai 
+             HAVING GiaThucTe BETWEEN ? AND ? 
+             ORDER BY GiaThucTe ASC LIMIT 5`;
+    params.push(minPrice, maxPrice > 0 ? maxPrice : 999999999); // Nếu không có max thì lấy vô hạn
+
+    const [rows] = await pool.query(sql, params);
+    return rows;
+};
+
+const traCuuDonHang = async (phone) => {
+    const sql = `
+        SELECT MaDH, TrangThaiDonHang, NgayLapDon, TongTien, TenNguoiNhan 
+        FROM DonHang 
+        WHERE SDTNguoiNhan LIKE ? 
+        ORDER BY NgayLapDon DESC LIMIT 1
+    `;
+    const [rows] = await pool.query(sql, [`%${phone}%`]);
+    return rows[0]; // Trả về đơn hàng gần nhất
+};
+
+const traCuuBaoHanh = async (phone) => {
+    const sql = `
+        SELECT DH.MaDH, M.TenMH, CBH.NgayBatDau, CBH.NgayKetThuc 
+        FROM DonHang DH 
+        JOIN BaoHanh BH ON DH.MaDH = BH.MaDH 
+        JOIN ChiTietBaoHanh CBH ON BH.MaPBH = CBH.MaPBH 
+        JOIN Phanloai P ON CBH.MaMoHinh = P.MaPhanLoai -- Sửa lại khớp DB
+        JOIN MoHinh M ON P.MaMoHinh = M.MaMoHinh
+        WHERE DH.SDTNguoiNhan LIKE ?
+    `;
+    const [rows] = await pool.query(sql, [`%${phone}%`]);
+    return rows;
+};
+
+const layKhuyenMaiHienTai = async () => {
+    const sql = `
+        SELECT TenKM, DieuKien, ThoiGianKT 
+        FROM KhuyenMai 
+        WHERE ThoiGianKT >= NOW() AND ThoiGianBD <= NOW() 
+        LIMIT 3
+    `;
+    const [rows] = await pool.query(sql);
+    return rows;
+};
+
+
+const taoDonHang = async (keywords, customerName, phone, address) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction(); 
+
+        // 1. Kiểm tra kho sản phẩm
+        const checkKhoSql = `
+            SELECT MH.MaMoHinh, MH.TenMH, PL.MaPhanLoai, PL.DonGia, PL.SoLuong 
+            FROM MoHinh MH
+            INNER JOIN Phanloai PL ON MH.MaMoHinh = PL.MaMoHinh
+            WHERE MH.TenMH LIKE ? AND PL.SoLuong > 0
+            LIMIT 1
+        `;
+        const [rowsSanPham] = await connection.query(checkKhoSql, [`%${keywords}%`]);
+
+        if (rowsSanPham.length === 0) {
+            await connection.rollback(); 
+            return { success: false, message: `Dạ mẫu ${keywords} hiện đã hết hàng.` };
+        }
+
+        const sp = rowsSanPham[0];
+
+        // 2. Tạo đơn hàng (Bảng DonHang)
+        const insertDH = `
+            INSERT INTO DonHang (NgayLapDon, TongTien, ThanhTien, TrangThaiDonHang, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao)
+            VALUES (NOW(), ?, ?, 'Chờ xử lý', ?, ?, ?)
+        `;
+        const [donHangResult] = await connection.query(insertDH, [sp.DonGia, sp.DonGia, customerName, phone, address]);
+        const maDH = donHangResult.insertId;
+
+        // 3. Tạo chi tiết đơn hàng (Bảng ChiTietDonHang)
+        const insertCT = `INSERT INTO ChiTietDonHang (MaDH, MaMoHinh, SoLuong, DonGiaBan) VALUES (?, ?, 1, ?)`;
+        await connection.query(insertCT, [maDH, sp.MaPhanLoai, sp.DonGia]); // Lưu ý: MaMoHinh trong ChiTietDonHang thực chất là MaPhanLoai theo schema của bạn
+
+        // 4. Trừ kho (Bảng Phanloai)
+        const updateKho = `UPDATE Phanloai SET SoLuong = SoLuong - 1 WHERE MaPhanLoai = ?`;
+        await connection.query(updateKho, [sp.MaPhanLoai]);
+
+        await connection.commit();
+        return { success: true, maDH, tenSP: sp.TenMH, gia: sp.DonGia };
+
+    } catch (error) {
+        await connection.rollback();
+        console.error("Lỗi tạo đơn:", error);
+        return { success: false, message: "Lỗi hệ thống khi tạo đơn." };
+    } finally {
+        connection.release(); 
+    }
+};
+module.exports = { chatWithAI };
