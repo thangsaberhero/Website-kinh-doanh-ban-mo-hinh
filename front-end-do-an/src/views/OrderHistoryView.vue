@@ -60,7 +60,7 @@
 
         <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-4 mb-8">
           <button 
-            v-for="tab in ['Tất cả', 'Chờ duyệt', 'Chờ xử lý', 'Đang vận chuyển', 'Đã giao', 'Đã hủy']" 
+            v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đã hủy']" 
             :key="tab"
             @click="activeTab = tab"
             :class="['px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300', activeTab === tab ? 'bg-primary text-on-primary-fixed shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container border border-outline-variant/20 text-outline hover:text-white hover:border-outline-variant']"
@@ -110,6 +110,13 @@
                     <span class="text-base font-bold text-white">{{ formatPrice(order.TongTien) }}</span>
                   </div>
                   
+                  <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-outline uppercase tracking-widest">Thanh toán</span>
+                    <span :class="['text-[11px] font-bold', order.TrangThaiThanhToan === 'Đã thanh toán' ? 'text-green-400' : 'text-yellow-500']">
+                      {{ order.TrangThaiThanhToan || 'Chưa thanh toán' }}
+                    </span>
+                  </div>
+
                   <div class="flex flex-col gap-1 items-start">
                     <span class="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Trạng thái</span>
                     <span :class="`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(order.TrangThaiDonHang)}`">
@@ -126,6 +133,14 @@
                 <button v-if="order.status === 'Đã giao'" class="flex-1 lg:w-36 px-4 py-2 border border-outline-variant text-outline rounded-lg font-bold text-xs uppercase tracking-widest hover:text-white hover:border-white transition-all text-center">
                   Mua lại
                 </button>
+                <button 
+                  v-if="order.TrangThaiDonHang === 'Chờ duyệt' && (order.TrangThaiThanhToan === 'Chưa thanh toán' || !order.TrangThaiThanhToan)"
+                  @click="openPaymentModal(order)" 
+                  class="flex-1 lg:w-36 px-4 py-2 bg-[#a50064] text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-1 shadow-lg shadow-pink-500/20"
+                >
+                  <span class="material-symbols-outlined text-sm">payments</span>
+                  Thanh toán
+                </button>
               </div>
             </div>
           </TransitionGroup>
@@ -138,6 +153,28 @@
         </div>
 
       </main>
+    </div>
+    <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-8 max-w-sm w-full shadow-2xl">
+        <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Chọn hình thức</h3>
+        <p class="text-sm text-on-surface-variant mb-6">Bạn muốn cọc trước hay thanh toán toàn bộ cho đơn hàng #{{ selectedOrder?.MaDH }}?</p>
+        
+        <div class="space-y-3 mb-8">
+          <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-primary transition-all">
+            <input type="radio" v-model="repayMethod" value="Thanh toán toàn bộ" class="text-primary" />
+            <span class="text-sm font-bold text-white">Thanh toán toàn bộ (100%)</span>
+          </label>
+          <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-primary transition-all">
+            <input type="radio" v-model="repayMethod" value="Cọc một phần" class="text-primary" />
+            <span class="text-sm font-bold text-white">Đặt cọc tối thiểu</span>
+          </label>
+        </div>
+
+        <div class="flex gap-3">
+          <button @click="showPaymentModal = false" class="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-outline hover:text-white transition-colors">Hủy</button>
+          <button @click="handleRepay" class="flex-[2] py-3 bg-[#a50064] text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all">Tiến hành quét mã</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -158,6 +195,47 @@ const currentUser = userString ? JSON.parse(userString) : null;
 // Dữ liệu giả lập Đơn hàng
 const orders = ref([]);
 
+const showPaymentModal = ref(false);
+const selectedOrder = ref(null);
+const repayMethod = ref('Thanh toán toàn bộ');
+
+// Mở Modal và lưu lại đơn hàng đang chọn
+const openPaymentModal = (order) => {
+  selectedOrder.value = order;
+  showPaymentModal.value = true;
+};
+
+// Gọi API tạo link MoMo từ Modal
+const handleRepay = async () => {
+  const token = localStorage.getItem('token');
+  if (!selectedOrder.value) return;
+
+  try {
+    const response = await fetch('http://localhost:3000/api/payment/momo/create', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ 
+        MaDH: selectedOrder.value.MaDH,
+        HinhThuc: repayMethod.value 
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      // Bế khách sang trang MoMo màu hồng!
+      window.location.href = data.checkoutUrl;
+    } else {
+      toastStore.showToast(data.message, "error");
+    }
+  } catch (error) {
+    console.error("Lỗi thanh toán lại:", error);
+    toastStore.showToast("Lỗi kết nối máy chủ thanh toán", "error");
+  }
+};
+
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 
@@ -166,7 +244,7 @@ const getStatusColor = (status) => {
   switch(status) {
     case 'Đang vận chuyển': return 'bg-tertiary/10 text-tertiary border-tertiary/20';
     case 'Đã giao': return 'bg-green-500/10 text-green-400 border-green-500/20';
-    case 'Chờ xử lý': return 'bg-secondary/10 text-secondary border-secondary/20';
+    case 'Đang đóng gói': return 'bg-secondary/10 text-secondary border-secondary/20';
     case 'Chờ duyệt': return 'bg-secondary/10 text-secondary border-secondary/20';  
     case 'Đã hủy': return 'bg-error/10 text-error border-error/20';
     default: return 'bg-outline/10 text-outline border-outline/20';

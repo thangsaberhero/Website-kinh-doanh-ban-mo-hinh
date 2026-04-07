@@ -44,41 +44,32 @@
             </div>
             
             <div class="space-y-4">
-              <div :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'card' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
+              <div :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'momo' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
                 <label class="flex items-center gap-4 cursor-pointer p-6">
-                  <input v-model="paymentMethod" value="card" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
-                  <span class="flex-grow font-bold text-white">Thẻ tín dụng / Ghi nợ</span>
-                  <span class="material-symbols-outlined text-outline">credit_card</span>
+                  <input v-model="paymentMethod" value="momo" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
+                  <span class="flex-grow font-bold text-white">Ví MoMo / ZaloPay (Mock)</span>
+                  <span class="material-symbols-outlined text-outline">account_balance_wallet</span>
                 </label>
                 
-                <div v-if="paymentMethod === 'card'" class="px-6 pb-6 pt-2 border-t border-outline-variant/15 grid grid-cols-2 gap-6 slide-down">
-                  <div class="col-span-2 space-y-2">
-                    <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Số thẻ</label>
-                    <input class="w-full bg-transparent border-none border-b border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-2 px-0 text-sm" placeholder="0000 0000 0000 0000" type="text"/>
-                  </div>
-                  <div class="space-y-2">
-                    <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Ngày hết hạn</label>
-                    <input class="w-full bg-transparent border-none border-b border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-2 px-0 text-sm" placeholder="MM/YY" type="text"/>
-                  </div>
-                  <div class="space-y-2">
-                    <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">CVV</label>
-                    <input class="w-full bg-transparent border-none border-b border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-2 px-0 text-sm" placeholder="123" type="text"/>
-                  </div>
+                <div v-if="paymentMethod === 'momo'" class="px-6 pb-6 pt-2 border-t border-outline-variant/15 flex flex-col gap-3 slide-down bg-black/20">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input v-model="momoType" value="Thanh toán toàn bộ" type="radio" class="text-primary w-4 h-4" />
+                        <span class="text-sm font-medium text-white">Thanh toán toàn bộ (100%)</span>
+                    </label>
+                    <label v-if="requiresDeposit" class="flex items-center gap-3 cursor-pointer">
+                        <input v-model="momoType" value="Cọc một phần" type="radio" class="text-primary w-4 h-4" />
+                        <span class="text-sm font-medium text-white">Chỉ đặt cọc trước (Theo quy định sản phẩm)</span>
+                    </label>
                 </div>
               </div>
 
-              <div :class="['border rounded-xl transition-all duration-300', paymentMethod === 'momo' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
-                <label class="flex items-center gap-4 cursor-pointer p-6">
-                  <input v-model="paymentMethod" value="momo" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
-                  <span class="flex-grow font-bold text-white">Ví MoMo / ZaloPay</span>
-                  <span class="material-symbols-outlined text-outline">account_balance_wallet</span>
-                </label>
-              </div>
-
-              <div :class="['border rounded-xl transition-all duration-300', paymentMethod === 'cod' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
-                <label class="flex items-center gap-4 cursor-pointer p-6">
-                  <input v-model="paymentMethod" value="cod" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
-                  <span class="flex-grow font-bold text-white">Thanh toán khi nhận hàng (COD)</span>
+              <div :class="['border rounded-xl transition-all duration-300', paymentMethod === 'cod' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low', requiresDeposit ? 'opacity-50 cursor-not-allowed bg-surface-container-lowest' : 'hover:border-outline-variant']">
+                <label class="flex items-center gap-4 p-6" :class="requiresDeposit ? 'cursor-not-allowed' : 'cursor-pointer'">
+                  <input v-model="paymentMethod" value="cod" :disabled="requiresDeposit" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5" type="radio" :class="requiresDeposit ? 'cursor-not-allowed' : 'cursor-pointer'"/>
+                  <div class="flex-grow">
+                      <span class="font-bold text-white block">Thanh toán khi nhận hàng (COD)</span>
+                      <span v-if="requiresDeposit" class="text-[11px] text-error font-bold mt-1 block">Không hỗ trợ COD vì giỏ hàng chứa sản phẩm bắt buộc phải đặt cọc!</span>
+                  </div>
                   <span class="material-symbols-outlined text-outline">local_shipping</span>
                 </label>
               </div>
@@ -172,9 +163,15 @@ const authStore = useAuthStore();
 const toastStore = useToastStore();
 
 const isProcessing = ref(false);
-const paymentMethod = ref('card'); 
+const paymentMethod = ref(''); 
 const checkoutItems = ref([]); // Đổi thành mảng rỗng để chứa dữ liệu thật
 
+const momoType = ref('Thanh toán toàn bộ'); // Mặc định là thanh toán hết
+const requiresDeposit = computed(() => {
+    // Kiểm tra xem có món nào trong giỏ có yêu cầu cọc không (TienCocToiThieu > 0)
+    // Lưu ý: Đảm bảo API get giỏ hàng của bạn có trả về trường TienCocToiThieu
+    return checkoutItems.value.some(item => item.TienCocToiThieu > 0);
+});
 
 // Dữ liệu Form giao hàng
 const shippingInfo = reactive({
@@ -242,6 +239,8 @@ onMounted(async () => {
         toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
         router.push('/cart');
       }
+
+
     }
   } catch (error) {
     console.error("Lỗi khi tải dữ liệu Checkout:", error);
@@ -266,6 +265,18 @@ const processCheckout = async () => {
     toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
     return;
   }
+
+  // ================= BỔ SUNG TRẠM GÁC THANH TOÁN Ở ĐÂY =================
+  if (!paymentMethod.value) {
+    toastStore.showToast("Vui lòng chọn phương thức thanh toán!", "error");
+    return; // Dừng lại ngay, không cho chạy tiếp
+  }
+
+  if (paymentMethod.value === 'cod' && requiresDeposit.value) {
+    toastStore.showToast("Đơn hàng chứa sản phẩm bắt buộc cọc, không thể dùng COD!", "error");
+    return; // Chặn luôn trường hợp dùng F12 lách luật chọn COD
+  }
+  // ====================================================================
 
   isProcessing.value = true;
   
@@ -321,13 +332,37 @@ const processCheckout = async () => {
     
     // Chuyển hướng khách hàng về trang Lịch sử đơn hàng để xem lại
     // Data ở đây là kết quả từ Backend trả về, có chứa MaDonHang: maDH_moi
-    router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
+    //router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
+    if (paymentMethod.value === 'momo') {
+            // Gọi API MoMo Mock
+            const momoRes = await fetch('http://localhost:3000/api/add_cart/payment/momo/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    MaDH: data.MaDonHang, // Lấy mã đơn hàng vừa tạo xong
+                    HinhThuc: momoType.value 
+                })
+            });
+            const momoData = await momoRes.json();
+            
+            if (momoRes.ok) {
+                // Điều hướng sang trang MoMo màu hồng!
+                window.location.href = momoData.checkoutUrl;
+            } else {
+                toastStore.showToast("Lỗi tạo cổng thanh toán MoMo", "error");
+            }
+        } else {
+            // Nếu là COD thì đưa thẳng ra trang Success
+            router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
+        }
 
   } catch (error) {
     console.error("Lỗi quá trình đặt hàng:", error);
     toastStore.showToast(error.message, "error");
   } finally {
-    isProcessing.value = false;
+    if (paymentMethod.value !== 'momo') {
+        isProcessing.value = false;
+    }
   }
 };
 </script>

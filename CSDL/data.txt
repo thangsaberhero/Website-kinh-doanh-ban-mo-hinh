@@ -17,20 +17,23 @@ INSERT INTO MoHinh (TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai
 ('Mô Hình Hatsune Miku - Hatsune Miku EXPO 10th Anniversary Ver. - 1/7 Scale Figure Chính Hãng (Hobby Stock)',7,1,2,'PVC',5500000,'Còn Hàng',' ','3_1.jpeg','25,5 cm',NULL,'Có sẵn',1500000),
 ('Mô Hình Hatsune Miku Happy 16th Birthday Ver. 1/7 Figure (GSC)',1,1,2,'PVC',5400000,'Còn Hàng',' ','4_1.jpeg','31 cm',NULL,'Có sẵn',2000000),
 ('Mô hình Hatsune Miku - Sakura Hanami Outfit Ver Scale 1/6 Figure Chính Hãng (GSC)',1,1,2,'PVC',5500000,'Còn Hàng',' ','5_1.jpeg','28 cm',NULL,'Có sẵn',2000000);
+('Mô Hình Monkey D. Luffy Gear 4 -Lion Bazooka- - One Piece - Figuarts Zero [EXTRA BATTLE] Figure Chính Hãng (BANDAI SPIRITS)',1,1,2,'PVC',2500000,'Pre-order',' ','6_1.jpeg','18 cm',NULL,'Pre-order',500000);
 
 INSERT INTO Phanloai (ChiTietPhanLoai, MaMoHinh, DonGia, SoLuong) VALUES
 ('NONE', 1, 1700000, 5),
 ('NONE', 2, 3900000, 5),
 ('NONE', 3, 5500000, 5),
 ('NONE', 4, 5400000, 5),
-('NONE', 5, 5500000, 5);
+('NONE', 5, 5500000, 5),
+('NONE', 6, 2500000, 10);
 
 INSERT INTO AnhMoHinh(LinkAnh, MaMoHinh) VALUES
 ('1_1.jpeg',1), ('1_2.jpeg',1), ('1_3.jpeg',1), ('1_4.jpeg',1), ('1_5.jpeg',1),
 ('2_1.jpeg',2), ('2_2.jpeg',2), ('2_3.jpeg',2), ('2_4.jpeg',2),
 ('3_1.jpeg',3), ('3_2.jpeg',3), ('3_3.jpeg',3), ('3_4.jpeg',3), ('3_5.jpeg',3), ('3_6.jpeg',3),
 ('4_1.jpeg',4), ('4_2.jpeg',4), ('4_3.jpeg',4), ('4_4.jpeg',4), ('4_5.jpeg',4), ('4_6.jpeg',4), ('4_7.jpeg',4),
-('5_1.jpeg',5), ('5_2.jpeg',5), ('5_3.jpeg',5), ('5_4.jpeg',5), ('5_5.jpeg',5), ('5_6.jpeg',5);
+('5_1.jpeg',5), ('5_2.jpeg',5), ('5_3.jpeg',5), ('5_4.jpeg',5), ('5_5.jpeg',5), ('5_6.jpeg',5),
+('6_1.jpeg',6), ('6_2.jpeg',6), ('6_3.jpeg',6), ('6_4.jpeg',6);
 
 INSERT INTO TrangThai (TenTrangThai) VALUES 
 ('Chờ duyệt'),
@@ -38,6 +41,10 @@ INSERT INTO TrangThai (TenTrangThai) VALUES
 ('Đang vận chuyển'),
 ('Đã giao'),
 ('Đã hủy');
+
+INSERT INTO PhuongThucThanhToan (TenPhuongThuc) VALUES
+('momo'),
+('COD')
 
 INSERT INTO TinTuc (MaTT, NoiDung, MaNV, TrangThai, TieuDe, TomTat, TheLoai, NgayDang, LuotXem) VALUES
 (1, 'Bandai đã định nghĩa lại chuẩn mực dòng Perfect Grade với PG Unleashed RX-78-2. Bài viết phân tích chi tiết khung xương, cơ chế LED và trải nghiệm lắp ráp.', 1, 'Đã duyệt', 'PG Unleashed RX-78-2: Đỉnh Cao Cơ Khí', 'Bandai đã định nghĩa lại hoàn toàn chuẩn mực của dòng Perfect Grade. Cùng mổ xẻ từng lớp khung xương và cơ chế LED đỉnh cao của huyền thoại này.', 'Đánh giá chi tiết', '2026-03-31 00:00:00', 320),

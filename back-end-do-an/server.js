@@ -4,6 +4,11 @@ require('dotenv').config();
 
 const app = express();
 
+//Chức năng tự huỷ đơn
+const cron = require('node-cron');
+// LƯU Ý: Phải trỏ đúng đường dẫn đến file cấu hình MySQL của bạn
+const db = require('./config/db');
+
 // Middlewares
 app.use(cors());
 app.use(express.json()); // Giúp server đọc được dữ liệu JSON gửi lên
@@ -51,3 +56,62 @@ app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user'
 // --- THÊM ROUTE CHATBOT ---
 const chatRoutes = require('./routes/chat.route.js');
 app.use('/api/chatbot', chatRoutes);
+
+
+// =========================================================
+// CRON JOB: TỰ ĐỘNG HỦY ĐƠN VÀ NHẢ KHO (Mỗi 1 phút chạy 1 lần)
+// =========================================================
+cron.schedule('* * * * *', async () => {
+    console.log("⏳ [CRON] Đang tuần tra các đơn hàng quá hạn thanh toán MoMo...");
+
+    // Cấp một connection để làm Transaction an toàn
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // 1. Tìm đơn hàng: Trạng thái 'Chờ duyệt', quá 5 phút
+        const sql_tim_don = `
+            SELECT MaDH FROM DonHang 
+            WHERE TrangThaiThanhToan = 'Chưa thanh toán' 
+            AND TIMESTAMPDIFF(MINUTE, NgayLapDon, NOW()) >= 5
+        `;
+        const [don_qua_han] = await connection.query(sql_tim_don);
+
+        if (don_qua_han.length > 0) {
+            for (let don of don_qua_han) {
+                const maDH = don.MaDH;
+
+                // 2. Cập nhật trạng thái thành Đã Hủy
+                await connection.query(
+                    `UPDATE DonHang SET TrangThaiThanhToan = 'Đã hủy (Quá hạn thanh toán)' WHERE MaDH = ?`, 
+                    [maDH]
+                );
+
+                // 3. Hoàn lại số lượng tồn kho (Nhả kho)
+                const sql_hoan_kho = `
+                    UPDATE PhanLoai pl
+                    INNER JOIN ChiTietDonHang ct ON pl.MaPhanLoai = ct.MaMoHinh
+                    SET pl.SoLuong = pl.SoLuong + ct.SoLuong
+                    WHERE ct.MaDH = ?
+                `;
+                await connection.query(sql_hoan_kho, [maDH]);
+                
+                // 4. Ghi log trạng thái
+                await connection.query(
+                    `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, 
+                    [maDH] // Giả sử 5 là mã trạng thái Hủy
+                );
+
+                console.log(`❌ [CRON] Đã tự động hủy đơn FC-${maDH} và hoàn lại kho.`);
+            }
+        }
+
+        await connection.commit();
+    } catch (error) {
+        await connection.rollback();
+        console.error("⚠️ [CRON] Lỗi khi chạy tác vụ hủy đơn:", error);
+    } finally {
+        connection.release();
+    }
+});

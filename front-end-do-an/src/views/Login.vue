@@ -86,7 +86,7 @@
               <div class="space-y-1.5">
                 <div class="flex justify-between items-center ml-1">
                   <label class="text-sm font-medium text-on-surface-variant" for="password">Mật khẩu</label>
-                  <router-link to = "/change-password" class="text-xs font-semibold text-primary hover:text-primary-fixed transition-colors">Quên mật khẩu?</router-link>
+                  <router-link to = "/forgot-password" class="text-xs font-semibold text-primary hover:text-primary-fixed transition-colors">Quên mật khẩu?</router-link>
                 </div>
                 <div class="relative group">
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">lock</span>

@@ -6,8 +6,9 @@ const dialogflow = require('@google-cloud/dialogflow');
 const uuid = require('uuid');
 
 // Khởi tạo Dialogflow Client
+const path = require('path');
 const sessionClient = new dialogflow.SessionsClient({
-    keyFilename: './key.json' 
+    keyFilename: path.join(__dirname, 'key.json') 
 });
 const projectId = 'chatbotai-jw9s'; 
 
@@ -101,12 +102,42 @@ const chatWithAI = async (req, res) => {
             
             // --- CHỨC NĂNG MỚI: LIÊN HỆ NHÂN VIÊN ---
             case "yeu_cau_gap_nhan_vien": {
-                // Bạn NHỚ THAY ĐỔI link Facebook và SĐT Zalo bên dưới nhé!
+                // Nhớ đổi lại địa chỉ thật của shop bạn nhé
                 responseMessage = `
-                    Dạ, nếu bạn cần hỗ trợ trực tiếp từ nhân viên, bạn có thể liên hệ với shop qua 2 kênh này giúp mình nha:<br><br>
-                    💬 <b>Zalo:</b> <a href="https://zalo.me/0986709616" target="_blank" style="color: #0088FF; font-weight: bold; text-decoration: underline;">0987.654.321 (FigureCollect)</a><br>
-                    📘 <b>Messenger:</b> <a href="https://m.me/yourfanpage" target="_blank" style="color: #0088FF; font-weight: bold; text-decoration: underline;">Nhắn tin qua Facebook Shop</a><br><br>
-                    Nhân viên bên shop trực từ 8h00 - 22h00 mỗi ngày, luôn sẵn sàng hỗ trợ bạn ạ! 🥰
+                    Dạ, nếu bạn cần hỗ trợ trực tiếp, vui lòng chọn kênh liên hệ dưới đây nhé. Shop luôn sẵn sàng hỗ trợ bạn! 🥰
+                    
+                    <div style="background: #f4f6f8; padding: 12px 15px; border-radius: 10px; margin-top: 12px; font-size: 14px; color: #333; line-height: 1.6; border-left: 4px solid #0068FF;">
+                        <b>🏠 Địa chỉ:</b> Số 1, Đường Lê Hồng Phong, Lạ Viên, Ngô Quyền, TP. Hải Phòng<br>
+                        <b>⏰ Giờ hoạt động:</b> 08:00 - 22:00 (Tất cả các ngày trong tuần)
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                        
+                        <a href="https://zalo.me/0986709616" target="_blank" style="display: flex; align-items: center; padding: 12px; background: #ffffff; border: 1.5px solid #0068FF; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/2048px-Icon_of_Zalo.svg.png" alt="Zalo" style="width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; object-fit: cover;">
+                            <div style="display: flex; flex-direction: column; text-align: left;">
+                                <span style="font-weight: bold; font-size: 15px; color: #0068FF; margin-bottom: 3px;">Chat qua Zalo</span>
+                                <span style="font-size: 13px; color: #555;">0986.709.616 (Trực tuyến)</span>
+                            </div>
+                        </a>
+
+                        <a href="https://www.facebook.com/phutooan" target="_blank" style="display: flex; align-items: center; padding: 12px; background: #ffffff; border: 1.5px solid #1877F2; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/1024px-2021_Facebook_icon.svg.png" alt="Facebook" style="width: 45px; height: 45px; margin-right: 15px; object-fit: cover;">
+                            <div style="display: flex; flex-direction: column; text-align: left;">
+                                <span style="font-weight: bold; font-size: 15px; color: #1877F2; margin-bottom: 3px;">Nhắn tin qua Facebook</span>
+                                <span style="font-size: 13px; color: #555;">Fanpage FigureCollect</span>
+                            </div>
+                        </a>
+
+                        <a href="https://www.instagram.com/ddpt24/" target="_blank" style="display: flex; align-items: center; padding: 12px; background: #ffffff; border: 1.5px solid #E1306C; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png" alt="Instagram" style="width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; object-fit: cover;">
+                            <div style="display: flex; flex-direction: column; text-align: left;">
+                                <span style="font-weight: bold; font-size: 15px; color: #E1306C; margin-bottom: 3px;">Nhắn tin Instagram</span>
+                                <span style="font-size: 13px; color: #555;">@figurecollect_ig</span>
+                            </div>
+                        </a>
+
+                    </div>
                 `;
                 break;
             }
@@ -355,15 +386,14 @@ const timSanPhamTheoGia = async (keywords, minPrice, maxPrice) => {
 
 const timSanPhamTheoDanhMuc = async (danhMuc) => {
     try {
-        // LƯU Ý: Hãy sửa lại bảng 'LoaiMoHinh' và cột 'TenLoai' cho khớp với CSDL của bạn!
         let sql = `
             SELECT m.MaMoHinh, m.TenMH, m.TrangThai, 
                    (SELECT LinkAnh FROM AnhMoHinh WHERE MaMoHinh = m.MaMoHinh LIMIT 1) AS LinkAnh,
                    MIN(COALESCE(p.DonGia, m.DonGia)) AS GiaThucTe
             FROM MoHinh m
             LEFT JOIN Phanloai p ON m.MaMoHinh = p.MaMoHinh
-            LEFT JOIN LoaiMoHinh l ON m.MaLoai = l.MaLoai  -- THAY ĐỔI TÊN BẢNG VÀ CỘT KHÓA NGOẠI Ở ĐÂY NẾU CẦN
-            WHERE l.TenLoai LIKE ?
+            LEFT JOIN DanhMuc d ON m.MaDM = d.MaDM   -- ĐÃ SỬA THÀNH BẢNG DanhMuc VÀ CỘT MaDM
+            WHERE d.TenDM LIKE ?                     -- ĐÃ SỬA THÀNH CỘT TenDM
         `;
         const params = [];
 

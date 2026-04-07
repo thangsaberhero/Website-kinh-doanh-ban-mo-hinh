@@ -140,6 +140,7 @@ const donhang_user = {
             mh.MaMoHinh,
             mh.TenMH,
             mh.AnhDaiDien, 
+            mh.TienCocToiThieu,
             pl.DonGia,
             (
                 Select (pl.DonGia - ctkm.ChietKhau)
@@ -192,17 +193,19 @@ const donhang_user = {
             // Truyền giá trị tính tiền riêng tránh việc bị sửa thông tin
             const sql_tinh_tong_tien =  `select SUM( 
                                         Coalesce(
+                                            (
                                             Select (pl.DonGia - ctkm.ChietKhau)
                                             from MoHinh mh
                                             inner join ChiTietKhuyenMai ctkm on ctkm.MaMoHinh = mh.MaMoHinh
                                             inner join KhuyenMai km on km.MaKM = ctkm.MaKM
                                             where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
                                             order by ctkm.ChietKhau desc
-                                            limit 1), 
+                                            limit 1
+                                            ), 
                                         pl.DonGia) * ctgh.SoLuong) 
                                         as TongTien
                                         from ChiTietGioHang ctgh
-                                        inner join Phanloai on Phanloai.MaPhanLoai = ctgh.MaMoHinh
+                                        inner join Phanloai pl on pl.MaPhanLoai = ctgh.MaMoHinh
                                         where ctgh.MaGH = ?`;
             const [result_tong_tien] = await connection.query(sql_tinh_tong_tien,[maGH]);
             const TongTien = result_tong_tien[0].TongTien;
@@ -235,8 +238,8 @@ const donhang_user = {
             }
 
             // 2. Tạo Đơn hàng mới 
-            const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, NgayLapDon, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao) 
-            VALUES (?, ?, NOW(), ?, ? ,?)`;
+            const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao) 
+            VALUES (?, ?, NOW(), 'Chưa Thanh Toán', ?, ? ,?)`;
             const [tao_don] = await connection.query(sql_tao_don, [MaKH, TongTien, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao]);
             
             // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động
@@ -389,7 +392,92 @@ const donhang_user = {
     },
 
     //Thanh Toán
+    // 1. Hàm tạo link chuyển hướng sang Cổng thanh toán MoMo (Giả)
+    tao_link_momo_mock: async (req, res) => {
+        try {
+            const { MaDH, HinhThuc } = req.body;
+            let soTienCanThanhToan = 0;
 
+            if (HinhThuc === 'Thanh toán toàn bộ') {
+                // Nếu thanh toán hết -> Lấy Tổng Tiền của Đơn hàng
+                const sql_tong_tien = `SELECT TongTien FROM DonHang WHERE MaDH = ?`;
+                const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
+                soTienCanThanhToan = result_tong[0].TongTien;
+
+            } else {
+                const sql_tinh_tien_coc = `Select SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc
+                                            from MoHinh mh
+                                            inner join Phanloai pl on pl.MaMoHinh = mh.MaMoHinh
+                                            inner join ChiTietDonHang ct on ct.MaMoHinh = pl.MaPhanLoai
+                                            where ct.MaDH = ? 
+                                            limit 1`;
+                const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH])                   
+                soTienCanThanhToan = result_tien_coc[0].TienCoc;
+            }
+            
+
+            // Thay vì gọi API của MoMo thật, ta tự tạo ra một đường link trỏ về 
+            // một trang giao diện mới trên chính Frontend (Vue.js) của bạn
+            const mockUrl = `http://localhost:5173/momo-payment?orderId=${MaDH}&amount=${soTienCanThanhToan}&type=${encodeURIComponent(HinhThuc || 'Thanh toán toàn bộ')}`;
+
+            res.status(200).json({
+                message: "Tạo link thanh toán MoMo thành công!",
+                checkoutUrl: mockUrl // Frontend sẽ lấy link này để mở ra
+            });
+
+        } catch (error) {
+            console.error("Lỗi tạo thanh toán MoMo mock:", error);
+            res.status(500).json({ message: "Lỗi tạo cổng thanh toán!" });
+        }
+    },
+
+    // 2. Hàm nhận tín hiệu khi khách bấm "Xác nhận" trên giao diện MoMo giả
+    xac_nhan_momo_mock: async (req, res) => {
+        // Cấp 1 connection riêng để làm Transaction (đảm bảo an toàn ghi dữ liệu)
+        const connection = await db.getConnection();
+
+        try {
+            // Frontend truyền cục data về khi bấm "Xác nhận"
+            const { orderId, amount, type } = req.body; 
+
+            await connection.beginTransaction();
+
+            // Bước 1: Ghi vào bảng ThanhToan
+            // Chú ý: MaPT = 2 (Giả sử 1 là COD, 2 là Ví Điện Tử/MoMo, bạn tự chỉnh lại theo DB nhé)
+            const sql_thanh_toan = `
+                INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich) 
+                VALUES (1, ?, NOW(), ?, ?)
+            `;
+            await connection.query(sql_thanh_toan, [orderId, amount, type]);
+
+            // Bước 2: Cập nhật trạng thái đơn hàng (Đã cọc hoặc Đã thanh toán)
+            let trangThaiMoi = type === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
+            await connection.query(
+                `UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, 
+                [trangThaiMoi, orderId]
+            );
+            
+            // Bước 3: Thêm log vào bảng ChiTietTrangThai (Giả sử mã trạng thái 2 là Đã cọc/thanh toán)
+            // await connection.query(
+            //     `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 1, NOW())`, 
+            //     [orderId]
+            // );
+
+            await connection.commit();
+            connection.release();
+
+            res.status(200).json({ 
+                success: true, 
+                message: "Giao dịch thành công!" 
+            });
+            
+        } catch (error) {
+            await connection.rollback();
+            connection.release();
+            console.error("Lỗi xử lý xác nhận MoMo:", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi ghi nhận thanh toán!" });
+        }
+    }
 
     
     

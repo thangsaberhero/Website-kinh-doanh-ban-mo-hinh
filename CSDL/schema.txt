@@ -17,6 +17,8 @@ CREATE TABLE TaiKhoan (
     Email VARCHAR(100),
     MaQuyen INT,
     AnhDaiDien VARCHAR(100),
+	ResetOTP VARCHAR(10) NULL,
+	OTPExpires DATETIME NULL,
     FOREIGN KEY (MaQuyen) REFERENCES Quyen(MaQuyen)
 );
 
@@ -172,7 +174,7 @@ CREATE TABLE DonHang (
     NgayLapDon DATETIME,
     TongTien DECIMAL(12,2) CHECK (TongTien >= 0),
     ThanhTien DECIMAL(12,2) CHECK (ThanhTien >= 0),
-    TrangThaiDonHang VARCHAR(50),
+    TrangThaiThanhToan VARCHAR(50),
     TenNguoiNhan VARCHAR(100),
     SDTNguoiNhan VARCHAR(15),
     DiaChiGiao VARCHAR(255),
