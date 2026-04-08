@@ -17,7 +17,9 @@ import SearchView from '../views/SearchView.vue';
 import NewsView from '../views/NewsView.vue';
 import ContactView from '../views/ContactView.vue';
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue';
-
+import AdminDashboard from '@/views/admin/AdminDashboard.vue';
+import AdminInventory from '@/views/admin/AdminInventory.vue';
+import AdminUserManagement from '@/views/admin/AdminUserManagement.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -104,6 +106,21 @@ const router = createRouter({
       name: 'ForgotPassword',
       component: ForgotPasswordView,
       meta: { hideFooter: true, hidePhone: true }
+    },
+    {
+      path: '/admin',
+      name: 'AdminDashboard',
+      component: AdminDashboard
+    },
+    {
+      path: '/admin/inventory',
+      name: 'Inventory',
+      component: AdminInventory
+    },
+    {
+      path: '/admin/users',
+      name: 'UserManagement',
+      component: AdminUserManagement
     }
   ]
 });
