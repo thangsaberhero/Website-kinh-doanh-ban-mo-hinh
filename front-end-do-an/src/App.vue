@@ -47,40 +47,23 @@ const handleHover = (e) => {
   }
 
   const target = e.target;
+  // 2. Thẻ bị vô hiệu hóa
+  if (target.closest(':disabled, .disabled, [disabled]')) { cursorName.value = 'Unavailable'; return; }
+  
+  // 3. Thẻ kéo thả
+  if (target.closest('[draggable="true"], .draggable')) { cursorName.value = 'Move'; return; }
 
-  // 2. Thẻ bị vô hiệu hóa (disabled) -> Hiện Unavailable (Dấu gạch chéo)
-  if (target.closest(':disabled, .disabled, [disabled]')) {
-    cursorType.value = 'is-unavailable';
-    return;
-  }
+  // 4. Ô nhập chữ
+  if (target.closest('input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]), textarea')) { cursorName.value = 'Text'; return; }
 
-  // 3. Thẻ có thể kéo thả (Drag & Drop) -> Hiện Move (Mũi tên 4 hướng)
-  if (target.closest('[draggable="true"], .draggable')) {
-    cursorType.value = 'is-move';
-    return;
-  }
+  // 5. ƯU TIÊN CAO HƠN: Nút bấm, Link, Label -> Hiện ngón tay (Link)
+  if (target.closest('a, button, label, .cursor-pointer')) { cursorName.value = 'Link'; return; }
 
-  // 4. Thẻ mang tính hướng dẫn (Tooltip, icon chấm hỏi) -> Hiện Help (Miku đội dấu chấm hỏi)
-  if (target.closest('[title], .help-icon')) {
-    cursorType.value = 'is-help';
-    return;
-  }
+  // 6. BỊ ĐẨY XUỐNG THẤP HƠN: Chỉ hiện Help nếu nó có 'title' nhưng KHÔNG PHẢI là nút bấm
+  if (target.closest('[title], .help-icon')) { cursorName.value = 'Help'; return; }
 
-  // 5. Thẻ có thể nhập chữ -> Hiện Text (Con trỏ chữ I)
-  // Chỉ lấy input văn bản, loại trừ radio và checkbox
-  if (target.closest('input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]), textarea')) {
-    cursorType.value = 'is-text';
-    return;
-  }
-
-  // 6. Thẻ có thể click (Link, Nút bấm) -> Hiện Link (Bàn tay/Pin)
-  if (target.closest('a, button, label, .cursor-pointer')) {
-    cursorType.value = 'is-pointer';
-    return;
-  }
-
-  // 7. Nếu không trúng cái nào ở trên -> Trở về Normal
-  cursorType.value = 'is-normal';
+  // 7. Mặc định
+  cursorName.value = 'Normal';
 };
 
 onMounted(() => {
