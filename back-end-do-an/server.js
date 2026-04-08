@@ -13,11 +13,7 @@ const db = require('./config/db');
 app.use(cors());
 app.use(express.json()); // Giúp server đọc được dữ liệu JSON gửi lên
 
-// Import Routes
-const danhMucRoutes = require('./routes/danhmuc.route.js');
 
-// Sử dụng Routes
-app.use('/api/danhmuc', danhMucRoutes);
 
 // Khởi động Server
 const PORT = process.env.PORT || 3000;
@@ -26,27 +22,26 @@ app.listen(PORT, () => {
 });
 
 // Import Route Auth
-const authRoutes = require('./routes/auth.route.js');
+const authRoutes = require('./routes/User_route/auth.route.js');
 
 // Sử dụng Route Auth
 app.use('/api/auth', authRoutes);
 
 // Thay đổi thông tin khách hàng
-const user_info = require('./routes/info_user.route.js');
+const user_info = require('./routes/User_route/info_user.route.js');
 app.use('/api/info_user', user_info);
 
-//Lấy thông tin sản phẩm
-const homeviewRoutes = require('./routes/homeview.route.js');
-app.use('/api/products', homeviewRoutes);
+//Lấy thông tin sản phẩm và danh mục sản phẩm
+const productsRoutes = require('./routes/User_route/products.route.js');
+app.use('/api/products', productsRoutes);
 
 //Lấy thông tin tin tức
-const newsRoutes = require('./routes/news.route.js');
+const newsRoutes = require('./routes/User_route/news.route.js');
 app.use('/api/news', newsRoutes);
 
-
 //Thêm đơn hàng
-const add_cartRoutes = require('./routes/donhang_user.route.js');
-app.use('/api/add_cart',add_cartRoutes);
+const donhangRoutes = require('./routes/User_route/donhang_user.route.js');
+app.use('/api/don_hang',donhangRoutes);
 
 //Lấy đường dẫn ảnh đại diện
 const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
@@ -54,7 +49,7 @@ const path = require('path'); // Nhớ gọi thư viện path ở đầu file se
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
 
 // --- THÊM ROUTE CHATBOT ---
-const chatRoutes = require('./routes/chat.route.js');
+const chatRoutes = require('./routes/User_route/chat.route.js');
 app.use('/api/chatbot', chatRoutes);
 
 
@@ -62,7 +57,6 @@ app.use('/api/chatbot', chatRoutes);
 // CRON JOB: TỰ ĐỘNG HỦY ĐƠN VÀ NHẢ KHO (Mỗi 1 phút chạy 1 lần)
 // =========================================================
 cron.schedule('* * * * *', async () => {
-    console.log("⏳ [CRON] Đang tuần tra các đơn hàng quá hạn thanh toán MoMo...");
 
     // Cấp một connection để làm Transaction an toàn
     const connection = await db.getConnection();
@@ -103,7 +97,7 @@ cron.schedule('* * * * *', async () => {
                     [maDH] // Giả sử 5 là mã trạng thái Hủy
                 );
 
-                console.log(`❌ [CRON] Đã tự động hủy đơn FC-${maDH} và hoàn lại kho.`);
+                console.log(`❌ Đã tự động hủy đơn FC-${maDH} và hoàn lại kho.`);
             }
         }
 

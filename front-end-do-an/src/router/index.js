@@ -1,24 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import LoginView from '../views/Login.vue'; 
-import HomeView from '../views/Home.vue';
-import ProductDetail from '../views/Product_detail.vue';
-import CategoryView from '../views/CategoryView.vue';
-import RegisterView from '../views/RegisterView.vue';
-import ProfileView from '../views/ProfileView.vue';
-import ChangePassword from '../views/ChangePassword.vue';
-import CartView from '../views/CartView.vue';
-import CheckoutView from '../views/CheckoutView.vue';
-import OrderSuccessView from '../views/OrderSuccessView.vue';
-import OrderHistoryView from '../views/OrderHistoryView.vue';
-import OrderDetailView from '../views/OrderDetailView.vue';
-import WishlistView from '../views/WishlistView.vue';
-import SearchView from '../views/SearchView.vue';
-import NewsView from '../views/NewsView.vue';
-import ContactView from '../views/ContactView.vue';
-import ForgotPasswordView from '@/views/ForgotPasswordView.vue';
+import LoginView from '../views/User_view/Login.vue'; 
+import HomeView from '../views/User_view/Home.vue';
+import ProductDetail from '../views/User_view/Product_detail.vue';
+import CategoryView from '../views/User_view/CategoryView.vue';
+import RegisterView from '../views/User_view/RegisterView.vue';
+import ProfileView from '../views/User_view/ProfileView.vue';
+import ChangePassword from '../views/User_view/ChangePassword.vue';
+import CartView from '../views/User_view/CartView.vue';
+import CheckoutView from '../views/User_view/CheckoutView.vue';
+import OrderSuccessView from '../views/User_view/OrderSuccessView.vue';
+import OrderHistoryView from '../views/User_view/OrderHistoryView.vue';
+import OrderDetailView from '../views/User_view/OrderDetailView.vue';
+import WishlistView from '../views/User_view/WishlistView.vue';
+import SearchView from '../views/User_view/SearchView.vue';
+import NewsView from '../views/User_view/NewsView.vue';
+import ContactView from '../views/User_view/ContactView.vue';
+import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
 //Phần thanh toán có thể thay thế bằng payos sau này
-import checkout from '@/views/MoMoMockView.vue';
+import checkout from '../views/User_view/MoMoMockView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
