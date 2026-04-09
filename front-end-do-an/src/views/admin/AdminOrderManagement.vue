@@ -1,0 +1,490 @@
+<template>
+    <div @click="closeAllMenus" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+      
+      <div 
+        v-show="isMobileMenuOpen || isViewOrderDrawerOpen" 
+        @click="isMobileMenuOpen = false; isViewOrderDrawerOpen = false" 
+        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+      ></div>
+  
+      <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
+  
+      <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
+        <AdminHeader @toggle-sidebar="handleToggleSidebar" />
+        
+        <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-32">
+          
+          <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
+            <div>
+              <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Hoàn tất đơn hàng</h1>
+              <p class="text-slate-500 text-sm font-medium">Quản lý và xử lý quy trình vận chuyển cho các đơn hàng Figure.</p>
+            </div>
+            
+            <div class="flex gap-3 w-full xl:w-auto">
+              <button class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
+                <span class="material-symbols-outlined text-[20px]">file_download</span>
+                Xuất báo cáo
+              </button>
+              <button class="flex-1 xl:flex-none bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
+                <span class="material-symbols-outlined text-[20px]">inventory</span>
+                Xử lý hàng loạt
+                <span v-if="selectedOrders.length > 0" class="bg-white text-[#ff3d00] text-[10px] px-1.5 py-0.5 rounded-md ml-1">{{ selectedOrders.length }}</span>
+              </button>
+            </div>
+          </div>
+  
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
+              <div class="absolute -right-4 -bottom-4 text-orange-200 opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500 ease-out z-0 pointer-events-none">
+                 <span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+              </div>
+              <div class="relative z-10">
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Chờ xác nhận</p>
+                <p class="text-3xl font-brand font-bold text-slate-900">12</p>
+              </div>
+              <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center border border-orange-100 shadow-inner relative z-10">
+                <span class="material-symbols-outlined text-orange-500">pending_actions</span>
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
+              <div class="absolute -right-4 -bottom-4 text-sky-200 opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500 ease-out z-0 pointer-events-none">
+                 <span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">package_2</span>
+              </div>
+              <div class="relative z-10">
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Đang đóng gói</p>
+                <p class="text-3xl font-brand font-bold text-slate-900">48</p>
+              </div>
+              <div class="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center border border-sky-100 shadow-inner relative z-10">
+                <span class="material-symbols-outlined text-sky-500">package_2</span>
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
+              <div class="absolute -right-4 -bottom-4 text-amber-200 opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500 ease-out z-0 pointer-events-none">
+                 <span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+              </div>
+              <div class="relative z-10">
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Đang giao</p>
+                <p class="text-3xl font-brand font-bold text-slate-900">156</p>
+              </div>
+              <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100 shadow-inner relative z-10">
+                <span class="material-symbols-outlined text-amber-500">local_shipping</span>
+              </div>
+            </div>
+  
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
+              <div class="absolute -right-4 -bottom-4 text-emerald-200 opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500 ease-out z-0 pointer-events-none">
+                 <span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+              </div>
+              <div class="relative z-10">
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Hoàn thành (24h)</p>
+                <p class="text-3xl font-brand font-bold text-slate-900">32</p>
+              </div>
+              <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 shadow-inner relative z-10">
+                <span class="material-symbols-outlined text-emerald-500">check_circle</span>
+              </div>
+            </div>
+          </div>
+  
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            
+            <div class="flex items-center border-b border-slate-100 bg-slate-50/50 px-6 overflow-x-auto custom-scrollbar">
+              <button 
+                v-for="tab in tabs" :key="tab.id"
+                @click="activeTab = tab.id"
+                class="px-6 py-4 text-sm font-bold whitespace-nowrap transition-colors border-b-2"
+                :class="activeTab === tab.id ? 'border-[#ff8f73] text-[#ff3d00]' : 'border-transparent text-slate-500 hover:text-slate-900'"
+              >
+                {{ tab.name }}
+              </button>
+            </div>
+  
+            <div class="p-6 flex flex-col md:flex-row justify-between gap-4 items-center">
+              <div class="flex items-center gap-4">
+                <div class="flex items-center px-4 py-2 border border-slate-200 rounded-xl bg-slate-50 text-xs font-bold text-slate-500 shadow-sm">
+                  <span>Hiển thị 10/216 đơn hàng</span>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer group">
+                  <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer transition-colors"/>
+                  <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn tất cả để xử lý</span>
+                </label>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="w-9 h-9 flex items-center justify-center border border-slate-200 rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 transition-all shadow-sm">
+                  <span class="material-symbols-outlined text-[20px]">filter_list</span>
+                </button>
+                <button class="w-9 h-9 flex items-center justify-center border border-slate-200 rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 transition-all shadow-sm">
+                  <span class="material-symbols-outlined text-[20px]">sort</span>
+                </button>
+              </div>
+            </div>
+  
+            <div class="overflow-x-auto min-h-[300px]">
+              <table class="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                  <tr class="bg-slate-50/50 border-y border-slate-100">
+                    <th class="px-6 py-5 w-12 text-center"></th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Mã vận đơn</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Tên khách hàng</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Sản phẩm</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Ngày đặt</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Thanh toán</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                  <tr v-for="(order, index) in orders" :key="order.id" 
+                      class="transition-colors group"
+                      :class="selectedOrders.includes(order.id) ? 'bg-[#ff8f73]/5 hover:bg-[#ff8f73]/10' : 'hover:bg-slate-50/80'">
+                    
+                    <td class="px-6 py-4 text-center">
+                      <input v-model="selectedOrders" :value="order.id" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer"/>
+                    </td>
+                    
+                    <td class="px-6 py-4">
+                      <div class="flex flex-col">
+                        <span class="font-bold text-slate-900 text-sm">{{ order.code }}</span>
+                        <span class="text-[10px] font-bold mt-0.5" :class="getCarrierColor(order.carrier)">{{ order.carrier }}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="px-6 py-4 text-sm font-semibold text-slate-700">{{ order.customer }}</td>
+                    
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                        
+                            <div class="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-slate-100 shrink-0 p-0.5 shadow-inner">
+                                <img :src="`https://ui-avatars.com/api/?name=${order.products[0].name.charAt(0)}&background=random&color=fff&size=128`" class="w-full h-full object-cover rounded-lg"/>
+                            </div>
+                            
+                            <div class="flex flex-col max-w-[220px]">
+                                <span class="text-[13px] font-bold text-slate-900 truncate" :title="order.products[0].name">
+                                {{ order.products[0].name }}
+                                </span>
+                                
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[11px] font-semibold text-slate-400">
+                                        Số lượng: <span class="text-slate-600">{{ order.products[0].quantity }}</span>
+                                    </span>
+                                    <span v-if="order.products.length > 1" class="text-[10px] font-bold text-[#ff3d00] bg-[#ff8f73]/10 border border-[#ff8f73]/20 px-1.5 py-0.5 rounded-md cursor-help transition-colors hover:bg-[#ff8f73]/20" :title="`Đơn này có tổng cộng ${order.products.length} loại sản phẩm`">
+                                        +{{ order.products.length - 1 }} sản phẩm khác
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="px-6 py-4">
+                      <p class="text-[13px] font-semibold text-slate-600">{{ order.time }}</p>
+                      <p class="text-[11px] font-medium text-slate-400">{{ order.date }}</p>
+                    </td>
+                    
+                    <td class="px-6 py-4">
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide border shadow-sm" :class="getPaymentStyle(order.paymentStatus)">
+                        {{ order.paymentStatus }}
+                      </span>
+                    </td>
+                    
+                    <td class="px-6 py-4 relative">
+                        <div class="flex justify-end gap-1 relative">
+                            <button @click="viewOrderDetails(order)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-sky-500 hover:bg-sky-50 rounded-xl transition-all" title="Xem chi tiết đơn">
+                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            </button>
+                            
+                            <button class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all" title="Xác nhận & Chuyển trạng thái">
+                                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                            </button>
+                            
+                            <button @click.stop="toggleOrderMenu(order.id)" class="w-8 h-8 flex items-center justify-center rounded-xl transition-all" :class="activeMenuId === order.id ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'">
+                                <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                            </button>
+                        </div>
+
+                        <div 
+                            v-show="activeMenuId === order.id"
+                            @click.stop
+                            class="absolute right-10 w-48 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-2 z-50 text-left overflow-hidden"
+                            :class="index >= orders.length - 2 ? 'bottom-8 top-auto' : 'top-10'"
+                        >
+                            <button class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-3 font-medium transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">receipt_long</span> Xuất hóa đơn
+                            </button>
+                            
+                            <button class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-3 font-medium transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">edit</span> Sửa đơn hàng
+                            </button>
+                            
+                            <a href="tel:0912345678" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-3 font-medium transition-colors block">
+                                <span class="material-symbols-outlined text-[18px]">call</span> Gọi khách hàng
+                            </a>
+                            
+                            <div class="border-t border-slate-100 my-1"></div>
+                            
+                            <button @click="cancelOrder(order.id)" class="w-full text-left px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 font-bold transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn hàng
+                            </button>
+                        </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="p-6 flex items-center justify-between border-t border-slate-100 bg-slate-50/30">
+              <span class="text-xs font-bold text-slate-400">Hiển thị 1 - 10 của 216 đơn hàng</span>
+              <div class="flex items-center gap-2">
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#ff8f73] text-white text-xs font-bold shadow-lg shadow-[#ff8f73]/20">1</button>
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">2</button>
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">3</button>
+                <span class="w-9 h-9 flex items-center justify-center text-slate-400 font-bold">...</span>
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">22</button>
+                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+              </div>
+            </div>
+          </div>
+  
+        </main>
+        <div 
+            class="fixed top-0 right-0 h-screen w-full sm:w-[450px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col"
+            :class="isViewOrderDrawerOpen ? 'translate-x-0' : 'translate-x-full'"
+        >
+        <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <h2 class="text-lg font-bold text-slate-900">Chi tiết đơn hàng</h2>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">{{ viewingOrder.code }}</span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium">Đặt lúc: {{ viewingOrder.time }}, {{ viewingOrder.date }}</p>
+          </div>
+          <button @click="isViewOrderDrawerOpen = false" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/50">
+          
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-50 pb-3">
+              <span class="material-symbols-outlined text-[16px]">local_shipping</span> Giao hàng tới
+            </h3>
+            
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-slate-300 text-[18px] mt-0.5">person</span>
+                <div>
+                  <p class="text-sm font-bold text-slate-900">{{ viewingOrder.customer }}</p>
+                  <p class="text-xs font-semibold text-slate-500 mt-0.5">{{ viewingOrder.phone }}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-slate-300 text-[18px] mt-0.5">location_on</span>
+                <p class="text-xs font-medium text-slate-700 leading-relaxed">{{ viewingOrder.address }}</p>
+              </div>
+              <div class="flex items-center gap-3 pt-2 border-t border-slate-50">
+                <span class="material-symbols-outlined text-slate-300 text-[18px]">inventory_2</span>
+                <p class="text-xs font-medium text-slate-600">
+                  ĐVVC: <span class="font-bold text-slate-900">{{ viewingOrder.carrier }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-50 pb-3">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">category</span> Sản phẩm ({{ viewingOrder.products?.length || 0 }})
+              </h3>
+            </div>
+            
+            <div class="space-y-4">
+              <div v-for="(prod, index) in viewingOrder.products" :key="index" class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shrink-0">
+                  <img :src="`https://ui-avatars.com/api/?name=${prod.name.charAt(0)}&background=random&color=fff`" class="w-full h-full object-cover"/>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold text-slate-900 line-clamp-2" :title="prod.name">{{ prod.name }}</p>
+                  <p class="text-xs font-semibold text-slate-500 mt-1">Số lượng: x{{ prod.quantity }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+             <div class="flex justify-between items-center text-xs font-medium text-slate-500">
+               <span>Tạm tính sản phẩm:</span>
+               <span class="text-slate-900 font-semibold">{{ viewingOrder.subtotal?.toLocaleString('vi-VN') }} ₫</span>
+             </div>
+             <div class="flex justify-between items-center text-xs font-medium text-slate-500 border-b border-slate-50 pb-3">
+               <span>Phí vận chuyển:</span>
+               <span class="text-slate-900 font-semibold">{{ viewingOrder.shippingFee?.toLocaleString('vi-VN') }} ₫</span>
+             </div>
+             <div class="flex justify-between items-center pt-1">
+               <span class="text-xs font-bold text-slate-900 uppercase">Tổng thu:</span>
+               <span class="text-lg font-brand font-bold text-[#ff3d00]">{{ viewingOrder.total?.toLocaleString('vi-VN') }} ₫</span>
+             </div>
+             <div class="pt-2">
+                <span class="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide bg-slate-100 text-slate-600 border border-slate-200 w-full text-center">
+                  Phương thức: {{ viewingOrder.paymentStatus }}
+                </span>
+             </div>
+          </div>
+
+        </div>
+        
+        <div class="p-6 border-t border-slate-100 bg-white shrink-0 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <button class="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">print</span> In nhãn
+          </button>
+          <button class="flex-[2] py-3 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-colors text-sm flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span> Xác nhận đóng gói
+          </button>
+        </div>
+      </div>
+
+        <footer class="absolute bottom-0 w-full bg-white border-t border-slate-200 flex justify-between items-center px-8 py-4 z-40">
+          <div class="flex items-center gap-6">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">© 2024 FigureCollect. Phiên bản 2.4.0-Technical.</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <a href="#" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#ff8f73] transition-colors">Tài liệu kỹ thuật</a>
+            <a href="#" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#ff8f73] transition-colors">Nhật ký thay đổi</a>
+          </div>
+        </footer>
+      </div>
+    </div>
+</template>
+  
+<script setup>
+  import { ref, computed } from 'vue';
+  import AdminSideBar from "@/components/AdminSidebar.vue";
+  import AdminHeader from "@/components/AdminHeader.vue";
+  
+  const isSidebarCollapsed = ref(false);
+  const isMobileMenuOpen = ref(false);
+  
+  const handleToggleSidebar = () => {
+    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
+    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  };
+  const closeAllMenus = () => {
+    activeMenuId.value = null; 
+  };
+  
+  // --- Quản lý Tabs ---
+  const tabs = [
+    { id: 'all', name: 'Tất cả' },
+    { id: 'pending', name: 'Chờ xác nhận' },
+    { id: 'packing', name: 'Đang đóng gói' },
+    { id: 'shipping', name: 'Đang giao' },
+    { id: 'completed', name: 'Đã hoàn thành' }
+  ];
+  const activeTab = ref('all');
+  
+  // --- Dữ liệu Mock Đơn hàng ---
+  const orders = ref([
+  { 
+    id: 1, code: '#FC-99421', carrier: 'Giao Hàng Nhanh', customer: 'Nguyễn Minh Tú', 
+    products: [
+      { name: 'Luffy Gear 5 Sun God', quantity: 1 }
+    ], 
+    time: '14:30', date: '24/05/2024', paymentStatus: 'Đã thanh toán (Banking)' 
+  },
+  { 
+    id: 2, code: '#FC-99422', carrier: 'Viettel Post', customer: 'Lê Hoàng Nam', 
+    products: [
+      { name: 'Gundam RX-78-2 Ver 2.0', quantity: 1 },
+      { name: 'Base Action (Đế đứng)', quantity: 2 },
+      { name: 'Bộ decal dán nước', quantity: 1 }
+    ], 
+    time: '15:12', date: '24/05/2024', paymentStatus: 'COD (Thu hộ)' 
+  },
+  { 
+    id: 3, code: '#FC-99425', carrier: 'J&T Express', customer: 'Trần Thị Tuyết', 
+    products: [
+      { name: 'Nezuko Kamado Blood Art', quantity: 1 },
+      { name: 'Hộp mica trưng bày', quantity: 1 }
+    ], 
+    time: '16:45', date: '24/05/2024', paymentStatus: 'Đã thanh toán (Visa)' 
+  },
+  ]);
+  
+  // --- Logic Checkbox & Xử lý hàng loạt ---
+  const selectedOrders = ref([]); // Mảng chứa ID các đơn hàng đang được tick
+  
+  // Computed property để xử lý nút "Chọn tất cả"
+  const selectAll = computed({
+    get: () => orders.value.length > 0 && selectedOrders.value.length === orders.value.length,
+    set: (value) => {
+      if (value) {
+        selectedOrders.value = orders.value.map(o => o.id); // Chọn hết
+      } else {
+        selectedOrders.value = []; // Bỏ chọn hết
+      }
+    }
+  });
+  
+  // --- Hàm tạo màu động ---
+  const getCarrierColor = (carrier) => {
+    if (carrier.includes('Giao Hàng')) return 'text-orange-500';
+    if (carrier.includes('Viettel')) return 'text-emerald-600';
+    if (carrier.includes('J&T')) return 'text-rose-600';
+    return 'text-sky-600';
+  };
+  
+  const getPaymentStyle = (status) => {
+    if (status.includes('Đã thanh toán')) return 'bg-emerald-50 text-emerald-600 border-emerald-200';
+    if (status.includes('COD')) return 'bg-amber-50 text-amber-600 border-amber-200';
+    return 'bg-slate-50 text-slate-600 border-slate-200';
+  };
+  // --- LOGIC MENU 3 CHẤM (DROPDOWN) ---
+  // Biến lưu trữ ID của đơn hàng đang được mở menu
+  const activeMenuId = ref(null);
+
+  // Hàm bật/tắt menu cho từng dòng
+  const toggleOrderMenu = (id) => {
+    // Nếu bấm lại vào chính menu đang mở thì đóng nó đi, nếu bấm chỗ khác thì mở menu mới
+    activeMenuId.value = activeMenuId.value === id ? null : id;
+  };
+
+  // --- CÁC HÀM XỬ LÝ HÀNH ĐỘNG CỦA MENU ---
+  // Khai báo biến quản lý Ngăn kéo
+    const isViewOrderDrawerOpen = ref(false);
+    const viewingOrder = ref({});
+
+    const viewOrderDetails = (order) => {
+    // Mô phỏng dữ liệu chi tiết mà sau này Backend sẽ trả về (VD: số ĐT, Địa chỉ, Tiền)
+    viewingOrder.value = {
+        ...order, // Copy các dữ liệu cơ bản đã có ở bảng
+        phone: '09' + Math.floor(Math.random() * 100000000), // SĐT giả lập
+        address: 'Số 123 Đường B, Phường C, Quận D, TP. Hồ Chí Minh', // Địa chỉ giả lập
+        subtotal: 1500000, 
+        shippingFee: 30000,
+        total: 1530000
+    };
+    
+    isViewOrderDrawerOpen.value = true;
+    activeMenuId.value = null; // Tự động đóng menu 3 chấm
+    };
+
+  const updateOrderStatus = (order) => {
+    console.log("Cập nhật trạng thái cho đơn:", order.code);
+    activeMenuId.value = null;
+  };
+
+  const cancelOrder = (id) => {
+    if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này không? Khách hàng sẽ nhận được email thông báo.")) {
+      console.log("Đã hủy đơn:", id);
+      // Code thực tế: orders.value = orders.value.filter(o => o.id !== id);
+    }
+    activeMenuId.value = null;
+  };
+</script>
+  
+<style scoped>
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
