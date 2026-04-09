@@ -20,6 +20,10 @@ import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
 //Phần thanh toán có thể thay thế bằng payos sau này
 import checkout from '../views/User_view/MoMoMockView.vue';
 
+import AdminDashboard from '../views/Admin_view/AdminDashboard.vue';
+import AdminInventory from '../views/Admin_view/AdminInventory.vue';
+import AdminUserManagement from '../views/Admin_view/AdminUserManagement.vue';
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -111,6 +115,21 @@ const router = createRouter({
       path: '/momo-payment',
       name: 'MoMoMock',
       component: checkout
+    },
+    {
+      path: '/admin',
+      name: 'AdminDashboard',
+      component: AdminDashboard
+    },
+    {
+      path: '/admin/inventory',
+      name: 'Inventory',
+      component: AdminInventory
+    },
+    {
+      path: '/admin/users',
+      name: 'UserManagement',
+      component: AdminUserManagement
     }
   ]
 });

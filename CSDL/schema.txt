@@ -19,6 +19,7 @@ CREATE TABLE TaiKhoan (
     AnhDaiDien VARCHAR(100),
 	ResetOTP VARCHAR(10) NULL,
 	OTPExpires DATETIME NULL,
+	Bi_khoa TINYINT(),
     FOREIGN KEY (MaQuyen) REFERENCES Quyen(MaQuyen)
 );
 
@@ -80,6 +81,7 @@ CREATE TABLE MoHinh (
     NgayPhatHanh DATE,
     LoaiHinhBan VARCHAR(50), 
     TienCocToiThieu DECIMAL(12,2) CHECK (TienCocToiThieu >= 0),
+	HienThi TINYINT default 0,
     FOREIGN KEY (MaHSX) REFERENCES HangSanXuat(MaHSX),
     FOREIGN KEY (MaDM) REFERENCES DanhMuc(MaDM),
     FOREIGN KEY (MaChiTietDM) REFERENCES ChiTietDanhMuc(MaChiTietDM)
@@ -178,6 +180,7 @@ CREATE TABLE DonHang (
     TenNguoiNhan VARCHAR(100),
     SDTNguoiNhan VARCHAR(15),
     DiaChiGiao VARCHAR(255),
+	Note Text,
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
 );
@@ -250,7 +253,7 @@ CREATE TABLE ChiTietKhuyenMai (
 -- 21. Bảng Tin tức
 CREATE TABLE TinTuc (
     MaTT INT PRIMARY KEY AUTO_INCREMENT,
-    NoiDung TEXT,
+    NoiDung LongTEXT,
     MaNV INT,
     TrangThai VARCHAR(50),
     TieuDe VARCHAR(255) NOT NULL,
@@ -334,24 +337,3 @@ CREATE TABLE LichSuBlockchain (
     LoaiSuKien VARCHAR(50), 
     FOREIGN KEY (MaMoHinhVL) REFERENCES SanPhamVatLy(MaMoHinhVL)
 );
-
--- 29. Bảng Phiên chat
-CREATE TABLE PhienChat (
-    MaPC INT PRIMARY KEY AUTO_INCREMENT,
-    MaKH INT,
-    ThoiGianBD DATETIME,
-    TrangThai VARCHAR(50),
-    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
-);
-
--- 30. Bảng Chi tiết đoạn chat
-CREATE TABLE ChiTietDoanChat (
-    MaTN INT PRIMARY KEY AUTO_INCREMENT,
-    MaPC INT,
-    NguoiGui VARCHAR(50), 
-    NoiDung TEXT,
-    NhanDienYDinh VARCHAR(100),
-    ThoiGianGui DATETIME,
-    FOREIGN KEY (MaPC) REFERENCES PhienChat(MaPC)
-);
-

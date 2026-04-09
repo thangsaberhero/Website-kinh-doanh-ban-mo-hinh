@@ -17,14 +17,14 @@ const product_staff = {
             await connection.beginTransaction();
             
             const sql_insert_dm = `Insert into DanhMuc(TenDM, MoTa) values (?,?)`;
-            const [result_dm] = await db.query(sql,[TenDM, MoTa]);
+            const [result_dm] = await db.query(sql_insert_dm,[TenDM, MoTa]);
             
             const ma_DM_moi = result_dm.insertId;
 
             if (Array.isArray(danhSachChiTiet) && danhSachChiTiet.length > 0) {
                 const sql_insert_chitiet = `INSERT INTO ChiTietDanhMuc(MaDM, TenChiTietDM, MoTa) VALUES (?, ?, ?)`;
                 for (let chiTiet of danhSachChiTiet) {
-                    await connection.query(sql_insert_chitiet, [maDMMoi, chiTiet.Ten, chiTiet.MoTa]);
+                    await connection.query(sql_insert_chitiet, [ma_DM_moi, chiTiet.Ten, chiTiet.MoTa]);
                 }
             }
 
@@ -33,7 +33,7 @@ const product_staff = {
 
             res.status(200).json({ 
                 message: `Thành công tạo danh mục (và các chi tiết nếu có)!`,
-                MaDMMoi: maDMMoi
+                MaDMMoi: ma_DM_moi
             });
             
         }
