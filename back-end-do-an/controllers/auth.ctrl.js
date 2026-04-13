@@ -94,8 +94,8 @@ const authController = {
                 user: {
                     id: user.MaTK,
                     username: user.TenDN,
-                    // [SỬA Ở ĐÂY]: Gói thêm MaKH để Frontend cất vào Local Storage
-                    MaKH: user.MaKH 
+                    MaKH: user.MaKH,
+                    role: user.MaQuyen
                 }
             });
         } catch (error) {

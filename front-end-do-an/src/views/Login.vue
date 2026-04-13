@@ -206,13 +206,18 @@ const handleLogin = async () => {
   toastMessage.value = '';  // Xóa lỗi cũ (nếu có)
 
   try {
-    // Gọi hàm login từ kho Pinia (Giống hệt code cũ của bạn)
     await authStore.login(form.identity, form.password); 
 
     // Nếu có thông tin user -> Đăng nhập thành công -> Hất sang Trang chủ
     if (authStore.user) {
-      const redirectPath = route.query.redirect || '/';
-      router.push(redirectPath);
+      const userRole = authStore.user.role;
+      if(userRole === 1 || userRole === 2){
+        router.push('/admin')
+      }
+      else{
+        const redirectPath = route.query.redirect || '/';
+        router.push(redirectPath);
+      }
     } else {
       // Nếu authStore.user không có, tức là đăng nhập xịt
       toastMessage.value = 'Sai tên đăng nhập hoặc mật khẩu!';
