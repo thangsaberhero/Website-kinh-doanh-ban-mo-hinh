@@ -15,6 +15,7 @@ import OrderDetailView from '../views/OrderDetailView.vue';
 import WishlistView from '../views/WishlistView.vue';
 import SearchView from '../views/SearchView.vue';
 import NewsView from '../views/NewsView.vue';
+import NewsDetailView from '../views/NewsDetailView.vue';
 import ContactView from '../views/ContactView.vue';
 import ForgotPasswordView from '../views/ForgotPasswordView.vue';
 import AdminDashboard from '../views/admin/AdminDashboard.vue';
@@ -22,6 +23,10 @@ import AdminInventory from '../views/admin/AdminInventory.vue';
 import AdminUserManagement from '../views/admin/AdminUserManagement.vue';
 import AdminOrderManagement from '../views/admin/AdminOrderManagement.vue';
 import AdminPromotionsManagement from '../views/admin/AdminPromotionsManagement.vue';
+import AdminNewsManagement from '../views/admin/AdminNewsManagement.vue';
+import AdminNewsCreate from '../views/admin/AdminNewsCreate.vue';
+import AdminNewsEdit from '../views/admin/AdminNewsEdit.vue';
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -99,6 +104,11 @@ const router = createRouter({
       component: NewsView
     },
     {
+      path: '/news/:id',
+      name: 'NewsDetail',
+      component: NewsDetailView
+    },
+    {
       path: '/contact',
       name: 'Contact',
       component: ContactView
@@ -133,6 +143,21 @@ const router = createRouter({
       path: '/admin/promotion',
       name: 'PromotionsManagement',
       component: AdminPromotionsManagement
+    },
+    {
+      path: '/admin/news',
+      name: 'NewsManagement',
+      component: AdminNewsManagement
+    },
+    {
+      path: '/admin/news/create',
+      name: 'NewsCreate',
+      component: AdminNewsCreate
+    },
+    {
+      path: '/admin/news/edit/:id',
+      name: 'NewsEdit',
+      component: AdminNewsEdit
     }
   ]
 });

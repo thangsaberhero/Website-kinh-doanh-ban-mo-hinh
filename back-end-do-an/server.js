@@ -36,6 +36,8 @@ app.use('/api/products', homeviewRoutes);
 
 const newsRoutes = require('./routes/news.route.js');
 app.use('/api/news', newsRoutes);
+const uploadRoutes = require('./routes/upload.route.js');
+app.use('/api/upload', uploadRoutes);
 //Thêm đơn hàng
 const add_cartRoutes = require('./routes/donhang_user.route.js');
 app.use('/api/add_cart',add_cartRoutes);
@@ -44,3 +46,4 @@ app.use('/api/add_cart',add_cartRoutes);
 const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
+app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
