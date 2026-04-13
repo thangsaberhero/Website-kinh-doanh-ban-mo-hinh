@@ -100,23 +100,74 @@
               </button>
             </div>
   
-            <div class="p-6 flex flex-col md:flex-row justify-between gap-4 items-center">
-              <div class="flex items-center gap-4">
-                <div class="flex items-center px-4 py-2 border border-slate-200 rounded-xl bg-slate-50 text-xs font-bold text-slate-500 shadow-sm">
-                  <span>Hiển thị 10/216 đơn hàng</span>
+            <div class="p-6 flex flex-col xl:flex-row justify-between gap-6 items-start xl:items-center border-b border-slate-100">
+              <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-xs font-bold text-slate-500 shadow-sm whitespace-nowrap">
+                  <span>Hiển thị {{ startItem }} - {{ endItem }} / {{ totalOrders }} đơn hàng</span>
                 </div>
-                <label class="flex items-center gap-2 cursor-pointer group">
+                
+                <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-[#ff8f73] transition-all">
                   <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer transition-colors"/>
-                  <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn tất cả để xử lý</span>
+                  <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn tất cả</span>
                 </label>
               </div>
-              <div class="flex items-center gap-2">
-                <button class="w-9 h-9 flex items-center justify-center border border-slate-200 rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 transition-all shadow-sm">
-                  <span class="material-symbols-outlined text-[20px]">filter_list</span>
-                </button>
-                <button class="w-9 h-9 flex items-center justify-center border border-slate-200 rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 transition-all shadow-sm">
-                  <span class="material-symbols-outlined text-[20px]">sort</span>
-                </button>
+
+              <div class="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-0.5 shadow-sm w-full md:w-auto">
+                  <span class="material-symbols-outlined text-slate-400 text-[18px]">calendar_today</span>
+                  <input type="date" v-model="filterDate.from" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5">
+                  <span class="text-slate-300">-</span>
+                  <input type="date" v-model="filterDate.to" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5">
+                </div>
+
+                <div class="relative w-full md:w-60">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                  <input type="text" v-model="searchQuery" placeholder="Mã đơn, khách hàng..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:border-[#ff8f73] focus:ring-4 focus:ring-[#ff8f73]/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                  <button @click="isFilterPanelOpen = true" class="w-10 h-10 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all shadow-sm" title = "Bộ lọc">
+                    <span class="material-symbols-outlined text-[20px]">filter_list</span>
+                  </button>
+                  <div class="relative">
+                    <button 
+                      @click="isSortMenuOpen = !isSortMenuOpen" 
+                      class="w-10 h-10 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all shadow-sm"
+                      :class="{ 'border-[#ff8f73] text-[#ff8f73] bg-[#ff8f73]/5': isSortMenuOpen }"
+                    >
+                      <span class="material-symbols-outlined text-[20px]">sort</span>
+                    </button>
+
+                    <div 
+                      v-show="isSortMenuOpen"
+                      class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 py-2 z-50 animate-[fadeIn_0.2s_ease-out]"
+                    >
+                      <p class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sắp xếp theo</p>
+                      
+                      <button @click="setSort('date_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                        <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Mới nhất (Mặc định)</span>
+                        <span v-if="sortBy === 'date_desc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      </button>
+
+                      <button @click="setSort('date_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                        <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Cũ nhất trước</span>
+                        <span v-if="sortBy === 'date_asc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      </button>
+
+                      <div class="border-t border-slate-50 my-1"></div>
+
+                      <button @click="setSort('total_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                        <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Tổng tiền: Cao đến Thấp</span>
+                        <span v-if="sortBy === 'total_desc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      </button>
+
+                      <button @click="setSort('total_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                        <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Tổng tiền: Thấp đến Cao</span>
+                        <span v-if="sortBy === 'total_asc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
   
@@ -330,7 +381,6 @@
                 </span>
              </div>
           </div>
-
         </div>
         
         <div class="p-6 border-t border-slate-100 bg-white shrink-0 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
@@ -354,6 +404,61 @@
         </footer>
       </div>
     </div>
+    <div 
+      class="fixed top-0 right-0 h-screen w-full sm:w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col"
+      :class="isFilterPanelOpen ? 'translate-x-0' : 'translate-x-full'"
+    >
+      <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Bộ lọc nâng cao</h2>
+          <p class="text-xs text-slate-500">Tìm kiếm đơn hàng chuẩn xác hơn</p>
+        </div>
+        <button @click="isFilterPanelOpen = false" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        
+        <div class="space-y-4">
+          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">local_shipping</span> Đơn vị vận chuyển
+          </label>
+          <div class="flex flex-col gap-2">
+            <label v-for="c in carriers" :key="c" class="flex items-center gap-3 cursor-pointer group">
+              <input type="checkbox" :value="c" v-model="advancedFilter.carriers" class="w-4 h-4 text-[#ff8f73] border-slate-300 rounded focus:ring-[#ff8f73]">
+              <span class="text-sm font-medium text-slate-700 group-hover:text-[#ff8f73] transition-colors">{{ c }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">payments</span> Hình thức thanh toán
+          </label>
+          <div class="flex flex-col gap-2">
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" value="all" v-model="advancedFilter.payment" class="text-[#ff8f73] focus:ring-[#ff8f73]">
+              <span class="text-sm font-medium text-slate-700">Tất cả</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" value="banking" v-model="advancedFilter.payment" class="text-[#ff8f73] focus:ring-[#ff8f73]">
+              <span class="text-sm font-medium text-slate-700">Chuyển khoản (Banking)</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" value="cod" v-model="advancedFilter.payment" class="text-[#ff8f73] focus:ring-[#ff8f73]">
+              <span class="text-sm font-medium text-slate-700">Thanh toán khi nhận hàng (COD)</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-6 border-t border-slate-100 bg-white flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button @click="resetAdvancedFilter" class="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">Đặt lại</button>
+        <button @click="applyAdvancedFilter" class="flex-[2] py-3 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all text-sm">Áp dụng</button>
+      </div>
+    </div>
 </template>
   
 <script setup>
@@ -364,6 +469,19 @@
   const isSidebarCollapsed = ref(false);
   const isMobileMenuOpen = ref(false);
   
+  // --- Quản lý Tìm kiếm & Lọc thời gian ---
+  const searchQuery = ref('');
+  const filterDate = ref({ from: '', to: '' });
+  const isFilterPanelOpen = ref(false); // Trạng thái mở Sidebar Lọc
+  const isSortMenuOpen = ref(false);    // Trạng thái mở Menu Sắp xếp
+
+  const totalOrders = ref(216); // Tổng số đơn từ API
+  const currentPage = ref(1);
+  const itemsPerPage = ref(10);
+
+  const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1);
+  const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalOrders.value));
+  
   const handleToggleSidebar = () => {
     if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
     else isSidebarCollapsed.value = !isSidebarCollapsed.value;
@@ -372,6 +490,73 @@
     activeMenuId.value = null; 
   };
   
+  // --- QUẢN LÝ BỘ LỌC NÂNG CAO ---
+  const carriers = ['Giao Hàng Nhanh', 'Viettel Post', 'J&T Express', 'GrabExpress'];
+
+  const advancedFilter = ref({
+    carriers: [],
+    payment: 'all',
+    minPrice: null,
+    maxPrice: null
+  });
+
+  // Hàm áp dụng bộ lọc
+  const applyAdvancedFilter = () => {
+    console.log("Dữ liệu lọc gửi xuống API:", advancedFilter.value);
+    // Thực tế: gọi hàm fetchOrders() để tải lại danh sách theo tiêu chí mới
+    isFilterPanelOpen.value = false;
+  };
+
+  // Hàm đặt lại (Reset)
+  const resetAdvancedFilter = () => {
+    advancedFilter.value = {
+      carriers: [],
+      payment: 'all',
+      minPrice: null,
+      maxPrice: null
+    };
+  };
+
+  // --- QUẢN LÝ SẮP XẾP ---
+  const sortBy = ref('date_desc'); // Giá trị mặc định
+
+  const setSort = (value) => {
+    sortBy.value = value;
+    isSortMenuOpen.value = false; // Đóng menu sau khi chọn
+    // fetchOrders();
+  };
+
+  const sortedOrders = computed(() => {
+    let result = [...orders.value];
+    
+    switch (sortBy.value) {
+      case 'total_desc':
+        return result.sort((a, b) => b.total - a.total);
+      case 'total_asc':
+        return result.sort((a, b) => a.total - b.total);
+      case 'date_desc':
+        return result.sort((a, b) => new Date(b.fullDate) - new Date(a.fullDate));
+      default:
+        return result;
+    }
+  });
+  
+  /* const fetchOrders = async () => {
+    isLoading.value = true;
+    try {
+      // Gửi kèm tiêu chí sắp xếp và tìm kiếm lên server
+      const response = await fetch(`http://localhost:3000/api/orders?sort=${sortBy.value}&search=${searchQuery.value}`);
+      const data = await response.json();
+      orders.value = data; // Dữ liệu nhận về đã được server sắp xếp sẵn
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  // Theo dõi sự thay đổi của biến sortBy để gọi lại API
+  watch(sortBy, () => {
+    fetchOrders();
+  });*/
   // --- Quản lý Tabs ---
   const tabs = [
     { id: 'all', name: 'Tất cả' },
