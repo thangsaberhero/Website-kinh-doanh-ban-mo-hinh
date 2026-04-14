@@ -323,8 +323,8 @@
 
 <script setup>
   import { ref, onMounted } from 'vue';
-  import AdminSideBar from "../../components/Admin_component/AdminSidebar.vue";
-  import AdminHeader from "../../components/Admin_component/AdminHeader.vue"; 
+  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
+  import AdminHeader from "../../components/Admin/AdminHeader.vue"; 
 
   const isSidebarCollapsed = ref(false);
   const isCustomModalOpen = ref(false);

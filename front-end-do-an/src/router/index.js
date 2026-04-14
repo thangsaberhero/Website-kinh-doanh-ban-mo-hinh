@@ -15,6 +15,7 @@ import OrderDetailView from '../views/User_view/OrderDetailView.vue';
 import WishlistView from '../views/User_view/WishlistView.vue';
 import SearchView from '../views/User_view/SearchView.vue';
 import NewsView from '../views/User_view/NewsView.vue';
+import NewsDetailView from '../views/User_view/NewsDetailView.vue';
 import ContactView from '../views/User_view/ContactView.vue';
 import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
 //Phần thanh toán có thể thay thế bằng payos sau này
@@ -23,6 +24,11 @@ import checkout from '../views/User_view/MoMoMockView.vue';
 import AdminDashboard from '../views/Admin_view/AdminDashboard.vue';
 import AdminInventory from '../views/Admin_view/AdminInventory.vue';
 import AdminUserManagement from '../views/Admin_view/AdminUserManagement.vue';
+import AdminOrderManagement from '../views/Admin_view/AdminOrderManagement.vue';
+import AdminPromotionsManagement from '../views/Admin_view/AdminPromotionsManagement.vue';
+import AdminNewsManagement from '../views/Admin_view/AdminNewsManagement.vue';
+import AdminNewsCreate from '../views/Admin_view/AdminNewsCreate.vue';
+import AdminNewsEdit from '../views/Admin_view/AdminNewsEdit.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -101,6 +107,11 @@ const router = createRouter({
       component: NewsView
     },
     {
+      path: '/news/:id',
+      name: 'NewsDetail',
+      component: NewsDetailView
+    },
+    {
       path: '/contact',
       name: 'Contact',
       component: ContactView
@@ -130,6 +141,31 @@ const router = createRouter({
       path: '/admin/users',
       name: 'UserManagement',
       component: AdminUserManagement
+    },
+    {
+      path: '/admin/orders',
+      name: 'OrderManagement',
+      component: AdminOrderManagement
+    },
+    {
+      path: '/admin/promotion',
+      name: 'PromotionsManagement',
+      component: AdminPromotionsManagement
+    },
+    {
+      path: '/admin/news',
+      name: 'NewsManagement',
+      component: AdminNewsManagement
+    },
+    {
+      path: '/admin/news/create',
+      name: 'NewsCreate',
+      component: AdminNewsCreate
+    },
+    {
+      path: '/admin/news/edit/:id',
+      name: 'NewsEdit',
+      component: AdminNewsEdit
     }
   ]
 });

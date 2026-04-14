@@ -1,4 +1,4 @@
-const db = require('../../config/db');
+const db = require('../../config/db.js');
 //const PayOS = require("@payos/node");
 // Thay 3 chuỗi bên dưới bằng 3 mã bạn vừa lấy ở Bước 1
 // /const payos = new PayOS("YOUR_CLIENT_ID", "YOUR_API_KEY", "YOUR_CHECKSUM_KEY");

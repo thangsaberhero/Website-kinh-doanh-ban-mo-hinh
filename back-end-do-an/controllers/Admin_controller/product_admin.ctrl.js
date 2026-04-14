@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('../../config/db');
 
 const product_admin = {
     them_danh_muc_moi: async(req, res) =>{
@@ -161,41 +161,489 @@ const product_admin = {
     },
 
     
-
     them_mat_hang_moi: async(req, res) =>{
+        const connection = await db.getConnection();
+
         try{
-            const {TenMH,MaDM,MaChiTietDM,ChatLieu,DonGia,TrangThai, ThongTinChiTiet ,LoaiHinhBan, Danh_sach_anh, KichThuoc, NgayPhatHanh, TienCocToiThieu, DS_PL} = req.body;
-            const sql_them_san_pham = `Insert into MoHinh (TenMH, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCoctoiThieu)
-                                        Values (?,?,?,?,?,?,?,?,?,?,?)`;
-            const [them_san_pham] = await db.query(sql_them_san_pham, [TenMH, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu]);
+            await connection.beginTransaction();
+
+            const {TenMH, MaHSX ,MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet ,
+                LoaiHinhBan, Danh_sach_anh, KichThuoc, NgayPhatHanh, TienCocToiThieu, SoLuong, DS_PL, HienThi} = req.body;
+            const sql_them_san_pham = `Insert into MoHinh (TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCoctoiThieu, HienThi)
+                                        Values (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+            const isVisible = HienThi !== undefined ? HienThi : 0;
+            const [them_san_pham] = await connection.query(sql_them_san_pham, [TenMH, MaHSX, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible]);
+            
             const ma_san_pham_moi = them_san_pham.insertId;
-
-            //Thêm 1 phân loại mặc định cho sản phẩm
-            const sql_them_phan_loai = `Insert into Phanloai (ChiTietPhanLoai, MaMoHinh, DonGia) values (?,?,?)`;
-            await db.query(sql_them_phan_loai,['NONE', ma_san_pham_moi, DonGia]);
-
+            //Lấy mã sản phẩm mới thêm
+            
             if(Array.isArray(Danh_sach_anh) && Danh_sach_anh.length>0){
                 const sql_them_anh = `Insert into AnhMoHinh (LinkAnh, MaMoHinh) values (?,?)`;
                 for(let image of Danh_sach_anh){
-                    await db.query(sql_them_anh, [image.Link]);
+                    await connection.query(sql_them_anh, [image.Link, ma_san_pham_moi]);
                 }
-                await db.query(`Update Mohinh set AnhDaiDien = ? where MaMoHinh = ?`, [Danh_sach_anh[0].Link, ma_san_pham_moi]);
+                //Cập nhật ảnh đai diện
+                await connection.query(`Update Mohinh set AnhDaiDien = ? where MaMoHinh = ?`, [Danh_sach_anh[0].Link, ma_san_pham_moi]);
             }
-            if(Array.isArray(DS_PL)){
-                if(DS_PL.length > 0){
-                    for(let variant of DS_PL){
-                        await db.query(sql_them_phan_loai, [DS_PL.ChiTietPhanLoai, ma_san_pham_moi, DS_PL.DonGia]);
-                    }
-                }
+            
+            const sql_them_phan_loai = `Insert into Phanloai (ChiTietPhanLoai, SoLuong, MaMoHinh, DonGia, HienThi) values (?,?,?,?,?)`;
+            await connection.query(sql_them_phan_loai,['Mặc định', SoLuong, ma_san_pham_moi, DonGia, HienThi]);
+
+            if(Array.isArray(DS_PL) && DS_PL.length > 0){
+                const variantVisibility = (HienThi === 0) ? 0 : (variant.HienThi !== undefined ? variant.HienThi : 1);
+
+                await connection.query(sql_them_phan_loai, [
+                    variant.ChiTietPhanLoai, 
+                    variant.SoLuong, 
+                    ma_san_pham_moi, 
+                    variant.DonGia, 
+                    variantVisibility // Đưa biến đã tính toán vào đây
+                ]);
             }
+
+            await connection.commit();
             res.status(200).json({
                 message: "Thêm sản phẩm mới thành công!"
-            })
+            });
 
         }
         catch (error){
+            await connection.rollback();
             console.error("Lỗi khi thêm sản phẩm mới: ", error);
             res.status(500).json({ message: "Lỗi server khi thao tác với danh mục!"});
         }
+        finally{
+            connection.release();
+        }
+    },
+
+    them_phan_loai_cho_san_pham: async(req, res)=>{
+        const connection = await db.getConnection();
+        try{
+            await connection.beginTransaction();
+            const {MaMoHinh, DS_PL} = req.body;
+            const sql_check = "select HienThi from MoHinh where MaMoHinh = ?";
+            const [check] = await connection.query(sql_check, [MaMoHinh]);
+            
+            if(check.length === 0){
+                await connection.rollback();
+                return res.status(404).json({
+                    message: "Không tồn tại sản phẩm này để thêm phân loại."
+                });
+            }
+
+            const HienThi_SP_Goc = check[0].HienThi;
+
+            const sql_them_phan_loai = `Insert into Phanloai (ChiTietPhanLoai, SoLuong, MaMoHinh, DonGia, HienThi) values (?,?,?,?,?)`;
+            if(Array.isArray(DS_PL) && DS_PL.length > 0){
+                    for(let variant of DS_PL){
+                        const visibility = (HienThi_SP_Goc === 0) ? 0 : (variant.HienThi !== undefined ? variant.HienThi : 1);
+
+                        await connection.query(sql_them_phan_loai, [
+                            variant.ChiTietPhanLoai, 
+                            variant.SoLuong, 
+                            MaMoHinh, 
+                            variant.DonGia, 
+                            visibility
+                        ]);
+                    }
+            }
+            await connection.commit();
+            res.status(200).json({
+                message: "Thêm phân loại mới thành công!",
+                MaMoHinh: MaMoHinh
+            });
+        }
+        catch (error){
+            await connection.rollback();
+            console.error("Lỗi khi thêm sản phẩm mới: ", error);
+            res.status(500).json({ message: "Lỗi server khi thao tác với danh mục!"});
+        }
+        finally{
+            connection.release();
+        }
+    },
+
+    //Sửa thông tin mặt hàng (có thể sửa cả phân loại, thêm)
+    sua_thong_tin_mat_hang: async(req, res) =>{
+        const connection = await db.getConnection();
+        try{
+            await connection.beginTransaction();
+
+            const {MaMH,TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet ,
+                LoaiHinhBan, Danh_sach_anh, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DS_PL, HienThi} = req.body;
+            const sql_sua_tt_san_pham = `Update MoHinh SET
+                                        TenMH = ?,
+                                        MaHSX = ?,
+                                        MaDM = ?,
+                                        MaChiTietDM = ?,
+                                        ChatLieu = ?,
+                                        DonGia = ?,
+                                        TrangThai = ?,
+                                        ThongTinChiTiet = ?,
+                                        KichThuoc = ?,
+                                        NgayPhatHanh = ?,
+                                        LoaiHinhBan = ?,
+                                        TienCocToiThieu = ?,
+                                        HienThi = ?
+                                        where MaMoHinh = ?
+                                        `;
+            const isVisible = HienThi !== undefined ? HienThi : 0;
+            await connection.query(sql_sua_tt_san_pham, [TenMH, MaHSX, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, 
+                                        ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, MaMH]);
+            
+            if (Array.isArray(Danh_sach_anh) && Danh_sach_anh.length > 0) {
+                // Xóa sạch ảnh cũ của MaMH này
+                await connection.query(`DELETE FROM AnhMoHinh WHERE MaMoHinh = ?`, [MaMH]);
+                
+                // Insert lại mảng ảnh mới
+                const sql_them_anh = `INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES (?, ?)`;
+                for (let image of Danh_sach_anh) {
+                    await connection.query(sql_them_anh, [image.Link, MaMH]);
+                }
+                
+                // Cập nhật ảnh đại diện vào bảng MoHinh
+                await connection.query(`UPDATE MoHinh SET AnhDaiDien = ? WHERE MaMoHinh = ?`, [Danh_sach_anh[0].Link, MaMH]);
+            }
+            
+            if(Array.isArray(DS_PL) && DS_PL.length > 0){
+                const sql_sua_phan_loai = `Update Phanloai set ChiTietPhanLoai = ?, DonGia = ?, SoLuong = ? , HienThi = ?  where MaPhanLoai = ?`;
+                const sql_them_phan_loai = `INSERT INTO Phanloai (ChiTietPhanLoai, MaMoHinh, SoLuong, DonGia, HienThi) VALUES (?, ?, ?, ?, ?)`;
+                    for(let variant of DS_PL){
+                        const visibility = (HienThi_SP_Goc === 0) ? 0 : (variant.HienThi !== undefined ? variant.HienThi : 1);
+                        if(variant.MaPhanLoai)
+                            await connection.query(sql_sua_phan_loai, [variant.ChiTietPhanLoai || null, variant.DonGia, variant.SoLuong, visibility, variant.MaPhanLoai]);
+                        else
+                            await connection.query(sql_them_phan_loai, [variant.ChiTietPhanLoai, MaMH, variant.SoLuong, visibility, variant.DonGia]);
+                    }
+            }
+            
+            await connection.query(`Update Phanloai set DonGia = ?, SoLuong = ?, HienThi = ? where MaMoHinh = ? and ChiTietPhanLoai = 'Mặc định'`,[DonGia, SoLuong, HienThi, MaMH]);
+            
+            await connection.commit();
+            res.status(200).json({
+                message: "Sửa thông tin sản phẩm mới thành công!"
+            });
+
+        }
+        catch (error){
+            await connection.rollback();
+            console.error("Lỗi khi sửa thông tin sản phẩm: ", error);
+            res.status(500).json({ message: "Lỗi server khi thao tác với sản phẩm!"});
+        }
+        finally{
+            connection.release();
+        }
+    },
+    
+    //Xoá theo cách ẩn với khách hàng, tránh ảnh hướng báo cáo thống kê
+    An_mat_hang: async(req, res) =>{
+        try{
+            const {MaMH} = req.body;
+            const sql_xoa_mem = `
+                                Update MoHinh
+                                Set TrangThai = 'Ngừng kinh doanh', HienThi = 0
+                                Where MaMoHinh = ?`;
+            const [ket_qua] = await db.query(sql_xoa_mem, [MaMH]);
+            if(ket_qua.affectedRows === 0){
+                return res.status(404).json({ message: "Không thấy sản phẩm cần ẩn!"});
+            }
+            const sql_xoa_mem_cho_pl = `
+                                        Update PhanLoai
+                                        Set HienThi = 0
+                                        where MaMoHinh =?`;
+            await db.query(sql_xoa_mem_cho_pl, [MaMH]);
+            res.status(200).json({
+                success: true,
+                message: "Đã chuyển sản phẩm vào trạng thái ẩn!"
+            });
+        }
+        catch (error){
+            console.error("Lỗi khi ẩn sản phẩm: ", error);
+            res.status(500).json({ message: "Lỗi server khi thao tác ẩn!" });
+        }
+    },
+
+    An_phan_loai: async(req, res) =>{
+        try{
+            const {MaPL} = req.body;
+            const sql_xoa_mem = `
+                                Update PhanLoai
+                                Set HienThi = 0
+                                Where MaPhanLoai = ?`;
+            const [ket_qua] = await db.query(sql_xoa_mem, [MaPL]);
+            if(ket_qua.affectedRows === 0){
+                return res.status(404).json({ message: "Không thấy phân loại cần ẩn!"});
+            }
+            res.status(200).json({
+                success: true,
+                message: "Đã chuyển phân loại vào trạng thái ẩn!"
+            });
+        }
+        catch (error){
+            console.error("Lỗi khi ẩn sản phẩm: ", error);
+            res.status(500).json({ message: "Lỗi server khi thao tác ẩn!" });
+        }
+    },
+
+    thay_doi_hien_thi_mat_hang: async(req, res) => {
+    const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            
+            // Frontend gửi lên MaMH và biến HienThi (0 là Ẩn, 1 là Hiện)
+            const { MaMH, HienThi } = req.body; 
+
+            // Nếu HienThi = 0 thì là Ngừng kinh doanh, nếu = 1 thì là Đang kinh doanh (hoặc Còn hàng tùy bạn)
+            const trangThaiMoi = HienThi === 0 ? 'Ngừng kinh doanh' : 'Còn hàng';
+
+            // 1. Cập nhật bảng Mô hình
+            const sql_update_mh = `UPDATE MoHinh SET TrangThai = ?, HienThi = ? WHERE MaMoHinh = ?`;
+            const [ket_qua] = await connection.query(sql_update_mh, [trangThaiMoi, HienThi, MaMH]);
+            
+            if(ket_qua.affectedRows === 0){
+                await connection.rollback();
+                return res.status(404).json({ message: "Không tìm thấy sản phẩm!"});
+            }
+
+            // 2. Cập nhật đồng loạt các Phân loại của Mô hình đó
+            const sql_update_pl = `UPDATE PhanLoai SET HienThi = ? WHERE MaMoHinh = ?`;
+            await connection.query(sql_update_pl, [HienThi, MaMH]);
+
+            await connection.commit();
+            res.status(200).json({
+                success: true,
+                message: HienThi === 0 ? "Đã ẩn sản phẩm!" : "Đã hiển thị lại sản phẩm thành công!"
+            });
+
+        } catch (error) {
+            await connection.rollback();
+            console.error("Lỗi khi thay đổi hiển thị sản phẩm: ", error);
+            res.status(500).json({ message: "Lỗi server khi thao tác!" });
+        } finally {
+            connection.release();
+        }
+    },
+
+    liet_ke_mat_hang: async(req, res)=>{
+        try {
+            //Thông tin trang và số lượng hiển thị giới hạn trên 1 trang
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+
+            // Tính toán vị trí cắt dữ liệu
+            const offset = (page - 1) * limit;
+
+            //Các tham số bộ lọc frontend gửi lên
+            const { 
+                keyword, minprice, maxprice, danhmuc, chitietdanhmuc, 
+                hsx, NgayBatDau, NgayKetThuc, LoaiHinhBan, HienThi,
+                TinhTrangTonKho, // Lọc: 'sap_het' (<5) hoặc 'het_hang' (=0)
+                CoKhuyenMai,
+                Sapxep      // Lọc: 'true'
+            } = req.query;
+
+
+            let condition = [];
+            let value = [];
+
+            if(keyword){
+                condition.push("mh.TenMH like ?");
+                value.push(`%${keyword}%`);
+            }
+
+            if(minprice){
+                condition.push("mh.DonGia >= ?");
+                value.push(minprice);
+            }
+
+            if(maxprice){
+                condition.push("mh.DonGia <= ?");
+                value.push(maxprice);
+            }
+
+            if(danhmuc){
+                condition.push("TenDM = ?");
+                value.push(danhmuc);
+            }
+
+            if(chitietdanhmuc){
+                condition.push("TenChiTietDM = ?");
+                value.push(chitietdanhmuc);
+            }
+
+            if(hsx){
+                condition.push("TenHSX = ?");
+                value.push(hsx);
+            }
+
+            if(NgayBatDau){
+                condition.push("mh.NgayPhatHanh >= ?");
+                value.push(NgayBatDau);
+            }
+
+            if(NgayKetThuc){
+                condition.push("mh.NgayPhatHanh <= ?");
+                value.push(NgayKetThuc);
+            }
+
+            if(LoaiHinhBan){
+                condition.push("mh.LoaiHinhBan = ?");
+                value.push(LoaiHinhBan);
+            }
+
+            if(HienThi){
+                condition.push("mh.HienThi = ?");
+                value.push(HienThi);
+            }
+            
+            let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
+            
+
+            let havingcondition = [];
+            if(TinhTrangTonKho === 'Sap het'){
+                havingcondition.push('SoLuong <= 5 and SoLuong > 0');
+            } else if(TinhTrangTonKho === 'Het hang'){
+                havingcondition.push('SoLuong = 0');
+            }
+
+            if(CoKhuyenMai){
+                havingcondition.push('dongiakhuyenmai is not null');
+            }
+            let havingClause = havingcondition.length ? "Having " + havingcondition.join(" and ") : "";
+
+            let filter = "";
+            if(Sapxep === 'Gia thap den cao')
+                filter = "Order by mh.DonGia Asc";
+            else if(Sapxep === 'Gia cao den thap')
+                filter = "Order by mh.DonGia Desc";
+            else if(Sapxep === 'So luong it')
+                filter = "Order by mh.SoLuong Asc";
+            else if(Sapxep === 'Ngay phat hanh')
+                filter = "Order by mh.NgayPhatHanh desc";
+            else
+                filter = "Order by mh.MaMoHinh desc";
+
+            const sql_core = `SELECT mh.MaMoHinh, mh.TenMH, TenDM, TenChiTietDM, mh.DonGia, mh.TrangThai,
+                mh.AnhDaiDien, mh.NgayPhatHanh, TenHSX, mh.HienThi, 
+                (
+                    SELECT COALESCE(SUM(SoLuong), 0) 
+                    FROM PhanLoai 
+                    WHERE MaMoHinh = mh.MaMoHinh
+                ) AS SoLuong,
+                (
+                    Select (mh.DonGia - ctkm.ChietKhau)
+                    from ChiTietKhuyenMai ctkm
+                    inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                    where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
+                    order by ctkm.ChietKhau desc
+                    limit 1
+                ) As dongiakhuyenmai
+                FROM MoHinh mh
+                left join DanhMuc On DanhMuc.MaDM = mh.MaDM
+                left join ChiTietDanhMuc on ChiTietDanhMuc.MaChiTietDM = mh.MaChiTietDM
+                INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
+                ${whereClause}
+                ${havingClause}`;
+
+
+            // Việc này BẮT BUỘC để Frontend biết có tổng cộng bao nhiêu trang
+            const sql_count = `SELECT COUNT(*) AS total FROM (${sql_core}) as temptable`;
+            const [countResult] = await db.query(sql_count,value);
+            const totalItems = countResult[0].total;
+            //Làm tròn lên
+            const totalPage = Math.ceil(totalItems/limit);
+
+            const sql_ds = `${sql_core}
+                ${filter}
+                Limit ? offset ?`;
+
+
+            const sql_params = [...value, limit, offset]
+            const [products] = await db.query(sql_ds, sql_params);
+
+            res.status(200).json({
+                success: true,
+                message: "Lấy thông tin danh sách sản phẩm thành công!",
+                data: products,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage
+                }
+            });
+        }
+        catch(error) {
+            console.error("Xảy ra lỗi khi lấy danh sách thông tin sản phẩm: " + error);
+            res.status(500).json({
+                success: false,
+                message: "Xảy ra lỗi khi lấy danh sách thông tin sản phẩm!"
+            });
+        }
+    },
+
+    xem_thong_tin_san_pham: async(req, res)=>{
+        try{
+            const MaMH = req.params.id;
+            const sql = `Select mh.MaMoHinh, mh.TenMH, mh.ChatLieu, mh.DonGia, mh.TrangThai, mh.ThongTinChiTiet, 
+                            mh.KichThuoc, mh.NgayPhatHanh, mh.LoaiHinhBan, mh.TienCocToiThieu,
+                            (
+                                SELECT COALESCE(SUM(SoLuong), 0) 
+                                FROM PhanLoai 
+                                WHERE MaMoHinh = mh.MaMoHinh
+                            ) AS SoLuongTong,
+                             TenHSX, TenDM, TenChiTietDM,
+                             GROUP_CONCAT(anh.LinkAnh) AS DanhSachAnh,
+                                (
+                                    Select (mh.DonGia - ctkm.ChietKhau)
+                                    from ChiTietKhuyenMai ctkm
+                                    inner join KhuyenMai km on km.MaKM = ctkm.MaKM
+                                    where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
+                                    order by ctkm.ChietKhau desc
+                                    limit 1
+                                ) As dongiakhuyenmai
+                            FROM MoHinh mh
+                            left join DanhMuc On DanhMuc.MaDM = mh.MaDM
+                            left join ChiTietDanhMuc on ChiTietDanhMuc.MaChiTietDM = mh.MaChiTietDM
+                            LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
+                            LEFT JOIN AnhMoHinh anh ON mh.MaMoHinh = anh.MaMoHinh
+                            WHERE mh.MaMoHinh = ?
+                            GROUP BY mh.MaMoHinh`;
+            const [ket_qua] = await db.query(sql,[MaMH]);
+            if(ket_qua.length === 0)
+            {
+                return res.status(404).json({
+                            success: false,
+                            message: "Sản phẩm không tồn tại!"
+                        });
+            }
+            const product_detail = ket_qua[0];
+            if(product_detail.Danh_sach_anh){
+                product_detail.Danh_sach_anh = product_detail.Danh_sach_anh.split(',').map(link => ({Link: link}));
+            }
+            else{
+                product_detail.DanhSachAnh = [];
+            }
+
+            const sql_phan_loai = `Select MaPhanLoai, ChiTietPhanLoai, DonGia, SoLuong, HienThi from PhanLoai where MaMoHinh = ?`;
+            const [ket_qua_pl] = await db.query(sql_phan_loai,[MaMH]);
+
+            product_detail.DS_PL = ket_qua_pl;
+
+            res.status(200).json({
+                success: true,
+                message: "Lấy thông tin sản phẩm thành công!",
+                data: product_detail
+            });
+        }
+        catch (error){
+            console.error("Xảy ra lỗi khi lấy thông tin sản phẩm: " + error);
+            res.status(500).json({
+                success: false,
+                message: "Xảy ra lỗi khi lấy thông tin sản phẩm!"
+            });
+        }
     }
 }
+module.exports = product_admin;

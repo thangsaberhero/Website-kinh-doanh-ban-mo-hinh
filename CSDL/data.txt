@@ -39,8 +39,9 @@ INSERT INTO TrangThai (TenTrangThai) VALUES
 ('Chờ duyệt'),
 ('Đang đóng gói'),
 ('Đang vận chuyển'),
-('Đã giao'),
-('Đã hủy');
+('Đã ciao'),
+('Đã hủy'),
+('Đang hoàn hàng');
 
 INSERT INTO PhuongThucThanhToan (TenPhuongThuc) VALUES
 ('momo'),

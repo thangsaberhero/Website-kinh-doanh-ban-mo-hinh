@@ -98,7 +98,7 @@
                       : 'border-outline-variant/30 text-outline hover:border-primary/50 hover:text-white'
                   ]"
                 >
-                  {{ variant.ChiTietPhanLoai === 'NONE' ? 'Bình thường' : variant.ChiTietPhanLoai}}
+                  {{ variant.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : variant.ChiTietPhanLoai}}
                 </button>
               </div>
             </div>

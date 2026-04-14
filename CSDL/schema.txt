@@ -6,7 +6,8 @@ USE KinhDoanhMoHinh;
 -- 1. Bảng Quyền
 CREATE TABLE Quyen (
     MaQuyen INT PRIMARY KEY AUTO_INCREMENT,
-    TenQuyen VARCHAR(50) NOT NULL
+    TenQuyen VARCHAR(50) NOT NULL,
+	MoTa text
 );
 
 -- 2. Bảng Tài khoản
@@ -19,7 +20,9 @@ CREATE TABLE TaiKhoan (
     AnhDaiDien VARCHAR(100),
 	ResetOTP VARCHAR(10) NULL,
 	OTPExpires DATETIME NULL,
-	Bi_khoa TINYINT(),
+	Bi_khoa TINYINT() default 0,
+	NgayTao DATETIME DEFAULT CURRENT_TIMESTAMP,
+	DangNhapCuoi DATETIME NULL,
     FOREIGN KEY (MaQuyen) REFERENCES Quyen(MaQuyen)
 );
 
@@ -46,7 +49,8 @@ CREATE TABLE NhanVien (
 -- 5. Bảng Hãng sản xuất
 CREATE TABLE HangSanXuat (
     MaHSX INT PRIMARY KEY AUTO_INCREMENT,
-    TenHSX VARCHAR(100) NOT NULL
+    TenHSX VARCHAR(100) NOT NULL,
+	MoTa TEXT
 );
 
 -- 6. Bảng Danh mục
@@ -94,6 +98,7 @@ CREATE TABLE Phanloai (
     MaMoHinh INT NOT NULL,
     DonGia DECIMAL(12,2) NOT NULL CHECK (DonGia >= 0),
     SoLuong INT DEFAULT 0 CHECK (SoLuong >= 0),
+	HienThi TINYINT default 0,
     FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
 );
 
@@ -206,7 +211,7 @@ CREATE TABLE TrangThai (
 CREATE TABLE ChiTietTrangThai (
 	MaDH INT NOT NULL,
 	MaTrangThai INT NOT NULL,
-	Thoigian DATETIME Default NULL,
+	Thoigian DATETIME Default CURRENT_TIMESTAMP,
 	FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
 	FOREIGN KEY (MaTrangThai) REFERENCES TrangThai(MaTrangThai),
 	PRIMARY KEY (MaDH, MaTrangThai)

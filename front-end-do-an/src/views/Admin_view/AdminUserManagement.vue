@@ -286,7 +286,7 @@
                   <span class="material-symbols-outlined text-[16px]">sort</span> Sắp xếp: Mới nhất
                 </button>
               </div>
-              <p class="text-xs font-medium text-slate-500">Hiển thị <span class="font-bold text-slate-900">1-10</span> trong số <span class="font-bold text-slate-900">12,842</span> người dùng</p>
+              <p class="text-xs font-medium text-slate-500">Hiển thị <span class="font-bold text-slate-900">{{ users.length }}</span> trong số <span class="font-bold text-slate-900">{{ totalUsersCount }}</span> người dùng</p>
             </div>
   
             <div class="overflow-x-auto min-h-[300px]">
@@ -382,17 +382,17 @@
             
             <div class="px-8 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
               <div class="flex items-center gap-2">
-                <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all text-xs font-bold shadow-sm">Trước</button>
+                <button @click="if(currentPage > 1) { currentPage--; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all text-xs font-bold shadow-sm">Trước</button>
+                
                 <div class="flex items-center gap-1">
-                  <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-[#ff8f73] text-white text-xs font-bold shadow-lg shadow-[#ff8f73]/20">1</button>
-                  <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] text-xs font-bold transition-all shadow-sm">2</button>
-                  <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] text-xs font-bold transition-all shadow-sm">3</button>
-                  <span class="w-8 h-8 flex items-center justify-center text-slate-400 font-bold">...</span>
-                  <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] text-xs font-bold transition-all shadow-sm">128</button>
+                  <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-[#ff8f73] text-white text-xs font-bold shadow-lg shadow-[#ff8f73]/20">
+                    {{ currentPage }}
+                  </button>
+                  <span class="text-xs font-bold text-slate-400 px-2">/ {{ totalPages }}</span>
                 </div>
-                <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all text-xs font-bold shadow-sm">Tiếp</button>
+                
+                <button @click="if(currentPage < totalPages) { currentPage++; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all text-xs font-bold shadow-sm">Tiếp</button>
               </div>
-              <p class="text-[11px] font-medium text-slate-400 italic">Tải dữ liệu hoàn tất trong 14ms.</p>
             </div>
           </div>
   
@@ -601,8 +601,11 @@
   
 <script setup>
   import { ref } from 'vue';
-  import AdminSideBar from "../../components/Admin_component/AdminSidebar.vue";
-  import AdminHeader from "../../components/Admin_component/AdminHeader.vue";
+  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
+  import AdminHeader from "../../components/Admin/AdminHeader.vue";
+  import { useRouter } from 'vue-router';
+  import { useToastStore } from '../../stores/toast';
+  import { onMounted, watch } from 'vue';
   
   const isFilterPanelOpen = ref(false);
   const isSidebarCollapsed = ref(false);
@@ -634,13 +637,59 @@
     if (status === 'Bị khóa') return 'text-rose-600';
     return 'text-slate-500'; // Ngoại tuyến
   };
-  
-  const users = ref([
-    { id: 1, name: 'Admin_Phong', email: 'phong.admin@figure.vn', role: 'Admin', status: 'Hoạt động', lastLogin: '15 phút trước', ip: '192.168.1.45', avatar: 'https://ui-avatars.com/api/?name=Admin+Phong&background=f8fafc&color=64748b' },
-    { id: 2, name: 'Lê Bảo', email: 'lebao@gmail.com', role: 'Collector', status: 'Ngoại tuyến', lastLogin: '2 giờ trước', ip: '104.22.1.12', avatar: 'https://ui-avatars.com/api/?name=Le+Bao&background=f8fafc&color=64748b' },
-    { id: 3, name: 'Phùng Đức Thắng', email: 'thang94987@st.vimaru.edu.vn', role: 'Staff', status: 'Bị khóa', lastLogin: '3 ngày trước', ip: '8.8.8.8', avatar: 'https://ui-avatars.com/api/?name=Phung+Thang&background=f8fafc&color=64748b' },
-    { id: 4, name: 'Đào Phú Toàn', email: 'toan95455@st.vimaru.edu.vn', role: 'Collector', status: 'Hoạt động', lastLogin: 'Vừa xong', ip: '172.16.254.1', avatar: 'https://ui-avatars.com/api/?name=Dao+Toan&background=f8fafc&color=64748b' },
-  ]);
+  const users = ref([]);
+  const currentPage = ref(1);
+  const totalPages = ref(1);
+  const totalUsersCount = ref(0);
+  const isLoading = ref(true);
+
+  const fetchUsers = async () => {
+    isLoading.value = true;
+    try {
+      // Gọi API liệt kê tài khoản của bạn
+      const response = await fetch(`http://localhost:3000/api/account_admin?page=${currentPage.value}&limit=10`);
+      const result = await response.json();
+
+      if (result.success) {
+        // Mapping dữ liệu từ Database vào UI
+        // (Lưu ý: Bạn nhớ sửa lại các chữ item.MaTK, item.HoTen... cho khớp với tên cột trong bảng CSDL của bạn nhé)
+        users.value = result.data.map(item => {
+          
+          // Lấy tên hiển thị, nếu không có thì lấy tên đăng nhập
+          const displayName = item.HoTen || item.TenDangNhap || 'Người dùng ẩn danh';
+          
+          return {
+            id: item.MaTK, 
+            username: item.TenDangNhap || '',
+            name: displayName,
+            email: item.Email || 'Chưa cập nhật',
+            
+            // Xử lý logic hiển thị Vai trò và Trạng thái
+            role: item.Quyen || 'Collector', 
+            status: item.TrangThai || 'Hoạt động', 
+            
+            // Fix cứng tạm thời các thông số chưa có trong DB để UI không bị vỡ
+            lastLogin: item.ThoiGianDangNhapCuoi || 'Chưa rõ',
+            ip: '192.168.1.1',
+            
+            // Tự động tạo Avatar từ tên người dùng
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f8fafc&color=64748b`
+          };
+        });
+        
+        totalPages.value = result.pagination.totalPage;
+        totalUsersCount.value = result.pagination.totalItems;
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách người dùng:", error);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  onMounted(() => {
+    fetchUsers();
+  });
   // --- BƯỚC 3: LOGIC MODAL THÊM NGƯỜI DÙNG ---
 const isAddUserModalOpen = ref(false);
 

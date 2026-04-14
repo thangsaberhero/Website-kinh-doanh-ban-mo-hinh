@@ -48,22 +48,22 @@ const handleHover = (e) => {
 
   const target = e.target;
   // 2. Thẻ bị vô hiệu hóa
-  if (target.closest(':disabled, .disabled, [disabled]')) { cursorName.value = 'Unavailable'; return; }
+  if (target.closest(':disabled, .disabled, [disabled]')) { cursorType.value = 'is-unavailable'; return; }
   
   // 3. Thẻ kéo thả
-  if (target.closest('[draggable="true"], .draggable')) { cursorName.value = 'Move'; return; }
+  if (target.closest('[draggable="true"], .draggable')) { cursorType.value = 'is-move'; return; }
 
-  // 4. Ô nhập chữ
-  if (target.closest('input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]), textarea')) { cursorName.value = 'Text'; return; }
+  // 4. Ô nhập chữ (Nên thêm class .cursor-text để dễ tùy biến sau này)
+  if (target.closest('input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]), textarea, .cursor-text')) { cursorType.value = 'is-text'; return; }
 
   // 5. ƯU TIÊN CAO HƠN: Nút bấm, Link, Label -> Hiện ngón tay (Link)
-  if (target.closest('a, button, label, .cursor-pointer')) { cursorName.value = 'Link'; return; }
+  if (target.closest('a, button, label, .cursor-pointer')) { cursorType.value = 'is-pointer'; return; }
 
   // 6. BỊ ĐẨY XUỐNG THẤP HƠN: Chỉ hiện Help nếu nó có 'title' nhưng KHÔNG PHẢI là nút bấm
-  if (target.closest('[title], .help-icon')) { cursorName.value = 'Help'; return; }
+  if (target.closest('[title], .help-icon')) { cursorType.value = 'is-help'; return; }
 
   // 7. Mặc định
-  cursorName.value = 'Normal';
+  cursorType.value = 'is-normal';
 };
 
 onMounted(() => {
@@ -93,7 +93,7 @@ body, body * {
   background-size: contain;
   background-repeat: no-repeat;
   pointer-events: none; /* Cực kỳ quan trọng: Để click xuyên qua ảnh này */
-  z-index: 1000; /* Luôn nổi lên trên cùng (Toast hay Chatbot cũng không đè được) */
+  z-index: 9999; /* Luôn nổi lên trên cùng (Toast hay Chatbot cũng không đè được) */
   transition: background-image 0.15s ease; /* Hiệu ứng chuyển ảnh mượt mà */
   
   
@@ -123,7 +123,7 @@ body, body * {
   margin-left: -16px;
 }
 
-my-custom-cursor.is-unavailable {
+.my-custom-cursor.is-unavailable {
   background-image: url('/cursors/Unavailable.gif'); 
 }
 

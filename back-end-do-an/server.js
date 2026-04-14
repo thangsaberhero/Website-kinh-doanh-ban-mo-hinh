@@ -35,10 +35,6 @@ app.use('/api/info_user', user_info);
 const productsRoutes = require('./routes/User_route/products.route.js');
 app.use('/api/products', productsRoutes);
 
-//Lấy thông tin tin tức
-const newsRoutes = require('./routes/User_route/news.route.js');
-app.use('/api/news', newsRoutes);
-
 //Thêm đơn hàng
 const donhangRoutes = require('./routes/User_route/donhang_user.route.js');
 app.use('/api/don_hang',donhangRoutes);
@@ -47,10 +43,16 @@ app.use('/api/don_hang',donhangRoutes);
 const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
+app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
 
-// --- THÊM ROUTE CHATBOT ---
+
+
+// --- ROUTE CHATBOT ---
 const chatRoutes = require('./routes/User_route/chat.route.js');
 app.use('/api/chatbot', chatRoutes);
+
+
+
 
 
 // =========================================================
@@ -109,3 +111,29 @@ cron.schedule('* * * * *', async () => {
         connection.release();
     }
 });
+
+
+// Nhánh luồng xử lý của admin:
+//Lấy thông tin upload ảnh
+const uploadRoutes = require('./routes/Admin_route/upload.route.js');
+app.use('/api/upload', uploadRoutes);
+
+//Lấy thông tin tin tức
+const newsRoutes = require('./routes/Admin_route/news.route.js');
+app.use('/api/news', newsRoutes);
+
+//Chương trình khuyến mãi
+const khuyenmai_control = require('./routes/Admin_route/khuyen_mai.route.js');
+app.use('/api/khuyen_mai_admin',khuyenmai_control);
+
+//Quản lý tài khoản
+const account_admin_control = require('./routes/Admin_route/account_admin.route.js');
+app.use('/api/account_admin', account_admin_control);
+
+//Quản lý đơn hàng
+const don_hang_admin_control = require('./routes/Admin_route/donhang_admin.route.js');
+app.use('/api/invoice_admin', don_hang_admin_control);
+
+//Quản lý kho
+const product_admin_control = require('./routes/Admin_route/product_admin.route.js');
+app.use('/api/product_admin', product_admin_control);
