@@ -94,6 +94,7 @@ const authController = {
                 user: {
                     id: user.MaTK,
                     username: user.TenDN,
+                    email: user.Email,
                     MaKH: user.MaKH,
                     role: user.MaQuyen
                 }
