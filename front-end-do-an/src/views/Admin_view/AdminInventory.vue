@@ -32,19 +32,15 @@
                     </label>
                     <div class="grid grid-cols-2 gap-3">
                         <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-[#ff8f73] has-[:checked]:bg-[#ff8f73]/5">
-                            <input type="radio" name="stock" value="all" checked class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
+                            <input type="radio" name="stock" v-model="stockFilter" value="all" checked class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
                             <span class="text-xs font-bold text-slate-700 group-hover:text-slate-900">Tất cả</span>
                         </label>
-                        <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-[#ff8f73] has-[:checked]:bg-[#ff8f73]/5">
-                            <input type="radio" name="stock" value="preorder" class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
-                            <span class="text-xs font-bold text-slate-700 group-hover:text-slate-900">Hàng Pre-order</span>
-                        </label>
                         <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-rose-400 has-[:checked]:bg-rose-50">
-                            <input type="radio" name="stock" value="low" class="w-4 h-4 text-rose-500 border-slate-300 focus:ring-rose-500">
-                            <span class="text-xs font-bold text-slate-700 group-hover:text-slate-900">Sắp hết (&lt; 5)</span>
+                            <input type="radio" name="stock" v-model="stockFilter" value="low" class="w-4 h-4 text-rose-500 border-slate-300 focus:ring-rose-500">
+                            <span class="text-xs font-bold text-slate-700 group-hover:text-slate-900">Sắp hết (&lt; 3)</span>
                         </label>
                         <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-slate-400 has-[:checked]:bg-slate-100">
-                            <input type="radio" name="stock" value="out" class="w-4 h-4 text-slate-600 border-slate-300 focus:ring-slate-600">
+                            <input type="radio" name="stock" v-model="stockFilter" value="out" class="w-4 h-4 text-slate-600 border-slate-300 focus:ring-slate-600">
                             <span class="text-xs font-bold text-slate-700 group-hover:text-slate-900">Hết hàng</span>
                         </label>
                     </div>
@@ -54,41 +50,67 @@
 
                 <div class="space-y-4">
                     <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">category</span> Danh mục Mô hình
+                        <span class="material-symbols-outlined text-[16px]">sell</span> Loại hình bán
                     </label>
-                    <div class="flex flex-col gap-3">
-                        <label v-for="cat in filterCategories" :key="cat.id" class="flex items-center gap-3 cursor-pointer group">
-                            <input type="checkbox" :value="cat.id" v-model="selectedCategories" class="w-4 h-4 text-[#ff8f73] border-slate-300 rounded focus:ring-[#ff8f73] transition-all">
-                            <span class="text-sm font-medium text-slate-700 group-hover:text-[#ff8f73] transition-colors">{{ cat.name }}</span>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-[#ff8f73] has-[:checked]:bg-[#ff8f73]/5">
+                            <input type="radio" v-model="saleTypeFilter" value="all" class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
+                            <span class="text-xs font-bold text-slate-700">Tất cả</span>
                         </label>
+                        <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-[#ff8f73] has-[:checked]:bg-[#ff8f73]/5">
+                            <input type="radio" v-model="saleTypeFilter" value="preorder" class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
+                            <span class="text-xs font-bold text-slate-700">Pre-order</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-[#ff8f73] has-[:checked]:bg-[#ff8f73]/5">
+                            <input type="radio" v-model="saleTypeFilter" value="order" class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
+                            <span class="text-xs font-bold text-slate-700">Order</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-[#ff8f73] has-[:checked]:bg-[#ff8f73]/5">
+                            <input type="radio" v-model="saleTypeFilter" value="cosan" class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
+                            <span class="text-xs font-bold text-slate-700">Có sẵn</span>
+                        </label>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-6">
+                    <div class="space-y-4">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">category</span> Danh mục chính
+                        </label>
+                        <select v-model="selectedCat" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-4 py-3 focus:border-[#ff8f73] outline-none transition-all">
+                            <option value="">-- Tất cả danh mục --</option>
+                            <option v-for="cat in filterCategories" :key="cat.MaDM" :value="cat.MaDM">
+                                {{ cat.TenDM }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div v-if="selectedCat" class="space-y-4 animate-[fadeIn_0.3s_ease-out]">
+                        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">account_tree</span> Loại chi tiết
+                        </label>
+                        <div class="grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <label v-for="sub in detailCategories" :key="sub.MaChiTietDM" class="flex items-center gap-3 p-2 hover:bg-white rounded-lg cursor-pointer transition-all group">
+                                <input type="radio" :value="sub.MaChiTietDM" v-model="selectedDetailCat" class="w-4 h-4 text-[#ff8f73] border-slate-300 focus:ring-[#ff8f73]">
+                                <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">{{ sub.TenChiTietDM }}</span>
+                            </label>
+                            <p v-if="detailCategories.length === 0" class="text-[10px] text-slate-400 italic text-center py-2">Không có phân loại con cho mục này</p>
+                        </div>
                     </div>
                 </div>
 
                 <hr class="border-slate-100">
                 <div class="space-y-4">
                     <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">tune</span> Thông số kỹ thuật
+                        <span class="material-symbols-outlined text-[16px]">tune</span> Giá
                     </label>
-                
-                    <div class="grid grid-cols-2 gap-3">
-                        <select class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#ff8f73]/50 focus:border-[#ff8f73] transition-all cursor-pointer">
-                            <option>Scale (Tất cả)</option>
-                            <option>1/6 Scale</option>
-                            <option>1/7 Scale</option>
-                            <option>Non-scale</option>
-                        </select>
-                        <select class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#ff8f73]/50 focus:border-[#ff8f73] transition-all cursor-pointer">
-                            <option>Chất liệu (Tất cả)</option>
-                            <option>PVC / ABS</option>
-                            <option>Resin / Polystone</option>
-                            <option>Die-cast (Kim loại)</option>
-                        </select>
-                    </div>
 
                     <div class="flex items-center gap-2 pt-2">
-                        <input type="number" placeholder="Giá từ..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#ff8f73]/50 focus:border-[#ff8f73] transition-all placeholder:text-slate-400 placeholder:font-normal">
+                        <input type="number" v-model="minprice" placeholder="Giá từ..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#ff8f73]/50 focus:border-[#ff8f73] transition-all placeholder:text-slate-400 placeholder:font-normal">
                         <span class="text-slate-300">-</span>
-                        <input type="number" placeholder="Đến..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#ff8f73]/50 focus:border-[#ff8f73] transition-all placeholder:text-slate-400 placeholder:font-normal">
+                        <input type="number" v-model="maxprice" placeholder="Đến..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#ff8f73]/50 focus:border-[#ff8f73] transition-all placeholder:text-slate-400 placeholder:font-normal">
                     </div>
                 </div>
 
@@ -101,6 +123,7 @@
                         <option value="newest">Mới cập nhật nhất</option>
                         <option value="price_asc">Giá bán: Thấp đến Cao</option>
                         <option value="price_desc">Giá bán: Cao đến Thấp</option>
+                        <option value="date_desc">Giá bán: Cao đến Thấp</option>
                         <option value="stock_asc">Tồn kho: Ít nhất</option>
                     </select>
                 </div>
@@ -108,8 +131,8 @@
         </div>
   
         <div class="p-6 border-t border-slate-100 flex gap-3 bg-white shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <button class="flex-1 py-3 px-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">Đặt lại</button>
-            <button class="flex-[2] py-3 px-4 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all text-sm">Áp dụng</button>
+            <button @click="resetFilters" class="flex-1 py-3 px-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">Đặt lại</button>
+            <button @click="applyAdvancedFilters" class="flex-[2] py-3 px-4 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all text-sm">Áp dụng</button>
         </div>
       </div>
   
@@ -140,10 +163,10 @@
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
               <div class="relative z-10">
                 <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng biến thể</p>
-                <p class="text-3xl font-brand font-bold text-slate-900">1,248</p>
-                <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-emerald-500">
+                <p class="text-3xl font-brand font-bold text-slate-900">{{totalProducts }}</p>
+                <!-- <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-emerald-500">
                   <span class="material-symbols-outlined text-sm">trending_up</span> +24 tháng này
-                </div>
+                </div> -->
               </div>
               <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-inner">
                 <span class="material-symbols-outlined text-[#ff8f73]">inventory</span>
@@ -153,7 +176,7 @@
             <div class="bg-white p-6 rounded-2xl border border-rose-50 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
               <div class="relative z-10">
                 <p class="text-[11px] text-rose-400 font-bold uppercase tracking-widest mb-2">Sắp hết hàng</p>
-                <p class="text-3xl font-brand font-bold text-rose-600">14</p>
+                <p class="text-3xl font-brand font-bold text-rose-600">0</p>
                 <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-rose-400 italic">
                   Cần nhập thêm ngay
                 </div>
@@ -176,14 +199,14 @@
               </div>
               <div class="flex flex-wrap gap-2 relative z-10">
                 <button 
-                  v-for="brand in filterBrands" :key="brand.id"
-                  @click="activeFilter = brand.id"
+                  v-for="brand in Brands" :key="brand.MaHSX"
+                  @click="activeFilter = brand.MaHSX"
                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all border shadow-sm"
-                  :class="activeFilter === brand.id 
+                  :class="activeFilter === brand.MaHSX 
                     ? 'bg-[#ff8f73] text-white border-[#ff8f73] shadow-[#ff8f73]/20' 
                     : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:text-slate-700'"
                 >
-                  {{ brand.name }}
+                  {{ brand.TenHSX }}
                 </button>
               </div>
             </div>
@@ -195,7 +218,7 @@
                 <thead>
                   <tr class="bg-slate-50/50 border-b border-slate-100">
                     <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Tên sản phẩm</th>
-                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Phân loại</th>
+                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Loại Hình Bán</th>
                     <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Giá nhập</th>
                     <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Giá bán</th>
                     <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-center">Tồn kho</th>
@@ -205,7 +228,7 @@
                 <tbody class="divide-y divide-slate-50">
                   <tr v-for="product in products" :key="product.id" 
                       class="transition-colors group"
-                      :class="product.stock <= 5 ? 'bg-rose-50/30 hover:bg-rose-50/60' : 'hover:bg-slate-50/80'">
+                      :class="product.stock <= 3 ? 'bg-rose-50/30 hover:bg-rose-50/60' : 'hover:bg-slate-50/80'">
                     
                     <td class="px-8 py-4">
                       <div class="flex items-center gap-4">
@@ -228,7 +251,7 @@
                     </td>
                     
                     <td class="px-8 py-4">
-                      <p class="font-bold text-slate-700 text-sm mb-1">{{ product.variant }}</p>
+                      <p class="font-bold text-slate-700 text-sm mb-1">{{ product.selltype}}</p>
                       <p class="text-[11px] font-semibold text-slate-400">Scale: <span class="text-slate-500">{{ product.scale }}</span></p>
                     </td>
                     
@@ -236,7 +259,7 @@
                     <td class="px-8 py-4 text-sm font-bold text-slate-900 text-right">{{ product.sellPrice }}đ</td>
                     
                     <td class="px-8 py-4 text-center">
-                      <div v-if="product.stock > 5">
+                      <div v-if="product.stock > 3">
                         <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold border border-emerald-100 shadow-sm">{{ product.stock }}</span>
                       </div>
                       <div v-else class="flex flex-col items-center">
@@ -261,13 +284,30 @@
             </div>
             
             <div class="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
-              <p class="text-xs font-bold text-slate-400">Hiển thị 1 - 4 của 1,248 sản phẩm</p>
+              <p class="text-xs font-bold text-slate-400">Hiển thị {{ (currentPage - 1)*limit + 1 }} - {{Math.min(currentPage * limit, totalProducts)}} của {{ totalProducts }} sản phẩm</p>
               <div class="flex items-center gap-2">
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#ff8f73] text-white text-xs font-bold shadow-lg shadow-[#ff8f73]/20">1</button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">2</button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">3</button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+                  <button 
+                    @click="if(currentPage > 1) { currentPage--; fetchProducts(); }"
+                    :disabled="currentPage === 1"
+                    class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <span class="material-symbols-outlined text-sm">chevron_left</span>
+                  </button>
+                  
+                  <div class="flex items-center gap-1">
+                      <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#ff8f73] text-white text-xs font-bold shadow-lg shadow-[#ff8f73]/20">
+                        {{ currentPage }}
+                      </button>
+                      <span class="text-xs font-bold text-slate-400 px-2">/ {{ totalPages }}</span>
+                  </div>
+                  
+                  <button 
+                    @click="if(currentPage < totalPages) { currentPage++; fetchProducts(); }"
+                    :disabled="currentPage === totalPages"
+                    class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    <span class="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
               </div>
             </div>
           </div>
@@ -315,29 +355,49 @@
             </div>
 
             <div class="md:col-span-2 border-t border-slate-100 my-2"></div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên phân loại (Variant)</label>
-              <input v-model="newProduct.variant" type="text" placeholder="VD: Bản Standard" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Dòng (Scale)</label>
-              <input v-model="newProduct.scale" type="text" placeholder="VD: 1/144 HG" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Giá nhập (VNĐ)</label>
-              <input v-model="newProduct.costPrice" type="text" placeholder="VD: 350.000" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Giá bán (VNĐ)</label>
-              <input v-model="newProduct.sellPrice" type="text" placeholder="VD: 550.000" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
-            </div>
-            
             <div class="md:col-span-2">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Số lượng tồn kho ban đầu</label>
-              <input v-model.number="newProduct.stock" type="number" min="0" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-[#ff8f73]">
+              <div class="flex items-center justify-between mb-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest">Phân loại hàng (*)</label>
+                <button @click.prevent="addVariant" class="text-xs font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-md shadow-[#ff8f73]/20 px-4 py-2 rounded-xl transition-all flex items-center gap-1 active:scale-95">
+                  <span class="material-symbols-outlined text-[16px]">add</span> Thêm phân loại
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(variant, index) in newProduct.variants" :key="index" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative group animate-[fadeIn_0.3s_ease-out]">
+                  
+                  <button v-if="newProduct.variants.length > 1" @click.prevent="removeVariant(index)" class="absolute -top-3 -right-3 w-8 h-8 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white shadow-md z-10">
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                  </button>
+
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-md">Phân loại {{ index + 1 }}</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tên phân loại</label>
+                      <input v-model="variant.name" type="text" placeholder="VD: Bản Deluxe / Màu Đỏ" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Dòng (Scale)</label>
+                      <input v-model="variant.scale" type="text" placeholder="VD: 1/7 Scale" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá nhập (VNĐ)</label>
+                      <input v-model="variant.costPrice" type="number" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá bán (VNĐ)</label>
+                      <input v-model="variant.sellPrice" type="number" placeholder="0" class="w-full border border-[#ff8f73]/30 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-[#ff8f73] bg-white shadow-sm">
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Số lượng kho</label>
+                      <input v-model.number="variant.stock" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-all font-bold text-sky-600 bg-white">
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="md:col-span-2 border-t border-slate-100 my-2"></div>
             <div class="md:col-span-2">
@@ -583,7 +643,7 @@
 </template>
   
 <script setup>
-  import { ref } from 'vue';
+  import { ref, onMounted, watch} from 'vue';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from "../../stores/toast";
@@ -596,17 +656,88 @@
   const isSidebarCollapsed = ref(false);
   const isMobileMenuOpen = ref(false);
 
-  import { onMounted, watch } from 'vue';
-
-  // --- KẾT NỐI API: LIỆT KÊ SẢN PHẨM ---
   const products = ref([]);
   const isLoading = ref(true);
+  
+  //Số trang
   const currentPage = ref(1);
+  let limit = 10;
+  const totalPages = ref(1);
+  
+  
+  const totalProducts = ref(0);
+  
+  const Brands = ref([{ MaHSX: 'all', TenHSX: 'Tất cả' }]);
+  const activeFilter = ref('all');
+
+    // Các biến cho Bộ lọc nâng cao
+  const stockFilter = ref('all'); // Tình trạng tồn kho
+  const saleTypeFilter = ref('all');
+  const selectedCat = ref(''); // Danh mục
+  const selectedDetailCat= ref('');
+  const minprice = ref(null); // Giá từ
+  const maxprice = ref(null); // Giá đến
+  const sortBy = ref('newest'); // Sắp xếp mặc định
+
+  const fetchBrands = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/product_admin/get_brand');
+      const result = await response.json();
+      if (result.success) {
+        Brands.value = [{ MaHSX: 'all', TenHSX: 'Tất cả' }, ...result.data];
+      }
+    } catch (error) {
+      console.error("Lỗi lấy danh sách hãng:", error);
+    }
+  };
+
+  const filterCategories = ref([]);       
+  const detailCategories = ref([]);   
+
+  // 1. Hàm lấy danh sách Danh mục lớn
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/product_admin/getvariant');
+      const result = await response.json();
+      if (result.success) filterCategories.value = result.data;
+    } catch (error) { console.error("Lỗi lấy danh mục:", error); }
+  };
+
+  // 2. Hàm lấy danh sách Danh mục con khi chọn danh mục lớn
+  // Giả sử API của bạn nhận MaDM để trả về các danh mục con tương ứng
+  const fetchDetailCategories = async (MaDM) => {
+    if (!MaDM) {
+      detailCategories.value = [];
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${MaDM}`);
+      const result = await response.json();
+      if (result.success) detailCategories.value = result.data;
+    } catch (error) { console.error("Lỗi lấy danh mục con:", error); }
+  };
+
+  // 3. Theo dõi khi người dùng đổi danh mục lớn thì tự động tải lại danh mục con
+  watch(selectedCat, (newVal) => {
+    selectedDetailCat.value = ''; // Reset danh mục con
+    fetchDetailCategories(newVal);
+  });
+
 
   const fetchProducts = async () => {
     isLoading.value = true;
     try {
-      const response = await fetch(`http://localhost:3000/api/product_admin?page=${currentPage.value}&limit=10`);
+      let url = `http://localhost:3000/api/product_admin?page=${currentPage.value}&limit=${limit}`;
+      if (activeFilter.value !== 'all') url += `&hsx=${activeFilter.value}`;
+      if (stockFilter.value !== 'all') url += `&TinhTrangTonKho=${stockFilter.value}`;
+      if (saleTypeFilter.value !== 'all') url += `&LoaiHinhBan=${saleTypeFilter.value}`;
+      if (selectedCat.value) url += `&danhmuc=${selectedCat.value}`;
+      if (selectedDetailCat.value) url += `&chitietdanhmuc=${selectedDetailCat.value}`;
+      if (minprice.value) url += `&minprice=${minprice.value}`;
+      if (maxprice.value) url += `&maxprice=${maxprice.value}`;
+      if (sortBy.value) url += `&sapxep=${sortBy.value}`;
+
+      const response = await fetch(url);
       const result = await response.json();
 
       if (result.success) {
@@ -617,17 +748,21 @@
             id: item.MaMH, 
             name: item.TenMH,
             anh: item.AnhDaiDien,
-            brand: item.TenThuongHieu || 'Chưa cập nhật',
-            category: item.TenDanhMuc || 'Mô hình',
+            brand: item.TenHSX || 'Chưa cập nhật',
+            selltype: item.LoaiHinhBan,
+            category: item.TenDM || 'Mô hình',
             variant: item.TenPhanLoai || 'Mặc định',
             scale: item.TyLe || 'N/A',
             // Format tiền tệ cho đẹp
             costPrice: Number(item.GiaNhap || 0).toLocaleString('vi-VN'),
-            sellPrice: Number(item.GiaBan || 0).toLocaleString('vi-VN'),
-            stock: item.SoLuongTon || 0,
+            sellPrice: Number(item.DonGia || 0).toLocaleString('vi-VN'),
+            stock: item.SoLuong || 0,
             thumbnailUrl: item.AnhDaiDien || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.TenMH)}&background=random&color=fff&size=128`
           };
         });
+        totalProducts.value = result.pagination?.totalItems || result.data.length; 
+        totalPages.value = result.pagination.totalPage;
+        currentPage.value = result.pagination?.currentPage;
       }
     } catch (error) {
       console.error("Lỗi khi tải danh sách sản phẩm:", error);
@@ -637,8 +772,15 @@
     }
   };
 
-  // Gọi API ngay khi Load trang
+   // Gọi API ngay khi Load trang
   onMounted(() => {
+    fetchProducts();
+    fetchBrands();
+    fetchCategories();
+  });
+
+  watch(activeFilter, () => {
+    currentPage.value = 1;
     fetchProducts();
   });
   
@@ -648,14 +790,6 @@
   };
   const closeAllMenus = () => {};
   
-  const filterBrands = [
-    { id: 'all', name: 'Tất cả' },
-    { id: 'bandai', name: 'Bandai' },
-    { id: 'gsc', name: 'GSC' },
-    { id: 'hottoys', name: 'Hot Toys' },
-    { id: 'goodsmile', name: 'Good Smile' },
-  ];
-  const activeFilter = ref('all');
   
   const getBrandColor = (brand) => {
     switch (brand.toLowerCase()) {
@@ -670,9 +804,23 @@
   const isAddProductModalOpen = ref(false);
 
   const newProduct = ref({
-      name: '', brand: 'Bandai', category: 'Action Figure', variant: '', scale: '', costPrice: '', sellPrice: '', stock: 0,
-      thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: []
+      name: '', brand: 'Bandai', category: 'Action Figure', 
+      thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
+      // Mảng chứa các phân loại
+      variants: [
+        { name: '', scale: '', costPrice: '', sellPrice: '', stock: 0 }
+      ]
   });
+
+  // 2. HÀM THÊM PHÂN LOẠI
+  const addVariant = () => {
+    newProduct.value.variants.push({ name: '', scale: '', costPrice: '', sellPrice: '', stock: 0 });
+  };
+
+  // 3. HÀM XÓA PHÂN LOẠI
+  const removeVariant = (index) => {
+    newProduct.value.variants.splice(index, 1);
+  };
 
   const triggerFileInput = () => {
     if(!newProduct.value.thumbnailUrl && fileInputRef.value) fileInputRef.value.click();
@@ -721,29 +869,29 @@
 
   // --- KẾT NỐI API: THÊM SẢN PHẨM MỚI ---
   const submitNewProduct = async () => {
-      // 1. Kiểm tra đầu vào
       if (!newProduct.value.name.trim()) {
         toastStore.showToast("Vui lòng nhập Tên mô hình!", "error");
         return;
       }
 
-      // 2. Đóng gói dữ liệu (Vì có file ảnh nên phải dùng FormData)
+      // Kiểm tra xem phân loại đầu tiên có bị bỏ trống tên không
+      if (newProduct.value.variants.length === 0 || !newProduct.value.variants[0].name.trim()) {
+        toastStore.showToast("Vui lòng nhập Tên cho ít nhất 1 phân loại!", "error");
+        return;
+      }
+
       const formData = new FormData();
       formData.append('TenMH', newProduct.value.name);
       formData.append('ThuongHieu', newProduct.value.brand);
       formData.append('DanhMuc', newProduct.value.category);
-      formData.append('PhanLoai', newProduct.value.variant);
-      formData.append('TyLe', newProduct.value.scale);
-      formData.append('GiaNhap', newProduct.value.costPrice);
-      formData.append('GiaBan', newProduct.value.sellPrice);
-      formData.append('SoLuong', newProduct.value.stock);
+      
+      // 👉 Ép kiểu mảng phân loại thành chuỗi JSON để gửi qua HTTP
+      formData.append('DanhSachPhanLoai', JSON.stringify(newProduct.value.variants));
 
-      // Gắn file ảnh đại diện (nếu có)
       if(newProduct.value.thumbnailFile) {
         formData.append('AnhDaiDien', newProduct.value.thumbnailFile);
       }
       
-      // Gắn nhiều file ảnh bộ sưu tập (nếu có)
       newProduct.value.galleryFiles.forEach(file => {
         formData.append('BoSuuTapAnh', file);
       });
@@ -866,13 +1014,6 @@
     if (!productToDelete.value) return;
 
     try {
-      /*
-      const response = await fetch(`http://localhost:3000/api/products/${productToDelete.value.id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Lỗi khi xóa sản phẩm');
-      */
-
       products.value = products.value.filter(p => p.id !== productToDelete.value.id);
 
       isDeleteModalOpen.value = false;
@@ -886,21 +1027,29 @@
     }
   };
 
-  const filterCategories = ref([
-    { id: 'cat_action', name: 'Action Figure (Khớp động)' },
-    { id: 'cat_statue', name: 'Statue (Tượng tĩnh)' },
-    { id: 'cat_modelkit', name: 'Model Kit (Lắp ráp)' },
-    { id: 'cat_chibi', name: 'Chibi / Nendoroid' }
-  ]);
 
-  const selectedCategories = ref([]);
-  const sortBy = ref('newest');
 
+  const applyAdvancedFilters = () => {
+    currentPage.value = 1;
+    fetchProducts();
+    isFilterPanelOpen.value = false; // Đóng ngăn kéo sau khi lọc
+  };
+
+  // Hàm Đặt lại toàn bộ (Reset)
   const resetFilters = () => {
-        selectedCategories.value = [];
-        sortBy.value = 'newest';
-        activeFilter.value = 'all';
-   };
+    stockFilter.value = 'all';
+    saleTypeFilter.value = 'all';
+    selectedCat.value = '';
+    selectedDetailCat.value = '';
+    minprice.value = null;
+    maxprice.value = null;
+    sortBy.value = 'newest';
+    activeFilter.value = 'all'; // Đặt lại cả bộ lọc Hãng SX bên ngoài
+    
+    currentPage.value = 1;
+    fetchProducts();
+  };
+
 </script>
 <style scoped>
   .custom-scrollbar::-webkit-scrollbar { width: 6px; }

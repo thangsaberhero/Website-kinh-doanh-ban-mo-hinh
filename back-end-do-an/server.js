@@ -22,7 +22,7 @@ app.listen(PORT, () => {
 });
 
 // Import Route Auth
-const authRoutes = require('./routes/User_route/auth.route.js');
+const authRoutes = require('./routes/auth.route.js');
 
 // Sử dụng Route Auth
 app.use('/api/auth', authRoutes);

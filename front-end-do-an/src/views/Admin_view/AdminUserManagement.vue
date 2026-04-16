@@ -665,7 +665,7 @@
             email: item.Email || 'Chưa cập nhật',
             
             // Xử lý logic hiển thị Vai trò và Trạng thái
-            role: item.Quyen || 'Collector', 
+            role: item.TenQuyen || 'Collector', 
             status: item.TrangThai || 'Hoạt động', 
             
             // Fix cứng tạm thời các thông số chưa có trong DB để UI không bị vỡ

@@ -89,10 +89,10 @@
           </div>
         </div>
         <div @click="router.push('/category/3')" class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" :src="'s-l1000.jpg'"/>
+          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" :src="'kaka.jpg'"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
           <div class="absolute bottom-4 left-4">
-            <h3 class="font-headline text-xl font-bold text-on-surface">Fumo</h3>
+            <h3 class="font-headline text-xl font-bold text-on-surface">Gundam</h3>
           </div>
         </div>
         <div @click="router.push('/category/4')" class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
