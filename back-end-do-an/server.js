@@ -39,12 +39,14 @@ app.use('/api/products', productsRoutes);
 const donhangRoutes = require('./routes/User_route/donhang_user.route.js');
 app.use('/api/don_hang',donhangRoutes);
 
+const reviewRoutes = require('./routes/User_route/review.route.js');
+app.use('/api/reviews', reviewRoutes);
 //Lấy đường dẫn ảnh đại diện
 const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
 app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
-
+app.use('/Images_review', express.static(path.join(__dirname, 'public/Images_review')));
 
 
 // --- ROUTE CHATBOT ---

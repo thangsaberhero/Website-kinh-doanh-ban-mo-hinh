@@ -298,13 +298,18 @@ CREATE TABLE ChiTietBaoHanh (
 -- 25. Bảng Đánh giá
 CREATE TABLE DanhGia (
     MaDG INT PRIMARY KEY AUTO_INCREMENT,
-    MaKH INT,
-    MaMoHinh INT,
+    MaKH INT NOT NULL,
+    MaMoHinh INT NOT NULL,      
+    MaPhanLoai INT,         
     NoiDung TEXT,
     SoSao INT CHECK (SoSao >= 1 AND SoSao <= 5),
-    ThoiGianDG DATETIME,
+    HinhAnh JSON NULL,      
+    PhanHoiShop TEXT NULL,  
+    TrangThai TINYINT DEFAULT 1, 
+    ThoiGianDG DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
-    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh),
+    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
 );
 
 -- 26. Bảng Vận chuyển
