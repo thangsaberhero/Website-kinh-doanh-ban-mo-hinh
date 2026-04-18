@@ -49,7 +49,7 @@ CREATE TABLE NhanVien (
 -- 5. Bảng Hãng sản xuất
 CREATE TABLE HangSanXuat (
     MaHSX INT PRIMARY KEY AUTO_INCREMENT,
-    TenHSX VARCHAR(100) NOT NULL,
+    TenHSX VARCHAR(100) UNIQUE NOT NULL,
 	MoTa TEXT
 );
 
@@ -241,18 +241,68 @@ CREATE TABLE KhuyenMai (
     TenKM VARCHAR(100) NOT NULL,
     ThoiGianBD DATETIME,
     ThoiGianKT DATETIME,
-    LoaiKM VARCHAR(50),
-    DieuKien VARCHAR(255)
+	TrangThaiHoatDong TinyInt default 0
 );
 
 -- 20. Bảng Chi tiết khuyến mãi
 CREATE TABLE ChiTietKhuyenMai (
     MaKM INT,
-    MaMoHinh INT,
-    ChietKhau DECIMAL(10,2),
-    PRIMARY KEY (MaKM, MaMoHinh),
+    MaPhanLoai INT,
+	LoaiGiamGia VARCHAR(20) DEFAULT 'TienMat',
+    ChietKhau DECIMAL(12,2),
+	GiaTriGiamToiDa DECIMAL(12,2) DEFAULT NULL,
+	SoLuongKM INT default 1,
+    PRIMARY KEY (MaKM, MaPhanLoai),
     FOREIGN KEY (MaKM) REFERENCES KhuyenMai(MaKM),
-    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
+);
+
+Create table LogSuDungKhuyenMai (
+	MaLichSu INT PRIMARY KEY AUTO_INCREMENT,
+	MaKM INT NOT NULL,
+	MaKH INT NOT NULL,
+	MaDH INT NOT NULL,
+	SoTienDaGiam DECIMAL (12,2),
+	Thoigiansudung datetime default now(),
+	FOREIGN KEY (MaKM) REFERENCES KhuyenMai(MaKM),
+	FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
+	FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+CREATE Table MaGiamGia (
+	MaGG INT PRIMARY KEY AUTO_INCREMENT,
+	TenMaGiamGia VARCHAR(100) NOT NULL,
+	MaVoucher VARCHAR(20) UNIQUE NOT NULL,
+	SoLuongDungToiDa INT Default 1,
+	ThoiGianBD DATETIME,
+    	ThoiGianKT DATETIME,
+	MaKH INT default null,
+	MucGiaToiThieu Decimal (12,2),
+	TrangThaiHoatDong TinyInt default 0,
+	LoaiGiamGia VARCHAR(20) DEFAULT 'TienMat',
+    	ChietKhau DECIMAL(12,2),
+	GiaTriGiamToiDa DECIMAL(12,2) DEFAULT NULL,
+);
+
+Create table ChiTietMaGiamGia (
+	MaGG INT,
+    	MaMoHinh INT,
+    	PRIMARY KEY (MaGG, MaMoHinh),
+    	FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
+    	FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+);
+	
+
+Create table LogSuDungMaGiamGia (
+	MaLichSu INT PRIMARY KEY AUTO_INCREMENT,
+	MaGG INT NOT NULL,
+	MaKH INT NOT NULL,
+	MaDH INT NOT NULL,
+	SoTienDaGiam DECIMAL(12,2),
+	Thoigiansudung datetime default now(),
+	FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
+	FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
+	FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
 );
 
 -- 21. Bảng Tin tức
@@ -299,7 +349,7 @@ CREATE TABLE ChiTietBaoHanh (
 CREATE TABLE DanhGia (
     MaDG INT PRIMARY KEY AUTO_INCREMENT,
     MaKH INT NOT NULL,
-    MaMoHinh INT NOT NULL,      
+    MaMH INT NOT NULL,      
     MaPhanLoai INT,         
     NoiDung TEXT,
     SoSao INT CHECK (SoSao >= 1 AND SoSao <= 5),
@@ -308,7 +358,7 @@ CREATE TABLE DanhGia (
     TrangThai TINYINT DEFAULT 1, 
     ThoiGianDG DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
-    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh),
+    FOREIGN KEY (MaMH) REFERENCES MoHinh(MaMoHinh),
     FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
 );
 

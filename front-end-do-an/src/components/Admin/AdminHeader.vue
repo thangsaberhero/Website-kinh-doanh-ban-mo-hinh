@@ -116,18 +116,18 @@
         <div class="relative group cursor-pointer">
           <div class="flex items-center gap-3">
             <div class="text-right hidden md:block">
-              <p class="text-xs font-bold text-slate-900 group-hover:text-[#ff8f73] transition-colors">Admin_Phong</p>
-              <p class="text-[10px] text-[#ff8f73] uppercase font-bold tracking-wider">Quản trị viên</p>
+              <p class="text-xs font-bold text-slate-900 group-hover:text-[#ff8f73] transition-colors">{{ user?.username || 'Admin_Phong' }}</p>
+              <p class="text-[10px] text-[#ff8f73] uppercase font-bold tracking-wider">{{ roleName }}</p>
             </div>
             <div class="w-9 h-9 rounded-full bg-[#ff8f73]/10 border border-[#ff8f73]/30 flex items-center justify-center text-[#ff8f73] font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-[#ff8f73]/30 transition-all">
-               <img src="https://ui-avatars.com/api/?name=Admin+Phong&background=ff8f73&color=fff&bold=true" alt="Avatar" class="w-full h-full object-cover">
+               <img :src="`https://ui-avatars.com/api/?name=${user?.username}&background=ff8f73&color=fff&bold=true`" alt="Avatar" class="w-full h-full object-cover">
             </div>
           </div>
   
           <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50 overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
               <p class="text-xs font-medium text-slate-500">Tài khoản</p>
-              <p class="text-sm font-bold text-slate-900 truncate">phong.admin@figure.vn</p>
+              <p class="text-sm font-bold text-slate-900 truncate">{{ user?.email || 'phong.admin@figure.vn' }}</p>
             </div>
             <div class="py-1">
               <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73]">
@@ -138,7 +138,7 @@
               </a>
             </div>
             <div class="py-1 border-t border-slate-100">
-              <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium">
+              <button @click="handleLogout" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium">
                 <span class="material-symbols-outlined text-[18px]">logout</span> Đăng xuất
               </button>
             </div>
@@ -150,5 +150,30 @@
 </template>
     
 <script setup>
-  defineEmits(['toggle-sidebar', 'search'])
+  import { computed } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth.js'; // Đảm bảo đường dẫn đúng tới store của bạn
+
+  const authStore = useAuthStore();
+  const router = useRouter();
+
+  defineEmits(['toggle-sidebar', 'search']);
+
+  // Lấy thông tin user từ store
+  const user = computed(() => authStore.user);
+  // Chuyển đổi mã quyền thành văn bản hiển thị
+  const roleName = computed(() => {
+    if (!user.value) return '';
+    return user.value.role === 1 ? 'Quản trị viên' : 'Nhân viên';
+  });
+
+  // Xử lý đăng xuất
+  const handleLogout = () => {
+  if (authStore.logout) {
+    authStore.logout();
+  } else {
+    localStorage.removeItem('token'); 
+  }
+  router.push('/login');
+};
 </script>
