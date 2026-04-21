@@ -16,7 +16,7 @@
           
           <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
             <div>
-              <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight uppercase">Quản lý Tin tức</h1>
+              <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý tin tức</h1>
               <p class="text-slate-500 text-sm font-medium max-w-xl">Hệ thống biên tập và lưu trữ nội dung cộng đồng dành riêng cho những người đam mê mô hình.</p>
             </div>
             

@@ -629,7 +629,8 @@ const product_admin = {
                     Select (mh.DonGia - ctkm.ChietKhau)
                     from ChiTietKhuyenMai ctkm
                     inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                    where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
+                    inner join PhanLoai pl on pl.MaPhanLoai = ctkm.MaPhanLoai
+                    where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and pl.MaPhanLoai = ctkm.MaPhanLoai
                     order by ctkm.ChietKhau desc
                     limit 1
                 ) As dongiakhuyenmai

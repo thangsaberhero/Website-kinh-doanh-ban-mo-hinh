@@ -29,7 +29,7 @@ app.use('/api/auth', authRoutes);
 
 // Thay đổi thông tin khách hàng
 const user_info = require('./routes/User_route/info_user.route.js');
-app.use('/api/info_user', user_info);
+app.use('/api/info_user', user_info);       
 
 //Lấy thông tin sản phẩm và danh mục sản phẩm
 const productsRoutes = require('./routes/User_route/products.route.js');
@@ -44,7 +44,7 @@ const path = require('path'); // Nhớ gọi thư viện path ở đầu file se
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
 app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
-
+app.use('/Images_review', express.static(path.join(__dirname, 'public/Images_review')));
 
 
 // --- ROUTE CHATBOT ---

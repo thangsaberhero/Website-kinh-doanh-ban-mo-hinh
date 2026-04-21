@@ -335,24 +335,34 @@
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Thương hiệu</label>
-              <select v-model="newProduct.brand" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
-                <option value="Bandai">Bandai</option>
-                <option value="Hot Toys">Hot Toys</option>
-                <option value="GSC">Good Smile Company</option>
-                <option value="Khác">Khác</option>
-              </select>
-            </div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Thương hiệu</label>
+          <select v-model="newProduct.brand" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white cursor-pointer">
+            <option value="">-- Chọn Hãng SX --</option>
+            <option v-for="brand in Brands.filter(b => b.MaHSX !== 'all')" :key="brand.MaHSX" :value="brand.MaHSX">
+              {{ brand.TenHSX }}
+            </option>
+          </select>
+        </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Danh mục</label>
-              <select v-model="newProduct.category" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
-                <option value="Action Figure">Action Figure</option>
-                <option value="Model Kit">Model Kit (Lắp ráp)</option>
-                <option value="Statue (Tĩnh)">Statue (Tĩnh)</option>
-                <option value="Chibi Figure">Chibi Figure</option>
-              </select>
-            </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Danh mục</label>
+          <select v-model="newProduct.category" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white cursor-pointer">
+            <option value="">-- Chọn danh mục --</option>
+            <option v-for="cat in filterCategories" :key="cat.MaDM" :value="cat.MaDM">
+              {{ cat.TenDM }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Loại chi tiết</label>
+          <select v-model="newProduct.detailCategory" :disabled="!newProduct.category" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white cursor-pointer disabled:bg-slate-100 disabled:text-slate-400">
+            <option value="">-- Chọn loại chi tiết --</option>
+            <option v-for="detail in modalDetailCategories" :key="detail.MaChiTietDM" :value="detail.MaChiTietDM">
+              {{ detail.TenChiTietDM }}
+            </option>
+          </select>
+        </div>
 
             <div class="md:col-span-2 border-t border-slate-100 my-2"></div>
             <div class="md:col-span-2">
@@ -804,7 +814,7 @@
   const isAddProductModalOpen = ref(false);
 
   const newProduct = ref({
-      name: '', brand: 'Bandai', category: 'Action Figure', 
+      name: '', brand: '', category: '', 
       thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
       // Mảng chứa các phân loại
       variants: [
@@ -819,7 +829,11 @@
 
   // 3. HÀM XÓA PHÂN LOẠI
   const removeVariant = (index) => {
-    newProduct.value.variants.splice(index, 1);
+    if (newProduct.value.variants.length > 1) {
+      newProduct.value.variants.splice(index, 1);
+    } else {
+      toastStore.showToast("Phải có ít nhất một phân loại hàng!", "warning");
+    }
   };
 
   const triggerFileInput = () => {
@@ -859,10 +873,39 @@
     newProduct.value.galleryUrls.splice(index, 1);
   };
   
+  const modalDetailCategories = ref([]);
+
+  // Lắng nghe: Khi người dùng chọn/đổi Danh mục chính trong Modal
+  watch(() => newProduct.value.category, async (newMaDM) => {
+    // 1. Reset lại danh mục con đang chọn
+    newProduct.value.detailCategory = ''; 
+    
+    // 2. Nếu không có danh mục chính, làm rỗng mảng con
+    if (!newMaDM) {
+      modalDetailCategories.value = [];
+      return;
+    }
+    
+    // 3. Gọi API lấy danh mục con dựa vào MaDM (Dùng chuẩn Params /:MaDM đã sửa trước đó)
+    try {
+      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`);
+      const result = await response.json();
+      if (result.success) {
+        modalDetailCategories.value = result.data;
+      }
+    } catch (error) {
+      console.error("Lỗi lấy danh mục con cho modal:", error);
+    }
+  });
+
+
   const openAddModal = () => {
     newProduct.value = {
-      name: '', brand: 'Bandai', category: 'Action Figure', variant: '', scale: '', costPrice: '', sellPrice: '', stock: 0,
-      thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: []
+      name: '', brand: '', category: '', variant: '', scale: '', costPrice: '', sellPrice: '', stock: 0,
+      thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
+      variants: [
+        { name: '', scale: '', costPrice: null, sellPrice: null, stock: 0 }
+      ]
     };
     isAddProductModalOpen.value = true;
   };

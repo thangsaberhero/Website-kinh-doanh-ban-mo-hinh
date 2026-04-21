@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../../middlewares/upload');
+const { uploadNews } = require('../../middlewares/upload.js');
 
 // Dùng upload.single('image') vì FormData của TinyMCE gửi lên key là 'image'
-router.post('/', upload.single('image'), (req, res) => {
+router.post('/', uploadNews.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "Không có file nào được tải lên" });
   }
