@@ -39,7 +39,7 @@ INSERT INTO TrangThai (TenTrangThai) VALUES
 ('Chờ duyệt'),
 ('Đang đóng gói'),
 ('Đang vận chuyển'),
-('Đã ciao'),
+('Đã giao'),
 ('Đã hủy'),
 ('Đang hoàn hàng');
 
