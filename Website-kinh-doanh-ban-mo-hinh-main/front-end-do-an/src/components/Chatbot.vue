@@ -118,7 +118,7 @@ const formatPrice = (price) => {
 
 const goToProduct = (id) => {
   router.push(`/product/${id}`); 
-  isOpen.value = false; 
+  //isOpen.value = false; 
 };
 
 // Hàm tự động cuộn xuống cuối cùng

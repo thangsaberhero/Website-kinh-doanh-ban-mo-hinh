@@ -14,13 +14,6 @@ app.use(cors());
 app.use(express.json()); // Giúp server đọc được dữ liệu JSON gửi lên
 
 
-
-// Khởi động Server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🔥 Máy chủ Backend đang chạy tại cổng ${PORT}`);
-});
-
 // Import Route Auth
 const authRoutes = require('./routes/User_route/auth.route.js');
 
@@ -52,7 +45,9 @@ app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user'
 const chatRoutes = require('./routes/User_route/chat.route.js');
 app.use('/api/chatbot', chatRoutes);
 
-
+// --- THÊM ROUTE Blockchain ---
+const blockchainRoutes = require('./routes/User_route/blockchain.route.js');
+app.use('/api/blockchain', blockchainRoutes);
 // =========================================================
 // CRON JOB: TỰ ĐỘNG HỦY ĐƠN VÀ NHẢ KHO (Mỗi 1 phút chạy 1 lần)
 // =========================================================
@@ -108,4 +103,9 @@ cron.schedule('* * * * *', async () => {
     } finally {
         connection.release();
     }
+});
+// Khởi động Server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🔥 Máy chủ Backend đang chạy tại cổng ${PORT}`);
 });

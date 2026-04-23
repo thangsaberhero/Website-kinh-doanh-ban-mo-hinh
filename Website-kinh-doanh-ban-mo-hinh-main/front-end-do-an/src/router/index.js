@@ -19,7 +19,8 @@ import ContactView from '../views/User_view/ContactView.vue';
 import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
 //Phần thanh toán có thể thay thế bằng payos sau này
 import checkout from '../views/User_view/MoMoMockView.vue';
-
+// Import component Truy xuất blockchain
+import ProvenanceTracking from '../views/User_view/ProvenanceTracking.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -111,6 +112,11 @@ const router = createRouter({
       path: '/momo-payment',
       name: 'MoMoMock',
       component: checkout
+    },
+    {
+      path: '/truy-xuat',
+      name: 'TruyXuat',
+      component: ProvenanceTracking
     }
   ]
 });

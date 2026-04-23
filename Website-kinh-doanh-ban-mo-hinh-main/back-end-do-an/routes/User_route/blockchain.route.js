@@ -1,40 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db'); // Đường dẫn tới file setup kết nối MySQL của bạn
-const { getHistoryFromBlockchain } = require('../services/blockchain.service');
+// Trỏ tới file controller bạn vừa tạo
+const blockchainController = require('../../controllers/Staff_controller/blockchain.controller');
 
-router.get('/truy-xuat/:serialNumber', async (req, res) => {
-    try {
-        const { serialNumber } = req.params;
+// Dành cho Web hiển thị cho khách
+router.get('/history/:serialNumber', blockchainController.truyXuatNguonGoc);
 
-        // 1. Lấy thông tin cơ bản từ Database
-        const query = `
-            SELECT sp.MaVach_Serial, mh.TenMH, hsx.TenHSX, mh.AnhDaiDien 
-            FROM SanPhamVatLy sp 
-            JOIN MoHinh mh ON sp.MaMoHinh = mh.MaMoHinh
-            JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
-            WHERE sp.MaVach_Serial = ?
-        `;
-        const [rows] = await db.query(query, [serialNumber]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy mã Serial này trong hệ thống!" });
-        }
-
-        const product = rows[0];
-
-        // 2. Lấy lịch sử bất biến từ Blockchain
-        const blockchainHistory = await getHistoryFromBlockchain(serialNumber);
-
-        res.json({
-            success: true,
-            product: product,
-            history: blockchainHistory
-        });
-
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Lỗi máy chủ", error: error.message });
-    }
-});
+// Dành cho Admin gọi từ trang quản trị
+router.post('/mint', blockchainController.mintProduct);
+router.post('/update-status', blockchainController.updateProductStatus);
 
 module.exports = router;

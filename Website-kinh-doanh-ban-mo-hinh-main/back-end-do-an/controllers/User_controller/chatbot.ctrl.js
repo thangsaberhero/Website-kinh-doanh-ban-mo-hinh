@@ -4,7 +4,7 @@ const uuid = require('uuid');
 const path = require('path');
 const pool = require('../../config/db');
 
-console.log("Key Gemini của tôi là:", process.env.GEMINI_API_KEY);
+//console.log("Key Gemini của tôi là:", process.env.GEMINI_API_KEY);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const sessionClient = new dialogflow.SessionsClient({
