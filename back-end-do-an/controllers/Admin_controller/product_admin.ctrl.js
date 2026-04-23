@@ -137,6 +137,14 @@ const product_admin = {
 
     get_brand: async(req, res)=>{
         try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+
+            // Tính toán vị trí cắt dữ liệu
+            const offset = (page - 1) * limit;
+
+            const {keyword, sapxep} = req.query;
+
             const sql = 'SELECT * FROM HangSanXuat';
             const [brands] = await db.query(sql);
 
@@ -253,41 +261,61 @@ const product_admin = {
 
         try{
             await connection.beginTransaction();
-            const danhSachPhanLoai = JSON.parse(req.body.DanhSachPhanLoai);
+            const DS_PL = JSON.parse(req.body.DanhSachPhanLoai);
             const {TenMH, MaHSX ,MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet ,
-                LoaiHinhBan, Danh_sach_anh, KichThuoc, NgayPhatHanh, TienCocToiThieu, SoLuong, DS_PL, HienThi} = req.body;
-            const sql_them_san_pham = `Insert into MoHinh (TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCoctoiThieu, HienThi)
-                                        Values (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+                LoaiHinhBan, KichThuoc, NgayPhatHanh, TienCocToiThieu, SoLuong, HienThi} = req.body;
+
+            let tenAnhDaiDien = null;
+            if (req.files && req.files['AnhDaiDien']) {
+                // Lấy tên file của ảnh đầu tiên trong mảng AnhDaiDien
+                tenAnhDaiDien = req.files['AnhDaiDien'][0].filename; 
+            }
+
+            let danhSachAnhPhu = [];
+            if (req.files && req.files['BoSuuTapAnh']) {
+                // Lấy ra danh sách các tên file của bộ sưu tập
+                danhSachAnhPhu = req.files['BoSuuTapAnh'].map(file => file.filename);
+            }
+
+            const sql_them_san_pham = `Insert into MoHinh (TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCoctoiThieu, HienThi, AnhDaiDien)
+                                        Values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
             const isVisible = HienThi !== undefined ? HienThi : 0;
-            const [them_san_pham] = await connection.query(sql_them_san_pham, [TenMH, MaHSX, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible]);
+            const [them_san_pham] = await connection.query(sql_them_san_pham, [TenMH, MaHSX, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, tenAnhDaiDien]);
             
             const ma_san_pham_moi = them_san_pham.insertId;
             //Lấy mã sản phẩm mới thêm
-            
-            if(Array.isArray(Danh_sach_anh) && Danh_sach_anh.length>0){
-                const sql_them_anh = `Insert into AnhMoHinh (LinkAnh, MaMoHinh) values (?,?)`;
-                for(let image of Danh_sach_anh){
-                    await connection.query(sql_them_anh, [image.Link, ma_san_pham_moi]);
+            if (danhSachAnhPhu.length > 0) {
+                const sql_them_anh = `INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES (?,?)`;
+                for (let filename of danhSachAnhPhu) {
+                    await connection.query(sql_them_anh, [filename, ma_san_pham_moi]);
                 }
-                //Cập nhật ảnh đai diện
-                await connection.query(`Update Mohinh set AnhDaiDien = ? where MaMoHinh = ?`, [Danh_sach_anh[0].Link, ma_san_pham_moi]);
             }
-            
             const sql_them_phan_loai = `Insert into Phanloai (ChiTietPhanLoai, SoLuong, MaMoHinh, DonGia, HienThi) values (?,?,?,?,?)`;
             await connection.query(sql_them_phan_loai,['Mặc định', SoLuong, ma_san_pham_moi, DonGia, HienThi]);
-
-            if(Array.isArray(DS_PL) && DS_PL.length > 0){
-                const variantVisibility = (HienThi === 0) ? 0 : (variant.HienThi !== undefined ? variant.HienThi : 1);
-
-                await connection.query(sql_them_phan_loai, [
-                    variant.ChiTietPhanLoai, 
-                    variant.SoLuong, 
-                    ma_san_pham_moi, 
-                    variant.DonGia, 
-                    variantVisibility // Đưa biến đã tính toán vào đây
-                ]);
+            if (req.body.DanhSachPhanLoai && req.body.DanhSachPhanLoai !== 'undefined') {
+                try {
+                    const danhsachPL = JSON.parse(req.body.DanhSachPhanLoai);
+                    
+                    if (Array.isArray(danhsachPL) && danhsachPL.length > 0) {
+                        for (let variant of danhsachPL) {
+                            if (variant.name && variant.name.trim().toLowerCase() !== 'mặc định') {
+                                const variantVisibility = (isVisible === 0) ? 0 : (variant.isVisible !== undefined ? variant.isVisible : 1);
+                                
+                                await connection.query(sql_them_phan_loai, [
+                                    variant.name, 
+                                    variant.stock || 0, 
+                                    ma_san_pham_moi, 
+                                    variant.sellPrice || DonGia || 0, 
+                                    variantVisibility
+                                ]);
+                            }
+                        }
+                    }
+                } catch (parseError) {
+                    console.error("Lỗi khi đọc JSON phân loại đặc biệt:", parseError);
+                    // Dù lỗi phân loại phụ, nhưng sản phẩm chính đã lưu, ta vẫn cho pass hoặc báo lỗi nhẹ.
+                }
             }
-
             await connection.commit();
             res.status(200).json({
                 message: "Thêm sản phẩm mới thành công!"
@@ -356,9 +384,9 @@ const product_admin = {
         const connection = await db.getConnection();
         try{
             await connection.beginTransaction();
-
-            const {MaMH,TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet ,
-                LoaiHinhBan, Danh_sach_anh, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DS_PL, HienThi} = req.body;
+            const MaMH = req.params.id || req.body.MaMH;
+            const {TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet ,
+                LoaiHinhBan, Danh_sach_anh, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DanhSachPhanLoai, HienThi, AnhCuCanXoa} = req.body;
             const sql_sua_tt_san_pham = `Update MoHinh SET
                                         TenMH = ?,
                                         MaHSX = ?,
@@ -379,33 +407,53 @@ const product_admin = {
             await connection.query(sql_sua_tt_san_pham, [TenMH, MaHSX, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, 
                                         ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, MaMH]);
             
-            if (Array.isArray(Danh_sach_anh) && Danh_sach_anh.length > 0) {
-                // Xóa sạch ảnh cũ của MaMH này
-                await connection.query(`DELETE FROM AnhMoHinh WHERE MaMoHinh = ?`, [MaMH]);
-                
-                // Insert lại mảng ảnh mới
+            // 2. CẬP NHẬT ẢNH ĐẠI DIỆN (Chỉ update nếu có upload file mới)
+            if (req.files && req.files['AnhDaiDien']) {
+                const tenAnhMoi = req.files['AnhDaiDien'][0].filename;
+                await connection.query(`UPDATE MoHinh SET AnhDaiDien = ? WHERE MaMoHinh = ?`, [tenAnhMoi, MaMH]);
+            }
+
+            // 3. THÊM ẢNH BỘ SƯU TẬP MỚI (Append)
+            if (req.files && req.files['BoSuuTapAnhMoi']) {
                 const sql_them_anh = `INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES (?, ?)`;
-                for (let image of Danh_sach_anh) {
-                    await connection.query(sql_them_anh, [image.Link, MaMH]);
+                for (let file of req.files['BoSuuTapAnhMoi']) {
+                    await connection.query(sql_them_anh, [file.filename, MaMH]);
                 }
-                
-                // Cập nhật ảnh đại diện vào bảng MoHinh
-                await connection.query(`UPDATE MoHinh SET AnhDaiDien = ? WHERE MaMoHinh = ?`, [Danh_sach_anh[0].Link, MaMH]);
+            }
+
+            if (AnhCuCanXoa) {
+                const arrXoa = JSON.parse(AnhCuCanXoa);
+                if (arrXoa.length > 0) {
+                    // Tạo ra các dấu ? tương ứng với số lượng ảnh cần xóa
+                    const placeholders = arrXoa.map(() => '?').join(',');
+                    // Xóa khỏi Database
+                    await connection.query(
+                        `DELETE FROM AnhMoHinh WHERE MaMoHinh = ? AND LinkAnh IN (${placeholders})`, 
+                        [MaMH, ...arrXoa]
+                    );
+                }
             }
             
-            if(Array.isArray(DS_PL) && DS_PL.length > 0){
-                const sql_sua_phan_loai = `Update Phanloai set ChiTietPhanLoai = ?, DonGia = ?, SoLuong = ? , HienThi = ?  where MaPhanLoai = ?`;
-                const sql_them_phan_loai = `INSERT INTO Phanloai (ChiTietPhanLoai, MaMoHinh, SoLuong, DonGia, HienThi) VALUES (?, ?, ?, ?, ?)`;
-                    for(let variant of DS_PL){
-                        const visibility = (HienThi_SP_Goc === 0) ? 0 : (variant.HienThi !== undefined ? variant.HienThi : 1);
-                        if(variant.MaPhanLoai)
-                            await connection.query(sql_sua_phan_loai, [variant.ChiTietPhanLoai || null, variant.DonGia, variant.SoLuong, visibility, variant.MaPhanLoai]);
-                        else
-                            await connection.query(sql_them_phan_loai, [variant.ChiTietPhanLoai, MaMH, variant.SoLuong, visibility, variant.DonGia]);
+            // Xử lý mảng biến thể đặc biệt
+            if (DanhSachPhanLoai && DanhSachPhanLoai !== 'undefined') {
+                const variants = JSON.parse(DanhSachPhanLoai);
+                if (Array.isArray(variants)) {
+                    const sql_sua_phan_loai = `UPDATE Phanloai SET ChiTietPhanLoai=?, DonGia=?, SoLuong=?, HienThi=? WHERE MaPhanLoai=?`;
+                    const sql_them_phan_loai = `INSERT INTO Phanloai (ChiTietPhanLoai, MaMoHinh, DonGia, SoLuong, HienThi) VALUES (?,?,?,?,?)`;
+                    
+                    for (let variant of variants) {
+                        if (variant.name && variant.name.trim().toLowerCase() !== 'mặc định') {
+                            const variantVisibility = isVisible === 0 ? 0 : (variant.isVisible !== undefined ? parseInt(variant.isVisible) : 1);
+                            
+                            if (variant.id) { // Nếu có ID -> Sửa
+                                await connection.query(sql_sua_phan_loai, [variant.name, variant.sellPrice, variant.stock, variantVisibility, variant.id]);
+                            } else {          // Nếu chưa có ID -> Thêm mới
+                                await connection.query(sql_them_phan_loai, [variant.name, MaMH, variant.sellPrice || safeDonGia, variant.stock || 0, variantVisibility]);
+                            }
+                        }
                     }
+                }
             }
-            
-            await connection.query(`Update Phanloai set DonGia = ?, SoLuong = ?, HienThi = ? where MaMoHinh = ? and ChiTietPhanLoai = 'Mặc định'`,[DonGia, SoLuong, HienThi, MaMH]);
             
             await connection.commit();
             res.status(200).json({
@@ -618,8 +666,8 @@ const product_admin = {
             else
                 filter = "Order by mh.MaMoHinh desc";
 
-            const sql_core = `SELECT mh.MaMoHinh, mh.TenMH, mh.MaHSX, mh.MaDM, TenDM, mh.MaChiTietDM, TenChiTietDM, mh.DonGia, mh.TrangThai, mh.LoaiHinhBan,
-                mh.AnhDaiDien, mh.NgayPhatHanh, TenHSX, mh.HienThi, 
+            const sql_core = `SELECT mh.MaMoHinh, mh.TenMH, mh.MaHSX, mh.MaDM, TenDM, mh.MaChiTietDM, mh.ChatLieu, mh.KichThuoc, TenChiTietDM, mh.DonGia, mh.TrangThai, mh.LoaiHinhBan,
+                mh.AnhDaiDien, mh.NgayPhatHanh, TenHSX, mh.HienThi, mh.TienCocToiThieu, mh.ThongTinChiTiet,
                 (
                     SELECT COALESCE(SUM(SoLuong), 0) 
                     FROM PhanLoai 
@@ -680,7 +728,8 @@ const product_admin = {
 
     xem_thong_tin_san_pham: async(req, res)=>{
         try{
-            const MaMH = req.params.id;
+            const MaMH = req.params.MaMH;
+            console.log("👉 1. Backend đang đi tìm sản phẩm có MaMoHinh =", MaMH);
             const sql = `Select mh.MaMoHinh, mh.AnhDaiDien, mh.TenMH, mh.ChatLieu, mh.DonGia, mh.TrangThai, mh.ThongTinChiTiet, 
                             mh.KichThuoc, mh.NgayPhatHanh, mh.LoaiHinhBan, mh.TienCocToiThieu,
                             (
@@ -689,15 +738,7 @@ const product_admin = {
                                 WHERE MaMoHinh = mh.MaMoHinh
                             ) AS SoLuongTong,
                              TenHSX, TenDM, TenChiTietDM,
-                             GROUP_CONCAT(anh.LinkAnh) AS DanhSachAnh,
-                                (
-                                    Select (mh.DonGia - ctkm.ChietKhau)
-                                    from ChiTietKhuyenMai ctkm
-                                    inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                                    where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
-                                    order by ctkm.ChietKhau desc
-                                    limit 1
-                                ) As dongiakhuyenmai
+                             GROUP_CONCAT(anh.LinkAnh) AS DanhSachAnhPhu
                             FROM MoHinh mh
                             left join DanhMuc On DanhMuc.MaDM = mh.MaDM
                             left join ChiTietDanhMuc on ChiTietDanhMuc.MaChiTietDM = mh.MaChiTietDM
@@ -714,16 +755,15 @@ const product_admin = {
                         });
             }
             const product_detail = ket_qua[0];
-            if(product_detail.Danh_sach_anh){
-                product_detail.Danh_sach_anh = product_detail.Danh_sach_anh.split(',').map(link => ({Link: link}));
+            if(product_detail.DanhSachAnhPhu){
+                product_detail.galleryUrls = product_detail.DanhSachAnhPhu.split(',');
             }
             else{
-                product_detail.DanhSachAnh = [];
+                product_detail.galleryUrls = [];
             }
 
             const sql_phan_loai = `Select MaPhanLoai, ChiTietPhanLoai, DonGia, SoLuong, HienThi from PhanLoai where MaMoHinh = ?`;
             const [ket_qua_pl] = await db.query(sql_phan_loai,[MaMH]);
-
             product_detail.DS_PL = ket_qua_pl;
 
             res.status(200).json({

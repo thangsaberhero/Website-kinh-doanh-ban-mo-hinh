@@ -45,6 +45,7 @@ const path = require('path'); // Nhớ gọi thư viện path ở đầu file se
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
 app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
 app.use('/Images_review', express.static(path.join(__dirname, 'public/Images_review')));
+app.use('/Images_product', express.static(path.join(__dirname, 'public/Images_product')));
 
 
 // --- ROUTE CHATBOT ---

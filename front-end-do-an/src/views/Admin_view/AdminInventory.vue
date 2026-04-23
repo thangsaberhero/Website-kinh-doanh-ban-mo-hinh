@@ -162,7 +162,7 @@
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
               <div class="relative z-10">
-                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng biến thể</p>
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng sản phẩm</p>
                 <p class="text-3xl font-brand font-bold text-slate-900">{{totalProducts }}</p>
                 <!-- <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-emerald-500">
                   <span class="material-symbols-outlined text-sm">trending_up</span> +24 tháng này
@@ -233,7 +233,7 @@
                     <td class="px-8 py-4">
                       <div class="flex items-center gap-4">
                         <div class="w-16 h-16 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden shadow-inner shrink-0 p-0.5">
-                          <img :src="'/Images_product/' + product.anh" class="w-full h-full object-cover rounded-lg"/>
+                          <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-lg"/>
                         </div>
                         <div class="flex flex-col">
                           <p class="font-bold text-slate-900 text-[15px] mb-1.5 truncate max-w-[250px]" :title="product.name">{{ product.name }}</p>
@@ -242,9 +242,9 @@
                                   :class="getBrandColor(product.brand)">
                               {{ product.brand }}
                             </span>
-                            <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+                            <!-- <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
                               {{ product.category }}
-                            </span>
+                            </span> -->
                           </div>
                         </div>
                       </div>
@@ -255,7 +255,7 @@
                       <p class="text-[11px] font-semibold text-slate-400">Scale: <span class="text-slate-500">{{ product.scale }}</span></p>
                     </td>
                     
-                    <td class="px-8 py-4 text-sm font-semibold text-slate-400 text-right">{{ product.costPrice }}đ</td>
+                    <td class="px-8 py-4 text-sm font-semibold text-slate-400 text-right">{{ product.basePrice }}đ</td>
                     <td class="px-8 py-4 text-sm font-bold text-slate-900 text-right">{{ product.sellPrice }}đ</td>
                     
                     <td class="px-8 py-4 text-center">
@@ -363,48 +363,117 @@
             </option>
           </select>
         </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Chất liệu</label>
+            <input v-model="newProduct.material" type="text" placeholder="VD: PVC, ABS" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Kích thước</label>
+            <input v-model="newProduct.scale" type="text" placeholder="VD: 25cm, 1/7 Scale" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+          </div>
 
-            <div class="md:col-span-2 border-t border-slate-100 my-2"></div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Loại hình bán</label>
+            <select v-model="newProduct.saleType" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+              <option v-for="type in saleTypeOptions" :key="type" :value="type">
+                {{ type }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
+            <select v-model="newProduct.status" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+              <option v-for="st in statusOptions" :key="st" :value="st">
+                {{ st }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Ngày phát hành</label>
+            <input v-model="newProduct.releaseDate" type="date" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tiền cọc tối thiểu (VNĐ)</label>
+            <input type="text" :value="formatCurrency(newProduct.minDeposit)" @input="handleCurrencyInput($event, newProduct, 'minDeposit')"  class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá bán mặc định (VNĐ) (*)</label>
+            <input 
+              type="text" 
+              :value="formatCurrency(newProduct.basePrice)" 
+              @input="handleCurrencyInput($event, newProduct, 'basePrice')"
+              class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-sky-600 bg-white"
+            >
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Số lượng kho mặc định (*)</label>
+            <input v-model.number="newProduct.baseStock" type="number" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] outline-none transition-all font-bold text-slate-700 bg-white">
+          </div>
+          <div class="md:col-span-2 border-t border-slate-100 my-4 pt-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
             <div class="md:col-span-2">
-              <div class="flex items-center justify-between mb-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest">Phân loại hàng (*)</label>
-                <button @click.prevent="addVariant" class="text-xs font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-md shadow-[#ff8f73]/20 px-4 py-2 rounded-xl transition-all flex items-center gap-1 active:scale-95">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Thông tin chi tiết (Mô tả)</label>
+              <textarea v-model="newProduct.description" rows="4" placeholder="Nhập thông tin giới thiệu mô hình, chất liệu chi tiết, cốt truyện nhân vật..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-700 bg-white resize-none"></textarea>
+            </div>
+
+            <div class="flex flex-col justify-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Hiển thị trên Web</label>
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <div class="relative">
+                  <input type="checkbox" v-model="newProduct.isVisible" :true-value="1" :false-value="0" class="sr-only">
+                  <div class="block w-10 h-6 rounded-full transition-colors" :class="newProduct.isVisible === 1 ? 'bg-sky-500' : 'bg-slate-300'"></div>
+                  <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" :class="newProduct.isVisible === 1 ? 'transform translate-x-4' : ''"></div>
+                </div>
+                <span class="text-sm font-bold" :class="newProduct.isVisible === 1 ? 'text-sky-600' : 'text-slate-500'">
+                  {{ newProduct.isVisible === 1 ? 'Đang bật hiển thị' : 'Đang ẩn' }}
+                </span>
+              </label>
+            </div>
+            
+          </div>
+        </div>
+
+            <div class="md:col-span-2">
+              <div class="flex items-center justify-between mb-4 mt-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest">Phân loại đặc biệt (Tùy chọn)</label>
+                <button @click.prevent="addVariant" class="text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl transition-all flex items-center gap-1 active:scale-95">
                   <span class="material-symbols-outlined text-[16px]">add</span> Thêm phân loại
                 </button>
               </div>
 
               <div class="space-y-4">
                 <div v-for="(variant, index) in newProduct.variants" :key="index" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative group animate-[fadeIn_0.3s_ease-out]">
-                  
-                  <button v-if="newProduct.variants.length > 1" @click.prevent="removeVariant(index)" class="absolute -top-3 -right-3 w-8 h-8 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white shadow-md z-10">
+                  <button @click.prevent="removeVariant(index)" class="absolute -top-3 -right-3 w-8 h-8 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white shadow-md z-10">
                     <span class="material-symbols-outlined text-[16px]">close</span>
                   </button>
-
-                  <div class="flex items-center gap-2 mb-3">
-                    <span class="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-md">Phân loại {{ index + 1 }}</span>
-                  </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tên phân loại</label>
-                      <input v-model="variant.name" type="text" placeholder="VD: Bản Deluxe / Màu Đỏ" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
+                      <input v-model="variant.name" type="text" placeholder="VD: Bản Deluxe" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none font-medium text-slate-700 bg-white">
                     </div>
-                    <div>
-                      <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Dòng (Scale)</label>
-                      <input v-model="variant.scale" type="text" placeholder="VD: 1/7 Scale" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
-                    </div>
-                    <div>
+                    <!-- <div>
                       <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá nhập (VNĐ)</label>
-                      <input v-model="variant.costPrice" type="number" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
-                    </div>
+                      <input v-model="variant.costPrice" type="number" placeholder="0" min="0" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none font-medium text-slate-700 bg-white">
+                    </div> -->
                     <div>
                       <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá bán (VNĐ)</label>
-                      <input v-model="variant.sellPrice" type="number" placeholder="0" class="w-full border border-[#ff8f73]/30 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-[#ff8f73] bg-white shadow-sm">
+                      <input 
+                        type="text" 
+                        :value="formatCurrency(variant.sellPrice)" 
+                        @input="handleCurrencyInput($event, variant, 'sellPrice')"
+                        class="w-full border border-sky-200 rounded-xl px-4 py-2.5 text-sm font-bold text-sky-600 bg-white"
+                      >
                     </div>
-                    <div class="md:col-span-2">
+                    <div>
                       <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Số lượng kho</label>
-                      <input v-model.number="variant.stock" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 outline-none transition-all font-bold text-sky-600 bg-white">
+                      <input v-model.number="variant.stock" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none font-bold text-sky-600 bg-white">
                     </div>
+                    <label class="absolute top-4 right-12 flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" v-model="variant.isVisible" :true-value="1" :false-value="0" class="w-4 h-4 text-sky-500 border-slate-300 rounded focus:ring-sky-500">
+                      <span class="text-[10px] font-bold text-slate-500 uppercase">Hiển thị</span>
+                    </label>
                   </div>
                 </div>
               </div>
@@ -497,66 +566,153 @@
 
         <div class="p-8 overflow-y-auto flex-1 custom-scrollbar space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
             <div class="md:col-span-2">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên mô hình (*)</label>
-              <input v-model="editingProduct.name" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-medium text-slate-800">
+              <input v-model="editingProduct.name" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-800">
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Thương hiệu</label>
-              <select v-model="editingProduct.brand" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none transition-all font-bold text-slate-700 bg-white">
-                <option value="Bandai">Bandai</option>
-                <option value="Hot Toys">Hot Toys</option>
-                <option value="GSC">Good Smile Company</option>
-                <option value="Khác">Khác</option>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Thương hiệu</label>
+              <select v-model="editingProduct.brand" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-medium bg-white">
+                <option value="">-- Chọn Hãng SX --</option>
+                <option v-for="brand in Brands.filter(b => b.MaHSX !== 'all')" :key="brand.MaHSX" :value="brand.MaHSX">{{ brand.TenHSX }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Danh mục</label>
-              <select v-model="editingProduct.category" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none transition-all font-bold text-slate-700 bg-white">
-                <option value="Action Figure">Action Figure</option>
-                <option value="Model Kit">Model Kit</option>
-                <option value="Statue">Statue</option>
-                <option value="Chibi Figure">Chibi Figure</option>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Danh mục</label>
+              <select v-model="editingProduct.category" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-medium bg-white">
+                <option value="">-- Chọn danh mục --</option>
+                <option v-for="cat in filterCategories" :key="cat.MaDM" :value="cat.MaDM">{{ cat.TenDM }}</option>
               </select>
             </div>
 
-            <div class="md:col-span-2 border-t border-slate-100 my-2"></div>
-
             <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên phân loại (Variant)</label>
-              <input v-model="editingProduct.variant" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Dòng (Scale)</label>
-              <input v-model="editingProduct.scale" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Giá nhập (VNĐ)</label>
-              <input v-model="editingProduct.costPrice" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none font-medium">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Giá bán (VNĐ) (*)</label>
-              <input v-model="editingProduct.sellPrice" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none font-bold text-slate-900">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tồn kho hiện tại</label>
-              <input v-model.number="editingProduct.stock" type="number" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-sky-600 focus:border-sky-500 outline-none">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Trạng thái</label>
-              <select v-model="editingProduct.status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 bg-white shadow-sm">
-                <option value="Sẵn hàng">Sẵn hàng</option>
-                <option value="Pre-order">Pre-order</option>
-                <option value="Hết hàng">Hết hàng</option>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Loại chi tiết</label>
+              <select v-model="editingProduct.detailCategory" :disabled="!editingProduct.category" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all bg-white disabled:bg-slate-50">
+                <option value="">-- Chọn loại chi tiết --</option>
+                <option v-for="detail in modalDetailCategories" :key="detail.MaChiTietDM" :value="detail.MaChiTietDM">{{ detail.TenChiTietDM }}</option>
               </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Chất liệu</label>
+              <input v-model="editingProduct.material" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Kích thước</label>
+              <input v-model="editingProduct.dimensions" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Loại hình bán</label>
+              <select v-model="editingProduct.saleType" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+                <option v-for="type in saleTypeOptions" :key="type" :value="type">{{ type }}</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
+              <select v-model="editingProduct.status" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+                <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Ngày phát hành</label>
+              <input v-model="editingProduct.releaseDate" type="date" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tiền cọc tối thiểu (VNĐ)</label>
+              <input 
+                type="text" 
+                :value="formatCurrency(editingProduct.minDeposit)" 
+                @input="handleCurrencyInput($event, editingProduct, 'minDeposit')"
+                class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white"
+              >
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-300 md:col-span-2">
+              <p class="text-[10px] font-bold text-slate-400 uppercase mb-3 text-center">Thông tin phân loại mặc định</p>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Giá bán mặc định (VNĐ) (*)</label>
+                  <input 
+                    type="text" 
+                    :value="formatCurrency(editingProduct.basePrice)" 
+                    @input="handleCurrencyInput($event, editingProduct  , 'basePrice')"
+                    class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-sky-600 bg-white"
+                  >
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Số lượng kho (*)</label>
+                  <input v-model.number="editingProduct.baseStock" type="number" class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-sky-600 bg-white">
+                </div>
+              </div>
+            </div>
+
+            <div class="md:col-span-2 border-t border-slate-100 mt-2 pt-4">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Thông tin chi tiết (Mô tả)</label>
+                  <textarea v-model="editingProduct.description" rows="4" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none bg-white resize-none"></textarea>
+                </div>
+                <div class="flex flex-col justify-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Hiển thị trên Web</label>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <div class="relative">
+                      <input type="checkbox" v-model="editingProduct.isVisible" :true-value="1" :false-value="0" class="sr-only">
+                      <div class="block w-10 h-6 rounded-full transition-colors" :class="editingProduct.isVisible === 1 ? 'bg-sky-500' : 'bg-slate-300'"></div>
+                      <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" :class="editingProduct.isVisible === 1 ? 'transform translate-x-4' : ''"></div>
+                    </div>
+                    <span class="text-sm font-bold" :class="editingProduct.isVisible === 1 ? 'text-sky-600' : 'text-slate-500'">
+                      {{ editingProduct.isVisible === 1 ? 'Đang bật' : 'Đang ẩn' }}
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="md:col-span-2">
+              <div class="flex items-center justify-between mb-4 mt-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest">Phân loại đặc biệt</label>
+                <button @click.prevent="editingProduct.variants.push({ name: '', sellPrice: 0, stock: 0, isVisible: 1 })" class="text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl transition-all">
+                  + Thêm phân loại
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(variant, index) in editingProduct.variants" :key="index" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative group">
+                  <button @click.prevent="editingProduct.variants.splice(index, 1)" class="absolute -top-3 -right-3 w-8 h-8 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-md transition-all">
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                  </button>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Tên phân loại</label>
+                      <input v-model="variant.name" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm bg-white">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Giá bán (VNĐ)</label>
+                      <input 
+                        type="text" 
+                        :value="formatCurrency(variant.sellPrice)" 
+                        @input="handleCurrencyInput($event, variant, 'sellPrice')"
+                        class="w-full border border-sky-200 rounded-xl px-4 py-2.5 text-sm font-bold text-sky-600 bg-white"
+                      >
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Số lượng kho</label>
+                      <input v-model.number="variant.stock" type="number" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm bg-white">
+                    </div>
+                    <label class="absolute bottom-3 right-0 flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" v-model="variant.isVisible" :true-value="1" :false-value="0" class="w-4 h-4 text-sky-500 border-slate-300 rounded focus:ring-sky-500">
+                      <span class="text-[10px] font-bold text-slate-500 uppercase">Hiển thị</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="md:col-span-2 border-t border-slate-100 my-2"></div>
@@ -668,7 +824,6 @@
 
   const products = ref([]);
   const isLoading = ref(true);
-  
   //Số trang
   const currentPage = ref(1);
   let limit = 10;
@@ -703,7 +858,35 @@
 
   const filterCategories = ref([]);       
   const detailCategories = ref([]);   
+// Các tùy chọn cố định cho Form
+  const saleTypeOptions = ['Có sẵn', 'Order', 'Pre-order'];
+  const statusOptions = ['Đã phát hành', 'Chưa phát hành'];
 
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') return '';
+    const strVal = String(value).replace(/\D/g, ''); // Bóc tách chỉ lấy số
+    if (!strVal) return '';
+    return parseInt(strVal, 10).toLocaleString('vi-VN'); 
+  };
+
+  // 2. Hàm chuyển ngược về số để lưu Data: "2.000.000" -> 2000000
+  const parseCurrency = (value) => {
+    if (!value) return 0;
+    return parseInt(String(value).replace(/\D/g, ''), 10) || 0;
+  };
+
+  // 3. HÀM CHỐNG LỖI NHẢY SỐ (MỚI)
+  const handleCurrencyInput = (event, obj, field) => {
+    // Lấy số nguyên gốc từ phím người dùng vừa gõ
+    const rawValue = parseCurrency(event.target.value);
+    
+    // Gắn giá trị gốc vào biến của Vue để gửi xuống Backend
+    obj[field] = rawValue;
+    
+    // Ép ô input hiển thị ngay lập tức chuỗi đã có dấu chấm
+    event.target.value = formatCurrency(rawValue);
+  };
+  
   // 1. Hàm lấy danh sách Danh mục lớn
   const fetchCategories = async () => {
     try {
@@ -733,7 +916,7 @@
     fetchDetailCategories(newVal);
   });
 
-
+  //Liệt kê thông tin sản phẩm
   const fetchProducts = async () => {
     isLoading.value = true;
     try {
@@ -755,19 +938,30 @@
         // LƯU Ý: Bạn hãy sửa các tên cột (TenMH, TenThuongHieu...) cho khớp đúng với SQL của bạn nhé!
         products.value = result.data.map(item => {
           return {
-            id: item.MaMH, 
+            id: item.MaMoHinh, 
             name: item.TenMH,
             anh: item.AnhDaiDien,
             brand: item.TenHSX || 'Chưa cập nhật',
+            brandId: item.MaHSX,
             selltype: item.LoaiHinhBan,
-            category: item.TenDM || 'Mô hình',
+            mota: item.ThongTinChiTiet,
+            status: item.TrangThai,
+            categoryId: item.MaDM,
+            detailCategoryId: item.MaChiTietDM,
             variant: item.TenPhanLoai || 'Mặc định',
-            scale: item.TyLe || 'N/A',
+            scale: item.KichThuoc || 'Trống',
+            material: item.ChatLieu || 'Trống',
+            //Thông tin raw
+            rawMinDeposit: parseInt(item.TienCocToiThieu) || 0,
+            rawSellPrice: parseInt(item.DonGia) || 0,
+            // (Ngày tháng có đuôi T17:00:00Z nên phải dùng split để lấy đúng định dạng yyyy-mm-dd)
+            releaseDate: item.NgayPhatHanh ? item.NgayPhatHanh.split('T')[0] : '',
             // Format tiền tệ cho đẹp
-            costPrice: Number(item.GiaNhap || 0).toLocaleString('vi-VN'),
+            minDeposit: Number(item.TienCocToiThieu || 0).toLocaleString('vi-VN'),
             sellPrice: Number(item.DonGia || 0).toLocaleString('vi-VN'),
             stock: item.SoLuong || 0,
-            thumbnailUrl: item.AnhDaiDien || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.TenMH)}&background=random&color=fff&size=128`
+            isVisible: item.HienThi,
+            thumbnailUrl: `http://localhost:3000/Images_product/${item.AnhDaiDien}`
           };
         });
         totalProducts.value = result.pagination?.totalItems || result.data.length; 
@@ -814,26 +1008,28 @@
   const isAddProductModalOpen = ref(false);
 
   const newProduct = ref({
-      name: '', brand: '', category: '', 
+      name: '', brand: '', category: '', detailCategory: '',
+      material: '',
+      status: 'Chưa phát hành',
+      selltype: 'Có sẵn',
+      releaseDate: null,
+      minDeposit: 0,
+      description: '',
+      isVisible: 0,
+      basePrice: 0, baseStock: 0,
       thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
       // Mảng chứa các phân loại
-      variants: [
-        { name: '', scale: '', costPrice: '', sellPrice: '', stock: 0 }
-      ]
+      variants: []
   });
 
   // 2. HÀM THÊM PHÂN LOẠI
   const addVariant = () => {
-    newProduct.value.variants.push({ name: '', scale: '', costPrice: '', sellPrice: '', stock: 0 });
+    newProduct.value.variants.push({ name: '', costPrice: '', sellPrice: '', stock: 0 });
   };
 
   // 3. HÀM XÓA PHÂN LOẠI
   const removeVariant = (index) => {
-    if (newProduct.value.variants.length > 1) {
       newProduct.value.variants.splice(index, 1);
-    } else {
-      toastStore.showToast("Phải có ít nhất một phân loại hàng!", "warning");
-    }
   };
 
   const triggerFileInput = () => {
@@ -901,7 +1097,8 @@
 
   const openAddModal = () => {
     newProduct.value = {
-      name: '', brand: '', category: '', variant: '', scale: '', costPrice: '', sellPrice: '', stock: 0,
+      name: '', brand: '', category: '', variant: '', material: '', scale: '', minDeposit: 0, sellPrice: 0, stock: 0, isVisible: 0,
+      description: '', 
       thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
       variants: [
         { name: '', scale: '', costPrice: null, sellPrice: null, stock: 0 }
@@ -918,26 +1115,40 @@
       }
 
       // Kiểm tra xem phân loại đầu tiên có bị bỏ trống tên không
-      if (newProduct.value.variants.length === 0 || !newProduct.value.variants[0].name.trim()) {
-        toastStore.showToast("Vui lòng nhập Tên cho ít nhất 1 phân loại!", "error");
-        return;
-      }
+      // if (newProduct.value.variants.length === 0 || !newProduct.value.variants[0].name.trim()) {
+      //   toastStore.showToast("Vui lòng nhập Tên cho ít nhất 1 phân loại!", "error");
+      //   return;
+      // }
 
       const formData = new FormData();
       formData.append('TenMH', newProduct.value.name);
-      formData.append('ThuongHieu', newProduct.value.brand);
-      formData.append('DanhMuc', newProduct.value.category);
+      formData.append('MaHSX', newProduct.value.brand);
+      formData.append('MaDM', newProduct.value.category);
+      formData.append('MaChiTietDM', newProduct.value.detailCategory);
+      formData.append('ChatLieu', newProduct.value.material);
+      formData.append('NgayPhatHanh', newProduct.value.releaseDate);
+      formData.append('LoaiHinhBan', newProduct.value.saleType);
+      formData.append('TrangThai', newProduct.value.status);
+      formData.append('TienCocToiThieu', newProduct.value.minDeposit);
+      formData.append('ThongTinChiTiet', newProduct.value.description);
+      formData.append('HienThi', newProduct.value.isVisible);
+
+      formData.append('DonGia', newProduct.value.basePrice);
+      formData.append('SoLuong', newProduct.value.baseStock);
       
       // 👉 Ép kiểu mảng phân loại thành chuỗi JSON để gửi qua HTTP
       formData.append('DanhSachPhanLoai', JSON.stringify(newProduct.value.variants));
 
+      //Xử lý ảnh
       if(newProduct.value.thumbnailFile) {
         formData.append('AnhDaiDien', newProduct.value.thumbnailFile);
       }
       
-      newProduct.value.galleryFiles.forEach(file => {
-        formData.append('BoSuuTapAnh', file);
-      });
+      if (newProduct.value.galleryFiles.length > 0) {
+        newProduct.value.galleryFiles.forEach((file) => {
+          formData.append('BoSuuTapAnh', file);
+        });
+      }
 
       // 3. Gửi xuống Backend
       try {
@@ -951,6 +1162,7 @@
         if (result.success) {
           isAddProductModalOpen.value = false;
           toastStore.showToast("Đã thêm sản phẩm thành công!", "success");
+          isAddProductModalOpen = false
           fetchProducts(); // Tải lại bảng ngay lập tức để thấy sản phẩm mới
         } else {
           toastStore.showToast(result.message || "Lỗi khi thêm sản phẩm", "error");
@@ -963,21 +1175,110 @@
 
   //  MODAL CHỈNH SỬA SẢN PHẨM (EDIT)
   const isEditModalOpen = ref(false);
-  const editingProduct = ref({});
+  const editingProduct = ref({
+    id: null, name: '', brand: '', category: '', detailCategory: '', material: '', dimensions: '', description: '',
+    saleType: '', status: '', isVisible: 1, basePrice: 0, minDeposit: 0, baseStock: 0,
+    variants: [], thumbnailUrl: '', thumbnailFile: null
+  });
   const editFileInputRef = ref(null);
   const editGalleryInputRef = ref(null); 
 
-  const openEditModal = (product) => {
+  const openEditModal = async (product) => {
+    // 🚦 TRẠM 1: Kiểm tra xem ID sản phẩm có bị undefined không
+    console.log("👉 1. Dữ liệu dòng sản phẩm khi bấm Sửa:", product);
+    
+    if (!product.id) {
+      toastStore.showToast("Lỗi: Không tìm thấy ID sản phẩm!", "error");
+      return;
+    }
+
+    // Gán thông tin cơ bản
     editingProduct.value = {
-      ...product, 
+      id: product.id,
       idCode: product.id,
-      thumbnailUrl: product.thumbnailUrl || `https://ui-avatars.com/api/?name=${product.name.charAt(0)}`, 
-      thumbnailFile: null,
-      galleryUrls: product.galleryUrls ? [...product.galleryUrls] : [], 
-      galleryFiles: [] 
+      name: product.name,
+      brand: product.brandId,
+      category: product.categoryId,
+      detailCategory: product.detailCategoryId,
+      description: product.mota || '',
+      material: product.material || '',
+      dimensions: product.scale || '',
+      saleType: product.selltype || 'Có sẵn',
+      status: product.status || 'Sẵn hàng',
+      isVisible: Number(product.isVisible),
+      thumbnailUrl: product.thumbnailUrl,
+      basePrice: product.rawSellPrice || 0,
+      minDeposit: product.rawMinDeposit || 0,
+      baseStock: product.stock || 0,
+      releaseDate: product.releaseDate || '', // Đã thêm ngày tháng
+      variants: [],
+      galleryUrls: [],
+      galleryFiles: []
     };
+
+    try {
+      // 🚦 TRẠM 2: Kiểm tra đường dẫn API
+      console.log(`👉 2. Đang gọi API: http://localhost:3000/api/product_admin/watch/${product.id}`);
+      
+      const response = await fetch(`http://localhost:3000/api/product_admin/watch/${product.id}`);
+      const result = await response.json();
+
+      // 🚦 TRẠM 3: Kiểm tra dữ liệu Backend trả về có Phân loại và Ảnh phụ không
+      console.log("👉 3. Dữ liệu Chi tiết Backend trả về:", result);
+
+      if (result.success) {
+        // Xử lý Phân loại
+        const DanhSachPhanLoai = result.data.DS_PL;
+        if (DanhSachPhanLoai && DanhSachPhanLoai.length > 0) {
+          DanhSachPhanLoai.forEach(v => {
+            if (v.ChiTietPhanLoai === 'Mặc định') {
+              editingProduct.value.basePrice = parseInt(v.DonGia, 10) || 0;
+              editingProduct.value.baseStock = v.SoLuong;
+            } else {
+              editingProduct.value.variants.push({
+                id: v.MaPhanLoai, 
+                name: v.ChiTietPhanLoai,
+                sellPrice: parseInt(v.DonGia, 10) || 0, 
+                stock: v.SoLuong,
+                isVisible: v.HienThi
+              });
+            }
+          });
+        }
+
+        // Xử lý Ảnh phụ
+        if (result.data.galleryUrls && result.data.galleryUrls.length > 0) {
+          editingProduct.value.galleryUrls = result.data.galleryUrls.map(img => 
+             img.includes('http') ? img : `http://localhost:3000/Images_product/${img}`
+          );
+        }
+      }
+    } catch (error) {
+      console.error("❌ Lỗi lấy thông tin chi tiết:", error);
+    }
+
     isEditModalOpen.value = true;
-  } 
+  };
+
+  const addEditVariant = () => {
+    editingProduct.value.variants.push({ name: '', sellPrice: 0, stock: 0 });
+  };
+
+  watch(() => editingProduct.value.category, async (newMaDM) => {
+    if (!newMaDM) {
+      modalDetailCategories.value = [];
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`);
+      const result = await response.json();
+      if (result.success) {
+        modalDetailCategories.value = result.data;
+      }
+    } catch (error) {
+      console.error("Lỗi lấy danh mục con cho form Edit:", error);
+    }
+  });
 
   // --- XỬ LÝ ẢNH ĐẠI DIỆN ---
   const triggerEditFileInput = () => { if (editFileInputRef.value) editFileInputRef.value.click(); };
@@ -1007,11 +1308,29 @@
   };
 
   const removeEditGalleryImage = (index) => {
+    const removedUrl = editingProduct.value.galleryUrls[index];
+    
+    // 1. Xóa khỏi mảng hiển thị UI
     editingProduct.value.galleryUrls.splice(index, 1);
+    
+    // 2. Nếu là ảnh cũ từ Database (link có chữ localhost)
+    if (removedUrl.includes('localhost:3000')) {
+      const filename = removedUrl.split('/').pop(); // Lấy tên file gốc
+      if(!editingProduct.value.deletedOldImages) editingProduct.value.deletedOldImages = [];
+      // Đưa tên file vào danh sách "Sổ đen" chuẩn bị gửi xuống Backend
+      editingProduct.value.deletedOldImages.push(filename);
+    } 
+    // 3. Nếu là ảnh mới vừa chọn từ máy tính (link có chữ blob:)
+    else if (removedUrl.startsWith('blob:')) {
+      // Tìm lại vị trí thực sự của file mới này trong mảng galleryFiles và xóa đi
+      const soLuongAnhCu = editingProduct.value.galleryUrls.filter(u => u.includes('localhost:3000')).length;
+      const fileIndex = index - soLuongAnhCu;
+      if(fileIndex >= 0) editingProduct.value.galleryFiles.splice(fileIndex, 1);
+    }
   };
 
   // --- LƯU THAY ĐỔI ---
-  const saveProductChanges = () => {
+  const saveProductChanges = async () => {
     if (!editingProduct.value.name.trim()) {
         toastStore.showToast("Tên sản phẩm không được để trống!", "error");
         return;
@@ -1019,27 +1338,61 @@
 
     const formData = new FormData();
     formData.append('TenMH', editingProduct.value.name);
+    formData.append('MaHSX', editingProduct.value.brand || '');
+    formData.append('MaDM', editingProduct.value.category || '');
+    formData.append('MaChiTietDM', editingProduct.value.detailCategory || '');
+    formData.append('ChatLieu', editingProduct.value.material || '');
+    formData.append('KichThuoc', editingProduct.value.dimensions || '');
+    formData.append('LoaiHinhBan', editingProduct.value.saleType);
+    formData.append('TrangThai', editingProduct.value.status);
+    formData.append('NgayPhatHanh', editingProduct.value.releaseDate || '');
+    formData.append('TienCocToiThieu', editingProduct.value.minDeposit || 0);
+    formData.append('ThongTinChiTiet', editingProduct.value.description || '');
+    formData.append('HienThi', editingProduct.value.isVisible);
     
-    // Gắn ảnh đại diện mới (nếu có)
+    // Đơn giá và Số lượng của bản mặc định
+    formData.append('DonGia', editingProduct.value.basePrice);
+    formData.append('SoLuong', editingProduct.value.baseStock);
+    
+    // Mảng phân loại đặc biệt
+    formData.append('DanhSachPhanLoai', JSON.stringify(editingProduct.value.variants));
+
+    // Ảnh đại diện
     if (editingProduct.value.thumbnailFile) {
         formData.append('AnhDaiDien', editingProduct.value.thumbnailFile);
     }
     
-    //  Gắn mảng ảnh Gallery mới (nếu có)
+    // Bộ sưu tập ảnh mới
     if (editingProduct.value.galleryFiles && editingProduct.value.galleryFiles.length > 0) {
       editingProduct.value.galleryFiles.forEach(file => {
         formData.append('BoSuuTapAnhMoi', file);
       });
     }
 
-    // Cập nhật giao diện
-    const index = products.value.findIndex(p => p.id === editingProduct.value.id);
-    if (index !== -1) {
-      products.value[index] = { ...editingProduct.value };
+    if (editingProduct.value.deletedOldImages && editingProduct.value.deletedOldImages.length > 0) {
+        formData.append('AnhCuCanXoa', JSON.stringify(editingProduct.value.deletedOldImages));
     }
 
-    isEditModalOpen.value = false;
-    toastStore.showToast("Đã cập nhật thay đổi thành công!", "success");
+    try {
+      // GỌI API PUT /fix_info/:id
+      const response = await fetch(`http://localhost:3000/api/product_admin/fix_info/${editingProduct.value.id}`, {
+        method: 'PUT',
+        body: formData
+      });
+      
+      const result = await response.json();
+
+      if (result.success || response.ok) {
+        isEditModalOpen.value = false;
+        toastStore.showToast("Đã cập nhật thay đổi thành công!", "success");
+        fetchProducts(); // Tải lại danh sách
+      } else {
+        toastStore.showToast(result.message || "Lỗi cập nhật", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu chỉnh sửa:", error);
+      toastStore.showToast("Lỗi máy chủ!", "error");
+    }
   };
 
   // XÓA SẢN PHẨM (DELETE)
@@ -1069,8 +1422,6 @@
       toastStore.showToast("Xảy ra lỗi khi xóa sản phẩm!", "error");
     }
   };
-
-
 
   const applyAdvancedFilters = () => {
     currentPage.value = 1;
