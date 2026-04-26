@@ -203,24 +203,50 @@ const toastMessage = ref('');    // Biến chứa thông báo lỗi màu đỏ g
 // 2. Hàm xử lý khi bấm nút Đăng Nhập
 const handleLogin = async () => {
   isLoading.value = true;   // Bật trạng thái đang load
-  toastMessage.value = '';  // Xóa lỗi cũ (nếu có)
+  toastMessage.value = '';  // Xóa lỗi cũ
 
   try {
-    // Gọi hàm login từ kho Pinia (Giống hệt code cũ của bạn)
-    await authStore.login(form.identity, form.password); 
+    // BƯỚC 1: Gọi API Đăng nhập xuống Backend
+    const response = await fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        TenDN: form.identity,  // Khớp với req.body.TenDN ở Backend
+        MatKhau: form.password // Khớp với req.body.MatKhau ở Backend
+      })
+    });
 
-    // Nếu có thông tin user -> Đăng nhập thành công -> Hất sang Trang chủ
-    if (authStore.user) {
-      const redirectPath = route.query.redirect || '/';
-      router.push(redirectPath);
+    const data = await response.json();
+
+    if (response.ok) {
+      // BƯỚC 2: Đăng nhập thành công -> Lưu dữ liệu vào Kho (LocalStorage)
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      // Cập nhật lên Store để toàn bộ web biết là đã login
+      authStore.user = data.user;
+
+      // BƯỚC 3: RẼ NHÁNH PHÂN QUYỀN
+      const userRole = data.user.role;
+      
+      // Giả sử Role 1 là Admin, Role 2 là Nhân viên -> Cho vào trang Quản trị
+      if (userRole === 1 || userRole === 2) {
+        router.push('/admin');
+      } 
+      // Role khác (ví dụ Role 3 là Khách hàng) -> Về trang chủ hoặc trang trước đó
+      else {
+        const redirectPath = route.query.redirect || '/';
+        router.push(redirectPath);
+      }
+
     } else {
-      // Nếu authStore.user không có, tức là đăng nhập xịt
-      toastMessage.value = 'Sai tên đăng nhập hoặc mật khẩu!';
+      toastMessage.value = data.message || 'Đăng nhập thất bại!';
     }
   } catch (error) {
-    console.error(error);
-    
-    toastMessage.value = error.message;
+    console.error("Lỗi khi kết nối API login:", error);
+    toastMessage.value = "Lỗi kết nối đến máy chủ! Vui lòng thử lại sau.";
   } finally {
     isLoading.value = false; // Tắt trạng thái load
   }

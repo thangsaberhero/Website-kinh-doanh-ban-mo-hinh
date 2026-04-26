@@ -3,34 +3,84 @@ const db = require('../../config/db');
 const product_view = {
     getAllProduct: async(req, res) => {
         try {
-            const sql = `SELECT mh.*,TenHSX , 
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 9;
+
+            const offset = (page - 1) * limit;
+            const {keyword, danhmuc, thuonghieu, chitietdanhmuc, gia, sapxep} = req.query;
+
+            let condition = [];
+            let value = [];
+            if(keyword){
+                condition.push("(mh.TenMH like ? or TenHSX like ?)");
+                value.push(`%${keyword}%`, `%${keyword}%`);
+            }
+            if(danhmuc){
+                const dmArray = danhmuc.split(','); 
+                condition.push(`mh.MaDM IN (?)`);
+                value.push(dmArray);
+            }
+            if(chitietdanhmuc){
+                const ctdmArray = chitietdanhmuc.split(',');
+                condition.push(`mh.MaChiTietDM IN (?)`);
+                value.push(ctdmArray);
+            }
+            if(thuonghieu){
+                const thArray = thuonghieu.split(',');
+                condition.push(`TenHSX IN (?)`);
+                value.push(thArray);
+            }
+            if(gia){
+                condition.push("mh.DonGia <= ?");
+                value.push(gia);
+            }
+            let whereClause = condition.length > 0 ? "where " + condition.join(" and "): "";
+
+            let filter = ""
+            if(sapxep === 'price_asc')
+                filter = "order by mh.DonGia ASC";
+            else if(sapxep === 'price_desc')
+                filter = "order by mh.DonGia DESC";
+            else
+                filter = "order by mh.MaMoHinh DESC";
+
+            const sql_core = `SELECT mh.*,TenHSX , 
             (
                 SELECT COALESCE(SUM(SoLuong), 0) 
                 FROM PhanLoai 
                 WHERE MaMoHinh = mh.MaMoHinh
-            ) AS SoLuong,
-            (
-                Select (mh.DonGia - ctkm.ChietKhau)
-                from ChiTietKhuyenMai ctkm
-                inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                inner join PhanLoai pl on pl.MaPhanLoai = ctkm.MaPhanLoai
-                where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and pl.MaPhanLoai = ctkm.MaPhanLoai
-                order by ctkm.ChietKhau desc
-                limit 1
-            ) As dongiakhuyenmai
+            ) AS SoLuong
             FROM MoHinh mh
             INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
-            ORDER BY mh.MaMoHinh DESC`;
-            const [products] = await db.query(sql);
+            ${whereClause}`;
+
+            const sql_count = `Select count(*) as total from (${sql_core}) as temptable`
+            const [countResult] = await db.query(sql_count, value);
+            const totalItems = countResult[0].total;
+            const totalPage = Math.ceil(totalItems/limit);
+
+            const sql = `${sql_core}
+                        ${filter}
+                        limit ? offset ?`
+
+            const [products] = await db.query(sql, [...value, limit, offset]);
 
             res.status(200).json({
+                success: true,
                 message: "Lấy danh sách sản phẩm thành công",
-                data: products
+                data: products,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage
+                }
             });
         }
         catch (error){
             console.error("Lỗi khi lấy sản phẩm:,", error);
             res.status(500).json({
+                success: false,
                 message: "Lỗi server khi lấy dữ liệu sản phẩm"
             });
         }
@@ -49,15 +99,8 @@ const product_view = {
                         SELECT COALESCE(SUM(SoLuong), 0) 
                         FROM PhanLoai 
                         WHERE MaMoHinh = mh.MaMoHinh
-                    ) AS SoLuong,
-                    (
-                        Select (mh.DonGia - ctkm.ChietKhau)
-                        from ChiTietKhuyenMai ctkm
-                        inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                        where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
-                        order by ctkm.ChietKhau desc
-                        limit 1
-                    ) As dongiakhuyenmai
+                    ) AS SoLuong
+                    
                 FROM MoHinh mh
                 LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
                 LEFT JOIN AnhMoHinh anh ON mh.MaMoHinh = anh.MaMoHinh
@@ -89,16 +132,8 @@ const product_view = {
             const id = req.params.id;
 
             const sql = `
-                SELECT pl.*,
-                (
-                        Select (pl.DonGia - ctkm.ChietKhau)
-                        from MoHinh mh
-                        inner join ChiTietKhuyenMai ctkm
-                        inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                        where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
-                        order by ctkm.ChietKhau desc
-                        limit 1
-                    ) As dongiakhuyenmai
+                SELECT pl.*
+                
                 FROM PhanLoai pl
                 WHERE pl.MaMoHinh = ?
             `;
@@ -121,6 +156,25 @@ const product_view = {
             });
         }
     },
+    //Lấy ds hsx
+    getAllbrand: async(req, res) => {
+        try {
+            const sql = 'SELECT * FROM HangSanXuat';
+            const [products] = await db.query(sql);
+
+            res.status(200).json({
+                message: "Lấy danh sách hãng sản xuất thành công",
+                data: products
+            });
+        }
+        catch (error){
+            console.error("Lỗi khi lấy danh sách hãng sản xuất:,", error);
+            res.status(500).json({
+                message: "Lỗi server khi lấy dữ liệu danh sách hãng sản xuất!"
+            });
+        }
+    },
+
     //Lấy danh sách danh mục
     getAllvariant: async(req, res) => {
         try {
@@ -329,15 +383,7 @@ const product_view = {
                 SELECT COALESCE(SUM(SoLuong), 0) 
                 FROM PhanLoai 
                 WHERE MaMoHinh = mh.MaMoHinh
-            ) AS SoLuong,
-            (
-                Select (mh.DonGia - ctkm.ChietKhau)
-                from ChiTietKhuyenMai ctkm
-                inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh
-                order by ctkm.ChietKhau desc
-                limit 1
-            ) As dongiakhuyenmai
+            ) AS SoLuong
             FROM MoHinh mh
             INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
             inner join ChiTietYeuThich on mh.MaMoHinh = ChiTietYeuThich.MaMoHinh

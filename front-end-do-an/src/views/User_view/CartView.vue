@@ -25,7 +25,7 @@
               <div class="relative w-full md:w-48 aspect-square overflow-hidden bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer" @click="goToProduct(item.MaMoHinh)">
                 <div class="relative w-full md:w-48 aspect-square overflow-hidden bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer" @click="goToProduct(item.MaMoHinh)">
                 <img 
-                  :src="item.AnhDaiDien ? ('/Images_product/' + item.AnhDaiDien) : 'https://via.placeholder.com/150'" 
+                  :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" 
                   :alt="item.TenMH" 
                   class="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
                 />

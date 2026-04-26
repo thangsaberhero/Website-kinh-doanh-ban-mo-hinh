@@ -20,6 +20,7 @@ import ContactView from '../views/User_view/ContactView.vue';
 import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
 //Phần thanh toán có thể thay thế bằng payos sau này
 import checkout from '../views/User_view/MoMoMockView.vue';
+import ProvenanceTracking from '../views/User_view/ProvenanceTracking.vue';
 
 import AdminDashboard from '../views/Admin_view/AdminDashboard.vue';
 import AdminInventory from '../views/Admin_view/AdminInventory.vue';
@@ -128,6 +129,11 @@ const router = createRouter({
       path: '/momo-payment',
       name: 'MoMoMock',
       component: checkout
+    },
+    {
+      path: '/truy-xuat',
+      name: 'TruyXuat',
+      component: ProvenanceTracking
     },
     {
       path: '/admin',

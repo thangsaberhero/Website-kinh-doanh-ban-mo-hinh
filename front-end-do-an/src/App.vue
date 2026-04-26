@@ -22,8 +22,9 @@ import { ref, onMounted, onUnmounted } from 'vue'; // Thêm import ref, lifecycl
 import TheToast from '@/components/TheToast.vue';
 import FooterFull from '@/components/FooterFull.vue';
 import FooterMinimal from '@/components/FooterMinimal.vue';
-// import PhoneRing from '@/components/PhoneRing.vue';
-// import Chatbox from '@/components/Chatbot.vue';
+import PhoneRing from '@/components/PhoneRing.vue';
+import Chatbox from '@/components/Chatbot.vue';
+import ProvenanceTracking from './views/User_view/ProvenanceTracking.vue';
 
 const route = useRoute();
 

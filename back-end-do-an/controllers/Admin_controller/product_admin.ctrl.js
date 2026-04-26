@@ -6,7 +6,7 @@ const product_admin = {
 
         try{
             await connection.beginTransaction();
-            const {TenDM, MoTa, danhSachChiTiet} = req.body;
+            const {TenDM, MoTa, ChiTiet} = req.body;
             const sql_check = `Select * from DanhMuc where TenDM = ?`;
             const [check] = await connection.query(sql_check,[TenDM]);
             //Kiểm tra xem tồn tại danh mục hàng này chưa?
@@ -18,20 +18,20 @@ const product_admin = {
             await connection.beginTransaction();
             
             const sql_insert_dm = `Insert into DanhMuc(TenDM, MoTa) values (?,?)`;
-            const [result_dm] = await db.query(sql_insert_dm,[TenDM, MoTa]);
+            const [result_dm] = await connection.query(sql_insert_dm,[TenDM, MoTa]);
             
             const ma_DM_moi = result_dm.insertId;
 
-            if (Array.isArray(danhSachChiTiet) && danhSachChiTiet.length > 0) {
+            if(ChiTiet && ChiTiet !== 'undefined')
+            {
+                const cates = JSON.parse(ChiTiet);
                 const sql_insert_chitiet = `INSERT INTO ChiTietDanhMuc(MaDM, TenChiTietDM, MoTa) VALUES (?, ?, ?)`;
-                for (let chiTiet of danhSachChiTiet) {
-                    await connection.query(sql_insert_chitiet, [maDMMoi, chiTiet.Ten, chiTiet.MoTa]);
+                for (let cate of cates) {
+                    await connection.query(sql_insert_chitiet, [ma_DM_moi, cate.name, cate.description]);
                 }
             }
-
+            
             await connection.commit();
-            connection.release();
-
             res.status(200).json({ 
                 message: `Thành công tạo danh mục (và các chi tiết nếu có)!`,
                 MaDMMoi: ma_DM_moi
@@ -40,9 +40,59 @@ const product_admin = {
         }
         catch (error){
             await connection.rollback();
-            connection.release();
             console.error("Lỗi khi thêm danh mục mới");
             res.status(500).json({ message: "Lỗi server khi thao tác thêm danh mục!"});
+        }
+        finally{
+            connection.release();
+        }
+    },
+
+    sua_thong_tin_danh_muc: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const MaDM = req.params.id; // Lấy ID từ URL
+            const { TenDM, MoTa , ChiTiet} = req.body;
+
+            // Kiểm tra xem tên mới gõ có bị trùng với một hãng KHÁC trong DB không
+            const sql_check = `SELECT * FROM DanhMuc WHERE TenDM = ? AND MaDM != ?`;
+            const [check] = await connection.query(sql_check, [TenDM, MaDM]);
+            
+            if(check.length > 0){
+                return res.status(400).json({
+                    success: false,
+                    message: `Tên danh mục này đã được sử dụng!`
+                });
+            }
+
+            const sql = `UPDATE DanhMuc SET TenDM=?, MoTa=? WHERE MaDM=?`;
+            await connection.query(sql, [TenDM, MoTa || null, MaDM]);
+            if(ChiTiet && ChiTiet !== 'undefined')
+            {
+                const cates = JSON.parse(ChiTiet);
+                const sql_sua_chi_tiet = `Update ChiTietDanhMuc set TenChiTietDM = ?, MoTa = ? where MaChiTietDM = ?`
+                const sql_insert_chitiet = `INSERT INTO ChiTietDanhMuc(MaDM, TenChiTietDM, MoTa) VALUES (?, ?, ?)`;
+                for (let cate of cates) {
+                    if(cate.id)
+                        await connection.query(sql_sua_chi_tiet, [cate.name, cate.description, cate.id]);
+                    else
+                        await connection.query(sql_insert_chitiet, [MaDM, cate.name, cate.description]);
+                }
+            }
+            await connection.commit();
+            res.status(200).json({
+                success: true,
+                message: "Cập nhật thông tin danh mục thành công!"
+            });
+        }
+        catch (error) {
+            connection.rollback();
+            console.error("Lỗi khi sửa HSX: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi cập nhật danh mục!"});
+        }
+        finally{
+            connection.release()
         }
     },
 
@@ -96,7 +146,7 @@ const product_admin = {
                 });
             }
             const sql = `Insert into HangSanXuat(TenHSX, MoTa) values (?,?)`;
-            await connection.query(sql,[TenHSX, MoTa]);
+            await connection.query(sql,[TenHSX, MoTa || null]);
             await connection.commit();
             res.status(200).json({ 
                 success: true,
@@ -113,9 +163,39 @@ const product_admin = {
         }
     },
 
+    sua_thong_tin_HSX: async(req, res) => {
+        try {
+            const MaHSX = req.params.id; // Lấy ID từ URL
+            const { TenHSX, MoTa } = req.body;
+
+            // Kiểm tra xem tên mới gõ có bị trùng với một hãng KHÁC trong DB không
+            const sql_check = `SELECT * FROM HangSanXuat WHERE TenHSX = ? AND MaHSX != ?`;
+            const [check] = await db.query(sql_check, [TenHSX, MaHSX]);
+            
+            if(check.length > 0){
+                return res.status(400).json({
+                    success: false,
+                    message: `Tên hãng sản xuất này đã được sử dụng!`
+                });
+            }
+
+            const sql = `UPDATE HangSanXuat SET TenHSX=?, MoTa=? WHERE MaHSX=?`;
+            await db.query(sql, [TenHSX, MoTa || null, MaHSX]);
+
+            res.status(200).json({
+                success: true,
+                message: "Cập nhật thông tin hãng thành công!"
+            });
+        }
+        catch (error) {
+            console.error("Lỗi khi sửa HSX: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi cập nhật HSX!"});
+        }
+    },
+
     xoa_HSX: async(req, res) =>{
         try {
-            const {MaHSX} = req.body;
+            const MaHSX = req.params.id || req.body.MaHSX;
             const sql_kiem_tra = 'SELECT 1 FROM MoHinh WHERE MaHSX = ? LIMIT 1';
             const [check] = await db.query(sql_kiem_tra,[MaHSX]);
             //Kiểm tra tồn tại sản phẩm trong danh mục không?
@@ -137,14 +217,6 @@ const product_admin = {
 
     get_brand: async(req, res)=>{
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-
-            // Tính toán vị trí cắt dữ liệu
-            const offset = (page - 1) * limit;
-
-            const {keyword, sapxep} = req.query;
-
             const sql = 'SELECT * FROM HangSanXuat';
             const [brands] = await db.query(sql);
 
@@ -206,7 +278,8 @@ const product_admin = {
 
     xoa_danh_muc: async(req, res) =>{
         try {
-            const {MaDM} = req.body;
+            
+            const MaDM = req.params.id || req.body.id;
             const sql_kiem_tra = 'SELECT 1 FROM MoHinh WHERE MaDM = ? LIMIT 1';
             const [check] = await db.query(sql_kiem_tra,[MaDM]);
             //Kiểm tra tồn tại sản phẩm trong danh mục không?
@@ -236,22 +309,24 @@ const product_admin = {
 
     xoa_chi_tiet_danh_muc: async(req, res) =>{
         try {
-            const {MaChiTietDM} = req.body;
+            const MaChiTietDM = req.params.id || req.body.id;
+            console.log("Chuẩn bị xoá danh mục: " + MaChiTietDM);
             const sql_kiem_tra = `SELECT 1 FROM MoHinh WHERE MaChiTietDM = ? LIMIT 1`;
             const [check] = await db.query(sql_kiem_tra,[MaChiTietDM]);
             //Kiểm tra tồn tại sản phẩm trong danh mục không?
             if(check.length > 0)
-                return res.status(404).json({ message: `Hiện tại chi tiết danh mục này đang tồn tại sản phẩm, 
+                return res.status(404).json({ success: false, message: `Hiện tại chi tiết danh mục này đang tồn tại sản phẩm, 
                                             hãy chuyển hết sản phẩm sang danh mục khác rồi hẵng xoá danh mục này nhé.`});
 
             await db.query('Delete from ChiTietDanhMuc where MaChiTietDM = ?',[MaChiTietDM]);
             res.status(200).json({
+                success: true,
                 message: "Xoá danh mục hàng thành công!"
             })
         }
         catch (error){
             console.error("Lỗi khi xoá chi tiết danh mục: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác với danh mục!"});
+            res.status(500).json({ success: false, message: "Lỗi server khi thao tác với danh mục!"});
         }
     },
 
@@ -781,8 +856,202 @@ const product_admin = {
         }
     },
 
-    // thong_tin_hang_gan_het: async(req, res) =>{
+    liet_ke_brand: async(req, res)=>{
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
 
-    // }
+            // Tính toán vị trí cắt dữ liệu
+            const offset = (page - 1) * limit;
+
+            const {keyword, sapxep} = req.query;
+            let condition = [];
+            let value = [];
+            if(keyword){
+                condition.push("TenHSX like ?");
+                value.push(`%${keyword}%`);
+            }
+            let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
+
+            let filter = "";
+            if(sapxep === 'z-a'){
+                filter += "Order by TenHSX DESC";
+            }
+            else
+                filter += "Order by TenHSX ASC";
+    
+            const sql_core = `SELECT hsx.MaHSX, TenHSX, MoTa, 
+                            (
+                                Select count(*)
+                                from MoHinh
+                                where MoHinh.MaHSX = hsx.MaHSX
+                            ) as TongSoLuongSanPham
+                                 FROM HangSanXuat hsx
+                            ${whereClause}`;
+            const sql_count = `Select count(*) as total from (${sql_core}) as temptable`;
+            const [countResult] = await db.query(sql_count, value);
+            const totalBrands = countResult[0].total;
+            
+            const totalPage = Math.ceil(totalBrands/limit);
+
+            const sql_ds = `${sql_core}
+                            ${filter}
+                            limit ? offset ?`;
+
+            const sql_params = [...value, limit, offset];
+            const [brands] = await db.query(sql_ds, sql_params);
+            res.status(200).json({
+                success: true,
+                message: "Lấy danh sách hãng sản xuất thành công",
+                data: brands,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalBrands: totalBrands,
+                    totalPage: totalPage
+                    }
+            });
+        }
+        catch (error){
+            console.error("Lỗi khi lấy danh sách HSX:,", error);
+            res.status(500).json({
+                success: false,
+                message: "Lỗi server khi lấy dữ liệu danh sách HSX!"
+            });
+        }
+    },
+
+    thong_ke_hang_san_xuat: async(req, res) => {
+        try {
+            // 1. Đếm tổng số hãng sản xuất
+            const [brandCount] = await db.query('SELECT COUNT(*) as total FROM HangSanXuat');
+
+            // 2. Tính tổng số lượng tất cả sản phẩm trong kho (Gom từ bảng Phanloai)
+            const [productCount] = await db.query('SELECT COUNT(*) as total FROM MoHinh');
+
+            res.status(200).json({
+                success: true,
+                data: {
+                    tongSoHang: brandCount[0].total,
+                    tongSoSanPham: productCount[0].total
+                }
+            });
+        } catch (error) {
+            console.error("Lỗi khi lấy thống kê HSX: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi thống kê!" });
+        }
+    },
+
+    liet_ke_danh_muc: async(req, res)=>{
+        try {
+            // 1. KIỂM TRA CỜ "LẤY TẤT CẢ" (Dùng cho các thẻ <select> ở Frontend)
+            const isGetAll = req.query.getAll === 'true';
+
+            if (isGetAll) {
+                // Lấy tất cả danh mục cha
+                const [cates] = await db.query(`SELECT MaDM, TenDM FROM DanhMuc ORDER BY TenDM ASC`);
+                // Lấy tất cả danh mục con
+                const [subCates] = await db.query(`SELECT MaChiTietDM, TenChiTietDM, MaDM FROM ChiTietDanhMuc`);
+                
+                // Gộp danh mục con vào danh mục cha tương ứng
+                const finalCates = cates.map(cate => ({
+                    ...cate,
+                    DanhSachDanhMucCon: subCates.filter(sub => sub.MaDM === cate.MaDM)
+                }));
+
+                return res.status(200).json({ success: true, data: finalCates });
+            }
+
+            // 2. LUỒNG PHÂN TRANG (Dành cho trang Quản lý danh mục)
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const offset = (page - 1) * limit;
+
+            const {keyword, sapxep} = req.query;
+            let condition = [];
+            let value = [];
+
+            if(keyword){
+                // Thêm bí danh dm. để tránh lỗi trùng cột nếu sau này có JOIN thêm
+                condition.push("dm.TenDM LIKE ?"); 
+                value.push(`%${keyword}%`);
+            }
+            let whereClause = condition.length > 0 ? "WHERE " + condition.join(" AND ") : "";
+
+            let filter = "ORDER BY dm.TenDM ASC";
+            if(sapxep === 'z-a'){
+                filter = "ORDER BY dm.TenDM DESC";
+            }
+    
+            const sql_core = `SELECT dm.MaDM, dm.TenDM, dm.MoTa, 
+                                (
+                                    SELECT count(*)
+                                    FROM ChiTietDanhMuc ctdm
+                                    WHERE ctdm.MaDM = dm.MaDM
+                                ) AS TongSoLuongDanhMucCon
+                              FROM DanhMuc dm
+                              ${whereClause}`;
+
+            const sql_count = `SELECT count(*) AS total FROM (${sql_core}) AS temptable`;
+            const [countResult] = await db.query(sql_count, value);
+            const totalCates = countResult[0].total;
+            
+            const totalPage = Math.ceil(totalCates/limit);
+
+            const sql_ds = `
+                ${sql_core}
+                ${filter}
+                LIMIT ? OFFSET ?
+            `;
+
+            const sql_params = [...value, limit, offset];
+            const [cates] = await db.query(sql_ds, sql_params);
+
+            // ---------------------------------------------------------
+            // BƯỚC MỚI: TÌM VÀ GỘP DANH MỤC CON CHO CÁC DANH MỤC VỪA TÌM ĐƯỢC
+            // ---------------------------------------------------------
+            let finalCates = cates; 
+            
+            if (cates.length > 0) {
+                // Lấy ra danh sách các MaDM của trang hiện tại (VD: [1, 2, 3])
+                const arrMaDM = cates.map(c => c.MaDM);
+                
+                // Gọi API lấy các danh mục con thuộc các danh mục cha này
+                // Mẹo MySQL2: Khi dùng IN (?), bạn phải truyền mảng vào trong một mảng khác [arrMaDM]
+                const [subCates] = await db.query(
+                    `SELECT MaChiTietDM, TenChiTietDM, MaDM, MoTa FROM ChiTietDanhMuc WHERE MaDM IN (?)`, 
+                    [arrMaDM]
+                );
+
+                // Nhét danh mục con vào đúng danh mục cha
+                finalCates = cates.map(cate => {
+                    return {
+                        ...cate,
+                        // Tạo ra một mảng con chứa các chi tiết danh mục
+                        DanhSachDanhMucCon: subCates.filter(sub => sub.MaDM === cate.MaDM)
+                    };
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: "Lấy danh sách danh mục thành công",
+                data: finalCates, // Trả về mảng đã gộp
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalCates: totalCates,
+                    totalPage: totalPage
+                }
+            });
+        }
+        catch (error){
+            console.error("Lỗi khi lấy danh sách danh mục:,", error);
+            res.status(500).json({
+                success: false,
+                message: "Lỗi server khi lấy dữ liệu danh sách danh mục!"
+            });
+        }
+    },
 }
 module.exports = product_admin;

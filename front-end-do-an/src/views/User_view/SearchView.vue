@@ -15,10 +15,19 @@
                 <span class="material-symbols-outlined text-sm">category</span> Danh mục
               </label>
               <div class="space-y-3">
-                <label v-for="cat in categories" :key="cat.MaDM" class="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" :value="cat.MaDM" v-model="selectedCategories" class="w-4 h-4 rounded border-outline-variant bg-surface text-primary focus:ring-primary focus:ring-offset-surface"/>
-                  <span class="text-sm text-on-surface group-hover:text-primary transition-colors">{{ cat.TenDM }}</span>
-                </label>
+                <div v-for="cat in categories" :key="cat.MaDM" class="flex flex-col">
+                  <label class="flex items-center gap-3 cursor-pointer group mb-2">
+                    <input type="checkbox" :value="cat.MaDM" v-model="selectedCategories" class="w-4 h-4 rounded border-outline-variant bg-surface text-primary focus:ring-primary focus:ring-offset-surface"/>
+                    <span class="text-sm text-on-surface group-hover:text-primary transition-colors font-bold">{{ cat.TenDM }}</span>
+                  </label>
+                  
+                  <div v-if="cat.subCategories && cat.subCategories.length > 0" class="pl-7 flex flex-col space-y-2 mb-2 border-l border-outline-variant/20 ml-2">
+                    <label v-for="sub in cat.subCategories" :key="sub.MaChiTietDM" class="flex items-center gap-3 cursor-pointer group">
+                      <input type="checkbox" :value="sub.MaChiTietDM" v-model="selectedSubCategories" class="w-3 h-3 rounded border-outline-variant bg-surface text-primary focus:ring-primary focus:ring-offset-surface"/>
+                      <span class="text-xs text-on-surface-variant group-hover:text-primary transition-colors">{{ sub.TenChiTietDM }}</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -27,10 +36,10 @@
                 <span class="material-symbols-outlined text-sm">payments</span> Mức giá tối đa: <span class="text-primary font-bold">{{ formatPrice(maxPrice) }}</span>
               </label>
               <div class="px-2">
-                <input v-model.number="maxPrice" type="range" min="0" max="20000000" step="500000" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary"/>
+                <input v-model.number="maxPrice" type="range" min="0" max="10000000" step="500000" class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary"/>
                 <div class="flex justify-between mt-2 text-[10px] font-mono text-outline">
                   <span>0đ</span>
-                  <span>20M+</span>
+                  <span>10M</span>
                 </div>
               </div>
             </div>
@@ -40,26 +49,10 @@
                 <span class="material-symbols-outlined text-sm">stars</span> Thương hiệu
               </label>
               <div class="space-y-3">
-                <label v-for="brand in availableBrands" :key="brand" class="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" :value="brand" v-model="selectedBrands" class="w-4 h-4 rounded border-outline-variant bg-surface text-primary focus:ring-primary focus:ring-offset-surface"/>
-                  <span class="text-sm text-on-surface group-hover:text-primary transition-colors">{{ brand }}</span>
+                <label v-for="brand in availableBrands" :key="brand.TenHSX" class="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" :value="brand.TenHSX" v-model="selectedBrands" class="w-4 h-4 rounded border-outline-variant bg-surface text-primary focus:ring-primary focus:ring-offset-surface"/>
+                  <span class="text-sm text-on-surface group-hover:text-primary transition-colors">{{ brand.TenHSX }}</span>
                 </label>
-              </div>
-            </div>
-
-            <div v-if="availableScales.length > 0" class="mb-10">
-              <label class="flex items-center gap-2 text-on-surface-variant font-headline text-[10px] tracking-widest uppercase mb-4">
-                <span class="material-symbols-outlined text-sm">straighten</span> Tỷ lệ
-              </label>
-              <div class="grid grid-cols-2 gap-2">
-                <button v-for="scale in availableScales" :key="scale" @click="toggleScale(scale)"
-                  :class="['py-2 text-xs transition-all rounded font-bold', 
-                    selectedScales.includes(scale) 
-                      ? 'bg-primary/10 border border-primary text-primary' 
-                      : 'bg-surface-container-high border border-outline-variant/20 hover:border-primary hover:text-primary text-on-surface-variant'
-                  ]">
-                  {{ scale }}
-                </button>
               </div>
             </div>
             
@@ -77,7 +70,7 @@
           <div class="space-y-2">
             <p class="text-primary font-headline text-sm tracking-widest font-bold uppercase">Kết quả tìm kiếm</p>
             <h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tighter text-white">
-              Tìm thấy <span class="text-primary">{{ finalProducts.length }}</span> kết quả  
+              Tìm thấy <span class="text-primary">{{ totalItems }}</span> kết quả  
               <span v-if="searchQuery">
                 cho "{{ searchQuery }}"
               </span>
@@ -90,31 +83,42 @@
               <span v-if="selectedBrands.length" class="flex items-center gap-1 bg-surface-container-highest text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
                 {{ selectedBrands.join(', ') }}
               </span>
-              <span v-if="selectedScales.length" class="flex items-center gap-1 bg-surface-container-highest text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
-                {{ selectedScales.join(', ') }}
-              </span>
               <span v-if="maxPrice < 20000000" class="flex items-center gap-1 bg-surface-container-highest text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
                 Dưới {{ formatPrice(maxPrice) }}
               </span>
             </div>
           </div>
           
-          <div class="flex flex-row items-center gap-3 text-sm shrink-0">
-            <span class="text-gray-400 font-bold whitespace-nowrap">Sắp xếp:</span>
-            <select 
-                v-model="sortBy" 
-                class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest min-w-[180px]"
-            >
-                <option value="newest">Mới nhất</option>
-                <option value="price_asc">Giá Thấp đến Cao</option>
-                <option value="price_desc">Giá Cao đến Thấp</option>
-            </select>
+          <div class="flex flex-col items-end gap-3 text-sm shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Hiển thị:</span>
+                <select 
+                    v-model="limit" 
+                    class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
+                >
+                    <option value="9">9 Sản phẩm</option>
+                    <option value="18">18 Sản phẩm</option>
+                    <option value="27">27 Sản phẩm</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Sắp xếp:</span>
+                <select 
+                    v-model="sortBy" 
+                    class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
+                >
+                    <option value="newest">Mới nhất</option>
+                    <option value="price_asc">Giá Thấp đến Cao</option>
+                    <option value="price_desc">Giá Cao đến Thấp</option>
+                </select>
+            </div>
           </div>
         </div>
 
-        <div v-if="finalProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div v-if="productList.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
           <div 
-            v-for="sp in finalProducts" :key="sp.MaMoHinh"
+            v-for="sp in productList" :key="sp.MaMoHinh"
             @click="router.push(`/product/${sp.MaMoHinh}`)"
             class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full overflow-hidden"
           >
@@ -133,7 +137,7 @@
             
             <div class="relative h-72 w-full mb-6 overflow-hidden rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40"></div>
-              <img :src="'/Images_product/' + sp.AnhDaiDien" 
+              <img :src="'http://localhost:3000/Images_product/' + sp.AnhDaiDien" 
                    :alt="sp.TenMH"
                    :class="['h-full w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110', sp.SoLuong === 0 ? 'grayscale opacity-50' : '']"
               />
@@ -164,7 +168,29 @@
             </div>
           </div>
         </div>
+        <div v-if="totalPages > 0" class="mt-12 flex justify-center items-center gap-2 flex-wrap pb-12">
+          <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 border border-outline-variant/30">
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          
+          <button v-for="(page, index) in visiblePages" :key="index" @click="page !== '...' ? currentPage = page : null" :disabled="page === '...'"
+            :class="[
+              currentPage === page ? 'bg-primary text-black shadow-lg shadow-primary/20 border-primary' : 'bg-surface-container text-white border-outline-variant/30',
+              page === '...' ? 'cursor-default border-transparent hover:text-white bg-transparent shadow-none' : 'hover:text-primary cursor-pointer hover:border-primary/50',
+              'w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-all shadow-sm border'
+            ]">
+            {{ page }}
+          </button>
 
+          <button @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 border border-outline-variant/30">
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+
+          <div class="flex items-center gap-2 ml-4 border-l border-outline-variant/30 pl-4">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Đến trang:</span>
+            <input type="number" placeholder="" min="1" :max="totalPages" @keyup.enter="jumpToPage" class="w-16 h-10 bg-surface-container border border-outline-variant/30 rounded-xl text-center text-white text-xs font-bold outline-none focus:border-primary transition-colors custom-scrollbar" />
+          </div>
+        </div>
         <div v-else-if="!isSearching" class="py-32 flex flex-col items-center justify-center text-center">
           <span class="material-symbols-outlined text-7xl text-outline-variant mb-6">search_off</span>
           <h2 class="text-2xl font-headline font-bold text-white mb-2">Không tìm thấy báu vật nào</h2>
@@ -203,52 +229,90 @@ const router = useRouter();
 const route = useRoute();
 
 // --- 1. BIẾN QUẢN LÝ DỮ LIỆU ---
-const searchQuery = ref('');
-const rawProducts = ref([]); 
+// --- 1. BIẾN QUẢN LÝ DỮ LIỆU & PHÂN TRANG ---
+const searchQuery = ref(route.query.q || '');
+const productList = ref([]); // Thay thế hoàn toàn rawProducts và finalProducts
 const categories = ref([]);
 const isSearching = ref(false);
 
-// --- 2. BIẾN QUẢN LÝ BỘ LỌC ĐA CHIỀU ---
-const selectedCategories = ref([]);
-const selectedBrands = ref([]);
-const selectedScales = ref([]);
-const sortBy = ref('newest');
-const maxPrice = ref(20000000); 
+const currentPage = ref(1);
+const limit = ref(9);
+const totalPages = ref(1);
+const totalItems = ref(0);
 
-// Format tiền tệ
+// --- 2. BIẾN BỘ LỌC ---
+const selectedCategories = ref([]);
+const selectedSubCategories = ref([]);
+const selectedBrands = ref([]);
+const sortBy = ref('newest');
+const maxPrice = ref(10000000); 
+
+// (MỚI) Khai báo danh sách Thương hiệu cứng vì ta không tải toàn bộ SP nữa
+// Hoặc bạn có thể viết thêm API get_all_brands ở backend sau này
+const availableBrands = ref([]);
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-// --- 3. ĐỘNG HÓA THƯƠNG HIỆU VÀ TỶ LỆ ---
-// Tự động quét qua rawProducts để tìm ra các Hãng và Tỷ lệ có tồn tại (không trùng lặp)
-const availableBrands = computed(() => {
-  const brands = rawProducts.value.map(p => p.TenHSX).filter(b => b); // Lọc bỏ giá trị null/rỗng
-  return [...new Set(brands)].sort(); // Loại bỏ trùng lặp và sắp xếp A-Z
-});
-
-const availableScales = computed(() => {
-  const scales = rawProducts.value.map(p => p.KichThuoc).filter(s => s);
-  return [...new Set(scales)].sort();
-});
-
-// --- 4. HÀM XỬ LÝ API ---
+// --- 3. HÀM TẢI DỮ LIỆU TỪ API ---
 const fetchCategories = async () => {
   try {
     const res = await fetch('http://localhost:3000/api/products/danhmuc');
     const dataJSON = await res.json();
-    if (res.ok) categories.value = dataJSON.data || dataJSON; 
+    if (res.ok) {
+      const mainCats = dataJSON.data || dataJSON;
+      
+      // Vòng lặp lấy danh mục con cho từng thằng cha
+      for (let cat of mainCats) {
+        try {
+          const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
+          const subJSON = await subRes.json();
+          if (subRes.ok) {
+            cat.subCategories = subJSON.data || subJSON;
+          }
+        } catch (err) {
+          cat.subCategories = []; 
+        }
+      }
+      categories.value = mainCats;
+    }
   } catch (error) {
     console.error("Lỗi lấy danh mục:", error);
   }
 };
 
-const fetchAllProducts = async () => {
+const fetchBrand = async () => {
+  try{
+    const res = await fetch('http://localhost:3000/api/products/hsx');
+    const dataJSON = await res.json();
+    if(res.ok){
+      availableBrands.value = dataJSON.data || dataJSON;
+    }
+  }
+  catch(error){
+    console.error("Lỗi lấy hsx:", error);
+  }
+}
+
+const fetchProducts = async () => {
   isSearching.value = true;
   try {
-    const res = await fetch('http://localhost:3000/api/products'); 
-    const dataJSON = await res.json();
+    // 🚨 Chú ý: Đổi lại link này cho khớp với file Controller Backend của bạn
+    let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
+
+    if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
+    if (selectedCategories.value.length > 0) url += `&danhmuc=${selectedCategories.value.join(',')}`;
+    if (selectedSubCategories.value.length > 0) url += `&chitietdanhmuc=${selectedSubCategories.value.join(',')}`;
+    if (selectedBrands.value.length > 0) url += `&thuonghieu=${selectedBrands.value.join(',')}`;
+    if (sortBy.value) url += `&sapxep=${sortBy.value}`;
+    if (maxPrice.value < 20000000) url += `&gia=${maxPrice.value}`;
+
+    const response = await fetch(url);
+    const result = await response.json();
     
-    if (res.ok) {
-      rawProducts.value = dataJSON.data || [];
+    if (result.success) {
+      productList.value = result.data;
+      totalPages.value = result.pagination.totalPage;
+      totalItems.value = result.pagination.totalItems;
+      currentPage.value = result.pagination.currentPage;
     }
   } catch (error) {
     console.error("Lỗi tải sản phẩm:", error);
@@ -257,80 +321,87 @@ const fetchAllProducts = async () => {
   }
 };
 
-// --- 5. LOGIC LỌC TỰ ĐỘNG ---
-const toggleScale = (scale) => {
-  const index = selectedScales.value.indexOf(scale);
-  if (index === -1) selectedScales.value.push(scale);
-  else selectedScales.value.splice(index, 1);
+// --- 4. LOGIC THANH PHÂN TRANG RÚT GỌN (Giống CategoryView) ---
+const visiblePages = computed(() => {
+  const current = currentPage.value;
+  const total = totalPages.value;
+  const delta = 1; 
+  
+  if (total <= 5) {
+    let pages = [];
+    for (let i = 1; i <= total; i++) pages.push(i);
+    return pages;
+  }
+
+  let pages = [1];
+  if (current - delta > 2) pages.push('...');
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    pages.push(i);
+  }
+  if (current + delta < total - 1) pages.push('...');
+  pages.push(total);
+  return pages;
+});
+
+const jumpToPage = (event) => {
+  const pageNum = parseInt(event.target.value);
+  if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages.value) {
+    currentPage.value = pageNum;
+    event.target.value = ''; 
+  }
 };
 
+// --- 5. LẮNG NGHE & XÓA BỘ LỌC ---
 const hasActiveFilters = computed(() => {
   return selectedCategories.value.length > 0 || 
          selectedBrands.value.length > 0 || 
-         selectedScales.value.length > 0 || 
-         maxPrice.value < 20000000;
+         maxPrice.value < 20000000 ||
+         searchQuery.value !== '';
 });
 
 const resetFilters = () => {
   selectedCategories.value = [];
+  selectedSubCategories.value = [];
   selectedBrands.value = [];
-  selectedScales.value = [];
   maxPrice.value = 20000000;
   sortBy.value = 'newest';
+  searchQuery.value = '';
+  router.replace('/search');
 };
 
 const clearSearchAndFilters = () => {
-  searchQuery.value = '';
-  router.replace('/search'); // Xóa params trên URL
   resetFilters();
 };
 
-// Xử lý Lọc & Sắp xếp
-const finalProducts = computed(() => {
-  let result = rawProducts.value;
-
-  // 1. Lọc theo Từ khóa gõ trên ô tìm kiếm
-  if (searchQuery.value) {
-    const keyword = searchQuery.value.toLowerCase();
-    result = result.filter(sp => sp.TenMH.toLowerCase().includes(keyword));
-  }
-
-  // 2. Lọc theo Danh mục
-  if (selectedCategories.value.length > 0) {
-    result = result.filter(sp => selectedCategories.value.includes(sp.MaDM));
-  }
-  
-  // 3. Lọc theo Thương hiệu
-  if (selectedBrands.value.length > 0) {
-    result = result.filter(sp => selectedBrands.value.includes(sp.TenHSX));
-  }
-
-  // 4. Lọc theo Tỷ lệ / Kích thước
-  if (selectedScales.value.length > 0) {
-    result = result.filter(sp => selectedScales.value.includes(sp.KichThuoc));
-  }
-
-  // 5. Lọc theo Khoảng giá
-  result = result.filter(sp => Number(sp.DonGia) <= maxPrice.value);
-
-  // 6. Sắp xếp
-  return result.slice().sort((a, b) => {
-    if (sortBy.value === 'price_asc') return Number(a.DonGia - b.DonGia);
-    if (sortBy.value === 'price_desc') return Number(b.DonGia - a.DonGia);
-    return b.MaMoHinh - a.MaMoHinh; 
-  });
+watch([selectedCategories, selectedSubCategories, selectedBrands, sortBy, limit], () => {
+  currentPage.value = 1;
+  fetchProducts();
 });
 
-onMounted(() => {
-  if (route.query.q) {
-    searchQuery.value = route.query.q;
-  }
-  fetchCategories();
-  fetchAllProducts(); // Gọi dữ liệu 1 lần khi vào trang
+let searchTimeout;
+watch([searchQuery, maxPrice], () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    fetchProducts();
+  }, 500); 
 });
 
+watch(currentPage, () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  fetchProducts();
+});
+
+// Bắt URL param
 watch(() => route.query.q, (newQuery) => {
-  searchQuery.value = newQuery || '';
+  if(newQuery !== searchQuery.value) {
+    searchQuery.value = newQuery || '';
+  }
+});
+onMounted(() => {
+  fetchCategories();
+  fetchProducts(); 
+  fetchBrand();
 });
 </script>
 

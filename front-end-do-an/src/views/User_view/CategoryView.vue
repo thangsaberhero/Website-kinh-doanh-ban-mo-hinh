@@ -50,7 +50,7 @@
           <div class="mb-10">
             <div class="flex items-center gap-2 mb-4 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
               <span class="material-symbols-outlined text-sm">payments</span>
-              <span>Mức giá tối đa</span>
+              <span>Mức giá tối đa: {{ formatPrice(maxPrice) }}</span>
             </div>
             <div class="space-y-4">
               <input v-model.number="maxPrice" min="0" max="10000000" step="500000" class="w-full h-1 bg-surface-container-highest accent-primary rounded-lg appearance-none cursor-pointer" type="range"/>
@@ -60,7 +60,25 @@
               </div>
             </div>
           </div>
+          <div v-if="availableBrands.length > 0" class="mb-10">
+            <div class="flex items-center gap-2 mb-4 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+              <span class="material-symbols-outlined text-sm">stars</span>
+              <span>Thương hiệu</span>
+            </div>
+            <div class="space-y-3">
+              <label v-for="brand in availableBrands" :key="brand.MaHSX || brand.TenHSX" class="flex items-center gap-3 cursor-pointer group">
+                <input 
+                  type="checkbox" 
+                  :value="brand.TenHSX" 
+                  v-model="selectedBrands" 
+                  class="w-4 h-4 rounded border-outline-variant bg-surface text-primary focus:ring-primary focus:ring-offset-surface"
+                />
+                <span class="text-sm text-gray-300 group-hover:text-white transition-colors font-medium">{{ brand.TenHSX }}</span>
+              </label>
+            </div>
+          </div>
         </div>
+        
       </aside>
 
       <main class="flex-1 overflow-y-auto bg-surface p-6 lg:p-12 custom-scrollbar">
@@ -71,22 +89,36 @@
             </h1>
             <p class="text-gray-400 max-w-xl font-medium">Khám phá những tạo tác tinh xảo nhất từ thế giới Anime và Mecha. Mỗi mô hình là một câu chuyện huyền thoại.</p>
           </div>
-          <div class="flex flex-row items-center gap-4 text-sm shrink-0">
-            <span class="text-gray-400 font-bold">Sắp xếp:</span>
-            <select 
-                v-model="sortBy" 
-                class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
-            >
-                <option value="newest">Mới nhất</option>
-                <option value="price_asc">Giá Thấp đến Cao</option>
-                <option value="price_desc">Giá Cao đến Thấp</option>
-            </select>
+          <div class="flex flex-col items-end gap-3 text-sm shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Hiển thị:</span>
+                <select 
+                    v-model="limit" 
+                    class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
+                >
+                    <option value="9">9 Sản phẩm</option>
+                    <option value="18">18 Sản phẩm</option>
+                    <option value="27">27 Sản phẩm</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Sắp xếp:</span>
+                <select 
+                    v-model="sortBy" 
+                    class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
+                >
+                    <option value="newest">Mới nhất</option>
+                    <option value="price_asc">Giá Thấp đến Cao</option>
+                    <option value="price_desc">Giá Cao đến Thấp</option>
+                </select>
+            </div>
           </div>
         </header>
 
-        <div v-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div v-if="productList.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
           <div 
-            v-for="sp in filteredProducts" :key="sp.MaMoHinh"
+            v-for="sp in productList" :key="sp.MaMoHinh"
             @click="router.push(`/product/${sp.MaMoHinh}`)"
             class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full overflow-hidden"
           >
@@ -105,7 +137,7 @@
             
             <div class="relative h-72 w-full mb-6 overflow-hidden rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40"></div>
-              <img :src="'/Images_product/' + sp.AnhDaiDien" 
+              <img :src="'http://localhost:3000/Images_product/' + sp.AnhDaiDien" 
                    :alt="sp.TenMH"
                    :class="['h-full w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110', sp.SoLuong === 0 ? 'grayscale opacity-50' : '']"
               />
@@ -136,7 +168,52 @@
             </div>
           </div>
         </div>
+        <div v-if="totalPages > 0" class="mt-12 flex justify-center items-center gap-2 flex-wrap">
+          <button 
+            @click="currentPage > 1 && currentPage--" 
+            :disabled="currentPage === 1"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 disabled:hover:bg-surface-container cursor-pointer border border-outline-variant/30"
+          >
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          
+          <button 
+            v-for="(page, index) in visiblePages" :key="index"
+            @click="page !== '...' ? currentPage = page : null"
+            :disabled="page === '...'"
+            class="w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-all shadow-sm border"
+            :class="[
+              currentPage === page 
+                ? 'bg-primary text-black shadow-lg shadow-primary/20 border-primary' 
+                : 'bg-surface-container text-white border-outline-variant/30',
+              page === '...' 
+                ? 'cursor-default border-transparent hover:text-white bg-transparent shadow-none' 
+                : 'hover:text-primary cursor-pointer hover:border-primary/50'
+            ]"
+          >
+            {{ page }}
+          </button>
 
+          <button 
+            @click="currentPage < totalPages && currentPage++" 
+            :disabled="currentPage === totalPages"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 disabled:hover:bg-surface-container cursor-pointer border border-outline-variant/30"
+          >
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+
+          <div class="flex items-center gap-2 ml-4 border-l border-outline-variant/30 pl-4">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Đến trang:</span>
+            <input 
+              type="number" 
+              placeholder=""
+              min="1" 
+              :max="totalPages"
+              @keyup.enter="jumpToPage"
+              class="w-16 h-10 bg-surface-container border border-outline-variant/30 rounded-xl text-center text-white text-xs font-bold outline-none focus:border-primary transition-colors custom-scrollbar"
+            />
+          </div>
+        </div>
         <div v-else class="text-center py-20 border border-dashed border-outline-variant/40 rounded-2xl bg-surface-container-low">
           <span class="material-symbols-outlined text-6xl text-gray-500 mb-4">search_off</span>
           <h2 class="font-headline text-2xl text-white font-bold mb-2">Không tìm thấy kho báu!</h2>
@@ -185,7 +262,14 @@ const categoryId = ref(route.params.id || '');
 const subCategoryId = ref('');
 const searchQuery = ref('');
 const sortBy = ref('newest');
-const maxPrice = ref(20000000);
+const maxPrice = ref(10000000);
+const selectedBrands = ref([]);
+const availableBrands = ref([]);
+
+const currentPage = ref(1);
+const limit = ref(9);
+const totalPages = ref(1);
+const totalItems = ref(0);
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -195,6 +279,54 @@ const formatPrice = (price) => {
 const handleLogout = () => {
   authStore.user = null;
   router.push('/login');
+};
+
+// Tính toán danh sách các nút phân trang sẽ hiển thị
+const visiblePages = computed(() => {
+  const current = currentPage.value;
+  const total = totalPages.value;
+  const delta = 1; // Số lượng nút hiển thị ở hai bên trang hiện tại
+  
+  // Nếu tổng số trang ít (từ 5 trang trở xuống) -> Hiện tất cả, không cần dấu ...
+  if (total <= 5) {
+    let pages = [];
+    for (let i = 1; i <= total; i++) pages.push(i);
+    return pages;
+  }
+
+  // Nếu nhiều trang -> Bắt đầu tính toán rút gọn
+  let pages = [1]; // Luôn hiện trang 1
+
+  // Nếu trang hiện tại cách trang 1 quá xa -> Thêm dấu ...
+  if (current - delta > 2) {
+    pages.push('...');
+  }
+
+  // Các trang ở xung quanh trang hiện tại
+  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    pages.push(i);
+  }
+
+  // Nếu trang hiện tại cách trang cuối quá xa -> Thêm dấu ...
+  if (current + delta < total - 1) {
+    pages.push('...');
+  }
+
+  // Luôn hiện trang cuối
+  pages.push(total);
+
+  return pages;
+});
+
+// Hàm hỗ trợ "Nhảy trang nhanh" khi khách hàng nhập số
+const jumpToPage = (event) => {
+  const pageNum = parseInt(event.target.value);
+  if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages.value) {
+    currentPage.value = pageNum;
+    event.target.value = ''; // Nhảy xong thì xóa trắng ô nhập
+  } else {
+    toastStore.showToast(`Vui lòng nhập trang từ 1 đến ${totalPages.value}`, "error");
+  }
 };
 
 const goToCategory = (id) => {
@@ -254,6 +386,19 @@ const fetchCategories = async () => {
   }
 };
 
+const fetchBrand = async () => {
+  try{
+    const res = await fetch('http://localhost:3000/api/products/hsx');
+    const dataJSON = await res.json();
+    if(res.ok){
+      availableBrands.value = dataJSON.data || dataJSON;
+    }
+  }
+  catch(error){
+    console.error("Lỗi lấy hsx:", error);
+  }
+};
+
 // Xử lý khi bấm danh mục con
 const selectSubCategory = (maDM, maCTDM) => {
   subCategoryId.value = maCTDM; // Lưu lại mã thằng con
@@ -261,54 +406,64 @@ const selectSubCategory = (maDM, maCTDM) => {
 };
 
 // Có thể lấy theo Cha hoặc theo Con
-const fetchProducts = async (maDM, maCTDM = null) => {
+const fetchProducts = async () => {
   try {
-    let apiUrl = 'http://localhost:3000/api/products'; // Mặc định lấy tất cả
-
-    if (maCTDM) {
-      // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
-      apiUrl = `http://localhost:3000/api/products/chitietdm/${maCTDM}/products`;
-    } else if (maDM) {
-      // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
-      apiUrl = `http://localhost:3000/api/products/danhmuc/${maDM}/products`;
+    let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
+    if(categoryId.value)
+      url += `&danhmuc=${categoryId.value}`;
+    if(subCategoryId.value)
+      url += `&chitietdanhmuc=${subCategoryId.value}`
+    if(selectedBrands.value.length > 0)
+      url += `&thuonghieu=${selectedBrands.value.join(',')}`;
+    if(sortBy.value)
+      url += `&sapxep=${sortBy.value}`;
+    if(maxPrice.value < 20000000){
+      url += `&gia=${maxPrice.value}`
     }
-      
-    const response = await fetch(apiUrl);
-    const dataJSON = await response.json();
     
-    if (response.ok) {
-      productList.value = dataJSON.data || dataJSON;
-    }
+    // let apiUrl = 'http://localhost:3000/api/products'; // Mặc định lấy tất cả
+
+    // if (maCTDM) {
+    //   // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
+    //   apiUrl = `http://localhost:3000/api/products/chitietdm/${maCTDM}/products`;
+    // } else if (maDM) {
+    //   // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
+    //   apiUrl = `http://localhost:3000/api/products/danhmuc/${maDM}/products`;
+    // }
+      
+    const response = await fetch(url);
+    const result = await response.json();
+    
+    if (result.success) {
+      productList.value = result.data;
+      totalPages.value = result.pagination.totalPage;
+      totalItems.value = result.pagination.totalItems;
+      currentPage.value = result.pagination.currentPage;
+     }
   } catch (error) {
     console.error("Lỗi lấy sản phẩm:", error);
   }
 };
 
 // 5. Cập nhật Watcher: Khi bấm sang Danh mục cha khác, phải Reset thằng con
-watch(() => route.params.id, (newId) => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  categoryId.value = newId || '';
-  subCategoryId.value = ''; // Reset thằng con về rỗng
-  fetchProducts(newId);
-  searchQuery.value = ''; 
+watch([categoryId, subCategoryId, selectedBrands, sortBy, limit], () => {
+  currentPage.value = 1;
+  fetchProducts();
 });
 
-const filteredProducts = computed(() => {
-  //window.scroll(0,0)
-  let result = productList.value;
-  if(searchQuery.value){
-    result = result.filter(sp => 
-      sp.TenMH.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-  }
+let priceTimeout;
+watch(maxPrice, () => {
+  clearTimeout(priceTimeout);
+  priceTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    fetchProducts();
+  }, 500); 
+});
 
-  result = result.filter(sp => Number(sp.DonGia) <= maxPrice.value);
-
-  return result.slice().sort((a, b) => {
-    if (sortBy.value === 'price_asc') return Number(a.DonGia - b.DonGia);
-    if (sortBy.value === 'price_desc') return Number(b.DonGia - a.DonGia);
-    return b.MaMoHinh - a.MaMoHinh; 
-  });
+// Khi bấm chuyển trang -> Chỉ gọi API tải trang mới
+watch(currentPage, () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // Tự cuộn lên đầu
+  fetchProducts();
 });
 
 const addToCart = () => {
@@ -318,6 +473,7 @@ const addToCart = () => {
 onMounted(() => {
   window.scroll(0,0)
   fetchCategories();
+  fetchBrand();
   fetchProducts(categoryId.value);
 });
 

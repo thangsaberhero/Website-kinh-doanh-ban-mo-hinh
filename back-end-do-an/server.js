@@ -54,9 +54,9 @@ app.use('/Images_product', express.static(path.join(__dirname, 'public/Images_pr
 const chatRoutes = require('./routes/User_route/chat.route.js');
 app.use('/api/chatbot', chatRoutes);
 
-
-
-
+// --- THÊM ROUTE Blockchain ---
+const blockchainRoutes = require('./routes/User_route/blockchain.route.js');
+app.use('/api/blockchain', blockchainRoutes);
 
 // =========================================================
 // CRON JOB: TỰ ĐỘNG HỦY ĐƠN VÀ NHẢ KHO (Mỗi 1 phút chạy 1 lần)

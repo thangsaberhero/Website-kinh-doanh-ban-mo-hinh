@@ -80,7 +80,7 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                  <tr v-for="(cat, index) in paginatedCategories" :key="cat.id" class="transition-colors group hover:bg-slate-50/80">
+                  <tr v-for="(cat, index) in categories" :key="cat.id" class="transition-colors group hover:bg-slate-50/80">
                     <td class="px-6 py-4 text-center text-sm font-bold text-slate-400">
                       {{ (currentPage - 1) * itemsPerPage + index + 1 }}
                     </td>
@@ -123,7 +123,7 @@
                       </div>
                     </td>
                   </tr>
-                  <tr v-if="filteredCategories.length === 0">
+                  <tr v-if="categories.length === 0">
                     <td colspan="5" class="px-8 py-10 text-center text-slate-500 font-medium italic">
                       Không tìm thấy danh mục nào phù hợp với tìm kiếm của bạn.
                     </td>
@@ -134,7 +134,9 @@
             
             <div class="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
               <p class="text-xs font-bold text-slate-400">
-                Hiển thị {{ startItem }} - {{ endItem }} của {{ filteredCategories.length }} danh mục
+                Hiển thị {{ (currentPage - 1) * itemsPerPage + 1 }} - 
+                {{ Math.min(currentPage * itemsPerPage, totalCats) }} 
+                của {{ totalCats }} danh mục
               </p>
               <div class="flex items-center gap-2">
                 <button 
@@ -187,18 +189,18 @@
             </div>
             
             <div class="grid grid-cols-3 gap-6">
-              <div class="col-span-2">
+              <div class="col-span-6">
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mô tả ngắn</label>
                 <textarea v-model="formCategory.description" rows="2" placeholder="Nhập mô tả cho danh mục..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 resize-none custom-scrollbar"></textarea>
               </div>
               
-              <div>
+              <!-- <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Trạng thái</label>
                 <select v-model="formCategory.status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] outline-none font-bold text-slate-700 bg-white h-[68px]">
                   <option value="Hoạt động">Hoạt động</option>
                   <option value="Tạm dừng">Tạm dừng</option>
                 </select>
-              </div>
+              </div> -->
             </div>
             <div class="mt-6 pt-6 border-t border-slate-100">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
@@ -263,7 +265,7 @@
 </template>
   
 <script setup>
-  import { ref, computed, watch } from 'vue';
+  import { ref, onMounted, computed, watch } from 'vue';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from "../../stores/toast";
@@ -279,47 +281,76 @@
   const closeAllMenus = () => {};
   
   // DỮ LIỆU GỐC
-  const categories = ref([
-    { id: 1, name: 'Gundam Series', description: 'Phân loại theo các series Gunpla phổ biến của Bandai', count: 450, status: 'Hoạt động' },
-    { id: 2, name: 'Action Figure', description: 'Mô hình nhân vật có khớp linh hoạt và phụ kiện thay thế', count: 320, status: 'Hoạt động' },
-    { id: 3, name: 'Mecha Statue', description: 'Tượng mô hình cơ khí tĩnh cao cấp tỉ lệ lớn, chi tiết cực cao', count: 180, status: 'Hoạt động' },
-    { id: 4, name: 'Tools & Accessories', description: 'Kìm, dao, sơn và các phụ kiện độ mô hình chuyên dụng', count: 120, status: 'Tạm dừng' },
-  ]);
+  // --- 1. KHAI BÁO BIẾN DỮ LIỆU THẬT ---
+  const categories = ref([]);
   
-  // LOGIC THỐNG KÊ (Bàn đạp cho Stat Cards)
-  const totalCats = computed(() => categories.value.length);
-  const activeCats = computed(() => categories.value.filter(c => c.status === 'Hoạt động').length);
-  const inactiveCats = computed(() => categories.value.filter(c => c.status === 'Tạm dừng').length);
+  // Các biến thống kê & phân trang
+  const totalCats = ref(0);
+  const activeCats = ref(0); 
+  const inactiveCats = ref(0);
   
-  // LOGIC TÌM KIẾM & LỌC
   const searchQuery = ref('');
   const statusFilter = ref('all');
   const currentPage = ref(1);
-  const itemsPerPage = ref(5);
-  
-  const filteredCategories = computed(() => {
-    let result = categories.value;
-    if (searchQuery.value) {
-      const q = searchQuery.value.toLowerCase();
-      result = result.filter(c => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
+  const itemsPerPage = ref(10); // Đổi thành 10 cho chuẩn API
+  const totalPages = ref(1);
+
+  // --- 2. HÀM GỌI API LẤY DANH SÁCH ---
+  const fetchCategories = async () => {
+    try {
+      let url = `http://localhost:3000/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
+      // Nếu Backend của bạn có hỗ trợ lọc theo trạng thái, thêm dòng này:
+      // if (statusFilter.value !== 'all') url += `&status=${statusFilter.value}`;
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (result.success) {
+        // Ánh xạ dữ liệu từ API vào Vue
+        categories.value = result.data.map(item => ({
+          id: item.MaDM,
+          name: item.TenDM,
+          description: item.MoTa || 'Chưa có mô tả',
+          count: item.TongSoLuongDanhMucCon || 0,
+          
+          // Ánh xạ mảng danh mục con (Cực kỳ quan trọng cho Form Sửa)
+          details: item.DanhSachDanhMucCon ? item.DanhSachDanhMucCon.map(sub => ({
+             id: sub.MaChiTietDM,
+             name: sub.TenChiTietDM,
+             description: sub.MoTa || ''
+          })) : []
+        }));
+        
+        totalPages.value = result.pagination.totalPage;
+        totalCats.value = result.pagination.totalCates;
+        
+        // (Tùy chọn) Tính số lượng Hoạt động / Tạm dừng dựa trên danh sách hiển thị
+        activeCats.value = categories.value.filter(c => c.status === 'Hoạt động').length;
+        inactiveCats.value = categories.value.filter(c => c.status === 'Tạm dừng').length;
+      }
+    } catch (error) {
+      console.error("Lỗi tải danh mục:", error);
     }
-    if (statusFilter.value !== 'all') {
-      result = result.filter(c => c.status === statusFilter.value);
-    }
-    return result;
-  });
+  };
   
-  // Watcher reset về trang 1 khi lọc
-  watch([searchQuery, statusFilter], () => { currentPage.value = 1; });
-  
-  // LOGIC PHÂN TRANG
-  const totalPages = computed(() => Math.ceil(filteredCategories.value.length / itemsPerPage.value) || 1);
-  const paginatedCategories = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage.value;
-    return filteredCategories.value.slice(start, start + itemsPerPage.value);
+  onMounted(() => {
+    fetchCategories();
   });
-  const startItem = computed(() => filteredCategories.value.length === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
-  const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, filteredCategories.value.length));
+
+  // Hễ gõ tìm kiếm, đổi bộ lọc, hoặc chuyển trang là gọi lại API
+  let searchTimeout;
+  watch([searchQuery, statusFilter], () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentPage.value = 1;
+      fetchCategories();
+    }, 500); // Đợi 0.5s cho gõ xong mới tìm
+  });
+
+  watch(currentPage, () => {
+    fetchCategories();
+  });
   
   // LOGIC CRUD (THÊM / SỬA / XÓA)
   const isModalOpen = ref(false);
@@ -329,14 +360,13 @@
   const formCategory = ref({ 
     name: '', 
     description: '', 
-    status: 'Hoạt động',
     details: [] 
   });
   
   const openAddModal = () => {
     isEditMode.value = false;
     editingId.value = null;
-    formCategory.value = { name: '', description: '', status: 'Hoạt động', details: [] };
+    formCategory.value = { name: '', description: '', details: [] };
     isModalOpen.value = true;
   };
   
@@ -350,32 +380,82 @@
     isModalOpen.value = true;
   };
   
-  const saveCategory = () => {
+  // --- KẾT NỐI API: THÊM / SỬA DANH MỤC ---
+  const saveCategory = async () => {
     if (!formCategory.value.name.trim()) {
       toastStore.showToast("Vui lòng nhập tên danh mục!", "error");
       return;
     }
-    if (isEditMode.value) {
-      const index = categories.value.findIndex(c => c.id === editingId.value);
-      if (index !== -1) categories.value[index] = { ...formCategory.value, id: editingId.value };
-      toastStore.showToast("Cập nhật danh mục thành công!", "success");
-    } else {
-      categories.value.unshift({ ...formCategory.value, id: Date.now(), count: 0 });
-      toastStore.showToast("Đã thêm danh mục mới!", "success");
+
+    // Đóng gói dữ liệu chuẩn bị gửi đi
+    const payload = {
+      TenDM: formCategory.value.name,
+      MoTa: formCategory.value.description,
+      // Ép mảng danh mục con thành chuỗi JSON để Node.js dễ đọc
+      ChiTiet: JSON.stringify(formCategory.value.details) 
+    };
+
+    try {
+      // 🚨 BẠN HÃY SỬA LẠI ĐƯỜNG DẪN NÀY CHO KHỚP VỚI NODE.JS CỦA BẠN
+      let url = 'http://localhost:3000/api/product_admin/add_variant'; 
+      let method = 'POST';
+
+      if (isEditMode.value) {
+        url = `http://localhost:3000/api/product_admin/fix_cate/${editingId.value}`;
+        method = 'PUT';
+      }
+
+      const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok || result.success) {
+        toastStore.showToast(result.message || "Lưu danh mục thành công!", "success");
+        isModalOpen.value = false;
+        fetchCategories(); // Gọi hàm lấy lại bảng
+      } else {
+        toastStore.showToast(result.message || "Lỗi khi lưu danh mục!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
     }
-    isModalOpen.value = false;
   };
   
   const isDeleteModalOpen = ref(false);
   const itemToDelete = ref(null);
   const confirmDelete = (cat) => {
+    console.log("👉 Dòng dữ liệu bạn vừa bấm Xóa:", cat);
     itemToDelete.value = cat;
     isDeleteModalOpen.value = true;
   };
-  const executeDelete = () => {
-    categories.value = categories.value.filter(c => c.id !== itemToDelete.value.id);
-    isDeleteModalOpen.value = false;
-    toastStore.showToast("Đã xóa danh mục vĩnh viễn!", "success");
+
+  const executeDelete = async () => {
+    if (!itemToDelete.value) return;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/product_admin/delete_detail/${itemToDelete.value.id}`, {
+        method: 'DELETE'
+      });
+      const result = await response.json();
+
+      if (response.ok || result.success) {
+        toastStore.showToast(result.message || "Đã xóa danh mục!", "success");
+        isDeleteModalOpen.value = false;
+        fetchCategories(); // Gọi hàm lấy lại bảng
+      } else {
+        toastStore.showToast(result.message || "Không thể xóa danh mục này!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    } finally {
+      itemToDelete.value = null;
+    }
   };
   
   const addDetail = () => {
@@ -390,8 +470,42 @@
     newDetail.value = { name: '', desc: '' };
   };
 
-  const removeDetail = (index) => {
-  formCategory.value.details.splice(index, 1);
+  const removeDetail = async (index) => {
+    const detailItem = formCategory.value.details[index];
+
+    // TRƯỜNG HỢP 1: Phân loại con mới vừa gõ thêm (chưa có ID trong Database)
+    // Chỉ cần xóa khỏi màn hình là xong
+    if (!detailItem.id) {
+      formCategory.value.details.splice(index, 1);
+      return;
+    }
+
+    // TRƯỜNG HỢP 2: Phân loại con đã có sẵn trong Database
+    // Hiện thông báo xác nhận cẩn thận trước khi gọi API xóa
+    if (confirm(`Bạn có chắc chắn muốn xóa phân loại "${detailItem.name}" không?`)) {
+      try {
+        // 🚨 Sửa lại URL này cho đúng với Route Node.js của bạn
+        const response = await fetch(`http://localhost:3000/api/product_admin/delete_detail_variant/${detailItem.id}`, {
+          method: 'DELETE'
+        });
+        
+        const result = await response.json();
+
+        if (response.ok || result.success) {
+          // Xóa thành công dưới DB -> Bóc khỏi giao diện
+          formCategory.value.details.splice(index, 1);
+          toastStore.showToast("Đã xóa chi tiết danh mục!", "success");
+          
+          // Cập nhật lại cái bảng lớn ở ngoài để đồng bộ số lượng
+          fetchCategories(); 
+        } else {
+          toastStore.showToast(result.message || "Không thể xóa phân loại này!", "error");
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa chi tiết:", error);
+        toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+      }
+    }
   };
 
 </script>

@@ -30,14 +30,14 @@
             <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
               <div class="relative z-10">
                 <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng số hãng</p>
-                <p class="text-3xl font-brand font-bold text-slate-900">42</p>
+                <p class="text-3xl font-brand font-bold text-slate-900">{{ tongSoHang }}</p>
               </div>
               <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-inner">
                 <span class="material-symbols-outlined text-slate-500">factory</span>
               </div>
             </div>
             
-            <div class="bg-white p-6 rounded-2xl border border-sky-50 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
+            <!-- <div class="bg-white p-6 rounded-2xl border border-sky-50 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
               <div class="relative z-10">
                 <p class="text-[11px] text-sky-500 font-bold uppercase tracking-widest mb-2">Đang hợp tác</p>
                 <p class="text-3xl font-brand font-bold text-sky-600">38</p>
@@ -55,12 +55,12 @@
                 <div class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center border border-rose-100 shadow-inner">
                     <span class="material-symbols-outlined text-rose-500">block</span>
                 </div>
-            </div>
+            </div> -->
   
             <div class="bg-white p-6 rounded-2xl border border-[#ff8f73]/20 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
               <div class="relative z-10">
                 <p class="text-[11px] text-[#ff8f73] font-bold uppercase tracking-widest mb-2">Tổng sản phẩm</p>
-                <p class="text-3xl font-brand font-bold text-[#ff3d00]">1,248</p>
+                <p class="text-3xl font-brand font-bold text-[#ff3d00]">{{ tongSoSanPham }}</p>
               </div>
               <div class="w-12 h-12 bg-[#ff8f73]/10 rounded-xl flex items-center justify-center border border-[#ff8f73]/20 shadow-inner">
                 <span class="material-symbols-outlined text-[#ff3d00]">inventory_2</span>
@@ -89,16 +89,14 @@
               <table class="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr class="bg-slate-50/50 border-b border-slate-100">
-                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Hãng sản xuất</th>
-                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Quốc gia</th>
-                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Số sản phẩm</th>
-                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Liên hệ</th>
-                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-center">Trạng thái</th>
+                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold w-1/3">Hãng sản xuất</th>
+                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Mô tả thông tin</th>
+                    <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-center">Số sản phẩm</th>
                     <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-center w-24">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                  <tr v-for="mfr in paginatedManufacturers" :key="mfr.id" class="transition-colors group hover:bg-slate-50/80">              
+                  <tr v-for="mfr in manufacturers" :key="mfr.id" class="transition-colors group hover:bg-slate-50/80">              
                     <td class="px-8 py-4">
                       <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center text-lg font-black text-[#ff8f73]">
@@ -110,19 +108,25 @@
                         </div>
                       </div>
                     </td>
-                    
-                    <td class="px-8 py-4 text-sm font-semibold text-slate-600">{{ mfr.country }}</td>
-                    <td class="px-8 py-4 text-sm font-bold text-slate-900 text-right">{{ mfr.products }}</td>
-                    <td class="px-8 py-4 text-sm font-medium text-slate-500">{{ mfr.contact }}</td>
-                    
+                    <td class="px-8 py-4">
+                      <p class="text-sm font-medium text-slate-500 max-w-md truncate" :title="mfr.description">
+                        {{ mfr.description || 'Chưa có thông tin mô tả' }}
+                      </p>
+                    </td>
+                    <!-- <td class="px-8 py-4 text-sm font-semibold text-slate-600">{{ mfr.country }}</td> -->
                     <td class="px-8 py-4 text-center">
+                        <span class="text-sm font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-lg">{{ mfr.products }}</span>
+                    </td>
+                    <!-- <td class="px-8 py-4 text-sm font-medium text-slate-500">{{ mfr.contact }}</td> -->
+                    
+                    <!-- <td class="px-8 py-4 text-center">
                       <span 
                         class="px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase border shadow-sm inline-block"
                         :class="mfr.status === 'Đang hợp tác' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'"
                       >
                         {{ mfr.status }}
                       </span>
-                    </td>
+                    </td> -->
                     
                     <td class="px-8 py-4">
                       <div class="flex justify-center gap-2">
@@ -135,7 +139,7 @@
                       </div>
                     </td>
                   </tr>
-                  <tr v-if="filteredManufacturers.length === 0">
+                  <tr v-if="manufacturers.length === 0">
                     <td colspan="6" class="px-8 py-10 text-center text-slate-500 font-medium">
                         Không tìm thấy hãng sản xuất nào phù hợp với tìm kiếm của bạn.
                     </td>
@@ -145,7 +149,11 @@
             </div>
             
             <div class="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
-              <p class="text-xs font-bold text-slate-400">Hiển thị {{ startItem }} - {{ endItem }} của {{ filteredManufacturers.length }} hãng</p>
+              <p class="text-xs font-bold text-slate-400">
+                Hiển thị {{ (currentPage - 1) * itemsPerPage + 1 }} - 
+                {{ Math.min(currentPage * itemsPerPage, totalBrandsCount) }} 
+                của {{ totalBrandsCount }} hãng
+              </p>
               <div class="flex items-center gap-2">
                 <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" 
                         class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400">
@@ -192,6 +200,10 @@
           </div>
           
           <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mô tả thông tin (Tùy chọn)</label>
+            <textarea v-model="formManufacturer.description" rows="4" placeholder="Nhập thông tin giới thiệu về hãng sản xuất này..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 resize-none"></textarea>
+          </div>
+          <!-- <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Quốc gia</label>
             <input v-model="formManufacturer.country" type="text" placeholder="VD: Nhật Bản" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none font-medium text-slate-700">
           </div>
@@ -199,15 +211,15 @@
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Liên hệ</label>
             <input v-model="formManufacturer.contact" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none font-medium text-slate-700">
-          </div>
+          </div> -->
 
-          <div>
+          <!-- <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Trạng thái</label>
             <select v-model="formManufacturer.status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] outline-none font-bold text-slate-700 bg-white">
               <option value="Đang hợp tác">Đang hợp tác</option>
               <option value="Ngưng cung cấp">Ngưng cung cấp</option>
             </select>
-          </div>
+          </div> -->
         </div>
 
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
@@ -250,87 +262,157 @@
   };
   const closeAllMenus = () => {};
 
-  const manufacturers = ref([
-    { id: '8801', code: 'BN', name: 'Bandai Namco', country: 'Nhật Bản', products: 450, contact: 'contact@bandainamco.jp', status: 'Đang hợp tác' },
-    { id: '8842', code: 'GSC', name: 'Good Smile Company', country: 'Nhật Bản', products: 320, contact: 'sales@goodsmile.jp', status: 'Đang hợp tác' },
-    { id: '8905', code: 'KT', name: 'Kotobukiya', country: 'Nhật Bản', products: 120, contact: 'info@kotobukiya.co.jp', status: 'Ngưng cung cấp' },
-    { id: '9012', code: 'MF', name: 'Max Factory', country: 'Trung Quốc', products: 88, contact: '+81 3-1234-5678', status: 'Đang hợp tác' },
-  ]);
+  import { useToastStore } from "../../stores/toast"; // Đừng quên import Toast nếu bạn có dùng
+  const toastStore = useToastStore();
 
+  const manufacturers = ref([]);
   const searchQuery = ref('');
   const statusFilter = ref('all');
+  
+  // Các biến phân trang từ Backend
   const currentPage = ref(1);
   const itemsPerPage = ref(10); 
+  const totalPages = ref(1);
+  const totalBrandsCount = ref(0);
+  const tongSoHang = ref(0);
+  const tongSoSanPham = ref(0);
 
-  const filteredManufacturers = computed(() => {
-    let result = manufacturers.value;
-    if (searchQuery.value) {
-      const q = searchQuery.value.toLowerCase();
-      result = result.filter(m => 
-        m.name.toLowerCase().includes(q) || 
-        m.id.includes(q)
-      );
+  // HÀM GỌI API THỐNG KÊ
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/product_admin/thong_ke_hsx');
+      const result = await response.json();
+      if (result.success) {
+        tongSoHang.value = result.data.tongSoHang;
+        tongSoSanPham.value = result.data.tongSoSanPham;
+      }
+    } catch (error) {
+      console.error("Lỗi tải thống kê:", error);
     }
-    
-    if (statusFilter.value !== 'all') {
-      result = result.filter(m => m.status === statusFilter.value);
+  };
+
+  // HÀM GỌI API LẤY DANH SÁCH HÃNG
+  const fetchManufacturers = async () => {
+    try {
+      let url = `http://localhost:3000/api/product_admin/get_all_brand?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      
+      // Truyền từ khóa tìm kiếm
+      if (searchQuery.value) {
+        url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
+      }
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (result.success) {
+        // Map dữ liệu từ Database vào biến của Vue
+        manufacturers.value = result.data.map(item => ({
+          id: item.MaHSX,
+          code: item.TenHSX.substring(0, 2).toUpperCase(), // Tạo mã 2 chữ cái từ tên
+          name: item.TenHSX,
+          //country: item.QuocGia || 'Chưa cập nhật',
+          products: item.TongSoLuongSanPham || 0,
+          //contact: item.LienHe || 'Chưa cập nhật',
+          //status: item.TrangThai || 'Đang hợp tác',
+          description: item.MoTa
+        }));
+
+        // Cập nhật thông số phân trang
+        totalPages.value = result.pagination.totalPage;
+        totalBrandsCount.value = result.pagination.totalBrands;
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách hãng:", error);
     }
-    
-    currentPage.value = 1;
-    return result;
+  };
+
+  // Gọi API ngay khi mở trang
+  import { onMounted, watch } from 'vue';
+  onMounted(() => {
+    fetchManufacturers();
+    fetchStats();
   });
 
-  const paginatedManufacturers = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage.value;
-    const end = start + itemsPerPage.value;
-    return filteredManufacturers.value.slice(start, end);
+  // Lắng nghe thay đổi: Hễ gõ tìm kiếm hoặc đổi bộ lọc là gọi lại API từ trang 1
+  // Dùng debounce nhẹ nếu sợ gõ nhanh gọi API liên tục
+  let searchTimeout;
+  watch([searchQuery, statusFilter], () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentPage.value = 1;
+      fetchManufacturers();
+    }, 500); // Đợi gõ xong 0.5s mới tìm
   });
 
-  const totalPages = computed(() => Math.ceil(filteredManufacturers.value.length / itemsPerPage.value) || 1);
-
-  const startItem = computed(() => filteredManufacturers.value.length === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
-  const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, filteredManufacturers.value.length));
+  // Lắng nghe khi bấm chuyển trang
+  watch(currentPage, () => {
+    fetchManufacturers();
+  });
 
   const isModalOpen = ref(false);
   const isEditMode = ref(false);
   const editingId = ref(null);
 
   const formManufacturer = ref({
-    name: '', code: '', country: '', contact: '', status: 'Đang hợp tác'
+    id: null,
+    name: '',
+    description: ''
   });
 
   const openAddModal = () => {
     isEditMode.value = false;
     editingId.value = null;
-    formManufacturer.value = { name: '', code: '', country: '', contact: '', status: 'Đang hợp tác' };
+    formManufacturer.value = { id: null, name: '', description: ''};
     isModalOpen.value = true;
   };
 
   const openEditModal = (mfr) => {
     isEditMode.value = true;
     editingId.value = mfr.id;
-    formManufacturer.value = { ...mfr };
+    formManufacturer.value = { id: mfr.id, name: mfr.name, description: mfr.description };
     isModalOpen.value = true;
   };
 
-  const saveManufacturer = () => {
-    if (!formManufacturer.value.name) return alert("Vui lòng nhập tên hãng!");
-    if (!formManufacturer.value.code) {
-        formManufacturer.value.code = formManufacturer.value.name.substring(0, 2).toUpperCase();
+  const saveManufacturer = async () => {
+    if (!formManufacturer.value.name.trim()) {
+      toastStore.showToast("Vui lòng nhập tên hãng sản xuất!", "error");
+      return;
     }
 
-    if (isEditMode.value) {
-        const index = manufacturers.value.findIndex(m => m.id === editingId.value);
-        if (index !== -1) manufacturers.value[index] = { ...formManufacturer.value, id: editingId.value };
-    } else {
-        // Thêm mới
-        manufacturers.value.unshift({
-            ...formManufacturer.value,
-            id: Math.floor(Math.random() * 10000).toString(), // ID giả lập
-            products: 0
-        });
+    // Đóng gói dữ liệu chuẩn JSON để gửi xuống Node.js
+    const payload = {
+      TenHSX: formManufacturer.value.name,
+      MoTa: formManufacturer.value.description
+    };
+
+    try {
+      let url = 'http://localhost:3000/api/product_admin/add_brand'; // 👉 Sửa URL Thêm ở đây
+      let method = 'POST';
+
+      if (isEditMode.value) {
+        url = `http://localhost:3000/api/product_admin/fix_brand/${formManufacturer.value.id}`; // 👉 Sửa URL Cập nhật ở đây
+        method = 'PUT';
+      }
+
+      const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' }, // Khai báo gửi dạng JSON thay vì FormData
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok || result.success) {
+        toastStore.showToast(result.message || "Lưu thành công!", "success");
+        isModalOpen.value = false;
+        fetchManufacturers(); // Tải lại danh sách từ DB
+      } else {
+        toastStore.showToast(result.message || "Lỗi khi lưu!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu hãng:", error);
+      toastStore.showToast("Lỗi máy chủ!", "error");
     }
-    isModalOpen.value = false;
   };
 
   const isDeleteModalOpen = ref(false);
@@ -341,10 +423,31 @@
     isDeleteModalOpen.value = true;
   };
 
-  const executeDelete = () => {
-    manufacturers.value = manufacturers.value.filter(m => m.id !== itemToDelete.value.id);
-    isDeleteModalOpen.value = false;
-    itemToDelete.value = null;
+  const executeDelete = async () => {
+    if (!itemToDelete.value) return;
+    
+    try {
+      // 👉 Sửa URL Xóa ở đây
+      const response = await fetch(`http://localhost:3000/api/product_admin/delete_brand/${itemToDelete.value.id}`, {
+        method: 'DELETE'
+      });
+      
+      const result = await response.json();
+
+      if (response.ok || result.success) {
+        toastStore.showToast(result.message || "Đã xóa thành công!", "success");
+        isDeleteModalOpen.value = false;
+        fetchManufacturers(); // Tải lại danh sách từ DB
+      } else {
+        // Thông báo lỗi nếu hãng đang có sản phẩm
+        toastStore.showToast(result.message || "Không thể xóa hãng này!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      toastStore.showToast("Lỗi máy chủ!", "error");
+    } finally {
+      itemToDelete.value = null;
+    }
   };
 </script>
   

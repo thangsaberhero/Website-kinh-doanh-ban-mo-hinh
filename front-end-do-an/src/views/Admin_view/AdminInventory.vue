@@ -602,7 +602,7 @@
 
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Kích thước</label>
-              <input v-model="editingProduct.dimensions" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+              <input v-model="editingProduct.scale" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
             </div>
 
             <div>
@@ -1125,6 +1125,7 @@
       formData.append('MaHSX', newProduct.value.brand);
       formData.append('MaDM', newProduct.value.category);
       formData.append('MaChiTietDM', newProduct.value.detailCategory);
+      formData.append('KichThuoc', newProduct.value.scale);
       formData.append('ChatLieu', newProduct.value.material);
       formData.append('NgayPhatHanh', newProduct.value.releaseDate);
       formData.append('LoaiHinhBan', newProduct.value.saleType);
@@ -1160,9 +1161,8 @@
         const result = await response.json();
 
         if (result.success) {
-          isAddProductModalOpen.value = false;
           toastStore.showToast("Đã thêm sản phẩm thành công!", "success");
-          isAddProductModalOpen = false
+          isAddProductModalOpen.value = false
           fetchProducts(); // Tải lại bảng ngay lập tức để thấy sản phẩm mới
         } else {
           toastStore.showToast(result.message || "Lỗi khi thêm sản phẩm", "error");
@@ -1342,7 +1342,7 @@
     formData.append('MaDM', editingProduct.value.category || '');
     formData.append('MaChiTietDM', editingProduct.value.detailCategory || '');
     formData.append('ChatLieu', editingProduct.value.material || '');
-    formData.append('KichThuoc', editingProduct.value.dimensions || '');
+    formData.append('KichThuoc', editingProduct.value.scale || '');
     formData.append('LoaiHinhBan', editingProduct.value.saleType);
     formData.append('TrangThai', editingProduct.value.status);
     formData.append('NgayPhatHanh', editingProduct.value.releaseDate || '');

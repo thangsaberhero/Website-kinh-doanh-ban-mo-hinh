@@ -16,7 +16,7 @@
               </span>
             </div>
             
-            <img :src="'/Images_product/' + mainImage" class="w-full aspect-[4/5] object-contain transform group-hover:scale-105 transition-transform duration-700 p-8 drop-shadow-2xl"/>
+            <img :src="`http://localhost:3000/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-contain transform group-hover:scale-105 transition-transform duration-700 p-8 drop-shadow-2xl"/>
             
             <div class="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
               <button class="p-3 bg-surface-bright/80 backdrop-blur rounded-full hover:bg-primary hover:text-on-primary transition-all shadow-xl">
@@ -33,7 +33,7 @@
               @click="mainImage = anh"
               :class="['aspect-square bg-surface-container-high rounded overflow-hidden transition-all duration-300 transform', mainImage === anh ? 'border-2 border-primary scale-105 shadow-lg' : 'border border-outline-variant/15 hover:border-primary/50 opacity-60 hover:opacity-100']"
             >
-              <img :src="'/Images_product/' + anh" class="w-full h-full object-cover"/>
+              <img :src="`http://localhost:3000/Images_product/${anh}`" class="w-full h-full object-cover"/>
             </button>
           </div>
         </div>
@@ -435,7 +435,6 @@
     let uploadedImageNames = [];
 
     try {
-      // BƯỚC 1: NẾU CÓ ẢNH THÌ UPLOAD ẢNH TRƯỚC
       if (selectedFiles.value.length > 0) {
         const formData = new FormData();
         selectedFiles.value.forEach(file => {
@@ -581,11 +580,12 @@
 
       if (res.ok) {
         product.value = dataJSON.data[0]; 
+        let images = [product.value.AnhDaiDien];
         if (product.value.DanhSachAnh) {
-          allImages.value = [...new Set(product.value.DanhSachAnh.split(','))];
-        } else {
-          allImages.value = [product.value.AnhDaiDien];
-        }
+          const gallery = product.value.DanhSachAnh.split(',');
+          images = [...images,...gallery];
+        } 
+        allImages.value = [...new Set(images.filter(Boolean))];
         mainImage.value = allImages.value[0]; 
       }
     } catch (error) {

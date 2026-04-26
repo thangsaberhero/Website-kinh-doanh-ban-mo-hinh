@@ -43,8 +43,11 @@ const authController = {
 
             const maKH = resultKH.insertId;
 
-            const sql_giohang = 'INSERT INTO GioHang (MaKH) VALUES (?)'
+            const sql_giohang = 'INSERT INTO GioHang (MaKH) VALUES (?)';
             await db.query(sql_giohang, [maKH]);
+
+            const sql_danhmucyeuthich = `Insert into DanhMucYeuThich (MaKH) Values (?)`;
+            await db.query(sql_danhmucyeuthich, [maKH]);
 
             res.status(201).json({ message: "Đăng ký thành công!" });
         } catch (error) {
@@ -60,7 +63,7 @@ const authController = {
 
             // [SỬA Ở ĐÂY]: Nối bảng TaiKhoan với KhachHang để lấy được MaKH
             const sql_login = `
-                SELECT tk.*, kh.MaKH 
+                SELECT tk.*, kh.MaKH, tk.AnhDaiDien
                 FROM TaiKhoan tk
                 LEFT JOIN khachhang kh ON tk.MaTK = kh.MaTK
                 WHERE tk.TenDN = ?
@@ -96,7 +99,9 @@ const authController = {
                     username: user.TenDN,
                     email: user.Email,
                     MaKH: user.MaKH,
-                    role: user.MaQuyen
+                    role: user.MaQuyen,
+                    TenKH: user.TenKH,
+                    AnhDaiDien: user.AnhDaiDien
                 }
             });
         } catch (error) {
@@ -197,6 +202,50 @@ const authController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "Lỗi máy chủ khi đổi mật khẩu" });
+        }
+    },
+    // 4. Đổi mật khẩu bình thường
+    change_password: async (req, res) => {
+        try {
+            const maTK = req.user.id; 
+            const { currentPassword, newPassword } = req.body;
+
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin!" });
+            }
+
+            // 1. Lấy thông tin mật khẩu hiện tại từ DB
+            const sql_get_user = `SELECT MatKhau FROM TaiKhoan WHERE MaTK = ?`;
+            const [users] = await db.query(sql_get_user, [maTK]);
+
+            if (users.length === 0) {
+                return res.status(404).json({ success: false, message: "Tài khoản không tồn tại!" });
+            }
+
+            const user = users[0];
+
+            // 2. Kiểm tra mật khẩu cũ xem có khớp không
+            const validPass = await bcrypt.compare(currentPassword, user.MatKhau);
+            if (!validPass) {
+                return res.status(401).json({ success: false, message: "Mật khẩu hiện tại không chính xác!" });
+            }
+
+            // 3. Mã hóa (Hash) mật khẩu mới
+            const salt = await bcrypt.genSalt(10);
+            const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+            // 4. Cập nhật mật khẩu mới vào DB
+            const sql_update = `UPDATE TaiKhoan SET MatKhau = ? WHERE MaTK = ?`;
+            await db.query(sql_update, [hashedNewPassword, maTK]);
+
+            res.status(200).json({ 
+                success: true, 
+                message: "Đổi mật khẩu thành công!" 
+            });
+
+        } catch (error) {
+            console.error("Lỗi đổi mật khẩu:", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi thao tác!" });
         }
     }
 };

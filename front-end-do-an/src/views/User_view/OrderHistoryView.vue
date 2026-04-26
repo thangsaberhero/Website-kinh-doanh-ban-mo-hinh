@@ -85,7 +85,7 @@
                   </div>
                   <img 
                       v-if="order.Thumbnail" 
-                      :src="'/Images_product/' + order.Thumbnail" 
+                      :src="'http://localhost:3000/Images_product/' + order.Thumbnail" 
                       alt="Product" 
                       class="w-full h-full object-contain"
                   />

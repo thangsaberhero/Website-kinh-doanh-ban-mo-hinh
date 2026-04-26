@@ -127,7 +127,7 @@
                 NEW
               </span>
               
-              <img :src="'/Images_product/' + sp.AnhDaiDien" :alt="sp.TenMH" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+              <img :src="`http://localhost:3000/Images_product/${sp.AnhDaiDien}`"    :alt="sp.TenMH" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
               <div class="absolute inset-0 bg-surface/0 group-hover:bg-surface/20 transition-colors"></div>
               
               <button class="absolute bottom-4 right-4 w-12 h-12 bg-primary text-on-primary rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all shadow-lg shadow-primary/30">

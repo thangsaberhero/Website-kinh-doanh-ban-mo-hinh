@@ -9,7 +9,7 @@
         <div class="px-6 flex flex-col items-center gap-3 mb-8">
           <div class="relative group cursor-pointer">
             <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-              <img class="w-full h-full rounded-full object-cover" alt="User Profile" src="/default_avatar.jpg"/>
+              <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="avatarPreview"/>
             </div>
             <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
               <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
@@ -74,7 +74,7 @@
             class="group rounded-2xl overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col h-[550px] bg-surface-container-low"
           >
             <div class="relative flex-1 overflow-hidden bg-surface-container-lowest cursor-pointer" @click="router.push(`/product/${item.MaMoHinh}`)">
-              <img :src="'/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
+              <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
               
               <div class="absolute top-6 left-6">
                 <span :class="`px-4 py-1.5 backdrop-blur-md text-[10px] font-bold rounded-full border uppercase tracking-widest ${getTagClass(item.LoaiHinhBan)}`">
@@ -153,6 +153,8 @@ const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency
 
 const wishlistItems = ref([]); // Đã gỡ bỏ dữ liệu giả
 const isLoading = ref(true);
+const userString = localStorage.getItem('user');
+const currentUser = userString ? JSON.parse(userString) : null;
 
 // Lấy danh sách yêu thích từ Backend
 const fetchWishlist = async () => {
@@ -223,6 +225,31 @@ const removeFromWishlist = async (maMoHinh) => {
     }
 };
 
+const avatarPreview = ref(
+  currentUser && currentUser.AnhDaiDien 
+    ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` 
+    : 'default_avatar.jpg'
+);
+
+const fetchUserData = async () => {
+  if (!currentUser) return;
+  
+  try {
+    // Gọi đường link API lấy thông tin bạn vừa viết (truyền MaTK vào đuôi)
+    const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
+    const dataJSON = await res.json();
+    
+    if (res.ok && dataJSON.data) {
+      const userData = dataJSON.data;
+      if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
+        avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi kéo thông tin người dùng:", error);
+  }
+};
+
 onMounted(() => {
     window.scrollTo(0, 0);
     if (!authStore.user && !localStorage.getItem('token')) {
@@ -230,6 +257,7 @@ onMounted(() => {
     } else {
         fetchWishlist();
     }
+    fetchUserData();
 });
 
 // CÁC HÀM XỬ LÝ MÀU SẮC DỰA TRÊN TRẠNG THÁI TỪ BACKEND

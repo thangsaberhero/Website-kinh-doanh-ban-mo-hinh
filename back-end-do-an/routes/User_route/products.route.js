@@ -11,6 +11,7 @@ router.get('/', product_view.getAllProduct);
 router.get('/search', product_view.getProductsBySearch);
 
 router.get('/danhmuc', product_view.getAllvariant);
+router.get('/hsx', product_view.getAllbrand);
 router.get('/danhmuc/:maDM/chitiet', product_view.getAlldetailvariant);
 router.get('/danhmuc/:maDM/products', product_view.getProductsByVariant);
 router.get('/chitietdm/:maCTDM/products', product_view.getProductsByDetailVariant);

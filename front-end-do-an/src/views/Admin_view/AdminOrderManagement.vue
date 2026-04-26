@@ -331,7 +331,7 @@
             <div class="space-y-4">
               <div v-for="(prod, index) in viewingOrder.products" :key="index" class="flex items-center gap-3">
                 <div class="w-14 h-14 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shrink-0">
-                  <img :src="'/Images_product/' + prod.anh" class="w-full h-full object-cover"/>
+                  <img :src="'http://localhost:3000/Images_product/' + prod.anh" class="w-full h-full object-cover"/>
                 </div>
                 <div class="flex-1">
                   <p class="text-sm font-bold text-slate-900 line-clamp-2" :title="prod.name">{{ prod.name }}</p>

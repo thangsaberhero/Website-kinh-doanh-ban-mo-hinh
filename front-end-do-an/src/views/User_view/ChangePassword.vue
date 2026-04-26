@@ -9,7 +9,7 @@
         <div class="px-6 flex flex-col items-center gap-3 mb-8">
           <div class="relative group cursor-pointer">
             <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-              <img class="w-full h-full rounded-full object-cover" alt="User Profile" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80"/>
+              <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="avatarPreview"/>
             </div>
             <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
               <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
@@ -203,7 +203,41 @@ const isSaving = ref(false);
 const showCurrent = ref(false);
 const showNew = ref(false);
 const showConfirm = ref(false);
+const userString = localStorage.getItem('user');
+const currentUser = userString ? JSON.parse(userString) : null;
+const defaultAvatar = 'default_avatar.jpg';
 
+// 2. Tạo biến chứa ảnh đại diện (Lúc đầu lấy từ máy, sau đó sẽ nạp từ Server)
+const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
+
+// 3. Hàm tự động kéo thông tin mới nhất (bao gồm cả ảnh) từ Server
+const fetchUserData = async () => {
+  if (!currentUser) return;
+  
+  try {
+    const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
+    const dataJSON = await res.json();
+    
+    if (res.ok && dataJSON.data) {
+      const userData = dataJSON.data;
+      // Nếu Server có ảnh mới, lập tức cập nhật lên màn hình
+      if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
+        avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi kéo thông tin người dùng:", error);
+  }
+};
+
+// 4. Gọi hàm lấy dữ liệu ngay khi vừa mở trang
+onMounted(() => {
+  if (!authStore.user && !localStorage.getItem('token')) {
+    router.push('/login');
+  } else {
+    fetchUserData(); // [THÊM DÒNG NÀY]
+  }
+});
 const form = reactive({
   currentPassword: '',
   newPassword: '',
@@ -249,14 +283,45 @@ const updatePassword = async () => {
     return;
   }
 
+  // Lấy Token để lấy vé thông hành
+  const token = localStorage.getItem('token');
+  if (!token) {
+    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+    router.push('/login');
+    return;
+  }
+
   isSaving.value = true;
   
-  // Giả lập call API Backend
-  setTimeout(() => {
+  try {
+    // Gọi API xuống Backend
+    const response = await fetch('http://localhost:3000/api/auth/change-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Gắn token vào header
+      },
+      body: JSON.stringify({
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      toastStore.showToast("🎉 " + data.message, "success");
+      resetForm(); // Đổi xong thì xóa trắng các ô nhập
+    } else {
+      // Nếu nhập sai pass cũ, nó sẽ báo lỗi đỏ ở đây
+      toastStore.showToast("⚠️ " + (data.message || "Lỗi đổi mật khẩu!"), "error");
+    }
+  } catch (error) {
+    console.error("Lỗi kết nối:", error);
+    toastStore.showToast("Lỗi kết nối đến máy chủ!", "error");
+  } finally {
     isSaving.value = false;
-    toastStore.showToast("Cập nhật mật khẩu thành công!", "success");
-    resetForm();
-  }, 1500);
+  }
 };
 </script>
 

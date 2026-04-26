@@ -142,15 +142,6 @@ const donhang_user = {
             mh.AnhDaiDien, 
             mh.TienCocToiThieu,
             pl.DonGia,
-            (
-                Select (pl.DonGia - ctkm.ChietKhau)
-                from MoHinh mh
-                inner join ChiTietKhuyenMai ctkm
-                inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
-                order by ctkm.ChietKhau desc
-                limit 1
-            ) As dongiakhuyenmai,
             pl.MaPhanLoai,
             pl.ChiTietPhanLoai,
             ct.SoLuong,
@@ -192,17 +183,7 @@ const donhang_user = {
 
             // Truyền giá trị tính tiền riêng tránh việc bị sửa thông tin
             const sql_tinh_tong_tien =  `select SUM( 
-                                        Coalesce(
-                                            (
-                                            Select (pl.DonGia - ctkm.ChietKhau)
-                                            from MoHinh mh
-                                            inner join ChiTietKhuyenMai ctkm on ctkm.MaMoHinh = mh.MaMoHinh
-                                            inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                                            where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
-                                            order by ctkm.ChietKhau desc
-                                            limit 1
-                                            ), 
-                                        pl.DonGia) * ctgh.SoLuong) 
+                                        pl.DonGia* ctgh.SoLuong) 
                                         as TongTien
                                         from ChiTietGioHang ctgh
                                         inner join Phanloai pl on pl.MaPhanLoai = ctgh.MaMoHinh
@@ -251,17 +232,8 @@ const donhang_user = {
             // 3. COPY hàng từ Giỏ sang Đơn (Dùng chiêu INSERT INTO ... SELECT siêu nhanh của SQL)
             const sql_chuyen_hang = `
                 INSERT INTO ChiTietDonHang (MaDH, MaMoHinh, SoLuong, DonGiaBan)
-                SELECT ?, ctgh.MaMoHinh, ctgh.SoLuong , 
-                Coalesce((
-                    Select (pl.DonGia - ctkm.ChietKhau)
-                    from MoHinh mh
-                    inner join ChiTietKhuyenMai ctkm on ctkm.MaMoHinh = mh.MaMoHinh
-                    inner join KhuyenMai km on km.MaKM = ctkm.MaKM
-                    where km.ThoiGianBD <= now() and km.ThoiGianKT >= now() and mh.MaMoHinh = ctkm.MaMoHinh and pl.MaMoHinh = mh.MaMoHinh
-                    order by ctkm.ChietKhau desc
-                    limit 1
-                ),
-                pl.DonGia)
+                SELECT ?, ctgh.MaMoHinh, ctgh.SoLuong ,
+                pl.DonGia
                 FROM ChiTietGioHang ctgh
                 inner join PhanLoai pl on pl.MaPhanLoai = ctgh.MaMoHinh
                 WHERE MaGH = ?

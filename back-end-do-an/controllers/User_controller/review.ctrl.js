@@ -9,7 +9,7 @@ const reviewController = {
                         INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
                         LEFT JOIN TaiKhoan tk ON tk.MaTK = kh.MaTK
                         LEFT JOIN PhanLoai pl ON pl.MaPhanLoai = dg.MaPhanLoai
-                        WHERE dg.MaMoHinh = ? AND dg.TrangThai = 1
+                        WHERE dg.MaMH = ? AND dg.TrangThai = 1
                         ORDER BY dg.ThoiGianDG DESC`;
             const [result] = await db.query(sql, [id]);
             const processedReviews = result.map(item => ({

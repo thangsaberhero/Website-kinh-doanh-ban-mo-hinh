@@ -42,11 +42,13 @@ router.post('/fix_invisible', product_Controller.thay_doi_hien_thi_mat_hang);
 
 router.post('/an_phan_loai', product_Controller.An_phan_loai); 
 
-router.post('/delete_detail_variant', product_Controller.xoa_chi_tiet_danh_muc);
-router.post('/delete_detail', product_Controller.xoa_danh_muc);
+router.delete('/delete_detail/:id', product_Controller.xoa_danh_muc);
+router.delete('/delete_detail_variant/:id', product_Controller.xoa_chi_tiet_danh_muc);
 
 router.post('/delete_brand', product_Controller.xoa_HSX);
 router.post('/add_brand', product_Controller.them_hang_san_xuat_moi);
+router.put('/fix_brand/:id', product_Controller.sua_thong_tin_HSX);
+router.put('/fix_cate/:id', product_Controller.sua_thong_tin_danh_muc);
 
 
 // ==========================================
@@ -54,8 +56,12 @@ router.post('/add_brand', product_Controller.them_hang_san_xuat_moi);
 // ==========================================
 router.get('/', product_Controller.liet_ke_mat_hang);
 router.get('/get_brand', product_Controller.get_brand);
+router.get('/get_all_brand', product_Controller.liet_ke_brand);
+router.get('/get_all_cate',product_Controller.liet_ke_danh_muc);
 router.get('/getvariant', product_Controller.getAllvariant);
 router.get('/getdetailvariant/:MaDM', product_Controller.getAlldetailvariant);
 router.get('/watch/:MaMH', product_Controller.xem_thong_tin_san_pham);
+
+router.get('/thong_ke_hsx', product_Controller.thong_ke_hang_san_xuat);
 
 module.exports = router;

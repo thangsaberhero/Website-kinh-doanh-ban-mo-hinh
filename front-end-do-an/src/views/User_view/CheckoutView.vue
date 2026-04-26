@@ -86,7 +86,7 @@
             <div class="space-y-6 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
               <div v-for="item in checkoutItems" :key="item.id" class="flex gap-4">
                 <div class="w-20 h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
-                  <img :src="'/Images_product/'+ item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-contain p-2"/>
+                  <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
                 </div>
                 <div class="flex-grow flex flex-col justify-center">
                   <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
