@@ -7,8 +7,6 @@
         class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
       ></div>
   
-      <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
-  
       <div 
         class="fixed top-0 right-0 h-screen w-full sm:w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col"
         :class="isFilterPanelOpen ? 'translate-x-0' : 'translate-x-full'"
@@ -204,11 +202,8 @@
           </template>
         </div>
       </div>
-      <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full">
-        <AdminHeader @toggle-sidebar="handleToggleSidebar" />
-        
-        <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
-          
+      <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full">        
+        <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">          
           <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div>
               <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý người dùng</h1>
@@ -601,8 +596,6 @@
   
 <script setup>
   import { ref } from 'vue';
-  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
-  import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
   import { onMounted, watch } from 'vue';

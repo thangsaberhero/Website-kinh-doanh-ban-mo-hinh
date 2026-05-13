@@ -1,9 +1,6 @@
 <template>
-  <div class="bg-background text-on-background selection:bg-primary selection:text-on-primary-fixed min-h-screen flex flex-col font-body">
-    <TheHeader />
-    
-    <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">
-      
+  <div class="bg-background text-on-background selection:bg-primary selection:text-on-primary-fixed min-h-screen flex flex-col font-body"> 
+    <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">     
       <aside class="w-72 hidden lg:flex flex-col border-r border-outline-variant/30 bg-surface-container-low overflow-y-auto custom-scrollbar">
         <div class="p-8">
           <div class="flex items-center gap-3 mb-10">
@@ -248,9 +245,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-// IMPORT THÊM AUTH STORE ĐỂ HEADER HOẠT ĐỘNG
 import { useAuthStore } from '../../stores/auth.js';
-import TheHeader from '../../components/TheHeader.vue';
 
 const route = useRoute();
 const router = useRouter();

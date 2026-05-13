@@ -5,9 +5,7 @@
         @click="isMobileMenuOpen = false" 
         class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
       ></div> 
-      <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
       <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
-        <AdminHeader @toggle-sidebar="handleToggleSidebar" />
         <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
           <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
             <div>
@@ -544,8 +542,6 @@
   
 <script setup>
   import { ref, computed } from 'vue';
-  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
-  import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
   import { onMounted, watch } from 'vue';

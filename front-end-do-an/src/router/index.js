@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+import UserLayout from '../layouts/UserLayout.vue';
+import AdminLayout from '../layouts/AdminLayout.vue';
+
 import LoginView from '../views/User_view/Login.vue'; 
 import HomeView from '../views/User_view/Home.vue';
 import ProductDetail from '../views/User_view/Product_detail.vue';
@@ -37,159 +40,60 @@ import AdminCustomerSupport from '../views/Admin_view/AdminCustomerSupport.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', 
-      name: 'home', 
-      component: HomeView },
     {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
-      meta: { hideFooter: true, hidePhone: true }
+      // --- NHÓM ROUTE CỦA NGƯỜI DÙNG ---
+      path: '/',
+      component: UserLayout, // Sử dụng UserLayout
+      children: [
+        { path: '', name: 'home', component: HomeView },
+        { 
+          path: 'login', 
+          name: 'login', 
+          component: LoginView, 
+          meta: { hideFooter: true, hidePhone: true, hideChatbox: true } 
+        },
+        { 
+          path: 'register', 
+          name: 'register', 
+          component: RegisterView, 
+          meta: { hideFooter: true, hidePhone: true, hideChatbox: true } 
+        },
+        { path: 'product/:id', name: 'product-detail', component: ProductDetail },
+        { path: 'category/:id?', name: 'category', component: CategoryView },
+        { path: 'profile', name: 'Profile', component: ProfileView },
+        { path: 'change-password', name: 'ChangePassword', component: ChangePassword },
+        { path: 'cart', name: 'Cart', component: CartView },
+        { path: 'checkout', name: 'Checkout', component: CheckoutView, meta: { useMinimalFooter: true } },
+        { path: 'ordersuccess', name: 'Ordersuccess', component: OrderSuccessView, meta: { useMinimalFooter: true } },
+        { path: 'orders', name: 'Order', component: OrderHistoryView },
+        { path: 'orders/:id', name: 'Order-detail', component: OrderDetailView },
+        { path: 'wishlist', name: 'Wishlist', component: WishlistView },
+        { path: 'search', name: 'Search', component: SearchView },
+        { path: 'news', name: 'News', component: NewsView },
+        { path: 'news/:id', name: 'NewsDetail', component: NewsDetailView },
+        { path: 'contact', name: 'Contact', component: ContactView },
+        { path: 'forgot-password', name: 'ForgotPassword', component: ForgotPasswordView, meta: { hideFooter: true, hidePhone: true } },
+        { path: 'momo-payment', name: 'MoMoMock', component: checkout },
+        { path: 'truy-xuat', name: 'TruyXuat', component: ProvenanceTracking },
+      ]
     },
     {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
-      meta: { hideFooter: true, hidePhone: true }
-    },
-    { path: '/product/:id', 
-      name: 'product-detail', component: 
-      ProductDetail },
-    { path: '/category/:id?', 
-      name: 'category', component: 
-      CategoryView },
-    {
-      path: '/profile',
-      name: 'Profile',
-      component: ProfileView
-    },
-    {
-      path: '/change-password',
-      name: 'ChangePassword',
-      component: ChangePassword
-    },
-    {
-      path: '/cart',
-      name: 'Cart',
-      component: CartView
-    },
-    {
-      path: '/checkout',
-      name: 'Checkout',
-      component: CheckoutView,
-      meta: { useMinimalFooter: true }
-    },
-    {
-      path: '/ordersuccess',
-      name: 'Ordersuccess',
-      component: OrderSuccessView,
-      meta: { useMinimalFooter: true }
-    },
-    {
-      path: '/orders',
-      name: 'Order',
-      component: OrderHistoryView
-    },
-    {
-      path: '/orders/:id',
-      name: 'Order-detail',
-      component: OrderDetailView
-    },
-    {
-      path: '/wishlist',
-      name: 'Wishlist',
-      component: WishlistView
-    },
-    {
-      path: '/search',
-      name: 'Search',
-      component: SearchView
-    },
-    {
-      path: '/news',
-      name: 'News',
-      component: NewsView
-    },
-    {
-      path: '/news/:id',
-      name: 'NewsDetail',
-      component: NewsDetailView
-    },
-    {
-      path: '/contact',
-      name: 'Contact',
-      component: ContactView
-    },
-    {
-      path: '/forgot-password',
-      name: 'ForgotPassword',
-      component: ForgotPasswordView,
-      meta: { hideFooter: true, hidePhone: true }
-    },
-    {
-      path: '/momo-payment',
-      name: 'MoMoMock',
-      component: checkout
-    },
-    {
-      path: '/truy-xuat',
-      name: 'TruyXuat',
-      component: ProvenanceTracking
-    },
-    {
+      // --- NHÓM ROUTE CỦA ADMIN ---
       path: '/admin',
-      name: 'AdminDashboard',
-      component: AdminDashboard
-    },
-    {
-      path: '/admin/inventory',
-      name: 'Inventory',
-      component: AdminInventory
-    },
-    {
-      path: '/admin/users',
-      name: 'UserManagement',
-      component: AdminUserManagement
-    },
-    {
-      path: '/admin/orders',
-      name: 'OrderManagement',
-      component: AdminOrderManagement
-    },
-    {
-      path: '/admin/promotion',
-      name: 'PromotionsManagement',
-      component: AdminPromotionsManagement
-    },
-    {
-      path: '/admin/news',
-      name: 'NewsManagement',
-      component: AdminNewsManagement
-    },
-    {
-      path: '/admin/news/create',
-      name: 'NewsCreate',
-      component: AdminNewsCreate
-    },
-    {
-      path: '/admin/news/edit/:id',
-      name: 'NewsEdit',
-      component: AdminNewsEdit
-    },
-    {
-      path: '/admin/manufacturers',
-      name: 'Manufacturer',
-      component: AdminManufacturer
-    },
-    {
-      path: '/admin/categories',
-      name: 'Category',
-      component: AdminCategory
-    },
-    {
-      path: '/admin/support',
-      name: 'CustomerSupport',
-      component: AdminCustomerSupport
+      component: AdminLayout, // Sử dụng AdminLayout
+      children: [
+        { path: '', name: 'AdminDashboard', component: AdminDashboard },
+        { path: 'inventory', name: 'Inventory', component: AdminInventory },
+        { path: 'users', name: 'UserManagement', component: AdminUserManagement },
+        { path: 'orders', name: 'OrderManagement', component: AdminOrderManagement },
+        { path: 'promotion', name: 'PromotionsManagement', component: AdminPromotionsManagement },
+        { path: 'news', name: 'NewsManagement', component: AdminNewsManagement },
+        { path: 'news/create', name: 'NewsCreate', component: AdminNewsCreate },
+        { path: 'news/edit/:id', name: 'NewsEdit', component: AdminNewsEdit },
+        { path: 'manufacturers', name: 'Manufacturer', component: AdminManufacturer },
+        { path: 'categories', name: 'Category', component: AdminCategory },
+        { path: 'support', name: 'CustomerSupport', component: AdminCustomerSupport }
+      ]
     }
   ]
 });

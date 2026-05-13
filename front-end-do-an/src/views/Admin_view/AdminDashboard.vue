@@ -1,10 +1,7 @@
 <template>
   <div @click="activeMenuId = null" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800">
-    <AdminSideBar :is-collapsed="isSidebarCollapsed" />
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden">
-      <AdminHeader @toggle-sidebar="isSidebarCollapsed = !isSidebarCollapsed" />
-      <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-        
+      <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">        
         <section class="flex flex-col md:flex-row justify-between items-end gap-4 relative z-20">
           <div>
             <h2 class="text-3xl font-headline font-bold text-slate-900 tracking-tight">Tổng quan Hệ thống</h2>
@@ -323,8 +320,6 @@
 
 <script setup>
   import { ref, onMounted } from 'vue';
-  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
-  import AdminHeader from "../../components/Admin/AdminHeader.vue"; 
 
   const isSidebarCollapsed = ref(false);
   const isCustomModalOpen = ref(false);

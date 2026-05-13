@@ -1,8 +1,5 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
     <main class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
       <div class="mb-12">
         <h1 class="text-5xl md:text-6xl font-headline font-bold tracking-tighter uppercase text-white mb-2">
@@ -160,13 +157,11 @@
           </div>
         </div>
       </section>
-
     </main>
   </div>
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToastStore } from '../../stores/toast';

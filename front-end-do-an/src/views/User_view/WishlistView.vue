@@ -1,10 +1,6 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
-    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
-      
+    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">   
       <aside class="w-72 hidden md:flex flex-col border-r border-outline-variant/20 bg-surface-container-low pt-8">
         <div class="px-6 flex flex-col items-center gap-3 mb-8">
           <div class="relative group cursor-pointer">
@@ -141,7 +137,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import TheHeader from '../../components/TheHeader.vue';
 import { useAuthStore } from '../../stores/auth';
 import { useToastStore } from '../../stores/toast';
 
@@ -151,7 +146,7 @@ const toastStore = useToastStore();
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-const wishlistItems = ref([]); // Đã gỡ bỏ dữ liệu giả
+const wishlistItems = ref([]); 
 const isLoading = ref(true);
 const userString = localStorage.getItem('user');
 const currentUser = userString ? JSON.parse(userString) : null;

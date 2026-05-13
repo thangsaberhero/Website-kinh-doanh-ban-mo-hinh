@@ -1,13 +1,8 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
     <main class="flex-grow w-full max-w-7xl mx-auto px-6 py-12">
-      <form @submit.prevent="processCheckout" class="flex flex-col lg:grid lg:grid-cols-12 gap-12 items-start">
-        
+      <form @submit.prevent="processCheckout" class="flex flex-col lg:grid lg:grid-cols-12 gap-12 items-start">    
         <div class="lg:col-span-7 w-full space-y-12">
-          
           <section>
             <div class="flex items-center gap-3 mb-8">
                 <span class="text-primary font-headline text-3xl font-bold italic">01</span>
@@ -16,23 +11,23 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Họ và tên</label>
-                <input v-model="shippingInfo.name" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Nguyễn Văn A" type="text"/>
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Họ và tên</label>
+                  <input v-model="shippingInfo.name" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Nguyễn Văn A" type="text"/>
                 </div>
                 
                 <div>
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Số điện thoại</label>
-                <input v-model="shippingInfo.phone" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="090 123 4567" type="tel"/>
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Số điện thoại</label>
+                  <input v-model="shippingInfo.phone" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="090 123 4567" type="tel"/>
                 </div>
                 
                 <div>
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Email</label>
-                <input v-model="shippingInfo.email" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="example@collect.vn" type="email"/>
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Email</label>
+                  <input v-model="shippingInfo.email" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="example@collect.vn" type="email"/>
                 </div>
                 
                 <div class="md:col-span-2">
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Địa chỉ nhận hàng</label>
-                <input v-model="shippingInfo.address" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố" type="text"/>
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Địa chỉ nhận hàng</label>
+                  <input v-model="shippingInfo.address" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố" type="text"/>
                 </div>
             </div>
         </section>
@@ -152,7 +147,6 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';

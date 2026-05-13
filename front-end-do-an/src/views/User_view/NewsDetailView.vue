@@ -4,7 +4,6 @@
   </div>
 
   <div class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
-    <TheHeader />
     <main class="flex-1 relative py-12 lg:py-20">
       <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
       <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-tertiary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
@@ -151,7 +150,6 @@
 <script setup>
   import { ref, onMounted, watch, onUnmounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import TheHeader from '@/components/TheHeader.vue';
   import { useToastStore } from '../../stores/toast';
   
   const route = useRoute();

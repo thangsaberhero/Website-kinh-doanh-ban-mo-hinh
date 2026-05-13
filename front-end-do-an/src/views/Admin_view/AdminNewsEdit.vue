@@ -7,11 +7,7 @@
         class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
       ></div>
   
-      <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
-  
-      <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
-        <AdminHeader @toggle-sidebar="handleToggleSidebar" />
-        
+      <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">        
         <div class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
           <div class="flex items-center gap-4">
             <button @click="router.push('/admin/news')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-all" title="Quay lại">
@@ -114,8 +110,6 @@
 <script setup>
   import { ref, onMounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
-  import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from "../../stores/toast";
   import Editor from '@tinymce/tinymce-vue';
   

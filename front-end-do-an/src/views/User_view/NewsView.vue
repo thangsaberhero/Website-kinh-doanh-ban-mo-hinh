@@ -1,7 +1,5 @@
 <template>
   <div class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
-    <TheHeader />
-
     <main class="flex-1">
       <section v-if="heroNews.id" class="relative w-full h-[85vh] min-h-[500px] overflow-hidden">
         <div class="absolute inset-0">
@@ -153,7 +151,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import TheHeader from '@/components/TheHeader.vue';
 
 const router = useRouter();
 

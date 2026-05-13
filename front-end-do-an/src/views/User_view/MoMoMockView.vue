@@ -1,12 +1,7 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
-    <main class="flex-grow w-full max-w-7xl mx-auto px-6 py-12 flex items-center justify-center">
-      
+    <main class="flex-grow w-full max-w-7xl mx-auto px-6 py-12 flex items-center justify-center">    
       <div class="w-full max-w-4xl bg-white rounded-3xl shadow-[0_0_50px_rgba(165,0,100,0.15)] overflow-hidden flex flex-col md:flex-row border border-outline-variant/10">
-        
         <div class="w-full md:w-5/12 bg-gradient-to-b from-[#b80072] to-[#8a0053] p-10 flex flex-col items-center justify-center relative overflow-hidden text-white">
           <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
           
@@ -85,7 +80,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import TheHeader from '../../components/TheHeader.vue'; // Nhớ import TheHeader của bạn
 import { useToastStore } from '../../stores/toast';
 
 const route = useRoute();

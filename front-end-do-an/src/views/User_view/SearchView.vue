@@ -1,10 +1,6 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
-    <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">
-      
+    <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">      
       <aside class="w-72 hidden lg:flex flex-col border-r border-outline-variant/30 bg-surface-container-low overflow-y-auto custom-scrollbar">
         <div class="flex flex-col py-8 gap-8 px-6">
           <div>
@@ -221,17 +217,15 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
 
-// --- 1. BIẾN QUẢN LÝ DỮ LIỆU ---
 // --- 1. BIẾN QUẢN LÝ DỮ LIỆU & PHÂN TRANG ---
 const searchQuery = ref(route.query.q || '');
-const productList = ref([]); // Thay thế hoàn toàn rawProducts và finalProducts
+const productList = ref([]); 
 const categories = ref([]);
 const isSearching = ref(false);
 

@@ -1,10 +1,6 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
-    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
-      
+    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">  
       <aside class="w-72 hidden md:flex flex-col border-r border-outline-variant/20 bg-surface-container-low pt-8">
         <div class="px-6 flex flex-col items-center gap-3 mb-8">
           <div class="relative group cursor-pointer">
@@ -180,7 +176,6 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
@@ -192,7 +187,6 @@ const activeTab = ref('Tất cả');
 
 const userString = localStorage.getItem('user');
 const currentUser = userString ? JSON.parse(userString) : null;
-// Dữ liệu giả lập Đơn hàng
 const orders = ref([]);
 
 const showPaymentModal = ref(false);
@@ -225,7 +219,6 @@ const handleRepay = async () => {
 
     const data = await response.json();
     if (response.ok) {
-      // Bế khách sang trang MoMo màu hồng!
       window.location.href = data.checkoutUrl;
     } else {
       toastStore.showToast(data.message, "error");

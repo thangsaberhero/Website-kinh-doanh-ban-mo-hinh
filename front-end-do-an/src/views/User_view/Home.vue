@@ -1,6 +1,5 @@
 <template>
   <div class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen">
-    <TheHeader />
     <section class="relative h-[85vh] overflow-hidden bg-surface-container-lowest">
       <div class="absolute inset-0 opacity-60">
         <img class="w-full h-full object-cover object-[60%_20%]" alt="Premium Gundam" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGfQ6Typ978uv1QahrmCG7PbPFg5_MLWN4K6DDmh69N5IlhPUhPKmdIfvIvZrQ_rFT9xyW1urq37KsPg2Topn02qR3hXUA9h7RKAdw21cNNpg8-yJQ6L0mjub5hU8TJtnUbmNtH8CjWKlWU8MxvHE6W3LhxEOF4NzXIHMRv8vtmkqkPsfFUx4xRlv2TAaL2OMN0YNVoCa7_nDFZbJA-PHZBV_Hn6rkXodnc9YmQHIGun8C0b2cmKxBFeAEweP0SjPODlAbMN4Gzr-E"/>
@@ -170,7 +169,6 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';

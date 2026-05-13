@@ -1,10 +1,6 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
     <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
-      
       <aside class="w-72 hidden md:flex flex-col border-r border-outline-variant/20 bg-surface-container-low pt-8">
         <div class="px-6 flex flex-col items-center gap-3 mb-8">
           <div class="relative group cursor-pointer">
@@ -154,7 +150,6 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 import { useToastStore } from '../../stores/toast';
-import TheHeader from '../../components/TheHeader.vue';
 
 const toastStore = useToastStore();
 const router = useRouter();

@@ -1,10 +1,7 @@
 <template>
-  <div class="bg-background text-on-surface selection:bg-primary selection:text-on-primary min-h-screen flex flex-col font-body">
-    <TheHeader />
-    
+  <div class="bg-background text-on-surface selection:bg-primary selection:text-on-primary min-h-screen flex flex-col font-body">  
     <main v-if="product" class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
         <div class="lg:col-span-7 space-y-6">
           <div ref="imageContainer" class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20" 
               @mousemove="handleMouseMove"
@@ -461,8 +458,7 @@
 <script setup>
   import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import TheHeader from '../../components/TheHeader.vue';
-  import { useToastStore } from '../../stores/toast'
+  import { useToastStore } from '../../stores/toast';
 
   const route = useRoute();
   const router = useRouter();

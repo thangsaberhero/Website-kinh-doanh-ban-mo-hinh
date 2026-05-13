@@ -1,8 +1,5 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
     <main class="flex-grow pt-12 pb-24 px-6 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]"></div>
@@ -112,9 +109,8 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
 import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router'; // THÊM useRoute ĐỂ LẤY URL
+import { useRouter, useRoute } from 'vue-router'; 
 import { useAuthStore } from '../../stores/auth';
 
 const router = useRouter();

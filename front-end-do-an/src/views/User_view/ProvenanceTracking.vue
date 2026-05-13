@@ -1,7 +1,5 @@
 <template>
   <div class="provenance-page">
-    <TheHeader />
-
     <div class="hero-section">
       <div class="overlay"></div>
       <div class="hero-content">
@@ -199,7 +197,6 @@
 import { ref, computed,nextTick } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth'; 
-import TheHeader from '@/components/TheHeader.vue';
 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';

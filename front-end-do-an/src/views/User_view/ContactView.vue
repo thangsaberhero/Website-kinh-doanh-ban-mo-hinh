@@ -1,7 +1,5 @@
 <template>
-    <div class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
-        <TheHeader />
-  
+    <div class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col"> 
         <main class="flex-1">
             <section class="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
                 <div class="absolute inset-0 z-0">
@@ -151,11 +149,10 @@
   
 <script setup>
 import { ref } from 'vue';
-import TheHeader from '../../components/TheHeader.vue';
 import { useToastStore } from '../../stores/toast'
 
 const toastStore = useToastStore();
-// Khởi tạo biến quản lý Form
+
 const form = ref({
 name: '',
 email: '',

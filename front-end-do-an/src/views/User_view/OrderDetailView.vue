@@ -1,8 +1,5 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
-    <TheHeader />
-
     <main class="flex-1 pt-8 pb-24 px-6 max-w-7xl mx-auto w-full relative">
       <div class="absolute top-20 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
@@ -29,10 +26,8 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">      
         <div class="lg:col-span-8 space-y-8">
-          
           <section class="glass-panel rounded-xl p-8 border border-outline-variant/10 shadow-xl">
             <h3 class="font-headline text-lg font-bold mb-10 flex items-center gap-2 text-white">
               <span class="material-symbols-outlined text-primary">local_shipping</span>
@@ -164,7 +159,6 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
