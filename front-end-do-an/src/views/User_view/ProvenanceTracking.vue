@@ -94,7 +94,7 @@
             <div class="product-card">
               <div class="product-image-container">
                 <img
-                    v-if="productData.image",
+                    v-if="productData.image"
                     :src="`/Images_product/`+productData.image"
                     alt="Product Image"
                     class="product-image"

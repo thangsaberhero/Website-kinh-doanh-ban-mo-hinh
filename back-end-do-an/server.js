@@ -13,8 +13,6 @@ const db = require('./config/db');
 app.use(cors());
 app.use(express.json()); // Giúp server đọc được dữ liệu JSON gửi lên
 
-
-
 // Khởi động Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -39,22 +37,20 @@ app.use('/api/products', productsRoutes);
 const donhangRoutes = require('./routes/User_route/donhang_user.route.js');
 app.use('/api/don_hang',donhangRoutes);
 
-const reviewRoutes = require('./routes/User_route/review.route.js');
-app.use('/api/reviews', reviewRoutes);
+const userReviewRoutes = require('./routes/User_route/review.route.js');
+app.use('/api/reviews', userReviewRoutes);
+
 //Lấy đường dẫn ảnh đại diện
-const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
+const path = require('path'); 
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
 app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
 app.use('/Images_review', express.static(path.join(__dirname, 'public/Images_review')));
 app.use('/Images_product', express.static(path.join(__dirname, 'public/Images_product')));
 
-
-// --- ROUTE CHATBOT ---
 const chatRoutes = require('./routes/User_route/chat.route.js');
 app.use('/api/chatbot', chatRoutes);
 
-// --- THÊM ROUTE Blockchain ---
 const blockchainRoutes = require('./routes/User_route/blockchain.route.js');
 app.use('/api/blockchain', blockchainRoutes);
 
@@ -140,3 +136,6 @@ app.use('/api/invoice_admin', don_hang_admin_control);
 //Quản lý kho
 const product_admin_control = require('./routes/Admin_route/product_admin.route.js');
 app.use('/api/product_admin', product_admin_control);
+
+const adminReviewRoutes = require('./routes/Admin_route/review.route.js');
+app.use('/api/reviews/admin', adminReviewRoutes);

@@ -7,15 +7,12 @@ const { uploadReview } = require('../../middlewares/upload.js');
 router.get('/product/:id', reviewController.getReviewsByProduct);
 router.post('/create', verifyToken, reviewController.createReview);
 router.get('/check-purchase-status', verifyToken, reviewController.checkPurchaseStatus);
-router.put('/admin/:MaDG', verifyToken, reviewController.moderateReview);
 
 router.post('/upload', verifyToken, uploadReview.array('images', 5), (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "Không tìm thấy file tải lên" });
         }
-        
-        // Bóc tách lấy mảng tên file để trả về cho Vue.js
         const fileNames = req.files.map(file => file.filename);
         res.status(200).json({ images: fileNames });
     } catch (error) {

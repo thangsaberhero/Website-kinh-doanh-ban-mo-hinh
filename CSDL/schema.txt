@@ -275,21 +275,21 @@ CREATE Table MaGiamGia (
 	MaVoucher VARCHAR(20) UNIQUE NOT NULL,
 	SoLuongDungToiDa INT Default 1,
 	ThoiGianBD DATETIME,
-    	ThoiGianKT DATETIME,
+    ThoiGianKT DATETIME,
 	MaKH INT default null,
 	MucGiaToiThieu Decimal (12,2),
 	TrangThaiHoatDong TinyInt default 0,
 	LoaiGiamGia VARCHAR(20) DEFAULT 'TienMat',
-    	ChietKhau DECIMAL(12,2),
-	GiaTriGiamToiDa DECIMAL(12,2) DEFAULT NULL,
+    ChietKhau DECIMAL(12,2),
+	GiaTriGiamToiDa DECIMAL(12,2) DEFAULT NULL
 );
 
 Create table ChiTietMaGiamGia (
 	MaGG INT,
-    	MaMoHinh INT,
-    	PRIMARY KEY (MaGG, MaMoHinh),
-    	FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
-    	FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+    MaMoHinh INT,
+    PRIMARY KEY (MaGG, MaMoHinh),
+    FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
 );
 	
 

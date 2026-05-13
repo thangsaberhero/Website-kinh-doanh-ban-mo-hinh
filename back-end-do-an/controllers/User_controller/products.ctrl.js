@@ -262,8 +262,6 @@ const product_view = {
                 return res.status(400).json({ message: "Vui lòng nhập từ khóa tìm kiếm" });
             }
 
-            // Lệnh SQL: Tìm những mô hình có tên chứa từ khóa (Không phân biệt hoa thường)
-            // LIMIT 10: Chỉ lấy tối đa 10 sản phẩm thả xuống cho nhẹ
             const sql = `
                 SELECT MaMoHinh, TenMH, AnhDaiDien, DonGia 
                 FROM MoHinh 
@@ -271,7 +269,6 @@ const product_view = {
                 LIMIT 10
             `;
             
-            // Thêm % vào 2 đầu từ khóa để tìm chuỗi con
             const [results] = await db.query(sql, [`%${keyword}%`]);
 
             res.status(200).json({
@@ -399,8 +396,29 @@ const product_view = {
             console.error("Lỗi khi thao tác (Toggle) danh mục yêu thích:", error);
             res.status(500).json({ message: "Lỗi server khi thao tác danh sách yêu thích!" });
         }
+    },
+    getRelatedProducts: async(req, res) => {
+        try{
+            const { id } = req.params;
+            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.DonGia, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX
+                        FROM MoHinh mh
+                        LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
+                        WHERE mh.MaDM = (SELECT MaDM FROM MoHinh WHERE MaMoHinh = ?) AND mh.MaMoHinh != ? AND mh.HienThi = 1
+                        LIMIT 4`;
+            const [relatedProducts] = await db.query(sql, [id, id]);
+            res.status(200).json({
+                message: "Lấy sản phẩm liên quan thành công",
+                data: relatedProducts
+            });
+        }
+        catch(error){
+            console.error("Lỗi API getRelatedProducts: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ khi lấy sản phẩm liên quan",
+                error: error.message
+            });
+        }
     }
-
 }
 module.exports = product_view;
 

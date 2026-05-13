@@ -52,25 +52,7 @@ const reviewController = {
                 error: error.message
             });
         }
-    },
-    moderateReview: async(req, res) => {
-        try{
-            const { MaDG } = req.params;
-            const { TrangThai, PhanHoiShop } = req.body;
-            const sql = `UPDATE DanhGia SET TrangThai = COALESCE(?, TrangThai), PhanHoiShop = COALESCE(?, PhanHoiShop) WHERE MaDG = ?`;
-            await db.query(sql, [TrangThai, PhanHoiShop, MaDG]);
-            res.status(200).json({
-                message: "Cập nhật đánh giá thành công"
-            });
-        }
-        catch(error){
-            console.error("Lỗi API moderateReview: ", error);
-            res.status(500).json({
-                message: "Lỗi máy chủ khi admin cập nhật đánh giá",
-                error: error.message
-            });
-        }
-    },
+    },  
     checkPurchaseStatus: async(req, res) => {
         try{
             const MaTK = req.user.id; 

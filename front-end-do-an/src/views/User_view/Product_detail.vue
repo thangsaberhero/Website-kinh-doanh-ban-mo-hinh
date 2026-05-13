@@ -6,7 +6,12 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
         
         <div class="lg:col-span-7 space-y-6">
-          <div class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20">
+          <div ref="imageContainer" class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20" 
+              @mousemove="handleMouseMove"
+              @mouseenter="isZooming = true"
+              @mouseleave="isZooming = false"
+              @click="openLightbox(allImages.indexOf(mainImage))"
+          >
             <div class="absolute top-4 left-4 z-10 flex gap-2">
               <span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-sm">
                 {{ product.LoaiHinhBan }}
@@ -16,8 +21,22 @@
               </span>
             </div>
             
-            <img :src="`http://localhost:3000/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-contain transform group-hover:scale-105 transition-transform duration-700 p-8 drop-shadow-2xl"/>
+            <img :src="`http://localhost:3000/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-cover transform transition-transform duration-700 drop-shadow-2xl"/>
             
+            <div v-show="isZooming"
+              class="absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
+              :style="{
+                width: '240px',          /* Chiều rộng khung lúp */
+                height: '240px',         /* Chiều cao khung lúp */
+                left: `${zoomPosition.x}%`, /* Chạy theo tọa độ X của chuột */
+                top: `${zoomPosition.y}%`,  /* Chạy theo tọa độ Y của chuột */
+                transform: 'translate(-50%, -50%)', /* Căn giữa khung lúp vào con chuột */
+                backgroundImage: `url(http://localhost:3000/Images_product/${mainImage})`,
+                backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                backgroundSize: '400%'   
+              }"
+            ></div>
+
             <div class="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
               <button class="p-3 bg-surface-bright/80 backdrop-blur rounded-full hover:bg-primary hover:text-on-primary transition-all shadow-xl">
                 <span class="material-symbols-outlined">zoom_in</span>
@@ -26,16 +45,22 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </div>
           
-          <div class="grid grid-cols-5 gap-4">
+          <transition-group 
+            name="thumbnail"
+            tag="div" 
+            class="flex gap-4 overflow-hidden mt-4 p-1 w-full"
+          >
             <button 
-              v-for="(anh, index) in allImages" 
-              :key="index"
-              @click="mainImage = anh"
-              :class="['aspect-square bg-surface-container-high rounded overflow-hidden transition-all duration-300 transform', mainImage === anh ? 'border-2 border-primary scale-105 shadow-lg' : 'border border-outline-variant/15 hover:border-primary/50 opacity-60 hover:opacity-100']"
+              v-for="anh in displayImages" 
+              :key="anh"
+              @click="selectImage(anh)"
+              class="flex-shrink-0 aspect-square bg-surface-container-high rounded-lg overflow-hidden transition-all duration-300 transform"
+              :class="mainImage === anh ? 'border-2 border-primary shadow-[0_0_15px_rgba(255,61,0,0.4)] scale-100' : 'border border-outline-variant/30 hover:border-primary/50 opacity-60 hover:opacity-100 scale-95'"
+              style="width: calc((100% - 4rem) / 5);" 
             >
               <img :src="`http://localhost:3000/Images_product/${anh}`" class="w-full h-full object-cover"/>
             </button>
-          </div>
+          </transition-group>
         </div>
 
         <div class="lg:col-span-5 flex flex-col">
@@ -151,6 +176,7 @@
           </div>
         </div>
       </div>
+      
       <section class="max-w-7xl mx-auto px-6 pb-24 w-full border-t border-white/5 pt-16">
         <h3 class="font-headline text-3xl font-bold text-white mb-10 text-center uppercase tracking-widest">Đánh giá từ cộng đồng</h3>
         <div class="bg-surface-container-low rounded-2xl p-8 lg:p-12 border border-white/5 shadow-2xl mb-12 flex flex-col md:flex-row items-center justify-between gap-12">
@@ -201,7 +227,7 @@
                 <div>
                   <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Nhận xét chi tiết</label>
                   <textarea v-model="reviewForm.NoiDung" required rows="4" placeholder="Chất lượng sơn, độ linh hoạt..." 
-                            class="w-full bg-background border border-white/10 focus:border-primary focus:ring-0 rounded-xl p-4 text-sm text-white resize-none transition-all"></textarea>
+                            class="w-full bg-background border border-white/10 focus:border-primary focus:ring-0 rounded-xl p-4 text-sm text-white resize-none transition-all max-h-32 overflow-y-auto"></textarea>
                 </div>
                 <div v-if="previewUrls.length > 0" class="flex flex-wrap gap-3 mb-4">
                   <div v-for="(url, index) in previewUrls" :key="index" class="relative w-16 h-16 rounded-lg overflow-hidden border border-white/20 group">
@@ -326,6 +352,59 @@
             class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] transform scale-100 animate-[zoomIn_0.2s_ease-out]" 
             @click.stop />
       </div>
+
+      <section v-if="relatedProducts.length > 0" class="max-w-7xl mx-auto px-6 py-16 w-full border-t border-white/5">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="h-8 w-1.5 bg-primary rounded-full"></div>
+          <h3 class="text-2xl font-headline font-black text-white uppercase italic tracking-wider">Có thể bạn sẽ thích</h3>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <router-link 
+            v-for="item in relatedProducts" :key="item.MaMoHinh"
+            :to="`/product/${item.MaMoHinh}`"
+            class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full overflow-hidden"
+          >
+            <div v-if="item.SoLuong === 0" class="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl">
+              <span class="border-2 border-outline text-outline px-6 py-2 text-sm font-bold tracking-widest uppercase rounded">HẾT HÀNG</span>
+            </div>
+
+            <div class="absolute top-7 left-7 z-10 flex flex-col gap-2">
+              <span v-if="item.TrangThai" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-on-primary-fixed shadow-md">
+                {{ item.TrangThai }}
+              </span>
+              <span v-if="item.LoaiHinhBan" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-tertiary text-on-tertiary-fixed shadow-md">
+                {{ item.LoaiHinhBan }}
+              </span>
+            </div>
+            
+            <div class="relative h-60 w-full mb-6 overflow-hidden rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40"></div>
+              <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" 
+                  :alt="item.TenMH"
+                  :class="['h-full w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110', item.SoLuong === 0 ? 'grayscale opacity-50' : '']"
+              />
+            </div>
+            
+            <div class="space-y-3 flex-1 flex flex-col justify-end">
+              <div>
+                <p class="text-[10px] text-outline font-bold uppercase tracking-[0.2em] mb-2">
+                  {{ item.TenHSX || 'UNKNOWN' }} • {{ item.KichThuoc || 'N/A' }}
+                </p>
+                <h3 class="text-lg font-headline font-bold leading-snug group-hover:text-primary transition-colors text-white line-clamp-2">
+                  {{ item.TenMH }}
+                </h3>
+              </div>
+              
+              <div class="pt-4 mt-auto border-t border-outline-variant/30 flex justify-between items-center relative z-10">
+                <span :class="['text-xl font-headline font-bold tracking-tight', item.SoLuong === 0 ? 'text-outline' : 'text-white']">
+                  {{ formatPrice(item.DonGia) }}
+                </span>
+              </div>
+            </div>
+          </router-link>
+        </div>
+      </section>
     </main>
 
     <div v-else class="flex-1 flex items-center justify-center">
@@ -335,10 +414,52 @@
       </div>
     </div>
   </div>
+  <div v-if="isLightboxOpen" 
+    class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center animate-[fadeIn_0.2s_ease-out]"
+    @click.self="closeLightbox">
+  
+    <div class="absolute top-0 left-0 right-0 p-6 flex justify-between items-center text-white/70">
+      <div class="font-headline font-bold tracking-widest text-sm">
+        {{ currentIndex + 1 }} / {{ allImages.length }}
+      </div>
+      <div class="flex gap-6">
+        <button @click="closeLightbox" class="hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-4xl">close</span>
+        </button>
+      </div>
+    </div>
+
+    <button @click="prevImage" 
+            class="absolute left-4 md:left-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
+      <span class="material-symbols-outlined text-5xl">chevron_left</span>
+    </button>
+
+    <div class="relative w-[90vw] h-[80vh] overflow-hidden">
+      <Transition :name="slideDirection">
+        <img :key="currentIndex"
+            :src="`http://localhost:3000/Images_product/${allImages[currentIndex]}`" 
+            class="absolute inset-0 m-auto max-w-full max-h-[80vh] object-contain shadow-2xl" />
+      </Transition>
+    </div>
+    
+    <button @click="nextImage" 
+            class="absolute right-4 md:right-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
+      <span class="material-symbols-outlined text-5xl">chevron_right</span>
+    </button>
+
+    <div class="absolute bottom-10 flex gap-3 px-6 overflow-x-auto max-w-full hide-scrollbar">
+      <div v-for="(anh, idx) in allImages" :key="idx"
+          @click="currentIndex = idx"
+          :class="['w-16 h-16 rounded-lg overflow-hidden cursor-pointer transition-all border-2 shrink-0',
+                    currentIndex === idx ? 'border-primary scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100']">
+        <img :src="`http://localhost:3000/Images_product/${anh}`" class="w-full h-full object-cover" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-  import { ref, onMounted, computed, watch } from 'vue';
+  import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import TheHeader from '../../components/TheHeader.vue';
   import { useToastStore } from '../../stores/toast'
@@ -351,12 +472,16 @@
   const allImages = ref([]); 
   const mainImage = ref('');
   const buyQuantity = ref(1);
+  const relatedProducts = ref([]);
 
   const variants = ref([]);
   const selectedVariant = ref(null);
-
-  // ================= BIẾN MỚI ĐỂ LƯU TRẠNG THÁI YÊU THÍCH =================
   const isFavorite = ref(false);
+
+  const selectedFiles = ref([]);
+  const previewUrls = ref([]);
+  const fileInput = ref(null);
+  const zoomedImage = ref(null);
 
   const reviews = ref([]);
   const canReview = ref(false); 
@@ -365,146 +490,87 @@
   // Biến lưu trạng thái bộ lọc: 'all', 'withImage', '5', '4', '3', '2', '1'
   const currentFilter = ref('all');
   const visibleCount = ref(5);
+  
+  const displayImages = ref([]); 
+  // Biến quản lý Lightbox
+  const isLightboxOpen = ref(false);
+  const currentIndex = ref(0);
+  const slideDirection = ref('slide-right');
 
-  const reviewForm = ref({
-    SoSao: 5,
-    NoiDung: '',
-    HinhAnh: [] 
+  const openLightbox = (index) => {
+    currentIndex.value = index;
+    isLightboxOpen.value = true;
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeLightbox = () => {
+    isLightboxOpen.value = false;
+    document.body.style.overflow = 'auto';
+  };
+
+  const nextImage = () => {
+    slideDirection.value = 'slide-right'; 
+    currentIndex.value = (currentIndex.value + 1) % allImages.value.length;
+  };
+
+  const prevImage = () => {
+    slideDirection.value = 'slide-left';
+    currentIndex.value = (currentIndex.value - 1 + allImages.value.length) % allImages.value.length;
+};
+
+  const handleKeydown = (e) => {
+    if (!isLightboxOpen.value) return;
+    if (e.key === 'ArrowRight') nextImage();
+    if (e.key === 'ArrowLeft') prevImage();
+    if (e.key === 'Escape') closeLightbox();
+  };
+
+  onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
   });
 
-  const reviewStats = computed(() => {
-    if (reviews.value.length === 0) return { avg: 0, count: 0, stars: { 5:0, 4:0, 3:0, 2:0, 1:0 } };
-    
-    let totalStars = 0;
-    const starsCount = { 5:0, 4:0, 3:0, 2:0, 1:0 };
-    
-    reviews.value.forEach(r => {
-      totalStars += r.SoSao;
-      starsCount[r.SoSao] = (starsCount[r.SoSao] || 0) + 1;
-    });
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown);
+  });
 
-    return {
-      avg: (totalStars / reviews.value.length).toFixed(1),
-      count: reviews.value.length,
-      stars: starsCount
+  const isZooming = ref(false);
+  const zoomPosition = ref({ x: 50, y: 50 });
+  const imageContainer = ref(null); 
+
+  const handleMouseMove = (event) => {
+    if (!imageContainer.value) return;
+    const { left, top, width, height } = imageContainer.value.getBoundingClientRect();
+    const mouseX = ((event.clientX - left) / width) * 100;
+    const mouseY = ((event.clientY - top) / height) * 100;
+    
+    const radiusX = (120 / width) * 100;
+    const radiusY = (120 / height) * 100;
+
+    zoomPosition.value = { 
+      x: Math.max(radiusX, Math.min(100 - radiusX, mouseX)), 
+      y: Math.max(radiusY, Math.min(100 - radiusY, mouseY)) 
     };
-  });
+  };
 
-  // 1. Hàm lấy danh sách đánh giá từ Backend
-  const fetchReviews = async (maMH) => {
-    try {
-      const res = await fetch(`http://localhost:3000/api/reviews/product/${maMH}`);
-      const data = await res.json();
-      if (res.ok) {
-        reviews.value = data.data;
-      }
-    } catch (err) {
-      console.error("Lỗi lấy danh sách đánh giá:", err);
+  const selectImage = (anh) => {
+    mainImage.value = anh;
+    const total = displayImages.value.length;
+    if (total < 5) return; 
+
+    const currentIndex = displayImages.value.indexOf(anh);
+    const targetCenterIndex = 2; 
+    let shiftAmount = currentIndex - targetCenterIndex;
+
+    if (shiftAmount > 0) {
+      const itemsToMove = displayImages.value.splice(0, shiftAmount);
+      displayImages.value.push(...itemsToMove);
+    } 
+    else if (shiftAmount < 0) {
+      const itemsToMove = displayImages.value.splice(shiftAmount); 
+      displayImages.value.unshift(...itemsToMove);
     }
   };
 
-  // 2. Hàm kiểm tra quyền đánh giá (Đã mua chưa?)
-  const checkEligibility = async (maMH) => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
-    if (!token || !userString) return; // Chưa đăng nhập thì chắc chắn không được đánh giá
-
-    const userObj = JSON.parse(userString);
-    try {
-      const res = await fetch(`http://localhost:3000/api/reviews/check-purchase-status?MaKH=${userObj.MaKH}&MaMoHinh=${maMH}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (res.ok) {
-        canReview.value = data.canReview;
-      }
-    } catch (err) {
-      console.error("Lỗi kiểm tra quyền đánh giá:", err);
-    }
-  };
-
-  // 3. Hàm Gửi đánh giá
-  const submitReview = async () => {
-    if (!reviewForm.value.NoiDung.trim()) {
-      toastStore.showToast("⚠️ Vui lòng nhập nội dung đánh giá!", "error");
-      return;
-    }
-
-    isSubmittingReview.value = true;
-    const token = localStorage.getItem('token');
-    let uploadedImageNames = [];
-
-    try {
-      if (selectedFiles.value.length > 0) {
-        const formData = new FormData();
-        selectedFiles.value.forEach(file => {
-          formData.append('images', file); // Chữ 'images' phải khớp với upload.array('images') ở Backend
-        });
-
-        const uploadRes = await fetch('http://localhost:3000/api/reviews/upload', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}` 
-          },
-          body: formData // Không cần set Content-Type, trình duyệt tự lo với FormData
-        });
-
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadData.message || "Lỗi upload ảnh");
-        
-        uploadedImageNames = uploadData.images; // Lấy mảng tên file về
-      }
-
-      // BƯỚC 2: GỬI DATA ĐÁNH GIÁ VÀO MYSQL
-      const payload = {
-        MaMoHinh: product.value.MaMoHinh,
-        MaPhanLoai: selectedVariant.value ? selectedVariant.value.MaPhanLoai : null,
-        NoiDung: reviewForm.value.NoiDung,
-        SoSao: reviewForm.value.SoSao,
-        HinhAnh: uploadedImageNames // Gắn mảng ảnh thật vào đây
-      };
-
-      const res = await fetch(`http://localhost:3000/api/reviews/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        toastStore.showToast("🎉 " + data.message, "success");
-        
-        // Reset toàn bộ Form
-        reviewForm.value.NoiDung = ''; 
-        reviewForm.value.SoSao = 5;
-        selectedFiles.value = [];
-        previewUrls.value = [];
-        canReview.value = false; 
-        
-        await fetchReviews(product.value.MaMoHinh); 
-      } else {
-        toastStore.showToast("⚠️ Lỗi: " + data.message, "error");
-      }
-    } catch (error) {
-      toastStore.showToast(error.message || "Lỗi mạng khi gửi đánh giá", "error");
-    } finally {
-      isSubmittingReview.value = false;
-    }
-  };
-
-  // Hàm phụ trợ định dạng ngày (Ví dụ: 15/04/2026)
-  const formatDate = (dateString) => {
-    const d = new Date(dateString);
-    return d.toLocaleDateString('vi-VN');
-  };
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-  };
-  // Danh sách đánh giá sẽ hiển thị trên màn hình
   const filteredReviews = computed(() => {
     if (currentFilter.value === 'all') {
       return reviews.value;
@@ -537,13 +603,230 @@
   watch(currentFilter, () => {
     visibleCount.value = 5;
   });
-  // Biến lưu trữ file thực tế để gửi lên server
-  const selectedFiles = ref([]);
-  // Biến lưu URL ảo để hiển thị ảnh preview cho khách xem
-  const previewUrls = ref([]);
-  // Tham chiếu đến thẻ input file
-  const fileInput = ref(null);
-  const zoomedImage = ref(null);
+
+  const fetchProductDetails = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:3000/api/products/${id}`);
+      const dataJSON = await res.json();
+      if (res.ok) {
+        product.value = dataJSON.data[0]; 
+        let images = [product.value.AnhDaiDien];
+        if (product.value.DanhSachAnh) {
+          const gallery = product.value.DanhSachAnh.split(',');
+          images = [...images,...gallery];
+        } 
+        allImages.value = [...new Set(images.filter(Boolean))];
+        displayImages.value = [...allImages.value];
+        mainImage.value = allImages.value[0]; 
+      }
+    } catch (error) {
+      console.error("Lỗi tải sản phẩm:", error);
+    }
+  };
+
+  const fetchProductVariants = async (id) => {
+    try {
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${id}`);
+      const varJSON = await resVar.json();
+      if (resVar.ok) {
+        variants.value = varJSON.data;
+        if (variants.value.length > 0) {
+          selectedVariant.value = variants.value[0];
+        } else {
+          selectedVariant.value = null; // Reset nếu không có variant
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi tải phân loại:", error);
+    }
+  };
+
+  const checkFavoriteStatus = async (id) => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    isFavorite.value = false; 
+
+    if (token && userString) {
+        try {
+            const userObj = JSON.parse(userString);
+            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${userObj.MaKH}/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const favData = await resFav.json();
+            if (resFav.ok && favData.isFavorite) {
+                isFavorite.value = true; 
+            }
+        } catch (error) {
+            console.error("Lỗi kiểm tra trạng thái yêu thích:", error);
+        }
+    }
+  };
+
+  const fetchRelatedProducts = async (spId) => {
+    try{
+      const res = await fetch(`http://localhost:3000/api/products/related/${spId}`);
+      const data = await res.json();
+      if(res.ok){
+        relatedProducts.value = data.data;
+      }
+    }catch (error){
+      console.error("Lỗi lấy sản phẩm liên quan: ", error);
+    }
+  }
+
+  const reviewForm = ref({
+    SoSao: 5,
+    NoiDung: '',
+    HinhAnh: [] 
+  });
+
+  const reviewStats = computed(() => {
+    if (reviews.value.length === 0) return { avg: 0, count: 0, stars: { 5:0, 4:0, 3:0, 2:0, 1:0 } };
+    
+    let totalStars = 0;
+    const starsCount = { 5:0, 4:0, 3:0, 2:0, 1:0 };
+    
+    reviews.value.forEach(r => {
+      totalStars += r.SoSao;
+      starsCount[r.SoSao] = (starsCount[r.SoSao] || 0) + 1;
+    });
+
+    return {
+      avg: (totalStars / reviews.value.length).toFixed(1),
+      count: reviews.value.length,
+      stars: starsCount
+    };
+  });
+
+  const fetchReviews = async (maMH) => {
+    try {
+      const res = await fetch(`http://localhost:3000/api/reviews/product/${maMH}`);
+      const data = await res.json();
+      if (res.ok) {
+        reviews.value = data.data;
+      }
+    } catch (error) {
+      console.error("Lỗi lấy danh sách đánh giá:", error);
+    }
+  };
+  
+  const checkEligibility = async (maMH) => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    if (!token || !userString) return;
+
+    const userObj = JSON.parse(userString);
+    try {
+      const res = await fetch(`http://localhost:3000/api/reviews/check-purchase-status?MaKH=${userObj.MaKH}&MaMoHinh=${maMH}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        canReview.value = data.canReview;
+      }
+    } catch (error) {
+      console.error("Lỗi kiểm tra quyền đánh giá:", error);
+    }
+  };
+  
+  const loadAllData = async (id) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    product.value = null;
+    
+    await fetchProductDetails(id);
+    await fetchProductVariants(id);
+    await checkFavoriteStatus(id);
+    await fetchReviews(id);
+    await checkEligibility(id);
+    await fetchRelatedProducts(id);
+  };
+  
+  watch(() => route.params.id, async (newId) => {
+    if (newId) {
+      window.scrollTo({ top: 0, behavior: 'smooth' }); 
+      await loadAllData(newId);
+    }
+  });
+
+  const submitReview = async () => {
+    if (!reviewForm.value.NoiDung.trim()) {
+      toastStore.showToast("⚠️ Vui lòng nhập nội dung đánh giá!", "error");
+      return;
+    }
+
+    isSubmittingReview.value = true;
+    const token = localStorage.getItem('token');
+    let uploadedImageNames = [];
+
+    try {
+      if (selectedFiles.value.length > 0) {
+        const formData = new FormData();
+        selectedFiles.value.forEach(file => {
+          formData.append('images', file); 
+        });
+
+        const uploadRes = await fetch('http://localhost:3000/api/reviews/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          },
+          body: formData 
+        });
+
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.message || "Lỗi upload ảnh");
+        
+        uploadedImageNames = uploadData.images; 
+      }
+
+      const payload = {
+        MaMoHinh: product.value.MaMoHinh,
+        MaPhanLoai: selectedVariant.value ? selectedVariant.value.MaPhanLoai : null,
+        NoiDung: reviewForm.value.NoiDung,
+        SoSao: reviewForm.value.SoSao,
+        HinhAnh: uploadedImageNames 
+      };
+
+      const res = await fetch(`http://localhost:3000/api/reviews/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toastStore.showToast("🎉 " + data.message, "success");
+        
+        reviewForm.value.NoiDung = ''; 
+        reviewForm.value.SoSao = 5;
+        selectedFiles.value = [];
+        previewUrls.value = [];
+        canReview.value = false; 
+        
+        await fetchReviews(product.value.MaMoHinh); 
+      } else {
+        toastStore.showToast("⚠️ Lỗi: " + data.message, "error");
+      }
+    } catch (error) {
+      toastStore.showToast(error.message || "Lỗi mạng khi gửi đánh giá", "error");
+    } finally {
+      isSubmittingReview.value = false;
+    }
+  };
+
+  // Hàm phụ trợ định dạng ngày (Ví dụ: 15/04/2026)
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    return d.toLocaleDateString('vi-VN');
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
   // Hàm kích hoạt khi khách hàng chọn ảnh
   const onFileChange = (event) => {
     const files = Array.from(event.target.files);
@@ -570,65 +853,8 @@
   };
 
   onMounted(async () => {
-    window.scrollTo(0, 0);
     const spId = route.params.id; 
-    
-    // 1. Tải thông tin sản phẩm và ảnh
-    try {
-      const res = await fetch(`http://localhost:3000/api/products/${spId}`);
-      const dataJSON = await res.json();
-
-      if (res.ok) {
-        product.value = dataJSON.data[0]; 
-        let images = [product.value.AnhDaiDien];
-        if (product.value.DanhSachAnh) {
-          const gallery = product.value.DanhSachAnh.split(',');
-          images = [...images,...gallery];
-        } 
-        allImages.value = [...new Set(images.filter(Boolean))];
-        mainImage.value = allImages.value[0]; 
-      }
-    } catch (error) {
-      console.error("Lỗi tải sản phẩm:", error);
-    }
-
-    // 2. Tải danh sách phân loại (Variant)
-    try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${spId}`);
-      const varJSON = await resVar.json();
-      
-      if (resVar.ok) {
-        variants.value = varJSON.data;
-        if (variants.value.length > 0) {
-          selectedVariant.value = variants.value[0];
-        }
-      }
-    } catch (error) {
-      console.error("Lỗi tải phân loại:", error);
-    }
-
-    // ================= 3. [MỚI]: KIỂM TRA TRẠNG THÁI YÊU THÍCH KHI LOAD WEB =================
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
-    
-    if (token && userString) {
-        try {
-            const userObj = JSON.parse(userString);
-            // Giả sử Backend có API GET /api/favorite/check/:maKH/:maMH để kiểm tra
-            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${userObj.MaKH}/${spId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const favData = await resFav.json();
-            
-            if (resFav.ok && favData.isFavorite) {
-                isFavorite.value = true; // Nếu Backend bảo đã thích -> tô đỏ trái tim
-            }
-        } catch (err) {
-            console.error("Lỗi kiểm tra trạng thái yêu thích:", err);
-        }
-    }
-    await fetchReviews(spId);
-    await checkEligibility(spId);
+    await loadAllData(spId);
   });
 
   // ================= HÀM MỚI XỬ LÝ KHI BẤM NÚT THẢ TIM ❤️ =================
@@ -739,12 +965,55 @@
 .font-headline { font-family: 'Space Grotesk', sans-serif; }
 .font-body { font-family: 'Manrope', sans-serif; }
 
-/* Custom css cho animation zoom ảnh, hover ... */
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
-/* Hiệu ứng fill cho icon yêu thích khi đã thích */
 .is-favorite-icon {
     font-variation-settings: 'FILL' 1, 'wght' 600;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; 
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;  
+  scrollbar-width: none;  
+}
+.thumbnail-move {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active,
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute; 
+}
+
+.slide-right-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.slide-right-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.slide-left-enter-from {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.slide-left-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>
