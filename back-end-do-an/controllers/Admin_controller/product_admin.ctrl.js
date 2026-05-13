@@ -9,7 +9,6 @@ const product_admin = {
             const {TenDM, MoTa, ChiTiet} = req.body;
             const sql_check = `Select * from DanhMuc where TenDM = ?`;
             const [check] = await connection.query(sql_check,[TenDM]);
-            //Kiểm tra xem tồn tại danh mục hàng này chưa?
             if(check.length > 0)
             {
                 connection.release();
@@ -36,7 +35,6 @@ const product_admin = {
                 message: `Thành công tạo danh mục (và các chi tiết nếu có)!`,
                 MaDMMoi: ma_DM_moi
             });
-            
         }
         catch (error){
             await connection.rollback();
@@ -165,10 +163,8 @@ const product_admin = {
 
     sua_thong_tin_HSX: async(req, res) => {
         try {
-            const MaHSX = req.params.id; // Lấy ID từ URL
+            const MaHSX = req.params.id;
             const { TenHSX, MoTa } = req.body;
-
-            // Kiểm tra xem tên mới gõ có bị trùng với một hãng KHÁC trong DB không
             const sql_check = `SELECT * FROM HangSanXuat WHERE TenHSX = ? AND MaHSX != ?`;
             const [check] = await db.query(sql_check, [TenHSX, MaHSX]);
             
@@ -354,7 +350,7 @@ const product_admin = {
 
             const sql_them_san_pham = `Insert into MoHinh (TenMH, MaHSX, MaDM, MaChiTietDM, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCoctoiThieu, HienThi, AnhDaiDien)
                                         Values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
-            const isVisible = HienThi !== undefined ? HienThi : 0;
+            const isVisible = HienThi !== 'undefined' ? HienThi : 0;
             const [them_san_pham] = await connection.query(sql_them_san_pham, [TenMH, MaHSX, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, tenAnhDaiDien]);
             
             const ma_san_pham_moi = them_san_pham.insertId;
@@ -388,11 +384,11 @@ const product_admin = {
                     }
                 } catch (parseError) {
                     console.error("Lỗi khi đọc JSON phân loại đặc biệt:", parseError);
-                    // Dù lỗi phân loại phụ, nhưng sản phẩm chính đã lưu, ta vẫn cho pass hoặc báo lỗi nhẹ.
                 }
             }
             await connection.commit();
             res.status(200).json({
+                success: true,
                 message: "Thêm sản phẩm mới thành công!"
             });
 
@@ -400,7 +396,7 @@ const product_admin = {
         catch (error){
             await connection.rollback();
             console.error("Lỗi khi thêm sản phẩm mới: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác với danh mục!"});
+            res.status(500).json({ success: false, message: "Lỗi server khi thao tác với danh mục!"});
         }
         finally{
             connection.release();
@@ -440,6 +436,7 @@ const product_admin = {
             }
             await connection.commit();
             res.status(200).json({
+                success: true,
                 message: "Thêm phân loại mới thành công!",
                 MaMoHinh: MaMoHinh
             });
@@ -447,7 +444,7 @@ const product_admin = {
         catch (error){
             await connection.rollback();
             console.error("Lỗi khi thêm sản phẩm mới: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác với danh mục!"});
+            res.status(500).json({ success: false, message: "Lỗi server khi thao tác với danh mục!"});
         }
         finally{
             connection.release();
@@ -648,9 +645,9 @@ const product_admin = {
             const { 
                 keyword, minprice, maxprice, danhmuc, chitietdanhmuc, 
                 hsx, NgayBatDau, NgayKetThuc, LoaiHinhBan, HienThi,
-                TinhTrangTonKho, // Lọc: 'sap_het' (<5) hoặc 'het_hang' (=0)
+                TinhTrangTonKho,
                 CoKhuyenMai,
-                Sapxep      // Lọc: 'true'
+                Sapxep 
             } = req.query;
 
 
@@ -712,7 +709,7 @@ const product_admin = {
             }
             else if(LoaiHinhBan === 'cosan'){
                 condition.push("mh.LoaiHinhBan = ?");
-                value.push('Có sẵn'); // Đã thêm dấu nháy đơn đóng
+                value.push('Có sẵn');
             }
             
             let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
@@ -804,7 +801,6 @@ const product_admin = {
     xem_thong_tin_san_pham: async(req, res)=>{
         try{
             const MaMH = req.params.MaMH;
-            console.log("👉 1. Backend đang đi tìm sản phẩm có MaMoHinh =", MaMH);
             const sql = `Select mh.MaMoHinh, mh.AnhDaiDien, mh.TenMH, mh.ChatLieu, mh.DonGia, mh.TrangThai, mh.ThongTinChiTiet, 
                             mh.KichThuoc, mh.NgayPhatHanh, mh.LoaiHinhBan, mh.TienCocToiThieu,
                             (
@@ -944,7 +940,6 @@ const product_admin = {
 
     liet_ke_danh_muc: async(req, res)=>{
         try {
-            // 1. KIỂM TRA CỜ "LẤY TẤT CẢ" (Dùng cho các thẻ <select> ở Frontend)
             const isGetAll = req.query.getAll === 'true';
 
             if (isGetAll) {
@@ -972,7 +967,6 @@ const product_admin = {
             let value = [];
 
             if(keyword){
-                // Thêm bí danh dm. để tránh lỗi trùng cột nếu sau này có JOIN thêm
                 condition.push("dm.TenDM LIKE ?"); 
                 value.push(`%${keyword}%`);
             }
@@ -1007,27 +1001,19 @@ const product_admin = {
             const sql_params = [...value, limit, offset];
             const [cates] = await db.query(sql_ds, sql_params);
 
-            // ---------------------------------------------------------
-            // BƯỚC MỚI: TÌM VÀ GỘP DANH MỤC CON CHO CÁC DANH MỤC VỪA TÌM ĐƯỢC
-            // ---------------------------------------------------------
             let finalCates = cates; 
             
             if (cates.length > 0) {
-                // Lấy ra danh sách các MaDM của trang hiện tại (VD: [1, 2, 3])
                 const arrMaDM = cates.map(c => c.MaDM);
-                
-                // Gọi API lấy các danh mục con thuộc các danh mục cha này
-                // Mẹo MySQL2: Khi dùng IN (?), bạn phải truyền mảng vào trong một mảng khác [arrMaDM]
+
                 const [subCates] = await db.query(
                     `SELECT MaChiTietDM, TenChiTietDM, MaDM, MoTa FROM ChiTietDanhMuc WHERE MaDM IN (?)`, 
                     [arrMaDM]
                 );
 
-                // Nhét danh mục con vào đúng danh mục cha
                 finalCates = cates.map(cate => {
                     return {
                         ...cate,
-                        // Tạo ra một mảng con chứa các chi tiết danh mục
                         DanhSachDanhMucCon: subCates.filter(sub => sub.MaDM === cate.MaDM)
                     };
                 });
@@ -1036,7 +1022,7 @@ const product_admin = {
             res.status(200).json({
                 success: true,
                 message: "Lấy danh sách danh mục thành công",
-                data: finalCates, // Trả về mảng đã gộp
+                data: finalCates,
                 pagination: {
                     currentPage: page,
                     limit: limit,

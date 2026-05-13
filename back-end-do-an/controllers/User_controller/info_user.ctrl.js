@@ -18,7 +18,7 @@ const fix_user_info = {
 
             res.status(200).json({
                 message: "Lấy thông tin thành công",
-                data: info[0] // Trả về dạng Object thay vì Mảng
+                data: info[0]
             });
         }
         catch (error){
@@ -57,7 +57,7 @@ const fix_user_info = {
             // 3. ĐÃ BỔ SUNG TRẢ VỀ TÊN ẢNH MỚI CHO FRONTEND
             res.status(200).json({ 
                 message: "Cập nhật thông tin thành công!", 
-                newAvatarName: newFileName // <--- Quan trọng để F5 không mất ảnh
+                newAvatarName: newFileName
             });
 
         }

@@ -300,9 +300,6 @@
     try {
       let url = `http://localhost:3000/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
-      // Nếu Backend của bạn có hỗ trợ lọc theo trạng thái, thêm dòng này:
-      // if (statusFilter.value !== 'all') url += `&status=${statusFilter.value}`;
-
       const response = await fetch(url);
       const result = await response.json();
 
@@ -313,7 +310,6 @@
           name: item.TenDM,
           description: item.MoTa || 'Chưa có mô tả',
           count: item.TongSoLuongDanhMucCon || 0,
-          
           // Ánh xạ mảng danh mục con (Cực kỳ quan trọng cho Form Sửa)
           details: item.DanhSachDanhMucCon ? item.DanhSachDanhMucCon.map(sub => ({
              id: sub.MaChiTietDM,
@@ -396,7 +392,6 @@
     };
 
     try {
-      // 🚨 BẠN HÃY SỬA LẠI ĐƯỜNG DẪN NÀY CHO KHỚP VỚI NODE.JS CỦA BẠN
       let url = 'http://localhost:3000/api/product_admin/add_variant'; 
       let method = 'POST';
 

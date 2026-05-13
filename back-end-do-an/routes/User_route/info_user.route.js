@@ -14,7 +14,6 @@ const storage = multer.diskStorage({
   },
   // Cách đổi tên ảnh để KHÔNG BAO GIỜ bị trùng: avatar_[MaTK]_[timestamp].[ext]
   filename: (req, file, cb) => {
-    // Lấy Mã Tài Khoản từ req.body (Vì FormData gửi xuống)
     const maTK = req.body.MaTK || 'unknown'; 
     // Lấy đuôi file ảnh (VD: .jpg, .png)
     const fileExt = path.extname(file.originalname);
@@ -33,7 +32,6 @@ const upload = multer({
 
 
 // 3. Sửa Route: Thêm middleware 'upload.single('avatar')' vào giữa
-// 'avatar' là cái tên bạn đặt ở FormData bên Frontend nhé
 router.get('/laythongtin/:MaTK', info_userController.laythongtin);
 router.post('/change_info', upload.single('avatar'), info_userController.capnhatthongtin);
 router.post('/change_password', info_userController.doi_mat_khau);

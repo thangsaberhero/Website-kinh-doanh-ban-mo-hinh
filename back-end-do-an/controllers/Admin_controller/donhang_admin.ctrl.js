@@ -41,7 +41,7 @@ const donhang_admin = {
             res.status(500).json({ message: "Lỗi server khi thêm đơn hàng!"});
         }
         finally {
-        connection.release(); // Luôn nhớ nhả connection
+        connection.release();
         }
     },
 
@@ -58,8 +58,6 @@ const donhang_admin = {
             await connection.rollback();
             return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
             }
-
-            // SỬA LỖI: Lấy đúng thuộc tính MaTrangThai từ Object
             const currentStatus = trang_thai[0].MaTrangThai;
 
             if(currentStatus === 3 || currentStatus === 4 || currentStatus === 5){
@@ -107,8 +105,6 @@ const donhang_admin = {
             await connection.rollback();
             return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
             }
-
-            // SỬA LỖI: Lấy đúng thuộc tính MaTrangThai từ Object
             const currentStatus = trang_thai[0].MaTrangThai;
                 
             if(currentStatus === 3 || currentStatus === 4 || currentStatus === 5){
@@ -182,9 +178,9 @@ const donhang_admin = {
 
             let filter = "";
             if (orderParams.length > 0) {
-                filter = "ORDER BY " + orderParams.join(", "); // Gộp bằng dấu phẩy
+                filter = "ORDER BY " + orderParams.join(", ");
             } else {
-                filter = "ORDER BY dh.NgayLapDon DESC"; // DEFAULT: Không chọn gì thì Đơn mới nhất lên đầu
+                filter = "ORDER BY dh.NgayLapDon DESC";
             }
 
             const sql_core = `
@@ -214,7 +210,6 @@ const donhang_admin = {
                 LIMIT ? OFFSET ?
             `;
             
-            // Fix lỗi dấu ngoặc vuông
             const sql_params = [...combinedValues, limit, offset];
             const [invoices] = await db.query(sql_ds, sql_params);
 
@@ -382,7 +377,7 @@ const donhang_admin = {
         const sql_them_trang_thai_hoan = `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 6, NOW())`;
         await connection.query(sql_them_trang_thai_hoan, [MaDH]);
 
-        // 4. Nhập lại hàng vào kho (Restock)
+        // 4. Nhập lại hàng vào kho
         const sql_cap_nhat_ton_kho = `
             UPDATE PhanLoai pl
             INNER JOIN ChiTietDonHang ctdh ON ctdh.MaPhanLoai = pl.MaPhanLoai

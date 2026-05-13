@@ -97,7 +97,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'; // Import thêm nextTick
+import { ref, nextTick } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router'; 
 
@@ -168,7 +168,6 @@ const sendMessage = async () => {
   transform-origin: center; 
 }
 
-/* Thêm css cho scrollbar nhìn gọn gàng hơn trên trình duyệt Webkit */
 .overflow-y-auto::-webkit-scrollbar {
   width: 4px;
 }

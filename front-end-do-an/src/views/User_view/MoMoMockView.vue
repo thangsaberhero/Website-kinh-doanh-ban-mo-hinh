@@ -85,7 +85,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import TheHeader from '../../components/TheHeader.vue'; // Nhớ import TheHeader của bạn
+import TheHeader from '../../components/TheHeader.vue';
 import { useToastStore } from '../../stores/toast';
 
 const route = useRoute();

@@ -165,22 +165,16 @@ const account_admin = {
                 condition.push("SDT = ?");
                 value.push(keyword_sdt);
             }
-            
             let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
-
             let roles = [];
             if (quyen_admin === 'true') roles.push(1);
             if (quyen_nhanvien === 'true') roles.push(2);
             if (quyen_khach === 'true') roles.push(3);
-
             if (roles.length > 0) {
-                // Tạo ra chuỗi dạng: tk.MaQuyen IN (?, ?, ?)
                 const placeholders = roles.map(() => '?').join(',');
                 condition.push(`tk.MaQuyen IN (${placeholders})`);
-                value.push(...roles); // Nhét các số 1, 2, 3 vào mảng values
+                value.push(...roles);
             }
-
-
             const sql_core = `Select tk.MaTK, tk.Email, tk.AnhDaiDien, tk.NgayTao, tk.DangNhapCuoi, tk.Bi_khoa,
                                 q.TenQuyen, tk.MaQuyen,
                                 Coalesce(nv.TenNV, kh.TenKH) As HoTen,

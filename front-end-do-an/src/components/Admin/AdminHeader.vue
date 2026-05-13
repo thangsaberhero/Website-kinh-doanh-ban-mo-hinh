@@ -152,7 +152,7 @@
 <script setup>
   import { computed } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../../stores/auth.js'; // Đảm bảo đường dẫn đúng tới store của bạn
+  import { useAuthStore } from '../../stores/auth.js';
 
   const authStore = useAuthStore();
   const router = useRouter();

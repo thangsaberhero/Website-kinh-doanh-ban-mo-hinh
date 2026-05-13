@@ -3,10 +3,7 @@ const RPC_URL = process.env.RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.
 const web3 = new Web3(RPC_URL);
 const CONTRACT_ADDRESS = '0x3d9afec87bf4243ae7807bb8eca970ca9106d902'; 
 
-// TODO 2: Dán toàn bộ mảng JSON ABI của bạn vào giữa 2 dấu ngoặc vuông này
-// Paste ABI của bạn
 const CONTRACT_ABI = [
-    // ... (Giữ nguyên toàn bộ mảng ABI bạn đã copy) ...
     {
         "inputs": [
             { "internalType": "string", "name": "_serialNumber", "type": "string" },
@@ -71,7 +68,7 @@ const CONTRACT_ABI = [
     }
 ];
 
-// KHỞI TẠO ĐỐI TƯỢNG CONTRACT (Chính dòng này sẽ sửa lỗi undefined của bạn)
+// KHỞI TẠO ĐỐI TƯỢNG CONTRACT
 const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 // 1. Hàm lấy lịch sử từ Blockchain (Chỉ đọc, không tốn gas)
 async function getHistoryFromBlockchain(serialNumber) {
@@ -81,8 +78,6 @@ async function getHistoryFromBlockchain(serialNumber) {
         
         // Gọi Smart Contract
         const historyData = await contract.methods.getProductHistory(cleanSerial).call();
-        
-        // 🔥 THÊM DÒNG NÀY VÀO ĐỂ XEM DỮ LIỆU THẬT SỰ TỪ BLOCKCHAIN LÀ GÌ
         console.log("Dữ liệu thô từ Blockchain:", historyData); 
 
         return historyData.map(record => ({

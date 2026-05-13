@@ -1,6 +1,5 @@
 const db = require('../../config/db.js');
 //const PayOS = require("@payos/node");
-// Thay 3 chuỗi bên dưới bằng 3 mã bạn vừa lấy ở Bước 1
 // /const payos = new PayOS("YOUR_CLIENT_ID", "YOUR_API_KEY", "YOUR_CHECKSUM_KEY");
 
 const donhang_user = {
@@ -166,7 +165,6 @@ const donhang_user = {
     },
 
     xac_nhan_don_hang: async(req, res) => {
-        // [MỚI]: Phải xin hệ thống cấp riêng một 'connection' để làm Transaction
         const connection = await db.getConnection(); 
 
         try {
@@ -176,12 +174,10 @@ const donhang_user = {
             const [result_giohang] = await connection.query(sql_laymagiohang, [MaKH]);
 
             if(result_giohang.length === 0) {
-                connection.release(); // Nhớ trả lại connection nếu dừng sớm
+                connection.release();
                 return res.status(404).json({ message: "Không tìm thấy mã giỏ hàng"});
             }
             const maGH = result_giohang[0].MaGH;
-
-            // Truyền giá trị tính tiền riêng tránh việc bị sửa thông tin
             const sql_tinh_tong_tien =  `select SUM( 
                                         pl.DonGia* ctgh.SoLuong) 
                                         as TongTien
@@ -229,7 +225,6 @@ const donhang_user = {
             // Thêm trạng thái "chờ duyệt cho đơn hàng"
             await connection.query(`Insert into ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) Values (?, 1, NOW())`, [maDH_moi]);
 
-            // 3. COPY hàng từ Giỏ sang Đơn (Dùng chiêu INSERT INTO ... SELECT siêu nhanh của SQL)
             const sql_chuyen_hang = `
                 INSERT INTO ChiTietDonHang (MaDH, MaMoHinh, SoLuong, DonGiaBan)
                 SELECT ?, ctgh.MaMoHinh, ctgh.SoLuong ,
@@ -251,11 +246,8 @@ const donhang_user = {
             const sql_xoa_gio = `DELETE FROM ChiTietGioHang WHERE MaGH = ?`;
             await connection.query(sql_xoa_gio, [maGH]);
 
-            
-
-            // ================= KẾT THÚC TRANSACTION =================
-            await connection.commit(); // Thành công hết! Chốt sổ lưu vào DB!
-            connection.release(); // Trả kết nối lại cho hệ thống
+            await connection.commit();
+            connection.release();
 
             res.status(200).json({ 
                 message: "🎉 Đặt hàng thành công!",
@@ -263,7 +255,6 @@ const donhang_user = {
             });
             
         } catch (error) {
-            // NẾU CÓ LỖI Ở BẤT KỲ ĐÂU -> HỦY BỎ TẤT CẢ MỌI THAY ĐỔI TRƯỚC ĐÓ
             await connection.rollback(); 
             connection.release();
             
@@ -386,15 +377,11 @@ const donhang_user = {
                 const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH])                   
                 soTienCanThanhToan = result_tien_coc[0].TienCoc;
             }
-            
-
-            // Thay vì gọi API của MoMo thật, ta tự tạo ra một đường link trỏ về 
-            // một trang giao diện mới trên chính Frontend (Vue.js) của bạn
             const mockUrl = `http://localhost:5173/momo-payment?orderId=${MaDH}&amount=${soTienCanThanhToan}&type=${encodeURIComponent(HinhThuc || 'Thanh toán toàn bộ')}`;
 
             res.status(200).json({
                 message: "Tạo link thanh toán MoMo thành công!",
-                checkoutUrl: mockUrl // Frontend sẽ lấy link này để mở ra
+                checkoutUrl: mockUrl
             });
 
         } catch (error) {
@@ -415,7 +402,6 @@ const donhang_user = {
             await connection.beginTransaction();
 
             // Bước 1: Ghi vào bảng ThanhToan
-            // Chú ý: MaPT = 2 (Giả sử 1 là COD, 2 là Ví Điện Tử/MoMo, bạn tự chỉnh lại theo DB nhé)
             const sql_thanh_toan = `
                 INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich) 
                 VALUES (1, ?, NOW(), ?, ?)
@@ -430,10 +416,6 @@ const donhang_user = {
             );
             
             // Bước 3: Thêm log vào bảng ChiTietTrangThai (Giả sử mã trạng thái 2 là Đã cọc/thanh toán)
-            // await connection.query(
-            //     `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 1, NOW())`, 
-            //     [orderId]
-            // );
 
             await connection.commit();
             connection.release();
@@ -450,9 +432,6 @@ const donhang_user = {
             res.status(500).json({ success: false, message: "Lỗi hệ thống khi ghi nhận thanh toán!" });
         }
     }
-
-    
-    
 }
 
 module.exports = donhang_user;

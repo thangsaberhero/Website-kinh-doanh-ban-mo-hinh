@@ -248,7 +248,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-// IMPORT THÊM AUTH STORE ĐỂ HEADER HOẠT ĐỘNG
+
 import { useAuthStore } from '../../stores/auth.js';
 import TheHeader from '../../components/TheHeader.vue';
 

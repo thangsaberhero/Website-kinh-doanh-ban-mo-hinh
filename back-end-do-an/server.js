@@ -6,7 +6,6 @@ const app = express();
 
 //Chức năng tự huỷ đơn
 const cron = require('node-cron');
-// LƯU Ý: Phải trỏ đúng đường dẫn đến file cấu hình MySQL của bạn
 const db = require('./config/db');
 
 // Middlewares
@@ -42,7 +41,7 @@ app.use('/api/don_hang',donhangRoutes);
 const reviewRoutes = require('./routes/User_route/review.route.js');
 app.use('/api/reviews', reviewRoutes);
 //Lấy đường dẫn ảnh đại diện
-const path = require('path'); // Nhớ gọi thư viện path ở đầu file server.js nhé
+const path = require('path');
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
 app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
@@ -59,11 +58,9 @@ const blockchainRoutes = require('./routes/User_route/blockchain.route.js');
 app.use('/api/blockchain', blockchainRoutes);
 
 // =========================================================
-// CRON JOB: TỰ ĐỘNG HỦY ĐƠN VÀ NHẢ KHO (Mỗi 1 phút chạy 1 lần)
+// CRON JOB: TỰ ĐỘNG HỦY ĐƠN VÀ NHẢ KHO
 // =========================================================
 cron.schedule('* * * * *', async () => {
-
-    // Cấp một connection để làm Transaction an toàn
     const connection = await db.getConnection();
 
     try {
@@ -99,7 +96,7 @@ cron.schedule('* * * * *', async () => {
                 // 4. Ghi log trạng thái
                 await connection.query(
                     `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, 
-                    [maDH] // Giả sử 5 là mã trạng thái Hủy
+                    [maDH]
                 );
 
                 console.log(`❌ Đã tự động hủy đơn FC-${maDH} và hoàn lại kho.`);
@@ -115,8 +112,9 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-
-// Nhánh luồng xử lý của admin:
+//==========================================
+//===== Nhánh luồng xử lý của admin:
+//==========================================
 //Lấy thông tin upload ảnh
 const uploadRoutes = require('./routes/Admin_route/upload.route.js');
 app.use('/api/upload', uploadRoutes);

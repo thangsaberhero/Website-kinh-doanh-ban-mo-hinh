@@ -23,8 +23,8 @@ const upload = multer({ storage: storage });
 // NHÓM POST: THÊM MỚI & SỬA ĐỔI DỮ LIỆU
 // ==========================================
 router.post('/add_product', upload.fields([
-    { name: 'AnhDaiDien', maxCount: 1 },    // Đón tối đa 1 file ảnh đại diện
-    { name: 'BoSuuTapAnh', maxCount: 10 }   // Đón tối đa 10 file cho bộ sưu tập
+    { name: 'AnhDaiDien', maxCount: 1 },
+    { name: 'BoSuuTapAnh', maxCount: 10 }
 ]), product_Controller.them_mat_hang_moi);
 
 
@@ -34,25 +34,28 @@ router.post('/add_product_variant', product_Controller.them_phan_loai_cho_san_ph
 router.post('/add_detail_variant', product_Controller.them_chi_tiet_danh_muc_moi);
 
 router.put('/fix_info/:id', upload.fields([
-    { name: 'AnhDaiDien', maxCount: 1 },    // Đón tối đa 1 file ảnh đại diện
-    { name: 'BoSuuTapAnhMoi', maxCount: 10 }   // Đón tối đa 10 file cho bộ sưu tập
+    { name: 'AnhDaiDien', maxCount: 1 },
+    { name: 'BoSuuTapAnhMoi', maxCount: 10 }
 ]), product_Controller.sua_thong_tin_mat_hang);
 
 router.post('/fix_invisible', product_Controller.thay_doi_hien_thi_mat_hang);
 
 router.post('/an_phan_loai', product_Controller.An_phan_loai); 
 
-router.delete('/delete_detail/:id', product_Controller.xoa_danh_muc);
-router.delete('/delete_detail_variant/:id', product_Controller.xoa_chi_tiet_danh_muc);
+
 
 router.post('/delete_brand', product_Controller.xoa_HSX);
 router.post('/add_brand', product_Controller.them_hang_san_xuat_moi);
+
 router.put('/fix_brand/:id', product_Controller.sua_thong_tin_HSX);
 router.put('/fix_cate/:id', product_Controller.sua_thong_tin_danh_muc);
 
+router.delete('/delete_detail/:id', product_Controller.xoa_danh_muc);
+router.delete('/delete_detail_variant/:id', product_Controller.xoa_chi_tiet_danh_muc);
+
 
 // ==========================================
-// NHÓM GET: CHỈ DÙNG ĐỂ TRUY VẤN XEM DỮ LIỆU
+// NHÓM GET:
 // ==========================================
 router.get('/', product_Controller.liet_ke_mat_hang);
 router.get('/get_brand', product_Controller.get_brand);

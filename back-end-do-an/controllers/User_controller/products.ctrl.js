@@ -12,7 +12,7 @@ const product_view = {
             let condition = [];
             let value = [];
             if(keyword){
-                condition.push("(mh.TenMH like ? or TenHSX like ?)");
+                condition.push("(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR HangSanXuat.TenHSX COLLATE utf8mb4_unicode_ci LIKE ?)");
                 value.push(`%${keyword}%`, `%${keyword}%`);
             }
             if(danhmuc){
@@ -34,7 +34,7 @@ const product_view = {
                 condition.push("mh.DonGia <= ?");
                 value.push(gia);
             }
-            let whereClause = condition.length > 0 ? "where " + condition.join(" and "): "";
+            let whereClause = condition.length > 0 ? " and " + condition.join(" and "): "";
 
             let filter = ""
             if(sapxep === 'price_asc')
@@ -52,6 +52,7 @@ const product_view = {
             ) AS SoLuong
             FROM MoHinh mh
             INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
+            where HienThi = 1 
             ${whereClause}`;
 
             const sql_count = `Select count(*) as total from (${sql_core}) as temptable`
@@ -98,7 +99,7 @@ const product_view = {
                     (
                         SELECT COALESCE(SUM(SoLuong), 0) 
                         FROM PhanLoai 
-                        WHERE MaMoHinh = mh.MaMoHinh
+                        WHERE PhanLoai.MaMoHinh = mh.MaMoHinh
                     ) AS SoLuong
                     
                 FROM MoHinh mh
@@ -130,12 +131,11 @@ const product_view = {
     getVariantProductById: async(req, res) => {
         try {
             const id = req.params.id;
-
             const sql = `
                 SELECT pl.*
                 
                 FROM PhanLoai pl
-                WHERE pl.MaMoHinh = ?
+                WHERE pl.MaMoHinh = ? and pl.HienThi = 1
             `;
 
             const [product] = await db.query(sql, [id]);
@@ -270,8 +270,6 @@ const product_view = {
                 WHERE TenMH LIKE ? 
                 LIMIT 10
             `;
-            
-            // Thêm % vào 2 đầu từ khóa để tìm chuỗi con
             const [results] = await db.query(sql, [`%${keyword}%`]);
 
             res.status(200).json({

@@ -32,7 +32,7 @@ const authController = {
             const salt = await bcrypt.genSalt(10);
             const hashedPass = await bcrypt.hash(MatKhau, salt);
 
-            // Lưu vào Database (Giả sử MaQuyen = 3 là Khách hàng bình thường)
+            // Lưu vào Database (MaQuyen = 3 là Khách hàng bình thường)
             const sqltk = 'INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES (?, ?, ?, 3)';
             const [resultTK] = await db.query(sqltk, [TenDN, hashedPass, email]);
             
@@ -60,8 +60,6 @@ const authController = {
     login: async (req, res) => {
         try {
             const { TenDN, MatKhau } = req.body;
-
-            // [SỬA Ở ĐÂY]: Nối bảng TaiKhoan với KhachHang để lấy được MaKH
             const sql_login = `
                 SELECT tk.*, kh.MaKH, tk.AnhDaiDien
                 FROM TaiKhoan tk
@@ -70,7 +68,6 @@ const authController = {
             `;
             const [users] = await db.query(sql_login, [TenDN]);
             
-            // Đã sửa lỗi khoảng trắng 'lengt h' thành 'length'
             if (users.length === 0) {
                 return res.status(404).json({ message: "Tài khoản không tồn tại!" });
             }
@@ -118,7 +115,7 @@ const authController = {
             // Kiểm tra email có tồn tại không
             const [users] = await db.query('SELECT * FROM TaiKhoan WHERE Email = ?', [email]);
             if (users.length === 0) {
-                // Trả về lỗi ẩn danh để bảo mật: Dù có hay không cũng báo thành công
+                // Trả về lỗi ẩn danh để bảo mật
                 return res.status(200).json({ message: "Nếu email tồn tại, OTP sẽ được gửi." });
             }
 

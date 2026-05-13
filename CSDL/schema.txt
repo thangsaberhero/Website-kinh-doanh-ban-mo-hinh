@@ -77,6 +77,7 @@ CREATE TABLE MoHinh (
     MaDM INT,
     MaChiTietDM INT NULL,
     ChatLieu VARCHAR(100),
+    GiaNhap DECIMAL(12,2) NOT NULL CHECK (GiaNhap >= 0),
     DonGia DECIMAL(12,2) NOT NULL CHECK (DonGia >= 0),
     TrangThai VARCHAR(50),
     ThongTinChiTiet TEXT,
@@ -195,6 +196,8 @@ CREATE TABLE ChiTietDonHang (
     MaDH INT,
     MaMoHinh INT,
     SoLuong INT CHECK (SoLuong > 0),
+    GiaNhapThucTe DECIMAL(12,2) CHECK (GiaNhapThucTe >= 0),
+    DonGiaGoc Decimal(12,2) Check (DonGiaGoc >= 0), 
     DonGiaBan DECIMAL(12,2) CHECK (DonGiaBan >= 0),
     PRIMARY KEY (MaDH, MaMoHinh),
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
@@ -383,17 +386,4 @@ CREATE TABLE SanPhamVatLy (
     MaDH INT NULL,
     FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh),
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
-);
-
--- 28. Bảng Lịch sử Blockchain
-CREATE TABLE LichSuBlockchain (
-    MaBanGhi INT PRIMARY KEY AUTO_INCREMENT,
-    MaMoHinhVL INT,
-    DiaChiSmartContract VARCHAR(255) NOT NULL,
-    MaToken VARCHAR(100) NOT NULL,
-    MaGiaoDich VARCHAR(255) UNIQUE NOT NULL, 
-    LinkQR VARCHAR(255),
-    ThoiGianGhiNhan DATETIME,
-    LoaiSuKien VARCHAR(50), 
-    FOREIGN KEY (MaMoHinhVL) REFERENCES SanPhamVatLy(MaMoHinhVL)
 );
