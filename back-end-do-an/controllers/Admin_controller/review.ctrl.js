@@ -39,12 +39,13 @@ const adminReviewController = {
             const totalItems = countResult[0].total;
             const totalPages = Math.ceil(totalItems / limit);
 
-            const dataSql = `SELECT dg.*, kh.TenKH, tk.AnhDaiDien, mh.TenMH, pl.ChiTietPhanLoai 
+            const dataSql = `SELECT dg.*, kh.TenKH, tk.AnhDaiDien, mh.TenMH, pl.ChiTietPhanLoai, nv.TenNV as TenNVPhanHoi 
                             FROM DanhGia dg
                             JOIN KhachHang kh ON dg.MaKH = kh.MaKH
                             JOIN MoHinh mh ON dg.MaMH = mh.MaMoHinh
                             LEFT JOIN TaiKhoan tk ON tk.MaTK = kh.MaTK
                             LEFT JOIN PhanLoai pl ON dg.MaPhanLoai = pl.MaPhanLoai
+                            LEFT JOIN NhanVien nv ON dg.MaNV_PhanHoi = nv.MaNV
                             WHERE ${whereClause}
                             ORDER BY dg.ThoiGianDG DESC
                             LIMIT ? OFFSET ?`;
@@ -74,7 +75,7 @@ const adminReviewController = {
                 success: true,
                 data: processedReviews,
                 pagination: { totalItems, totalPages, currentPage: page, limit },
-                stats: globalStats // Trả thêm cục stats này về cho UI
+                stats: globalStats 
             });
         } catch(error) {
             console.error("Lỗi API getAllReviewsAdmin: ", error);
@@ -82,11 +83,28 @@ const adminReviewController = {
         }
     },
     moderateReview: async(req, res) => {
-        try{
+        try {
             const { MaDG } = req.params;
-            const { TrangThai, PhanHoiShop } = req.body;
-            const sql = `UPDATE DanhGia SET TrangThai = COALESCE(?, TrangThai), PhanHoiShop = COALESCE(?, PhanHoiShop) WHERE MaDG = ?`;
-            await db.query(sql, [TrangThai, PhanHoiShop, MaDG]);
+            const TrangThai = req.body.TrangThai !== undefined ? req.body.TrangThai : null;
+            const PhanHoiShop = req.body.PhanHoiShop !== undefined ? req.body.PhanHoiShop : null;
+
+            if (!req.user) {
+                return res.status(401).json({ message: "Không tìm thấy thông tin xác thực (Thiếu Token)" });
+            }
+            const MaTK = req.user.id || req.user.MaTK; 
+            
+            const [nv] = await db.query('SELECT MaNV FROM NhanVien WHERE MaTK = ?', [MaTK]);
+            const MaNV = nv.length > 0 ? nv[0].MaNV : null;
+
+            const sql = `UPDATE DanhGia 
+                        SET TrangThai = COALESCE(?, TrangThai), 
+                            PhanHoiShop = COALESCE(?, PhanHoiShop),
+                            MaNV_PhanHoi = COALESCE(?, MaNV_PhanHoi) 
+                        WHERE MaDG = ?`;
+            
+            const nvUpdate = PhanHoiShop ? MaNV : null;
+            
+            await db.query(sql, [TrangThai, PhanHoiShop, nvUpdate, MaDG]);
             res.status(200).json({
                 message: "Cập nhật đánh giá thành công"
             });

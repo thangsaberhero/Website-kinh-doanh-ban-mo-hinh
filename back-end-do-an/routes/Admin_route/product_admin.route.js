@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const product_Controller = require('../../controllers/Admin_controller/product_admin.ctrl');
+const { uploadProduct, uploadBrand } = require('../../middlewares/upload.js');
 
 //Lưu ảnh
 const storage = multer.diskStorage({
@@ -27,6 +28,8 @@ router.post('/add_product', upload.fields([
     { name: 'BoSuuTapAnh', maxCount: 10 }   // Đón tối đa 10 file cho bộ sưu tập
 ]), product_Controller.them_mat_hang_moi);
 
+router.post('/add_brand', uploadBrand.single('Logo'), product_Controller.them_hang_san_xuat_moi);
+router.put('/fix_brand/:id', uploadBrand.single('Logo'), product_Controller.sua_thong_tin_HSX);
 
 router.post('/add_variant', product_Controller.them_danh_muc_moi);
 router.post('/add_product_variant', product_Controller.them_phan_loai_cho_san_pham);

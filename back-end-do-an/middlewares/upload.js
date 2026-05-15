@@ -25,4 +25,5 @@ const createUploader = (folderName) => {
 module.exports = {
     uploadNews: createUploader('Images_news'),
     uploadReview: createUploader('Images_review'),
+    uploadBrand: createUploader('Images_brand')
 };

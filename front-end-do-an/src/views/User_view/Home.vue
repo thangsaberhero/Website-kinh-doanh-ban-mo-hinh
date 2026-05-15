@@ -1,29 +1,51 @@
 <template>
   <div class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen">
     <TheHeader />
-    <section class="relative h-[85vh] overflow-hidden bg-surface-container-lowest">
-      <div class="absolute inset-0 opacity-60">
-        <img class="w-full h-full object-cover object-[60%_20%]" alt="Premium Gundam" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGfQ6Typ978uv1QahrmCG7PbPFg5_MLWN4K6DDmh69N5IlhPUhPKmdIfvIvZrQ_rFT9xyW1urq37KsPg2Topn02qR3hXUA9h7RKAdw21cNNpg8-yJQ6L0mjub5hU8TJtnUbmNtH8CjWKlWU8MxvHE6W3LhxEOF4NzXIHMRv8vtmkqkPsfFUx4xRlv2TAaL2OMN0YNVoCa7_nDFZbJA-PHZBV_Hn6rkXodnc9YmQHIGun8C0b2cmKxBFeAEweP0SjPODlAbMN4Gzr-E"/>
-        <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80 lg:hidden"></div>
+    <section class="relative h-[85vh] overflow-hidden bg-surface-container-lowest group">
+      <div class="absolute inset-0 w-full h-full">
+        <Transition name="fade-slide" mode="out-in">
+          <div :key="currentHeroIndex" class="absolute inset-0 w-full h-full">
+            <div class="absolute inset-0 opacity-60">
+              <img class="w-full h-full object-cover object-[60%_20%]" :alt="heroSlides[currentHeroIndex].title" :src="heroSlides[currentHeroIndex].image" fetchpriority="high"/>
+              <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80 lg:hidden"></div>
+            </div>
+
+            <div class="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center items-start">
+              <span class="font-headline text-primary font-bold tracking-[0.3em] text-sm mb-4 animate-[slideInUp_0.5s_ease-out]">
+                {{ heroSlides[currentHeroIndex].tag }}
+              </span>
+              <h1 class="font-headline text-6xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tighter mb-6 max-w-2xl animate-[slideInUp_0.7s_ease-out]">
+                {{ heroSlides[currentHeroIndex].title }} <br/> 
+                <span class="text-gradient">{{ heroSlides[currentHeroIndex].titleAccent }}</span>
+              </h1>
+              <p class="text-on-surface-variant text-lg md:text-xl max-w-lg mb-10 leading-relaxed animate-[slideInUp_0.9s_ease-out]">
+                {{ heroSlides[currentHeroIndex].desc }}
+              </p>
+              <div class="flex flex-wrap items-center gap-4 md:gap-6 animate-[slideInUp_1.1s_ease-out]">
+                <button @click="router.push(heroSlides[currentHeroIndex].link)" class="hero-gradient text-on-primary font-bold px-8 py-4 rounded-lg flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+                  Khám phá ngay
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
-      <div class="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center items-start">
-        <span class="font-headline text-primary font-bold tracking-[0.3em] text-sm mb-4">PREMIUM ARTIFACTS</span>
-        <h1 class="font-headline text-6xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tighter mb-6 max-w-2xl">
-          FIGURE <br/> <span class="text-gradient">COLLECT</span>
-        </h1>
-        <p class="text-on-surface-variant text-lg md:text-xl max-w-lg mb-10 leading-relaxed">
-          Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn từ các studio hàng đầu thế giới.
-        </p>
-        <div class="flex flex-wrap items-center gap-4 md:gap-6">
-          <button class="hero-gradient text-on-primary font-bold px-8 py-4 rounded-lg flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
-            Khám phá ngay
-            <span class="material-symbols-outlined">arrow_forward</span>
-          </button>
-          <button class="border border-outline-variant px-8 py-4 rounded-lg font-bold hover:bg-surface-bright active:scale-95 transition-all">
-            Xem bộ sưu tập
-          </button>
-        </div>
+
+      <button @click="prevHeroSlide" class="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-surface/20 backdrop-blur-md border border-white/10 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button @click="nextHeroSlide" class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-surface/20 backdrop-blur-md border border-white/10 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+
+      <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+        <button 
+          v-for="(slide, index) in heroSlides" :key="index"
+          @click="currentHeroIndex = index"
+          :class="['h-1.5 rounded-full transition-all duration-500', currentHeroIndex === index ? 'w-10 bg-primary' : 'w-2 bg-white/30']"
+        ></button>
       </div>
     </section>
 
@@ -62,7 +84,7 @@
     <section class="max-w-7xl mx-auto px-6 py-24">
       <div class="flex justify-between items-end mb-12 border-b border-outline-variant/15 pb-4">
         <div>
-          <h2 class="font-headline text-3xl md:text-4xl font-bold mb-2 text-on-surface">Danh mục nổi bật</h2>
+          <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface">Danh mục nổi bật</h2>
           <div class="h-1 w-20 bg-primary rounded-full"></div>
         </div>
         <a @click="router.push('/category')" class="text-primary text-sm font-bold flex items-center gap-1 hover:underline cursor-pointer underline-offset-4">
@@ -72,7 +94,7 @@
       
       <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
         <div @click="router.push('/category/1')" class="md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[300px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gundam" :src="'FIGURE-148979_01.jpg'"/>
+          <img loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gundam" :src="'FIGURE-148979_01.jpg'"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent opacity-90"></div>
           <div class="absolute bottom-8 left-8">
             <h3 class="font-headline text-4xl font-bold mb-2 text-on-surface">Mô hình chính hãng</h3>
@@ -81,7 +103,7 @@
           </div>
         </div>
         <div @click="router.push('/category/2')" class="md:col-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover object-[60%_20%] transition-transform duration-700 group-hover:scale-110" alt="Anime Figures" :src="'FIGURE-158151_01.jpg'"/>
+          <img loading="lazy" class="w-full h-full object-cover object-[60%_20%] transition-transform duration-700 group-hover:scale-110" alt="Anime Figures" :src="'FIGURE-158151_01.jpg'"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
           <div class="absolute bottom-6 left-6">
             <h3 class="font-headline text-2xl font-bold mb-1 text-on-surface">Nendoroid</h3>
@@ -89,14 +111,14 @@
           </div>
         </div>
         <div @click="router.push('/category/3')" class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" :src="'kaka.jpg'"/>
+          <img loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" :src="'kaka.jpg'"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
           <div class="absolute bottom-4 left-4">
             <h3 class="font-headline text-xl font-bold text-on-surface">Gundam</h3>
           </div>
         </div>
         <div @click="router.push('/category/4')" class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Accessories" :src="'S8020b122c9894d9ab24aa152e7d15a24A.jpg'"/>
+          <img loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Accessories" :src="'S8020b122c9894d9ab24aa152e7d15a24A.jpg'"/>
           <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
           <div class="absolute bottom-4 left-4">
             <h3 class="font-headline text-xl font-bold text-on-surface">Pre order</h3>
@@ -105,38 +127,70 @@
       </div>
     </section>
 
-    <section class="py-24 bg-surface-container-low">
+    <section class="max-w-7xl mx-auto px-6 py-12 border-t border-outline-variant/10">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface">Thương hiệu đối tác</h2>
+          <div class="h-1 w-20 bg-primary rounded-full"></div>
+        </div>
+      </div>
+
+      <div class="relative overflow-hidden py-4">
+        <div class="flex marquee-track gap-6">       
+          <div v-for="brand in brands" :key="`a-${brand.MaHSX}`"
+              @click="goToBrand(brand.TenHSX)"
+              class="flex-shrink-0 w-44 h-24 bg-surface-container-low border border-outline-variant/20 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-surface-bright transition-all p-4 shadow-sm">
+            <img v-if="brand.Logo" loading="lazy" :src="`http://localhost:3000/Images_brand/${brand.Logo}`" class="max-w-full max-h-full object-contain" />
+            <span v-else class="font-headline font-black text-outline-variant text-lg uppercase italic">{{ brand.TenHSX }}</span>
+          </div>
+
+          <div v-for="brand in brands" :key="`b-${brand.MaHSX}`"
+              @click="goToBrand(brand.TenHSX)"
+              class="flex-shrink-0 w-44 h-24 bg-surface-container-low border border-outline-variant/20 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-surface-bright transition-all p-4 shadow-sm">
+            <img v-if="brand.Logo" loading="lazy" :src="`http://localhost:3000/Images_brand/${brand.Logo}`" class="max-w-full max-h-full object-contain" />
+            <span v-else class="font-headline font-black text-outline-variant text-lg uppercase italic">{{ brand.TenHSX }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-12 bg-surface-container-low">
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-center mb-12 border-b border-outline-variant/15 pb-4">
-          <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface">Hàng mới cập bến</h2>
+          <div>
+            <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface">Hàng mới cập bến</h2>
+            <div class="h-1 w-20 bg-primary rounded-full"></div>
+          </div>
           <div class="flex gap-2">
-            <button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-bright hover:text-primary transition-colors">
+            <button @click="scrollSlider('left')" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-bright hover:text-primary transition-colors">
               <span class="material-symbols-outlined">chevron_left</span>
             </button>
-            <button class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-bright hover:text-primary transition-colors">
+            <button @click="scrollSlider('right')" class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-bright hover:text-primary transition-colors">
               <span class="material-symbols-outlined">chevron_right</span>
             </button>
           </div>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div v-for="sp in productList" :key="sp.MaMoHinh" @click="goToDetail(sp.MaMoHinh)" class="group cursor-pointer">
+        <div ref="productSlider" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 pt-4">
+          <div 
+            v-for="sp in productList" :key="sp.MaMoHinh" 
+            @click="goToDetail(sp.MaMoHinh)" 
+            class="group cursor-pointer shrink-0 w-[280px] lg:w-[calc(25%-18px)] snap-start"
+          >
             <div class="relative bg-surface-container-highest aspect-[3/4] rounded-lg overflow-hidden mb-5 border border-outline-variant/10">
-              
               <span class="absolute top-4 left-4 z-10 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest bg-primary text-on-primary">
                 NEW
               </span>
-              
-              <img :src="`http://localhost:3000/Images_product/${sp.AnhDaiDien}`"    :alt="sp.TenMH" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+              <img loading="lazy" :src="`http://localhost:3000/Images_product/${sp.AnhDaiDien}`" :alt="sp.TenMH" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
               <div class="absolute inset-0 bg-surface/0 group-hover:bg-surface/20 transition-colors"></div>
               
-              <button class="absolute bottom-4 right-4 w-12 h-12 bg-primary text-on-primary rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all shadow-lg shadow-primary/30">
+              <button @click.stop="addToCart(sp)" :disabled="sp.SoLuong === 0" :class="['absolute bottom-4 right-4 w-12 h-12 rounded-lg flex items-center justify-center transform translate-y-4 transition-all shadow-lg', sp.SoLuong === 0 ? 'bg-surface-container-high text-outline cursor-not-allowed opacity-100 translate-y-0' : 'bg-primary text-on-primary opacity-0 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white hover:text-primary shadow-primary/30']">
                 <span class="material-symbols-outlined">shopping_cart</span>
               </button>
             </div>
             
             <div class="space-y-3">
-              <h3 class="font-headline font-bold text-base md:text-lg leading-snug group-hover:text-primary transition-colors text-on-surface line-clamp-2">
+              <h3 class="font-headline font-bold text-base md:text-lg leading-snug group-hover:text-primary transition-colors text-on-surface line-clamp-2 min-h-[3rem]">
                 {{ sp.TenMH }}
               </h3>
               <div class="flex justify-between items-end">
@@ -151,7 +205,7 @@
 
     <section class="max-w-7xl mx-auto px-6 py-24">
       <div class="relative rounded-2xl overflow-hidden min-h-[400px] flex items-center justify-center border border-tertiary/20 shadow-2xl shadow-tertiary/5">
-        <img class="absolute inset-0 w-full h-full object-cover" alt="Neon background" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80"/>
+        <img loading="lazy" class="absolute inset-0 w-full h-full object-cover" alt="Neon background" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80"/>
         <div class="absolute inset-0 glass-panel bg-surface/60"></div>
         <div class="relative z-10 flex flex-col justify-center items-center text-center p-8 md:p-12 w-full">
           <span class="font-headline text-tertiary font-bold tracking-[0.4em] text-xs md:text-sm mb-4">MEMBER EXCLUSIVE</span>
@@ -165,73 +219,250 @@
         </div>
       </div>
     </section>
-
   </div>
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../../stores/auth.js';
-const authStore = useAuthStore();
+  import TheHeader from '../../components/TheHeader.vue';
+  import { ref, onMounted, onUnmounted } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth.js';
+  import { useToastStore } from '../../stores/toast';
 
-const router = useRouter();
+  const router = useRouter();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore();
 
-const productList = ref([]);
+  const productList = ref([]);
+  const productSlider = ref(null);
+  const brands = ref([]);
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-};
-
-onMounted(async () => {
-  try {
-    const response = await fetch('http://localhost:3000/api/products');
-    const dataJSON = await response.json(); // Lấy toàn bộ gói hàng
-    
-    if (response.ok) {
-      productList.value = dataJSON.data; // Chỉ lấy phần mảng dữ liệu nhét vào list
+  const heroSlides = [
+    {
+      id: 1,
+      tag: "PREMIUM ARTIFACTS",
+      title: "FIGURE",
+      titleAccent: "COLLECT",
+      desc: "Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn từ các studio hàng đầu thế giới.",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCGfQ6Typ978uv1QahrmCG7PbPFg5_MLWN4K6DDmh69N5IlhPUhPKmdIfvIvZrQ_rFT9xyW1urq37KsPg2Topn02qR3hXUA9h7RKAdw21cNNpg8-yJQ6L0mjub5hU8TJtnUbmNtH8CjWKlWU8MxvHE6W3LhxEOF4NzXIHMRv8vtmkqkPsfFUx4xRlv2TAaL2OMN0YNVoCa7_nDFZbJA-PHZBV_Hn6rkXodnc9YmQHIGun8C0b2cmKxBFeAEweP0SjPODlAbMN4Gzr-E",
+      link: "/category"
+    },
+    {
+      id: 2,
+      tag: "LIMITED EDITION",
+      title: "GUNDAM",
+      titleAccent: "EXCLUSIVE",
+      desc: "Khám phá dòng Gundam hiếm nhất, chỉ dành cho những Collector thực thụ.",
+      image: "https://images.microcms-assets.io/assets/5694fd90407444338a64d654e407cc0e/6fac664357d64040a70393697bc5755f/2_figure_banner_vol1.png",
+      link: "/category"
+    },
+    {
+      id: 3,
+      tag: "MEMBER BENEFITS",
+      title: "THÀNH VIÊN",
+      titleAccent: "ƯU ĐÃI",
+      desc: "Gia nhập biệt đội Collector để nhận voucher 100k và ưu tiên đặt trước sản phẩm hot.",
+      image: "https://cdn.oneesports.gg/wp-content/uploads/2025/03/HonkaiStarRail_v3_2_KV-1024x576.jpg",
+      link: "/login"
     }
-  } catch (error) {
-    console.error("Lỗi:", error);
-  }
-});
+  ];
 
-const goToDetail = (id) => {
-  router.push(`/product/${id}`); 
-};
+  const currentHeroIndex = ref(0);
+  let heroTimer = null;
+
+  const nextHeroSlide = () => {
+    currentHeroIndex.value = (currentHeroIndex.value + 1) % heroSlides.length;
+  };
+
+  const prevHeroSlide = () => {
+    currentHeroIndex.value = (currentHeroIndex.value - 1 + heroSlides.length) % heroSlides.length;
+  };
+
+  onMounted(() => {
+    heroTimer = setInterval(nextHeroSlide, 7000); 
+  });
+
+  onUnmounted(() => {
+    if (heroTimer) clearInterval(heroTimer);
+  });
+
+  const fetchBrands = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/products/hsx');
+      const dataJSON = await res.json();
+      if (res.ok) {
+        brands.value = dataJSON.data; 
+      }
+    } 
+    catch (error) {
+      console.error("Lỗi lấy thương hiệu:", error);
+    }
+  };
+
+  const goToBrand = (brandName) => {
+    router.push({ path: '/category', query: { brand: brandName } });
+  };
+
+  const scrollSlider = (direction) => {
+    if (!productSlider.value) return;
+    const scrollAmount = 320; 
+    
+    if (direction === 'left') {
+      productSlider.value.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } 
+    else {
+      productSlider.value.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const addToCart = async (product) => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    let maKH = null;
+    
+    if (userString) {
+      const userObj = JSON.parse(userString);
+      maKH = userObj.MaKH;
+    }
+
+    if (!token || !maKH) {
+      toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error");
+      router.push({ path: '/login', query: { redirect: '/' } });
+      return;
+    }
+
+    try {
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${product.MaMoHinh}`);
+      const varJSON = await resVar.json();
+      
+      let maPhanLoai = null;
+      if (resVar.ok && varJSON.data.length > 0) {
+        maPhanLoai = varJSON.data[0].MaPhanLoai; 
+      } 
+      else {
+        toastStore.showToast("⚠️ Sản phẩm này đang bị lỗi phân loại!", "error");
+        return;
+      }
+
+      const payload = {
+        MaKH: parseInt(maKH),
+        MaPhanLoai: maPhanLoai, 
+        soluong: 1      
+      };
+
+      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify(payload) 
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toastStore.showToast(`🛒 Đã thêm ${product.TenMH} vào giỏ!`, "success"); 
+      } else {
+        toastStore.showToast("⚠️ Lỗi: " + data.message, "error"); 
+      }
+
+    } catch (error) {
+      console.error("Lỗi khi kết nối API thêm giỏ hàng:", error);
+      toastStore.showToast("Có lỗi mạng xảy ra khi thêm vào giỏ!", "error");
+    }
+  };
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
+  onMounted(async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/products?limit=12');
+      const dataJSON = await response.json(); 
+      
+      if (response.ok) {
+        productList.value = dataJSON.data; 
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+    await fetchBrands();
+  });
+
+  const goToDetail = (id) => {
+    router.push(`/product/${id}`); 
+  };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
 
-.font-headline { 
-  font-family: 'Space Grotesk', sans-serif; 
-}
+  .glass-panel {
+    background: rgba(28, 31, 43, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 
-.font-body {
-  font-family: 'Manrope', sans-serif;
-}
+  .hero-gradient {
+    background: linear-gradient(45deg, #ff8f73 0%, #ff7856 100%);
+  }
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  vertical-align: middle;
-}
+  .text-gradient {
+    background: linear-gradient(45deg, #ff8f73, #e9aaff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 
-.glass-panel {
-  background: rgba(28, 31, 43, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-.hero-gradient {
-  background: linear-gradient(45deg, #ff8f73 0%, #ff7856 100%);
-}
+  .fade-slide-enter-from {
+    opacity: 0;
+    transform: scale(1.05); 
+  }
 
-.text-gradient {
-  background: linear-gradient(45deg, #ff8f73, #e9aaff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+  .fade-slide-leave-to {
+    opacity: 0;
+    transform: scale(0.95); 
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content; 
+    animation: scrollMarquee 30s linear infinite; 
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes scrollMarquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
 </style>

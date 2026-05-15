@@ -46,7 +46,7 @@
                                 <div class="pt-1">
                                     <h4 class="font-headline text-[10px] font-black text-primary tracking-widest uppercase mb-1">Hotline</h4>
                                     <p class="text-white text-lg font-bold">0795.209.255</p>
-                                    <p class="text-on-surface-variant text-xs mt-0.5">Thứ 2 - Chủ Nhật: 09:00 - 21:00</p>
+                                    <p class="text-on-surface-variant text-xs mt-0.5">Thứ 2 - Chủ Nhật: 08:00 - 22:00</p>
                                 </div>
                             </div>
                             
@@ -150,49 +150,67 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
-import TheHeader from '../../components/TheHeader.vue';
-import { useToastStore } from '../../stores/toast'
+    import { ref } from 'vue';
+    import TheHeader from '../../components/TheHeader.vue';
+    import { useToastStore } from '../../stores/toast'
 
-const toastStore = useToastStore();
-// Khởi tạo biến quản lý Form
-const form = ref({
-name: '',
-email: '',
-phone: '',
-message: ''
-});
+    const toastStore = useToastStore();
+    const form = ref({
+        name: '',
+        email: '',
+        phone: '',
+        message: ''
+    });
 
-// Quản lý trạng thái Nút bấm
-const isSubmitting = ref(false);
-const submitSuccess = ref(false);
+    const isSubmitting = ref(false);
+    const submitSuccess = ref(false);
 
-// Hàm xử lý khi khách bấm "Gửi tin nhắn"
-const submitForm = async () => {
-isSubmitting.value = true;
+    const submitForm = async () => {
+        isSubmitting.value = true;
 
-// Giả lập thời gian chờ gọi API (1.5 giây)
-setTimeout(() => {
-    isSubmitting.value = false;
-    submitSuccess.value = true;
-    
-    form.value = { name: '', email: '', phone: '', message: '' };
-    toastStore.showToast("Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi sẽ trả lời bạn sớm nhất có thể.", "success");
+        try {
+            const res = await fetch('http://localhost:3000/api/contact/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: form.value.name,
+                    email: form.value.email,
+                    phone: form.value.phone,
+                    message: form.value.message
+                })
+            });
 
-    setTimeout(() => { 
-    submitSuccess.value = false; 
-    }, 3000);
-}, 1500);
-};
+            const data = await res.json();
+
+            if (res.ok) {
+                submitSuccess.value = true;
+                form.value = { name: '', email: '', phone: '', message: '' };
+                toastStore.showToast("Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi sẽ trả lời bạn sớm nhất có thể.", "success");
+
+                setTimeout(() => { 
+                    submitSuccess.value = false; 
+                }, 3000);
+            } else {
+                toastStore.showToast(data.message || "Có lỗi xảy ra khi gửi", "error");
+            }
+        } catch (error) {
+            console.error("Lỗi gửi liên hệ:", error);
+            toastStore.showToast("Lỗi kết nối đến máy chủ", "error");
+        } finally {
+            isSubmitting.value = false;
+        }
+    };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap');
 
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
+    .font-headline { font-family: 'Space Grotesk', sans-serif; }
+    .font-body { font-family: 'Manrope', sans-serif; }
 
-.neon-glow {
-text-shadow: 0 0 10px rgba(255, 61, 0, 0.5), 0 0 30px rgba(255, 61, 0, 0.3);
-}
+    .neon-glow {
+        text-shadow: 0 0 10px rgba(255, 61, 0, 0.5), 0 0 30px rgba(255, 61, 0, 0.3);
+    }
 </style>

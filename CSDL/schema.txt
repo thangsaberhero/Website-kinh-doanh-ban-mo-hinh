@@ -50,7 +50,8 @@ CREATE TABLE NhanVien (
 CREATE TABLE HangSanXuat (
     MaHSX INT PRIMARY KEY AUTO_INCREMENT,
     TenHSX VARCHAR(100) UNIQUE NOT NULL,
-	MoTa TEXT
+	MoTa TEXT,
+    Logo VARCHAR(255)
 );
 
 -- 6. Bảng Danh mục
@@ -354,12 +355,28 @@ CREATE TABLE DanhGia (
     NoiDung TEXT,
     SoSao INT CHECK (SoSao >= 1 AND SoSao <= 5),
     HinhAnh JSON NULL,      
-    PhanHoiShop TEXT NULL,  
+    PhanHoiShop TEXT NULL,
+    MaNV_PhanHoi INT NULL,  
     TrangThai TINYINT DEFAULT 1, 
     ThoiGianDG DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
     FOREIGN KEY (MaMH) REFERENCES MoHinh(MaMoHinh),
-    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
+    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai),
+    FOREIGN KEY (MaNV_PhanHoi) REFERENCES NhanVien(MaNV)
+);
+
+CREATE TABLE LienHe (
+    MaLH INT PRIMARY KEY AUTO_INCREMENT,
+    HoTen VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    SDT VARCHAR(15),
+    NoiDung TEXT NOT NULL,
+    TrangThai TINYINT DEFAULT 0, 
+    MaNV_XuLy INT NULL,          
+    NgayGui DATETIME DEFAULT CURRENT_TIMESTAMP,
+    NgayXuLy DATETIME NULL,
+    PhanHoiShop TEXT NULL,
+    FOREIGN KEY (MaNV_XuLy) REFERENCES NhanVien(MaNV)
 );
 
 -- 26. Bảng Vận chuyển

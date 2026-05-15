@@ -39,7 +39,7 @@ const reviewController = {
             const MaKH = khachHang[0].MaKH;
             const { MaMoHinh, MaPhanLoai, NoiDung, SoSao, HinhAnh } = req.body;
             const imageJson = JSON.stringify(HinhAnh || []);
-            const sql = `INSERT INTO DanhGia(MaKH, MaMoHinh, MaPhanLoai, NoiDung, SoSao, HinhAnh, TrangThai, ThoiGianDG) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`;
+            const sql = `INSERT INTO DanhGia(MaKH, MaMH, MaPhanLoai, NoiDung, SoSao, HinhAnh, TrangThai, ThoiGianDG) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`;
             await db.query(sql, [MaKH, MaMoHinh, MaPhanLoai, NoiDung, SoSao, imageJson]);
             res.status(200).json({
                 message: "Tạo đánh giá thành công"
