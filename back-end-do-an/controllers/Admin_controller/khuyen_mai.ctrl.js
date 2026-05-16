@@ -32,8 +32,9 @@ const khuyenmai = {
                 }
             }
             let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
-            const sql_core = `Select MaKM, TenKM, ThoiGianBD, ThoiGianKT, LoaiKM, DieuKien 
-                                from KhuyenMai
+            const sql_core = `Select km.MaKM, km.TenKM, km.ThoiGianBD, km.ThoiGianKT, km.TrangThaiHoatDong, Count(log.MaLichSu) as SoLuotDung
+                                from KhuyenMai km
+                                inner join LogSuDungKhuyenMai log on km.MaKM = log.MaKM
                                 ${whereClause}`;
             const sql_count = `SELECT COUNT(*) AS total FROM (${sql_core}) as temptable`;
             const [countResult] = await db.query(sql_count,value);
@@ -66,6 +67,81 @@ const khuyenmai = {
             res.status(500).json({
                 success: false,
                 message: "Xảy ra lỗi khi lấy danh sách chương trình khuyến mãi!"
+            });
+        }
+    },
+
+    xem_chi_tiet_khuyen_mai: async(req, res) =>{
+        try{
+            const MaKM = req.params.MaKM;
+            const sql_tt = `Select *
+                        from KhuyenMai km
+                        where MaKM = ?
+                        `;
+            const [result_tt] = await db.query(sql_tt,[MaKM]);
+
+            const sql_chi_tiet = `Select 
+                                ctkm.MaPhanLoai, ctkm.LoaiGiamGia, ctkm.ChietKhau, ctkm.GiaTriGiamToiDa, ctkm.SoLuongKM,
+                                pl.TenPhanLoai, mh.TenMH, pl.DonGia,
+                                pl.DonGia - Coalesce((
+                                    Select MAX(
+                                            Case
+                                                when ctkm.LoaiGiamGia = 'TienMat' Then ctkm.ChietKhau
+                                            
+                                                when ctkm.LoaiGiamGia = 'ChietKhau' then 
+                                                    LEAST((pl.DonGia * ChietKhau / 100), Coalesce(ctkm.GiaTriGiamToiDa, pl.DonGia))
+                                                else 0
+                                            end
+                                            )
+                                ), 0) as DonGiaKhuyenMai
+                                from ChiTietKhuyenMai ctkm
+                                inner join PhanLoai pl on pl.MaPhanLoai = ctkm.MaPhanLoai
+                                inner join MoHinh mh on mh.MaMoHinh = pl.MaMoHinh
+                                where MaKM = ?
+                                Order by ctkm.MaPhanLoai`;
+            const [result_detail] = await db.query(sql_chi_tiet,[MaKM]);
+
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+
+            const offset = (page - 1) * limit;
+
+            const sql_log_core = `Select log.MaLichSu, log.MaKH, log.MaDH, log.SoTienDaGiam, log.ThoiGianSuDung
+                                    from LogSuDungKhuyenMai log
+                                    where log.MaKM = ?`;
+            
+            const sql_count = `SELECT COUNT(*) AS total FROM (${sql_core}) as temptable`;
+            const [countResult] = await db.query(sql_count,[MaKM]);
+            const totalItems = countResult[0].total;
+            //Làm tròn lên
+            const totalPage = Math.ceil(totalItems/limit);
+
+            const sql_ds = `${sql_core}
+                Limit ? offset ?`;
+
+            const [result_log] = await db.query(sql_ds,[MaKM]);
+            res.status(200).json({
+                success: true,
+                message: "Lấy thông tin chương trình khuyến mãi thành công!",
+                data: {
+                    tt: result_tt,
+                    detail: result_detail,
+                    log: result_log
+                },
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage
+                }
+            })
+
+        }
+        catch (error){
+            console.error("Xảy ra lỗi khi lấy thông tin chương trình khuyến mãi: " + error);
+            res.status(500).json({
+                success: false,
+                message: "Xảy ra lỗi khi lấy thông tin chương trình khuyến mãi!"
             });
         }
     },

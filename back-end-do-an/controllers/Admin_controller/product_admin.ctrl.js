@@ -478,7 +478,8 @@ const product_admin = {
             const isVisible = HienThi !== undefined ? HienThi : 0;
             await connection.query(sql_sua_tt_san_pham, [TenMH, MaHSX, MaDM, MaChiTietDM || null, ChatLieu, DonGia, TrangThai, 
                                         ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, MaMH]);
-            
+            await connection.query(`Update PhanLoai set HienThi = isVisible where MaMH = ? and ChiTietPhanLoai = 'Mặc định'`)
+
             // 2. CẬP NHẬT ẢNH ĐẠI DIỆN (Chỉ update nếu có upload file mới)
             if (req.files && req.files['AnhDaiDien']) {
                 const tenAnhMoi = req.files['AnhDaiDien'][0].filename;
@@ -768,7 +769,7 @@ const product_admin = {
             const totalItems = countResult[0].total;
             //Làm tròn lên
             const totalPage = Math.ceil(totalItems/limit);
-
+            
             const sql_ds = `${sql_core}
                 ${filter}
                 Limit ? offset ?`;

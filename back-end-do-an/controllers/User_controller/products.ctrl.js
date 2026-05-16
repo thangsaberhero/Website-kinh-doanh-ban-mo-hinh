@@ -10,6 +10,7 @@ const product_view = {
             const {keyword, danhmuc, thuonghieu, chitietdanhmuc, gia, sapxep} = req.query;
 
             let condition = [];
+            let havingcondition = [];
             let value = [];
             if(keyword){
                 condition.push("(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR HangSanXuat.TenHSX COLLATE utf8mb4_unicode_ci LIKE ?)");
@@ -30,30 +31,75 @@ const product_view = {
                 condition.push(`TenHSX IN (?)`);
                 value.push(thArray);
             }
+
             if(gia){
-                condition.push("mh.DonGia <= ?");
+                havingcondition.push("DonGiaKhuyenMai <= ?");
                 value.push(gia);
             }
+
             let whereClause = condition.length > 0 ? " and " + condition.join(" and "): "";
+
+            let havingClause = havingcondition.length > 0 ? " HAVING " + havingcondition.join(" and ") : "";
 
             let filter = ""
             if(sapxep === 'price_asc')
-                filter = "order by mh.DonGia ASC";
+                filter = "order by DonGiaKhuyenMai ASC";
             else if(sapxep === 'price_desc')
-                filter = "order by mh.DonGia DESC";
+                filter = "order by DonGiaKhuyenMai DESC";
             else
                 filter = "order by mh.MaMoHinh DESC";
 
             const sql_core = `SELECT mh.*,TenHSX , 
-            (
-                SELECT COALESCE(SUM(SoLuong), 0) 
-                FROM PhanLoai 
-                WHERE MaMoHinh = mh.MaMoHinh
-            ) AS SoLuong
-            FROM MoHinh mh
-            INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
-            where HienThi = 1 
-            ${whereClause}`;
+                (
+                    SELECT COALESCE(SUM(SoLuong), 0) 
+                    FROM PhanLoai 
+                    WHERE MaMoHinh = mh.MaMoHinh
+                ) AS SoLuong,
+                Min(pl.DonGia - Coalesce((
+                    Select MAX(
+                            Case
+                                when ctkm.LoaiGiamGia = 'TienMat' Then ctkm.ChietKhau
+                            
+                                when ctkm.LoaiGiamGia = 'ChietKhau' then 
+                                    LEAST((pl.DonGia * ctkm.ChietKhau / 100), Coalesce(ctkm.GiaTriGiamToiDa, pl.DonGia))
+                                else 0
+                            end
+                            )
+                    from ChiTietKhuyenMai ctkm
+                    inner join KhuyenMai km on ctkm.MaKM = km.MaKM
+                    where ctkm.MaPhanLoai = pl.MaPhanLoai 
+                        and km.TrangThaiHoatDong = 1
+                        and km.ThoiGianBD <= NOW()
+                        and km.ThoiGianKT >= NOW()
+                ), 0)) as DonGiaKhuyenMai,
+                MAX(
+                    COALESCE((
+                        SELECT MAX(
+                            CASE 
+                                WHEN ctkm.LoaiGiamGia = 'TienMat' THEN (ctkm.ChietKhau / pl.DonGia) * 100
+                                
+                                WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN 
+                                    (LEAST((pl.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl.DonGia)) / pl.DonGia) * 100
+                                ELSE 0
+                            END
+                        )
+                        FROM ChiTietKhuyenMai ctkm
+                        INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
+                        WHERE ctkm.MaPhanLoai = pl.MaPhanLoai 
+                            AND km.TrangThaiHoatDong = 1
+                            AND km.ThoiGianBD <= NOW()
+                            AND km.ThoiGianKT >= NOW()
+                    ), 0)
+                ) as PhanTramGiamGiaMax
+                FROM MoHinh mh
+                INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
+                inner join PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
+                where mh.HienThi = 1
+                        and pl.HienThi = 1
+                ${whereClause}
+                group by mh.MaMoHinh
+                ${havingClause}`
+                ;
 
             const sql_count = `Select count(*) as total from (${sql_core}) as temptable`
             const [countResult] = await db.query(sql_count, value);
@@ -90,7 +136,6 @@ const product_view = {
     getProductById: async(req, res) => {
         try {
             const id = req.params.id;
-
             const sql = `
                 SELECT 
                     mh.*, 
@@ -109,15 +154,56 @@ const product_view = {
                 GROUP BY mh.MaMoHinh
             `;
 
-            const [product] = await db.query(sql, [id]);
+            const sql_ct = `
+                SELECT pl.*,
+                (pl.DonGia - COALESCE((
+                        SELECT MAX(
+                            CASE 
+                                WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
+                                WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN 
+                                    LEAST((pl.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl.DonGia))
+                                ELSE 0
+                            END
+                        )
+                        FROM ChiTietKhuyenMai ctkm
+                        INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
+                        WHERE ctkm.MaPhanLoai = pl.MaPhanLoai 
+                            AND km.TrangThaiHoatDong = 1
+                            AND km.ThoiGianBD <= NOW()
+                            AND km.ThoiGianKT >= NOW()
+                    ), 0)) AS DonGiaKhuyenMai
+                
+                FROM PhanLoai pl
+                WHERE pl.MaMoHinh = ? and pl.HienThi = 1
+            `;
 
-            if(product.length === 0)
+            const [modelResult, variantsResult] = await Promise.all([
+                db.query(sql, [id]),
+                db.query(sql_ct, [id])
+            ]);
+
+            if (modelResult[0].length === 0) {
                 return res.status(404).json({
+                    success: false,
                     message: "Không tìm thấy sản phẩm!"
-            });
+                });
+            }
+
+            const productDetail = modelResult[0][0]; // Lấy object mô hình gốc
+            
+            // Xử lý biến chuỗi DanhSachAnh thành Mảng (Array) cho Frontend dễ dùng
+            if (productDetail.DanhSachAnh) {
+                productDetail.DanhSachAnh = productDetail.DanhSachAnh.split(',');
+            } else {
+                productDetail.DanhSachAnh = [];
+            }
+
+            // Nhét toàn bộ mảng Phân loại vào làm một thuộc tính của Mô hình
+            productDetail.DanhSachPhanLoai = variantsResult[0];
+
             res.status(200).json({
                 message: "Đã có thông tin của sản phẩm!",
-                data: product
+                data: productDetail
             });
         }
         catch (error){
@@ -128,34 +214,6 @@ const product_view = {
         }
     },
 
-    getVariantProductById: async(req, res) => {
-        try {
-            const id = req.params.id;
-            const sql = `
-                SELECT pl.*
-                
-                FROM PhanLoai pl
-                WHERE pl.MaMoHinh = ? and pl.HienThi = 1
-            `;
-
-            const [product] = await db.query(sql, [id]);
-
-            if(product.length === 0)
-                return res.status(404).json({
-                    message: "Không tìm thấy sản phẩm!"
-            });
-            res.status(200).json({
-                message: "Đã có thông tin của sản phẩm!",
-                data: product
-            });
-        }
-        catch (error){
-            console.error("Lỗi khi lấy thông tin phân loại sản phẩm:,", error);
-            res.status(500).json({
-                message: "Lỗi server khi lấy dữ liệu sản phẩm"
-            });
-        }
-    },
     //Lấy ds hsx
     getAllbrand: async(req, res) => {
         try {
@@ -262,8 +320,6 @@ const product_view = {
                 return res.status(400).json({ message: "Vui lòng nhập từ khóa tìm kiếm" });
             }
 
-            // Lệnh SQL: Tìm những mô hình có tên chứa từ khóa (Không phân biệt hoa thường)
-            // LIMIT 10: Chỉ lấy tối đa 10 sản phẩm thả xuống cho nhẹ
             const sql = `
                 SELECT MaMoHinh, TenMH, AnhDaiDien, DonGia 
                 FROM MoHinh 
@@ -397,8 +453,98 @@ const product_view = {
             console.error("Lỗi khi thao tác (Toggle) danh mục yêu thích:", error);
             res.status(500).json({ message: "Lỗi server khi thao tác danh sách yêu thích!" });
         }
-    }
+    },
+    getRelatedProducts: async (req, res) => {
+        try {
+            const { id } = req.params;
 
+            // BƯỚC 1: Lấy thông tin Nhân Vật, Series, và Danh Mục của sản phẩm hiện tại làm "Mồi nhử"
+            const sql_target = `SELECT MaDM, TenNhanVat, Series FROM MoHinh WHERE MaMoHinh = ?`;
+            const [targetInfo] = await db.query(sql_target, [id]);
+
+            if (targetInfo.length === 0) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm gốc" });
+            }
+
+            const { MaDM, TenNhanVat, Series } = targetInfo[0];
+
+            // BƯỚC 2: Truy vấn sản phẩm liên quan với logic Phân Cấp Ưu Tiên
+            const sql_related = `
+                SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX, mh.TrangThai, mh.LoaiHinhBan,
+                
+                -- Lấy thêm Tổng số lượng để hiển thị nhãn "HẾT HÀNG" trên Frontend
+                (
+                    SELECT COALESCE(SUM(SoLuong), 0) 
+                    FROM PhanLoai 
+                    WHERE MaMoHinh = mh.MaMoHinh
+                ) AS SoLuong,
+
+                -- Lấy Giá Khuyến Mãi (hoặc giá gốc nếu không có sale) để hiển thị chuẩn xác
+                MIN(
+                    pl.DonGia - COALESCE((
+                        SELECT MAX(
+                            CASE 
+                                WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
+                                WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN 
+                                    LEAST((pl.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl.DonGia))
+                                ELSE 0
+                            END
+                        )
+                        FROM ChiTietKhuyenMai ctkm
+                        INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
+                        WHERE ctkm.MaPhanLoai = pl.MaPhanLoai 
+                            AND km.TrangThaiHoatDong = 1
+                            AND km.ThoiGianBD <= NOW()
+                            AND km.ThoiGianKT >= NOW()
+                    ), 0)
+                ) AS DonGia
+
+                FROM MoHinh mh
+                LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
+                LEFT JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh
+                WHERE mh.MaMoHinh != ? 
+                  AND mh.HienThi = 1
+                  -- Điều kiện lấy: Cùng Nhân vật HOẶC Cùng Series HOẶC Cùng Danh Mục
+                  AND (
+                      (mh.TenNhanVat = ? AND mh.TenNhanVat IS NOT NULL) OR 
+                      (mh.Series = ? AND mh.Series IS NOT NULL) OR 
+                      mh.MaDM = ?
+                  )
+                GROUP BY mh.MaMoHinh
+                
+                -- BÍ QUYẾT PHÂN CẤP ƯU TIÊN NẰM Ở ĐÂY
+                ORDER BY 
+                    CASE 
+                        WHEN mh.TenNhanVat = ? AND mh.TenNhanVat IS NOT NULL THEN 1  -- Ưu tiên 1: Trùng tên nhân vật
+                        WHEN mh.Series = ? AND mh.Series IS NOT NULL THEN 2          -- Ưu tiên 2: Trùng Series/Anime
+                        ELSE 3                                                       -- Ưu tiên 3: Cùng danh mục bù vào
+                    END ASC,
+                    RAND() -- Random ngẫu nhiên các sản phẩm trong cùng một mức ưu tiên
+                LIMIT 4
+            `;
+
+            // Chú ý: Cần truyền đủ các tham số theo đúng thứ tự của dấu "?" trong câu SQL
+            const [relatedProducts] = await db.query(sql_related, [
+                id, 
+                TenNhanVat, Series, MaDM, // Nhóm biến cho mệnh đề WHERE
+                TenNhanVat, Series        // Nhóm biến cho mệnh đề ORDER BY CASE
+            ]);
+
+            res.status(200).json({
+                success: true,
+                message: "Lấy sản phẩm liên quan thành công",
+                data: relatedProducts
+            });
+        }
+        catch (error) {
+            console.error("Lỗi API getRelatedProducts: ", error);
+            res.status(500).json({
+                success: false,
+                message: "Lỗi máy chủ khi lấy sản phẩm liên quan",
+                error: error.message
+            });
+        }
+    },
 }
 module.exports = product_view;
 

@@ -76,6 +76,8 @@ CREATE TABLE MoHinh (
     MaHSX INT,
     MaDM INT,
     MaChiTietDM INT NULL,
+    TenNhanVat Varchar(30),
+    Series Varchar(100),
     ChatLieu VARCHAR(100),
     GiaNhap DECIMAL(12,2) NOT NULL CHECK (GiaNhap >= 0),
     DonGia DECIMAL(12,2) NOT NULL CHECK (DonGia >= 0),
@@ -167,11 +169,11 @@ CREATE TABLE GioHang (
 -- 14. Bảng Chi tiết giỏ hàng
 CREATE TABLE ChiTietGioHang (
     MaGH INT,
-    MaMoHinh INT,
+    MaPhanLoai INT,
     SoLuong INT CHECK (SoLuong > 0),
-    PRIMARY KEY (MaGH, MaMoHinh),
+    PRIMARY KEY (MaGH, MaPhanLoai),
     FOREIGN KEY (MaGH) REFERENCES GioHang(MaGH),
-    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
 );
 
 -- 15. Bảng Đơn hàng
@@ -195,13 +197,14 @@ CREATE TABLE DonHang (
 CREATE TABLE ChiTietDonHang (
     MaDH INT,
     MaMoHinh INT,
+    LaHangKhuyenMai TINYINT default 0,
     SoLuong INT CHECK (SoLuong > 0),
     GiaNhapThucTe DECIMAL(12,2) CHECK (GiaNhapThucTe >= 0),
     DonGiaGoc Decimal(12,2) Check (DonGiaGoc >= 0), 
     DonGiaBan DECIMAL(12,2) CHECK (DonGiaBan >= 0),
-    PRIMARY KEY (MaDH, MaMoHinh),
+    PRIMARY KEY (MaDH, MaPhanLoai, KhuyenMai),
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
-    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
+    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
 );
 
 -- Bảng trạng thái đơn hàng 
@@ -263,7 +266,7 @@ CREATE TABLE ChiTietKhuyenMai (
 Create table LogSuDungKhuyenMai (
 	MaLichSu INT PRIMARY KEY AUTO_INCREMENT,
 	MaKM INT NOT NULL,
-	MaKH INT NOT NULL,
+	MaKH INT,
 	MaDH INT NOT NULL,
 	SoTienDaGiam DECIMAL (12,2),
 	Thoigiansudung datetime default now(),
@@ -278,21 +281,21 @@ CREATE Table MaGiamGia (
 	MaVoucher VARCHAR(20) UNIQUE NOT NULL,
 	SoLuongDungToiDa INT Default 1,
 	ThoiGianBD DATETIME,
-    	ThoiGianKT DATETIME,
+    ThoiGianKT DATETIME,
 	MaKH INT default null,
 	MucGiaToiThieu Decimal (12,2),
 	TrangThaiHoatDong TinyInt default 0,
 	LoaiGiamGia VARCHAR(20) DEFAULT 'TienMat',
-    	ChietKhau DECIMAL(12,2),
-	GiaTriGiamToiDa DECIMAL(12,2) DEFAULT NULL,
+    ChietKhau DECIMAL(12,2),
+	GiaTriGiamToiDa DECIMAL(12,2) DEFAULT NULL
 );
 
 Create table ChiTietMaGiamGia (
 	MaGG INT,
-    	MaMoHinh INT,
-    	PRIMARY KEY (MaGG, MaMoHinh),
-    	FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
-    	FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+    MaMoHinh INT,
+    PRIMARY KEY (MaGG, MaMoHinh),
+    FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
+    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
 );
 	
 
@@ -360,9 +363,25 @@ CREATE TABLE DanhGia (
     PhanHoiShop TEXT NULL,  
     TrangThai TINYINT DEFAULT 1, 
     ThoiGianDG DATETIME DEFAULT CURRENT_TIMESTAMP,
+    MaNV_PhanHoi INT NULL;
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
     FOREIGN KEY (MaMH) REFERENCES MoHinh(MaMoHinh),
-    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
+    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai),
+    FOREIGN KEY (MaNV_PhanHoi) REFERENCES NhanVien(MaNV)
+);
+
+CREATE TABLE LienHe (
+    MaLH INT PRIMARY KEY AUTO_INCREMENT,
+    HoTen VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    SDT VARCHAR(15),
+    NoiDung TEXT NOT NULL,
+    TrangThai TINYINT DEFAULT 0, -- 0: Chưa xử lý, 1: Đã xử lý
+    MaNV_XuLy INT NULL,          -- Nhân viên nào đã ấn "Đã xử lý"
+    NgayGui DATETIME DEFAULT CURRENT_TIMESTAMP,
+    NgayXuLy DATETIME NULL,
+    PhanHoiShop TEXT NULL,
+    FOREIGN KEY (MaNV_XuLy) REFERENCES NhanVien(MaNV)
 );
 
 -- 26. Bảng Vận chuyển

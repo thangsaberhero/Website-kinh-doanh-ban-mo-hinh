@@ -368,6 +368,24 @@
               </div>
             </div>
 
+            <div v-if="newPromo.type === 'Phần trăm (%)'" class="md:col-span-2 border-t border-slate-200 pt-4">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Giảm tối đa (GiaTriGiamToiDa)</label>
+              <div class="relative w-full md:w-1/2">
+                <input v-model.number="newPromo.maxDiscount" type="number" min="0" placeholder="VD: 50.000" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] outline-none font-bold text-slate-700">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">VNĐ</span>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1 italic">Để trống nếu không giới hạn số tiền giảm.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div v-if="newPromo.applyType === 'Voucher'">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Đơn tối thiểu </label>
+              <div class="relative">
+                <input v-model.number="newPromo.minOrderValue" type="number" min="0" placeholder="VD: 200.000" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] outline-none font-bold text-slate-700">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">VNĐ</span>
+              </div>
+            </div>
             <div>
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Phạm vi áp dụng</label>
               <select v-model="newPromo.applyScope" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-slate-700 bg-white">
@@ -532,10 +550,9 @@
   import { useToastStore } from '../../stores/toast';
   import { onMounted, watch } from 'vue';
   
-  // Trạng thái Layout
+  const toastStore = useToastStore();
   const isSidebarCollapsed = ref(false);
   const isMobileMenuOpen = ref(false);
-  // --- QUẢN LÝ TRẠNG THÁI LOADING ---
   const isLoading = ref(true);
 
   // Dữ liệu Mảng Tab
@@ -657,28 +674,27 @@
   const submitNewPromo = () => {
     // 1. Validation Nghiệp vụ (Rất quan trọng)
     if (!newPromo.value.name.trim()) {
-        alert("Vui lòng nhập Tên chiến dịch!");
+        toastStore.showToast("Vui lòng nhập Tên chiến dịch!", 'error');
         return;
     }
     
     if (newPromo.value.applyType === 'Voucher' && !newPromo.value.code.trim()) {
-        alert("Vui lòng tạo Mã Voucher (Code)!");
+        toastStore.showToast("Vui lòng tạo Mã Voucher (Code)!", 'error');
         return;
     }
     
     if (!newPromo.value.rawValue) {
-        alert("Vui lòng nhập Giá trị giảm!");
+        toastStore.showToast("Vui lòng nhập Giá trị giảm!", 'error');
         return;
     }
 
     if (!newPromo.value.startDate || !newPromo.value.endDate) {
-        alert("Vui lòng thiết lập Thời gian áp dụng (Từ ngày - Đến ngày)!");
+        toastStore.showToast("Vui lòng thiết lập Thời gian áp dụng (Từ ngày - Đến ngày)!", 'error');
         return;
     }
 
-    // So sánh ngày (Ngày kết thúc phải lớn hơn ngày bắt đầu)
     if (new Date(newPromo.value.endDate) <= new Date(newPromo.value.startDate)) {
-        alert("Ngày kết thúc phải diễn ra sau Ngày bắt đầu!");
+        toastStore.showToast("Ngày kết thúc phải diễn ra sau Ngày bắt đầu!", 'error');
         return;
     }
 
@@ -740,13 +756,13 @@ const openEditPromoModal = (promo) => {
 const submitEditPromo = () => {
   // 1. Validation
   if (!editingPromo.value.name.trim()) {
-    alert("Vui lòng nhập Tên chiến dịch!");
+    toastStore.showToast("Vui lòng nhập Tên chiến dịch!", 'error');
     return;
   }
   
   // Kiểm tra không cho phép giới hạn mới nhỏ hơn số lượt đã dùng
   if (!editingPromo.value.isUnlimited && editingPromo.value.rawLimit < editingPromo.value.used) {
-    alert(`Không hợp lệ! Mã này đã được dùng ${editingPromo.value.used} lần. Giới hạn mới phải lớn hơn hoặc bằng ${editingPromo.value.used}.`);
+    toastStore.showToast(`Không hợp lệ! Mã này đã được dùng ${editingPromo.value.used} lần. Giới hạn mới phải lớn hơn hoặc bằng ${editingPromo.value.used}.`, 'error');
     return;
   }
 

@@ -3,7 +3,7 @@
         <TheHeader />
   
         <main class="flex-1">
-            <section class="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+            <section class="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
                 <div class="absolute inset-0 z-0">
                     <img class="w-full h-full object-cover brightness-50 contrast-125" alt="Showroom Background" src="https://cdn-media.sforum.vn/storage/app/media/CTVSEO_Maihue/H%C3%ACnh%20n%E1%BB%81n%20Gundam/hinh-nen-gundam-51.jpg"/>
                     <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
@@ -176,10 +176,9 @@ setTimeout(() => {
     isSubmitting.value = false;
     submitSuccess.value = true;
     
-    // Reset lại form cho trống
     form.value = { name: '', email: '', phone: '', message: '' };
     toastStore.showToast("Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi sẽ trả lời bạn sớm nhất có thể.", "success");
-    // Đổi nút về trạng thái ban đầu sau 3 giây
+
     setTimeout(() => { 
     submitSuccess.value = false; 
     }, 3000);
