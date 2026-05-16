@@ -172,33 +172,13 @@
         </div>
         
         <div ref="productSlider" class="flex gap-6 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-8 pt-4">
-          <div 
-            v-for="sp in productList" :key="sp.MaMoHinh" 
-            @click="goToDetail(sp.MaMoHinh)" 
-            class="group cursor-pointer shrink-0 w-[280px] lg:w-[calc(25%-18px)] snap-start"
-          >
-            <div class="relative bg-surface-container-highest aspect-[3/4] rounded-lg overflow-hidden mb-5 border border-outline-variant/10">
-              <span class="absolute top-4 left-4 z-10 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest bg-primary text-on-primary">
-                NEW
-              </span>
-              <img loading="lazy" :src="`http://localhost:3000/Images_product/${sp.AnhDaiDien}`" :alt="sp.TenMH" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
-              <div class="absolute inset-0 bg-surface/0 group-hover:bg-surface/20 transition-colors"></div>
-              
-              <button @click.stop="addToCart(sp)" :disabled="sp.SoLuong === 0" :class="['absolute bottom-4 right-4 w-12 h-12 rounded-lg flex items-center justify-center transform translate-y-4 transition-all shadow-lg', sp.SoLuong === 0 ? 'bg-surface-container-high text-outline cursor-not-allowed opacity-100 translate-y-0' : 'bg-primary text-on-primary opacity-0 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white hover:text-primary shadow-primary/30']">
-                <span class="material-symbols-outlined">shopping_cart</span>
-              </button>
-            </div>
-            
-            <div class="space-y-3">
-              <h3 class="font-headline font-bold text-base md:text-lg leading-snug group-hover:text-primary transition-colors text-on-surface line-clamp-2 min-h-[3rem]">
-                {{ sp.TenMH }}
-              </h3>
-              <div class="flex justify-between items-end">
-                <span class="text-xl md:text-2xl font-bold text-primary">{{ formatPrice(sp.DonGia) }}</span>
-                <span class="text-[10px] text-outline uppercase tracking-widest font-bold">Còn: {{ sp.SoLuong }}</span>
-              </div>
-            </div>
-          </div>
+          <ProductCard 
+            v-for="sp in productList" 
+            :key="sp.MaMoHinh" 
+            :product="sp"
+            @add-to-cart="addToCart"
+            class="shrink-0 w-[280px] lg:w-[calc(25%-18px)] snap-start"
+          />
         </div>
       </div>
     </section>
@@ -223,11 +203,12 @@
 </template>
 
 <script setup>
-  import TheHeader from '../../components/TheHeader.vue';
   import { ref, onMounted, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '../../stores/auth.js';
   import { useToastStore } from '../../stores/toast';
+  import TheHeader from '../../components/TheHeader.vue';
+  import ProductCard from '../../components/ProductCard.vue';
 
   const router = useRouter();
   const authStore = useAuthStore();
@@ -363,6 +344,7 @@
 
       if (response.ok) {
         toastStore.showToast(`🛒 Đã thêm ${product.TenMH} vào giỏ!`, "success"); 
+        window.dispatchEvent(new Event('cart-updated'));
       } else {
         toastStore.showToast("⚠️ Lỗi: " + data.message, "error"); 
       }

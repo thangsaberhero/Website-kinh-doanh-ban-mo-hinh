@@ -114,56 +114,12 @@
         </header>
 
         <div v-if="productList.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-          <div 
-            v-for="sp in productList" :key="sp.MaMoHinh"
-            @click="router.push(`/product/${sp.MaMoHinh}`)"
-            class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full overflow-hidden"
-          >
-            <div v-if="sp.SoLuong === 0" class="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl">
-              <span class="border-2 border-outline text-outline px-6 py-2 text-sm font-bold tracking-widest uppercase rounded">HẾT HÀNG</span>
-            </div>
-
-            <div class="absolute top-7 left-7 z-10 flex flex-col gap-2">
-              <span v-if="sp.TrangThai" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-on-primary-fixed shadow-md">
-                {{ sp.TrangThai }}
-              </span>
-              <span v-if="sp.LoaiHinhBan" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-tertiary text-on-tertiary-fixed shadow-md">
-                {{ sp.LoaiHinhBan }}
-              </span>
-            </div>
-            
-            <div class="relative h-72 w-full mb-6 overflow-hidden rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40"></div>
-              <img :src="'http://localhost:3000/Images_product/' + sp.AnhDaiDien" 
-                   :alt="sp.TenMH"
-                   :class="['h-full w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110', sp.SoLuong === 0 ? 'grayscale opacity-50' : '']"
-              />
-            </div>
-            
-            <div class="space-y-3 flex-1 flex flex-col justify-end">
-              <div>
-                <p class="text-[10px] text-outline font-bold uppercase tracking-[0.2em] mb-2">
-                  {{ sp.TenHSX || 'UNKNOWN' }} • {{ sp.KichThuoc || 'N/A' }}
-                </p>
-                <h3 class="text-xl font-headline font-bold leading-snug group-hover:text-primary transition-colors text-white line-clamp-2">
-                  {{ sp.TenMH }}
-                </h3>
-              </div>
-              
-              <div class="pt-4 mt-auto border-t border-outline-variant/30 flex justify-between items-center relative z-10">
-                <span :class="['text-2xl font-headline font-bold tracking-tight', sp.SoLuong === 0 ? 'text-outline' : 'text-white']">
-                  {{ formatPrice(sp.DonGia) }}
-                </span>
-                <button 
-                  :disabled="sp.SoLuong === 0"
-                  @click.stop="sp.SoLuong > 0 ? addToCart() : null" 
-                  :class="['w-12 h-12 rounded-xl flex items-center justify-center transition-all', sp.SoLuong === 0 ? 'bg-surface-container text-outline cursor-not-allowed' : 'bg-primary text-on-primary-fixed hover:bg-white hover:text-primary shadow-lg shadow-primary/30']"
-                >
-                  <span class="material-symbols-outlined font-bold">add_shopping_cart</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <ProductCard 
+            v-for="sp in productList" 
+            :key="sp.MaMoHinh" 
+            :product="sp"
+            @add-to-cart="addToCart"
+          />
         </div>
         <div v-if="totalPages > 0" class="mt-12 flex justify-center items-center gap-2 flex-wrap">
           <button 
@@ -244,11 +200,14 @@
   import { ref, computed, onMounted, watch } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { useAuthStore } from '../../stores/auth.js';
+  import { useToastStore } from '../../stores/toast';
   import TheHeader from '../../components/TheHeader.vue';
+  import ProductCard from '../../components/ProductCard.vue';
 
   const route = useRoute();
   const router = useRouter();
   const authStore = useAuthStore(); 
+  const toastStore = useToastStore();
 
   const productList = ref([]);
   const categories = ref([]);
@@ -459,8 +418,51 @@
     fetchProducts();
   });
 
-  const addToCart = () => {
-    alert("Tính năng thêm giỏ hàng sẽ được hoàn thiện sau!");
+  const addToCart = async (product) => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    let maKH = null;
+    
+    if (userString) {
+      const userObj = JSON.parse(userString);
+      maKH = userObj.MaKH;
+    }
+
+    if (!token || !maKH) {
+      toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error");
+      router.push({ path: '/login', query: { redirect: route.fullPath } });
+      return;
+    }
+
+    try {
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${product.MaMoHinh}`);
+      const varJSON = await resVar.json();
+      
+      let maPhanLoai = null;
+      if (resVar.ok && varJSON.data.length > 0) {
+        maPhanLoai = varJSON.data[0].MaPhanLoai; 
+      } else {
+        toastStore.showToast("⚠️ Sản phẩm này đang bị lỗi phân loại!", "error");
+        return;
+      }
+
+      const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
+      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload) 
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toastStore.showToast(`🛒 Đã thêm ${product.TenMH} vào giỏ!`, "success"); 
+        window.dispatchEvent(new Event('cart-updated'));
+      } else {
+        toastStore.showToast("⚠️ Lỗi: " + data.message, "error"); 
+      }
+    } catch (error) {
+      console.error("Lỗi thêm giỏ hàng:", error);
+    }
   };
 
   onMounted(() => {
@@ -487,10 +489,6 @@
 </script>
 
 <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-
-  .font-headline { font-family: 'Space Grotesk', sans-serif; }
-  .font-body { font-family: 'Manrope', sans-serif; }
   .glass-panel { backdrop-filter: blur(12px); background: rgba(28, 31, 43, 0.6); }
 
   .custom-scrollbar::-webkit-scrollbar { width: 4px; }
