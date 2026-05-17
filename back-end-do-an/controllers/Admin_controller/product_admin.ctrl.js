@@ -143,8 +143,8 @@ const product_admin = {
                     message: `Hãng sản xuất này đã tồn tại!`
                 });
             }
-            const sql = `Insert into HangSanXuat(TenHSX, MoTa) values (?,?)`;
-            await connection.query(sql,[TenHSX, MoTa || null]);
+            const sql = `Insert into HangSanXuat(TenHSX, MoTa, Logo) values (?,?,?)`;
+            await connection.query(sql,[TenHSX, MoTa || null, Logo]);
             await connection.commit();
             res.status(200).json({ 
                 success: true,
@@ -175,8 +175,15 @@ const product_admin = {
                 });
             }
 
-            const sql = `UPDATE HangSanXuat SET TenHSX=?, MoTa=? WHERE MaHSX=?`;
-            await db.query(sql, [TenHSX, MoTa || null, MaHSX]);
+            let sql = `UPDATE HangSanXuat SET TenHSX=?, MoTa=?`;
+            let values = [TenHSX, MoTa || null];
+            if (req.file) {
+                sql += `, Logo=?`;
+                values.push(req.file.filename);
+            }
+            sql += ` WHERE MaHSX=?`;
+            values.push(MaHSX);
+            await db.query(sql, values);
 
             res.status(200).json({
                 success: true,
@@ -877,7 +884,7 @@ const product_admin = {
             else
                 filter += "Order by TenHSX ASC";
     
-            const sql_core = `SELECT hsx.MaHSX, TenHSX, MoTa, 
+            const sql_core = `SELECT hsx.MaHSX, TenHSX, MoTa, Logo,
                             (
                                 Select count(*)
                                 from MoHinh

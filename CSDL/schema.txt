@@ -50,7 +50,8 @@ CREATE TABLE NhanVien (
 CREATE TABLE HangSanXuat (
     MaHSX INT PRIMARY KEY AUTO_INCREMENT,
     TenHSX VARCHAR(100) UNIQUE NOT NULL,
-	MoTa TEXT
+	MoTa TEXT,
+    Logo VARCHAR(255)
 );
 
 -- 6. Bảng Danh mục
@@ -89,6 +90,7 @@ CREATE TABLE MoHinh (
     LoaiHinhBan VARCHAR(50), 
     TienCocToiThieu DECIMAL(12,2) CHECK (TienCocToiThieu >= 0),
 	HienThi TINYINT default 0,
+    MaVach_Serial VARCHAR(100) UNIQUE NOT NULL,
     FOREIGN KEY (MaHSX) REFERENCES HangSanXuat(MaHSX),
     FOREIGN KEY (MaDM) REFERENCES DanhMuc(MaDM),
     FOREIGN KEY (MaChiTietDM) REFERENCES ChiTietDanhMuc(MaChiTietDM)
@@ -360,7 +362,8 @@ CREATE TABLE DanhGia (
     NoiDung TEXT,
     SoSao INT CHECK (SoSao >= 1 AND SoSao <= 5),
     HinhAnh JSON NULL,      
-    PhanHoiShop TEXT NULL,  
+    PhanHoiShop TEXT NULL,
+    MaNV_PhanHoi INT NULL,  
     TrangThai TINYINT DEFAULT 1, 
     ThoiGianDG DATETIME DEFAULT CURRENT_TIMESTAMP,
     MaNV_PhanHoi INT NULL;
@@ -376,8 +379,8 @@ CREATE TABLE LienHe (
     Email VARCHAR(100) NOT NULL,
     SDT VARCHAR(15),
     NoiDung TEXT NOT NULL,
-    TrangThai TINYINT DEFAULT 0, -- 0: Chưa xử lý, 1: Đã xử lý
-    MaNV_XuLy INT NULL,          -- Nhân viên nào đã ấn "Đã xử lý"
+    TrangThai TINYINT DEFAULT 0, 
+    MaNV_XuLy INT NULL,          
     NgayGui DATETIME DEFAULT CURRENT_TIMESTAMP,
     NgayXuLy DATETIME NULL,
     PhanHoiShop TEXT NULL,

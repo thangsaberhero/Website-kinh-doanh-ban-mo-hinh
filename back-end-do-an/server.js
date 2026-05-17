@@ -39,6 +39,9 @@ app.use('/api/don_hang',donhangRoutes);
 const userReviewRoutes = require('./routes/User_route/review.route.js');
 app.use('/api/reviews', userReviewRoutes);
 
+const userContactRoutes = require('./routes/User_route/contact.route.js');
+app.use('/api/contact', userContactRoutes);
+
 //Lấy đường dẫn ảnh đại diện
 const path = require('path');
 // Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
@@ -46,6 +49,7 @@ app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user'
 app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
 app.use('/Images_review', express.static(path.join(__dirname, 'public/Images_review')));
 app.use('/Images_product', express.static(path.join(__dirname, 'public/Images_product')));
+app.use('/Images_brand', express.static(path.join(__dirname, 'public/Images_brand')));
 
 const chatRoutes = require('./routes/User_route/chat.route.js');
 app.use('/api/chatbot', chatRoutes);
@@ -137,3 +141,6 @@ app.use('/api/product_admin', product_admin_control);
 
 const adminReviewRoutes = require('./routes/Admin_route/review.route.js');
 app.use('/api/reviews/admin', adminReviewRoutes);
+
+const adminContactRoutes = require('./routes/Admin_route/contact.route.js');
+app.use('/api/contact/admin', adminContactRoutes);

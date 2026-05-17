@@ -99,8 +99,9 @@
                   <tr v-for="mfr in manufacturers" :key="mfr.id" class="transition-colors group hover:bg-slate-50/80">              
                     <td class="px-8 py-4">
                       <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center text-lg font-black text-[#ff8f73]">
-                          {{ mfr.code }}
+                        <div class="w-12 h-12 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center overflow-hidden">
+                          <img v-if="mfr.logo" :src="`http://localhost:3000/Images_brand/${mfr.logo}`" class="w-full h-full object-contain p-1" />
+                          <span v-else class="text-lg font-black text-[#ff8f73]">{{ mfr.code }}</span>
                         </div>
                         <div class="flex flex-col">
                           <p class="font-bold text-slate-900 text-[15px] mb-0.5">{{ mfr.name }}</p>
@@ -195,6 +196,20 @@
 
         <div class="p-6 space-y-5">
           <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Logo Hãng</label>
+            <div class="flex items-center gap-4">
+              <div class="w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 relative group">
+                <img v-if="logoPreview" :src="logoPreview" class="w-full h-full object-contain p-1 relative z-10" />
+                <span v-else class="material-symbols-outlined text-slate-300 text-3xl">image</span>
+              </div>
+              <div class="flex-1">
+                <input type="file" accept="image/*" ref="logoInput" @change="onLogoChange" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer"/>
+                <p class="text-[10px] text-slate-400 mt-2">Định dạng: PNG, JPG (Khuyên dùng ảnh nền trong suốt).</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên hãng sản xuất (*)</label>
             <input v-model="formManufacturer.name" type="text" placeholder="VD: Bandai Namco" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-slate-800">
           </div>
@@ -276,6 +291,18 @@
   const totalBrandsCount = ref(0);
   const tongSoHang = ref(0);
   const tongSoSanPham = ref(0);
+  const formManufacturer = ref({ id: null, name: '', description: '' });
+  const logoFile = ref(null);
+  const logoPreview = ref(null);
+  const logoInput = ref(null);
+
+  const onLogoChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      logoFile.value = file;
+      logoPreview.value = URL.createObjectURL(file);
+    }
+  };
 
   // HÀM GỌI API THỐNG KÊ
   const fetchStats = async () => {
@@ -306,15 +333,14 @@
 
       if (result.success) {
         // Map dữ liệu từ Database vào biến của Vue
+        // TÌM ĐOẠN MAP DỮ LIỆU NÀY VÀ THÊM TRƯỜNG LOGO
         manufacturers.value = result.data.map(item => ({
           id: item.MaHSX,
-          code: item.TenHSX.substring(0, 2).toUpperCase(), // Tạo mã 2 chữ cái từ tên
+          code: item.TenHSX.substring(0, 2).toUpperCase(),
           name: item.TenHSX,
-          //country: item.QuocGia || 'Chưa cập nhật',
           products: item.TongSoLuongSanPham || 0,
-          //contact: item.LienHe || 'Chưa cập nhật',
-          //status: item.TrangThai || 'Đang hợp tác',
-          description: item.MoTa
+          description: item.MoTa,
+          logo: item.Logo 
         }));
 
         // Cập nhật thông số phân trang
@@ -353,16 +379,13 @@
   const isEditMode = ref(false);
   const editingId = ref(null);
 
-  const formManufacturer = ref({
-    id: null,
-    name: '',
-    description: ''
-  });
-
   const openAddModal = () => {
     isEditMode.value = false;
     editingId.value = null;
     formManufacturer.value = { id: null, name: '', description: ''};
+    logoFile.value = null;
+    logoPreview.value = null;
+    if (logoInput.value) logoInput.value.value = '';
     isModalOpen.value = true;
   };
 
@@ -370,6 +393,9 @@
     isEditMode.value = true;
     editingId.value = mfr.id;
     formManufacturer.value = { id: mfr.id, name: mfr.name, description: mfr.description };
+    logoFile.value = null; 
+    logoPreview.value = mfr.logo ? `http://localhost:3000/Images_brand/${mfr.logo}` : null;
+    if (logoInput.value) logoInput.value.value = '';
     isModalOpen.value = true;
   };
 
@@ -379,25 +405,25 @@
       return;
     }
 
-    // Đóng gói dữ liệu chuẩn JSON để gửi xuống Node.js
-    const payload = {
-      TenHSX: formManufacturer.value.name,
-      MoTa: formManufacturer.value.description
-    };
+    const formData = new FormData();
+    formData.append('TenHSX', formManufacturer.value.name);
+    formData.append('MoTa', formManufacturer.value.description);
+    
+    if (logoFile.value) {
+      formData.append('Logo', logoFile.value);
+    }
 
     try {
-      let url = 'http://localhost:3000/api/product_admin/add_brand'; // 👉 Sửa URL Thêm ở đây
+      let url = 'http://localhost:3000/api/product_admin/add_brand'; 
       let method = 'POST';
-
       if (isEditMode.value) {
-        url = `http://localhost:3000/api/product_admin/fix_brand/${formManufacturer.value.id}`; // 👉 Sửa URL Cập nhật ở đây
+        url = `http://localhost:3000/api/product_admin/fix_brand/${formManufacturer.value.id}`;
         method = 'PUT';
       }
 
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' }, // Khai báo gửi dạng JSON thay vì FormData
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       const result = await response.json();
@@ -405,7 +431,7 @@
       if (response.ok || result.success) {
         toastStore.showToast(result.message || "Lưu thành công!", "success");
         isModalOpen.value = false;
-        fetchManufacturers(); // Tải lại danh sách từ DB
+        fetchManufacturers(); 
       } else {
         toastStore.showToast(result.message || "Lỗi khi lưu!", "error");
       }

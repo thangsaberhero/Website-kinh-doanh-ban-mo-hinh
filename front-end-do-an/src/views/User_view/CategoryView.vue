@@ -1,9 +1,7 @@
 <template>
   <div class="bg-background text-on-background selection:bg-primary selection:text-on-primary-fixed min-h-screen flex flex-col font-body">
-    <TheHeader />
-    
-    <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">
-      
+    <TheHeader />  
+    <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">     
       <aside class="w-72 hidden lg:flex flex-col border-r border-outline-variant/30 bg-surface-container-low overflow-y-auto custom-scrollbar">
         <div class="p-8">
           <div class="flex items-center gap-3 mb-10">
@@ -77,8 +75,7 @@
               </label>
             </div>
           </div>
-        </div>
-        
+        </div>    
       </aside>
 
       <main class="flex-1 overflow-y-auto bg-surface p-6 lg:p-12 custom-scrollbar">
@@ -103,15 +100,15 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Sắp xếp:</span>
-                <select 
-                    v-model="sortBy" 
-                    class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
-                >
-                    <option value="newest">Mới nhất</option>
-                    <option value="price_asc">Giá Thấp đến Cao</option>
-                    <option value="price_desc">Giá Cao đến Thấp</option>
-                </select>
+              <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Sắp xếp:</span>
+              <select 
+                v-model="sortBy" 
+                class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
+              >
+                <option value="newest">Mới nhất</option>
+                <option value="price_asc">Giá Thấp đến Cao</option>
+                <option value="price_desc">Giá Cao đến Thấp</option>
+              </select>
             </div>
           </div>
         </header>
@@ -238,260 +235,265 @@
             <p class="text-sm text-gray-400 font-medium leading-relaxed">Cam kết 100% hàng chính hãng, hỗ trợ bảo hành trọn đời cho các lỗi từ nhà sản xuất.</p>
           </div>
         </section>
-
       </main>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+  import { ref, computed, onMounted, watch } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth.js';
+  import TheHeader from '../../components/TheHeader.vue';
 
-import { useAuthStore } from '../../stores/auth.js';
-import TheHeader from '../../components/TheHeader.vue';
+  const route = useRoute();
+  const router = useRouter();
+  const authStore = useAuthStore(); 
 
-const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore(); 
+  const productList = ref([]);
+  const categories = ref([]);
+  const categoryId = ref(route.params.id || '');
+  const subCategoryId = ref('');
+  const searchQuery = ref('');
+  const sortBy = ref('newest');
+  const maxPrice = ref(10000000);
+  const selectedBrands = ref([]);
+  const availableBrands = ref([]);
 
-const productList = ref([]);
-const categories = ref([]);
-const categoryId = ref(route.params.id || '');
-const subCategoryId = ref('');
-const searchQuery = ref('');
-const sortBy = ref('newest');
-const maxPrice = ref(10000000);
-const selectedBrands = ref([]);
-const availableBrands = ref([]);
+  const currentPage = ref(1);
+  const limit = ref(9);
+  const totalPages = ref(1);
+  const totalItems = ref(0);
 
-const currentPage = ref(1);
-const limit = ref(9);
-const totalPages = ref(1);
-const totalItems = ref(0);
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-};
+  // HÀM ĐĂNG XUẤT CHO NÚT AVATAR
+  const handleLogout = () => {
+    authStore.user = null;
+    router.push('/login');
+  };
 
-// HÀM ĐĂNG XUẤT CHO NÚT AVATAR
-const handleLogout = () => {
-  authStore.user = null;
-  router.push('/login');
-};
+  // Tính toán danh sách các nút phân trang sẽ hiển thị
+  const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    const delta = 1; // Số lượng nút hiển thị ở hai bên trang hiện tại
+    
+    // Nếu tổng số trang ít (từ 5 trang trở xuống) -> Hiện tất cả, không cần dấu ...
+    if (total <= 5) {
+      let pages = [];
+      for (let i = 1; i <= total; i++) pages.push(i);
+      return pages;
+    }
 
-// Tính toán danh sách các nút phân trang sẽ hiển thị
-const visiblePages = computed(() => {
-  const current = currentPage.value;
-  const total = totalPages.value;
-  const delta = 1; // Số lượng nút hiển thị ở hai bên trang hiện tại
-  
-  // Nếu tổng số trang ít (từ 5 trang trở xuống) -> Hiện tất cả, không cần dấu ...
-  if (total <= 5) {
-    let pages = [];
-    for (let i = 1; i <= total; i++) pages.push(i);
+    // Nếu nhiều trang -> Bắt đầu tính toán rút gọn
+    let pages = [1]; // Luôn hiện trang 1
+
+    // Nếu trang hiện tại cách trang 1 quá xa -> Thêm dấu ...
+    if (current - delta > 2) {
+      pages.push('...');
+    }
+
+    // Các trang ở xung quanh trang hiện tại
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+      pages.push(i);
+    }
+
+    // Nếu trang hiện tại cách trang cuối quá xa -> Thêm dấu ...
+    if (current + delta < total - 1) {
+      pages.push('...');
+    }
+
+    // Luôn hiện trang cuối
+    pages.push(total);
+
     return pages;
-  }
+  });
 
-  // Nếu nhiều trang -> Bắt đầu tính toán rút gọn
-  let pages = [1]; // Luôn hiện trang 1
-
-  // Nếu trang hiện tại cách trang 1 quá xa -> Thêm dấu ...
-  if (current - delta > 2) {
-    pages.push('...');
-  }
-
-  // Các trang ở xung quanh trang hiện tại
-  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
-    pages.push(i);
-  }
-
-  // Nếu trang hiện tại cách trang cuối quá xa -> Thêm dấu ...
-  if (current + delta < total - 1) {
-    pages.push('...');
-  }
-
-  // Luôn hiện trang cuối
-  pages.push(total);
-
-  return pages;
-});
-
-// Hàm hỗ trợ "Nhảy trang nhanh" khi khách hàng nhập số
-const jumpToPage = (event) => {
-  const pageNum = parseInt(event.target.value);
-  if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages.value) {
-    currentPage.value = pageNum;
-    event.target.value = ''; // Nhảy xong thì xóa trắng ô nhập
-  } else {
-    toastStore.showToast(`Vui lòng nhập trang từ 1 đến ${totalPages.value}`, "error");
-  }
-};
-
-const goToCategory = (id) => {
-  if (id) {
-    // Nếu bấm vào đúng Danh mục cha đang hiển thị, VÀ đang có Danh mục con được chọn
-    if (categoryId.value == id && subCategoryId.value !== '') {
-      // 1. Reset thằng con về rỗng (tắt dấu check của con, bật dấu check của cha)
-      subCategoryId.value = '';
-      
-      // 2. Gọi lại API lấy tất cả sản phẩm của thằng cha
-      fetchProducts(id);
+  // Hàm hỗ trợ "Nhảy trang nhanh" khi khách hàng nhập số
+  const jumpToPage = (event) => {
+    const pageNum = parseInt(event.target.value);
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages.value) {
+      currentPage.value = pageNum;
+      event.target.value = ''; // Nhảy xong thì xóa trắng ô nhập
     } else {
-      // Nếu bấm sang một Danh mục cha KHÁC, thì cứ chuyển link như bình thường
-      router.push(`/category/${id}`);
+      toastStore.showToast(`Vui lòng nhập trang từ 1 đến ${totalPages.value}`, "error");
     }
-  } else {
-    // Nếu bấm "Tất cả sản phẩm"
-    router.push(`/category`);
-  }
-};
+  };
 
-const getCategoryName = () => {
-  if (!categoryId.value) return 'FIGURE COLLECTION';
-  const currentCat = categories.value.find(c => c.MaDM == categoryId.value);
-  return currentCat ? currentCat.TenDM : 'FIGURE COLLECTION';
-};
-
-const getCategoryNumber = () => {
-  if (!categoryId.value) return '00';
-  return ('0' + categoryId.value).slice(-2); 
-};
-
-const fetchCategories = async () => {
-  try {
-    const res = await fetch('http://localhost:3000/api/products/danhmuc');
-    const dataJSON = await res.json();
-    
-    if (res.ok) {
-      const mainCats = dataJSON.data || dataJSON; 
-      
-      // Vòng lặp: Đi hỏi Backend xem từng Danh mục cha có Danh mục con nào không
-      for (let cat of mainCats) {
-        try {
-          const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
-          const subJSON = await subRes.json();
-          if (subRes.ok) {
-            cat.subCategories = subJSON.data || subJSON; // Gắn đàn con vào mảng cha
-          }
-        } catch (err) {
-          cat.subCategories = []; 
-        }
+  const goToCategory = (id) => {
+    if (id) {
+      // Nếu bấm vào đúng Danh mục cha đang hiển thị, VÀ đang có Danh mục con được chọn
+      if (categoryId.value == id && subCategoryId.value !== '') {
+        // 1. Reset thằng con về rỗng (tắt dấu check của con, bật dấu check của cha)
+        subCategoryId.value = '';
+        
+        // 2. Gọi lại API lấy tất cả sản phẩm của thằng cha
+        fetchProducts(id);
+      } else {
+        // Nếu bấm sang một Danh mục cha KHÁC, thì cứ chuyển link như bình thường
+        router.push(`/category/${id}`);
       }
-      categories.value = mainCats; // Lưu lại toàn bộ dữ liệu
+    } else {
+      // Nếu bấm "Tất cả sản phẩm"
+      router.push(`/category`);
     }
-  } catch (error) {
-    console.error("Lỗi lấy danh mục:", error);
-  }
-};
+  };
 
-const fetchBrand = async () => {
-  try{
-    const res = await fetch('http://localhost:3000/api/products/hsx');
-    const dataJSON = await res.json();
-    if(res.ok){
-      availableBrands.value = dataJSON.data || dataJSON;
-    }
-  }
-  catch(error){
-    console.error("Lỗi lấy hsx:", error);
-  }
-};
+  const getCategoryName = () => {
+    if (!categoryId.value) return 'FIGURE COLLECTION';
+    const currentCat = categories.value.find(c => c.MaDM == categoryId.value);
+    return currentCat ? currentCat.TenDM : 'FIGURE COLLECTION';
+  };
 
-// Xử lý khi bấm danh mục con
-const selectSubCategory = (maDM, maCTDM) => {
-  subCategoryId.value = maCTDM; // Lưu lại mã thằng con
-  fetchProducts(maDM, maCTDM);  // Gọi API lấy sản phẩm của thằng con
-};
+  const getCategoryNumber = () => {
+    if (!categoryId.value) return '00';
+    return ('0' + categoryId.value).slice(-2); 
+  };
 
-// Có thể lấy theo Cha hoặc theo Con
-const fetchProducts = async () => {
-  try {
-    let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
-    if(categoryId.value)
-      url += `&danhmuc=${categoryId.value}`;
-    if(subCategoryId.value)
-      url += `&chitietdanhmuc=${subCategoryId.value}`
-    if(selectedBrands.value.length > 0)
-      url += `&thuonghieu=${selectedBrands.value.join(',')}`;
-    if(sortBy.value)
-      url += `&sapxep=${sortBy.value}`;
-    if(maxPrice.value < 20000000){
-      url += `&gia=${maxPrice.value}`
-    }
-    
-    // let apiUrl = 'http://localhost:3000/api/products'; // Mặc định lấy tất cả
-
-    // if (maCTDM) {
-    //   // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
-    //   apiUrl = `http://localhost:3000/api/products/chitietdm/${maCTDM}/products`;
-    // } else if (maDM) {
-    //   // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
-    //   apiUrl = `http://localhost:3000/api/products/danhmuc/${maDM}/products`;
-    // }
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/products/danhmuc');
+      const dataJSON = await res.json();
       
-    const response = await fetch(url);
-    const result = await response.json();
-    
-    if (result.success) {
-      productList.value = result.data;
-      totalPages.value = result.pagination.totalPage;
-      totalItems.value = result.pagination.totalItems;
-      currentPage.value = result.pagination.currentPage;
-     }
-  } catch (error) {
-    console.error("Lỗi lấy sản phẩm:", error);
-  }
-};
+      if (res.ok) {
+        const mainCats = dataJSON.data || dataJSON; 
+        
+        for (let cat of mainCats) {
+          try {
+            const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
+            const subJSON = await subRes.json();
+            if (subRes.ok) {
+              cat.subCategories = subJSON.data || subJSON; // Gắn đàn con vào mảng cha
+            }
+          } catch (err) {
+            cat.subCategories = []; 
+          }
+        }
+        categories.value = mainCats; 
+      }
+    } catch (error) {
+      console.error("Lỗi lấy danh mục:", error);
+    }
+  };
 
-// 5. Cập nhật Watcher: Khi bấm sang Danh mục cha khác, phải Reset thằng con
-watch([categoryId, subCategoryId, selectedBrands, sortBy, limit], () => {
-  currentPage.value = 1;
-  fetchProducts();
-});
+  const fetchBrand = async () => {
+    try{
+      const res = await fetch('http://localhost:3000/api/products/hsx');
+      const dataJSON = await res.json();
+      if(res.ok){
+        availableBrands.value = dataJSON.data || dataJSON;
+      }
+    }
+    catch(error){
+      console.error("Lỗi lấy hsx:", error);
+    }
+  };
 
-let priceTimeout;
-watch(maxPrice, () => {
-  clearTimeout(priceTimeout);
-  priceTimeout = setTimeout(() => {
+  // Xử lý khi bấm danh mục con
+  const selectSubCategory = (maDM, maCTDM) => {
+    subCategoryId.value = maCTDM; // Lưu lại mã thằng con
+    fetchProducts(maDM, maCTDM);  // Gọi API lấy sản phẩm của thằng con
+  };
+
+  // Có thể lấy theo Cha hoặc theo Con
+  const fetchProducts = async () => {
+    try {
+      let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
+      if(categoryId.value)
+        url += `&danhmuc=${categoryId.value}`;
+      if(subCategoryId.value)
+        url += `&chitietdanhmuc=${subCategoryId.value}`
+      if(selectedBrands.value.length > 0)
+        url += `&thuonghieu=${selectedBrands.value.join(',')}`;
+      if(sortBy.value)
+        url += `&sapxep=${sortBy.value}`;
+      if(maxPrice.value < 20000000){
+        url += `&gia=${maxPrice.value}`
+      }
+      
+      // let apiUrl = 'http://localhost:3000/api/products'; // Mặc định lấy tất cả
+
+      // if (maCTDM) {
+      //   // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
+      //   apiUrl = `http://localhost:3000/api/products/chitietdm/${maCTDM}/products`;
+      // } else if (maDM) {
+      //   // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
+      //   apiUrl = `http://localhost:3000/api/products/danhmuc/${maDM}/products`;
+      // }
+        
+      const response = await fetch(url);
+      const result = await response.json();
+      
+      if (result.success) {
+        productList.value = result.data;
+        totalPages.value = result.pagination.totalPage;
+        totalItems.value = result.pagination.totalItems;
+        currentPage.value = result.pagination.currentPage;
+      }
+    } catch (error) {
+      console.error("Lỗi lấy sản phẩm:", error);
+    }
+  };
+
+  // 5. Cập nhật Watcher: Khi bấm sang Danh mục cha khác, phải Reset thằng con
+  watch([categoryId, subCategoryId, selectedBrands, sortBy, limit], () => {
     currentPage.value = 1;
     fetchProducts();
-  }, 500); 
-});
+  });
 
-// Khi bấm chuyển trang -> Chỉ gọi API tải trang mới
-watch(currentPage, () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' }); // Tự cuộn lên đầu
-  fetchProducts();
-});
+  let priceTimeout;
+  watch(maxPrice, () => {
+    clearTimeout(priceTimeout);
+    priceTimeout = setTimeout(() => {
+      currentPage.value = 1;
+      fetchProducts();
+    }, 500); 
+  });
 
-const addToCart = () => {
-  alert("Tính năng thêm giỏ hàng sẽ được hoàn thiện sau!");
-};
+  // Khi bấm chuyển trang -> Chỉ gọi API tải trang mới
+  watch(currentPage, () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Tự cuộn lên đầu
+    fetchProducts();
+  });
 
-onMounted(() => {
-  window.scroll(0,0)
-  fetchCategories();
-  fetchBrand();
-  fetchProducts(categoryId.value);
-});
+  const addToCart = () => {
+    alert("Tính năng thêm giỏ hàng sẽ được hoàn thiện sau!");
+  };
 
-watch(() => route.params.id, (newId) => {
-  categoryId.value = newId || '';
-  fetchProducts(newId);
-  searchQuery.value = ''; 
-});
+  onMounted(() => {
+    window.scroll(0,0)
+    fetchCategories();
+    fetchBrand();
+    fetchProducts(categoryId.value);
+  });
+
+  watch(() => route.params.id, (newId) => {
+    categoryId.value = newId || '';
+    fetchProducts(newId);
+    searchQuery.value = ''; 
+  });
+
+  watch(() => route.query.brand, (newBrand) => {
+    if (newBrand) {
+      selectedBrands.value = [newBrand];
+    } else {
+      selectedBrands.value = [];
+    }
+    fetchProducts();
+  }, { immediate: true }); 
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
 
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-.glass-panel { backdrop-filter: blur(12px); background: rgba(28, 31, 43, 0.6); }
+  .font-headline { font-family: 'Space Grotesk', sans-serif; }
+  .font-body { font-family: 'Manrope', sans-serif; }
+  .glass-panel { backdrop-filter: blur(12px); background: rgba(28, 31, 43, 0.6); }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: #0c0e17; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: #0c0e17; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
 </style>
