@@ -418,6 +418,43 @@ const product_view = {
                 error: error.message
             });
         }
+    },
+    getCartSuggestions: async(req, res) => {
+        try {
+            const { cartItemIds } = req.body; 
+            let sql = '';
+            let params = [];
+            const MA_DM_PHU_KIEN = 5; 
+
+            if (cartItemIds && cartItemIds.length > 0) {
+                const placeholders = cartItemIds.map(() => '?').join(',');
+                sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.DonGia, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX,
+                    (SELECT COALESCE(SUM(SoLuong), 0) FROM PhanLoai WHERE MaMoHinh = mh.MaMoHinh) AS SoLuong
+                    FROM MoHinh mh 
+                    LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
+                    WHERE mh.MaDM = ? AND mh.MaMoHinh NOT IN (${placeholders}) AND mh.HienThi = 1
+                    ORDER BY RAND() LIMIT 4`;
+                params = [MA_DM_PHU_KIEN, ...cartItemIds];
+            } 
+            else {
+                sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.DonGia, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX,
+                    (SELECT COALESCE(SUM(SoLuong), 0) FROM PhanLoai WHERE MaMoHinh = mh.MaMoHinh) AS SoLuong
+                    FROM MoHinh mh 
+                    LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
+                    WHERE mh.HienThi = 1
+                    ORDER BY mh.NgayPhatHanh DESC 
+                    LIMIT 4`;
+                params = []; 
+            }
+            const [suggestions] = await db.query(sql, params);
+            res.status(200).json({ 
+                message: "Lấy sản phẩm gợi ý thành công", 
+                data: suggestions 
+            });
+        } catch (error) {
+            console.error("Lỗi:", error);
+            res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
+        }
     }
 }
 module.exports = product_view;

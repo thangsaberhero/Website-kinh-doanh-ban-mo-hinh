@@ -22,14 +22,12 @@
               :key="item.MaPhanLoai"
               class="group relative flex flex-col md:flex-row gap-6 p-6 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/10 hover:border-primary/30 transition-all duration-300 rounded-2xl"
             >
-              <div class="relative w-full md:w-48 aspect-square overflow-hidden bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer" @click="goToProduct(item.MaMoHinh)">
-                <div class="relative w-full md:w-48 aspect-square overflow-hidden bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer" @click="goToProduct(item.MaMoHinh)">
+              <div class="relative w-full md:w-48 aspect-square overflow-hidden bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer shrink-0" @click="goToProduct(item.MaMoHinh)">
                 <img 
                   :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" 
                   :alt="item.TenMH" 
                   class="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
                 />
-              </div>
               </div>
               
               <div class="flex flex-col flex-1 justify-between py-2">
@@ -38,16 +36,14 @@
                     <div>
                       <span class="text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-3 inline-block text-tertiary bg-tertiary/10 border border-tertiary/20">
                         Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}
-                      </span>
-                      
+                      </span>               
                       <h3 @click="goToProduct(item.MaMoHinh)" class="text-2xl font-headline font-bold text-white leading-tight cursor-pointer hover:text-primary transition-colors">
                         {{ item.TenMH }}
-                      </h3>
-                      
+                      </h3>          
                       <p class="text-on-surface-variant text-sm mt-2 font-medium">Đơn giá: {{ formatPrice(item.DonGia) }}</p>
                     </div>
                     
-                    <button @click="removeItem(item.MaPhanLoai)" class="text-outline hover:text-error hover:bg-error/10 rounded-lg p-2 transition-all">
+                    <button @click="confirmRemoveItem(item)" class="text-outline hover:text-error hover:bg-error/10 rounded-lg p-2 transition-all">
                       <span class="material-symbols-outlined">delete</span>
                     </button>
                   </div>
@@ -58,9 +54,7 @@
                     <button @click="decreaseQty(item)" class="w-8 h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
                       <span class="material-symbols-outlined text-sm">remove</span>
                     </button>
-                    
-                    <span class="w-10 text-center font-bold text-white">{{ item.SoLuong }}</span>
-                    
+                    <span class="w-10 text-center font-bold text-white">{{ item.SoLuong }}</span>        
                     <button @click="increaseQty(item)" class="w-8 h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
                       <span class="material-symbols-outlined text-sm">add</span>
                     </button>
@@ -90,13 +84,11 @@
               Xóa tất cả
             </button>
           </div>
-          
         </div>
 
         <div class="lg:col-span-4">
           <div class="sticky top-28 bg-surface-container p-8 rounded-2xl shadow-2xl border border-outline-variant/20">
             <h2 class="text-xl font-headline font-bold tracking-widest uppercase border-b border-outline-variant/20 pb-4 mb-6 text-white">Tóm tắt đơn hàng</h2>
-            
             <div class="space-y-4 mb-6 text-sm font-medium">
               <div class="flex justify-between text-on-surface-variant">
                 <span>Tạm tính ({{ totalItems }} SP)</span>
@@ -143,351 +135,423 @@
         </button>
       </div>
 
-      <section class="mt-24 pt-16 border-t border-outline-variant/15">
+      <section v-if="suggestions.length > 0" class="mt-24 pt-16 border-t border-outline-variant/15">
         <h2 class="text-3xl font-headline font-bold tracking-tight uppercase mb-8 text-white">Có thể bạn sẽ thích</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div v-for="sp in suggestions" :key="sp.id" class="group cursor-pointer">
-            <div class="aspect-[3/4] bg-surface-container-low border border-outline-variant/10 rounded-xl overflow-hidden mb-4 relative p-4">
-              <img :src="sp.image" :alt="sp.name" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"/>
-              <div class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
-                <button @click.stop="quickAdd(sp)" class="w-12 h-12 bg-primary text-on-primary-fixed rounded-xl flex items-center justify-center shadow-lg hover:bg-white transition-colors">
-                  <span class="material-symbols-outlined">add_shopping_cart</span>
-                </button>
-              </div>
-            </div>
-            <h4 class="font-bold text-sm text-on-surface-variant group-hover:text-white transition-colors truncate">{{ sp.name }}</h4>
-            <span class="text-primary font-headline font-bold">{{ formatPrice(sp.price) }}</span>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <ProductCard 
+            v-for="sp in suggestions" 
+            :key="sp.MaMoHinh" 
+            :product="sp"
+            @add-to-cart="addToCart" />
         </div>
       </section>
-
     </main>
+  </div>
+  <div v-if="isClearCartModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity">
+    <div class="bg-surface-container-high rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-outline-variant/20 animate-[zoomIn_0.2s_ease-out]">
+      <div class="p-6 flex flex-col items-center text-center">
+        <div class="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mb-4 border border-error/20">
+          <span class="material-symbols-outlined text-4xl">warning</span>
+        </div>
+        <h3 class="text-xl font-headline font-bold text-white mb-2">Xóa toàn bộ giỏ hàng?</h3>
+        <p class="text-sm text-on-surface-variant font-medium">
+          Bạn có chắc chắn muốn dọn sạch kho báu của mình không? Hành động này không thể hoàn tác.
+        </p>
+      </div>
+      
+      <div class="p-4 bg-surface-container border-t border-outline-variant/20 flex gap-3">
+        <button @click="isClearCartModalOpen = false" 
+          class="flex-1 py-3 text-sm font-bold text-white bg-surface-container-highest hover:bg-surface-bright rounded-xl transition-colors border border-outline-variant/30">
+          Hủy bỏ
+        </button>
+        <button @click="executeClearCart" 
+                class="flex-1 py-3 text-sm font-bold text-on-error bg-error hover:brightness-110 rounded-xl transition-all shadow-[0_0_15px_rgba(255,84,73,0.3)]">
+          Xóa tất cả
+        </button>
+      </div> 
+    </div>
+  </div>
+  <div v-if="isDeleteItemModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity">
+    <div class="bg-surface-container-high rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-outline-variant/20 animate-[zoomIn_0.2s_ease-out]">
+      <div class="p-6 flex flex-col items-center text-center">
+        <div class="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mb-4 border border-error/20">
+          <span class="material-symbols-outlined text-4xl">delete_forever</span>
+        </div>
+        <h3 class="text-xl font-headline font-bold text-white mb-2">Xóa sản phẩm này?</h3>
+        <p class="text-sm text-on-surface-variant font-medium line-clamp-2">
+          Bạn có chắc chắn muốn xóa <span class="text-white font-bold">{{ itemToDelete?.TenMH }}</span> khỏi giỏ hàng?
+        </p>
+      </div>
+      
+      <div class="p-4 bg-surface-container border-t border-outline-variant/20 flex gap-3">
+        <button @click="isDeleteItemModalOpen = false" 
+          class="flex-1 py-3 text-sm font-bold text-white bg-surface-container-highest hover:bg-surface-bright rounded-xl transition-colors border border-outline-variant/30">
+          Giữ lại
+        </button>
+        <button @click="executeDeleteItem" 
+                class="flex-1 py-3 text-sm font-bold text-on-error bg-error hover:brightness-110 rounded-xl transition-all shadow-[0_0_15px_rgba(255,84,73,0.3)]">
+          Xóa
+        </button>
+      </div> 
+    </div>
   </div>
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToastStore } from '../../stores/toast';
-import { onMounted } from 'vue';
+  import TheHeader from '../../components/TheHeader.vue';
+  import ProductCard from '../../components/ProductCard.vue';
+  import { ref, computed } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useToastStore } from '../../stores/toast';
+  import { onMounted } from 'vue';
 
-const router = useRouter();
-const toastStore = useToastStore();
+  const router = useRouter();
+  const toastStore = useToastStore();
+  const cartItems = ref([]);
+  const suggestions = ref([]);
+  const isClearCartModalOpen = ref(false);
+  const isDeleteItemModalOpen = ref(false);
+  const itemToDelete = ref(null);
 
-// Gọi biến giỏ hàng)
-const cartItems = ref([]);
+  const fetchCartData = async () => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    
+    if (!token || !userString) {
+      router.push('/login');
+      return;
+    }
+    const maKH = JSON.parse(userString).MaKH;
 
-const fetchCartData = async () => {
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  
-  // Chưa đăng nhập thì đá về trang login
-  if (!token || !userString) {
-    router.push('/login');
-    return;
-  }
+    try {
+      const response = await fetch(`http://localhost:3000/api/don_hang/watch/${maKH}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-  const maKH = JSON.parse(userString).MaKH;
+      const result = await response.json();
 
-  try {
-    const response = await fetch(`http://localhost:3000/api/don_hang/watch/${maKH}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
+      if (response.ok) {
+        cartItems.value = result.data; 
+      } 
+      else {
+        console.error(result.message);
+        cartItems.value = []; 
       }
-    });
+      fetchSuggestions();
+    } catch (error) {
+      console.error("Lỗi khi tải giỏ hàng:", error);
+    }
+  };
 
-    const result = await response.json();
+  const fetchSuggestions = async () => {
+    try {
+      const itemIds = cartItems.value.map(item => item.MaMoHinh);
+      const response = await fetch('http://localhost:3000/api/products/cart-suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartItemIds: itemIds })
+      });
+      
+      const dataJSON = await response.json(); 
+      
+      if (response.ok) {
+        suggestions.value = dataJSON.data; 
+      }
+    } catch (error) {
+      console.error("Lỗi tải sản phẩm gợi ý:", error);
+    }
+  };
 
-    if (response.ok) {
-      // Đổ dữ liệu từ API vào biến cartItems
-      cartItems.value = result.data; 
+  onMounted(() => {
+    fetchCartData();
+    // fetchSuggestions();
+  });
+
+
+  //const discount = ref(0); // Giảm giá cố định để demo
+
+  // Tính toán tự động (Reactivity)
+  const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.SoLuong, 0));
+  const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0));
+  const discount = computed(() => {
+    return cartItems.value.reduce((sum, item) => {
+      const mucGiamGiaCuaItem = item.dongiakhuyenmai ? (item.DonGia - item.dongiakhuyenmai) : 0;
+      return sum + (mucGiamGiaCuaItem * item.SoLuong);
+    }, 0);
+  });
+  const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.value - discount.value) : 0);
+
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+  const addToCart = async (productInfo) => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    let maKH = null;
+    
+    if (userString) {
+      const userObj = JSON.parse(userString);
+      maKH = userObj.MaKH;
+    }
+
+    if (!token || !maKH) {
+      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+      return;
+    }
+
+    try {
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${productInfo.MaMoHinh}`);
+      const varJSON = await resVar.json();
+      
+      let maPhanLoai = null;
+      if (resVar.ok && varJSON.data.length > 0) {
+        maPhanLoai = varJSON.data[0].MaPhanLoai; 
+      } else {
+        toastStore.showToast("Sản phẩm này đang bị lỗi!", "error");
+        return;
+      }
+
+      const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
+      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload) 
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toastStore.showToast(`Đã thêm ${productInfo.TenMH} vào giỏ!`, "success"); 
+        await fetchCartData(); 
+        window.dispatchEvent(new Event('cart-updated')); 
+      } else {
+        toastStore.showToast("Lỗi: " + data.message, "error"); 
+      }
+    } catch (error) {
+      console.error("Lỗi thêm nhanh phụ kiện:", error);
+    }
+  };
+
+  const clearCart = () => {
+    isClearCartModalOpen.value = true;
+  };
+
+  const executeClearCart = async () => {
+    isClearCartModalOpen.value = false;
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    
+    if (!token || !userString) {
+      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+      return;
+    }
+    const maKH = JSON.parse(userString).MaKH;
+    const oldCart = [...cartItems.value];
+    cartItems.value = [];
+
+    try {
+      const payload = { MaKH: parseInt(maKH) };
+      const response = await fetch('http://localhost:3000/api/don_hang/deleteAll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Lỗi xóa giỏ hàng từ Server");
+      
+      toastStore.showToast("Đã làm sạch giỏ hàng!", "success");
+      window.dispatchEvent(new Event('cart-updated'));
+    } 
+    catch (error) {
+      toastStore.showToast("Không thể xóa lúc này!", "error");
+      cartItems.value = oldCart; 
+    }
+  };
+
+  const confirmRemoveItem = (item) => {
+    itemToDelete.value = item;
+    isDeleteItemModalOpen.value = true;
+  };
+
+  const executeDeleteItem = async () => {
+    isDeleteItemModalOpen.value = false;
+    if (itemToDelete.value) {
+      await removeItem(itemToDelete.value.MaPhanLoai);
+      itemToDelete.value = null; 
+    }
+  };
+
+  const increaseQty = async (item) => {
+    // 1. Lưu lại số lượng cũ phòng trường hợp API bị lỗi để còn phục hồi
+    const oldQty = item.SoLuong;
+
+    // 2. TĂNG SỐ LƯỢNG TRÊN GIAO DIỆN TRƯỚC (Cho khách hàng thấy mượt mà)
+    // (Lưu ý: Bạn có thể thay số 10 bằng item.SoLuongTon nếu API có trả về tồn kho)
+    if (item.SoLuong < item.TonKho) {
+      item.SoLuong++;
+      // Tự động tính lại Thành Tiền cho món đó ngay lập tức
+      item.ThanhTien = item.DonGia * item.SoLuong; 
     } else {
-      console.error(result.message);
-      cartItems.value = []; // Giỏ hàng trống
-    }
-  } catch (error) {
-    console.error("Lỗi khi tải giỏ hàng:", error);
-  }
-};
-
-// 3. Tự động chạy hàm khi mở trang
-onMounted(() => {
-  fetchCartData();
-});
-
-// Dữ liệu Gợi ý sản phẩm
-const suggestions = ref([
-  { id: 101, name: 'Action Base 4 Clear', price: 180000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAIazZeZJ24VwYtPi56dUOOkvkApxpPNzOc5aOdg0IKZnjgt_J_Rkpkp-d4GQAnTyIXVboqadXAHl4-QLmOhzOyw_6qJBiW-yDvub2RT1u1GbYIcYnCjMrmh2-lBxXXYlJBUHnUDrgZnyQV_PRcfeBieRrvwAjPixP0ou99eMTaJe6l5AMFZLwiqJOtQOndokizbE4m7-q_VsuHXFKilvb02kFoLkv_pwKYLtsM-I-d270pIWYP-e8t3JLMFoO7mKknRnj-yPlRM804' },
-  { id: 102, name: 'Acrylic Box LED - 30x30x40', price: 450000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCuav1sJLUfGLIsDGhGkL0Up1Zns79vrUN2mRcb_RMgJ5uK_Mqnl0279cuunmg930On4iqAOE4f78YJEj2SBip9EqfbUJwEVPiumCAkikG1Y-nZfNL6xAOshUPitpzBPVseWKhtNsFIPBrW2CmluyVkq_Q8zFzuXGxqNc_ozQ0LwsvZ7dzzTfmePNbPaYRxSfkj-fp6FGcAD9n1nskgmo0IB975S6A0OLMzOxR-hgWJspAlRDdF59Yf_QOb-S4zfdA8dE4Q2atMyW-V' },
-  { id: 103, name: 'Bộ vệ sinh Figure chuyên dụng', price: 120000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdzZv9i_wS6KrZXeAobsFPJk1yYLnYtKRVPyQzCmknmrdVPnEZM7alYuTc-QE5LJPjQ60doXVfQm7pAtfGuQS2FmxFtHb4vMiigNuXEsaxZ_Qd2Ds5HuBfzXaukS5QEk22GoUaflmaB8wVyxMvtdqIJpC0jOBUy1owhuFpudDIVHuoYu_Fh1LLTFHuX4ky7GrVo2OyTsibXYGDFUkq1LFgOji3awgxcPnOc95uxr-PEYJtL0hIiIg7gdBjZ2OfMe9VLIrkapj6Ppp7' },
-  { id: 104, name: 'Panel Line Accent Color', price: 95000, image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC4msE71U7jgRXWIVdkIHSFSJ9awutXqqs3QqtvKWLBa7QTf3kJf0-L5mA7EFGMoerQ4Y_-Ge6IMnjGbzYrzuX41xPXyZ4UUGWY6RCx1JC6kemzKRqCguW9ryd3KNV-HXuWpjcwMqxP67rWms51Br5i_2vIoCF7lOW_Ieo_HuuUvoYqUiVvW7sdxv2hbfhBv6fQUWOXqoaKmYyzKwvXkevMAezc854KJPQQqXaFd_rqs0BMPWuXlIz62AYeEteiQxMO3JB-84bnh24-' }
-]);
-
-//const discount = ref(0); // Giảm giá cố định để demo
-
-// Tính toán tự động (Reactivity)
-// Thay 'price' thành 'DonGia', thay 'qty' thành 'SoLuong'
-const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.SoLuong, 0));
-const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0));
-const discount = computed(() => {
-  return cartItems.value.reduce((sum, item) => {
-    const mucGiamGiaCuaItem = item.dongiakhuyenmai ? (item.DonGia - item.dongiakhuyenmai) : 0;
-    return sum + (mucGiamGiaCuaItem * item.SoLuong);
-  }, 0);
-});
-const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.value - discount.value) : 0);
-
-// Các hàm xử lý
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-
-const clearCart = async () => {
-  // 1. Hỏi lại cho chắc chắn, tránh khách bấm nhầm
-  if (!confirm("Bạn có chắc chắn muốn xóa toàn bộ sản phẩm khỏi giỏ hàng không?")) {
-    return;
-  }
-
-  // 2. Lấy thông tin user
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  
-  if (!token || !userString) {
-    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
-    return;
-  }
-  const maKH = JSON.parse(userString).MaKH;
-
-  // 3. Xóa trên giao diện trước cho mượt (lưu lại mảng cũ để phòng hờ)
-  const oldCart = [...cartItems.value];
-  cartItems.value = [];
-
-  // 4. Gọi API xuống Backend
-  try {
-    const payload = {
-      MaKH: parseInt(maKH)
-    };
-
-    const response = await fetch('http://localhost:3000/api/don_hang/deleteAll', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Lỗi xóa giỏ hàng từ Server");
+      toastStore.showToast("Đã đạt số lượng mua tối đa!", "error");
+      return; // Dừng lại không gọi API nữa
     }
 
-    toastStore.showToast("Đã làm sạch giỏ hàng!", "success");
+    // 3. Lấy thông tin vé (Token) và Mã Khách Hàng
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
     
-  } catch (error) {
-    console.error("Lỗi xóa toàn bộ giỏ hàng:", error);
-    toastStore.showToast("Không thể xóa lúc này!", "error");
-    
-    // Phục hồi lại nếu API lỗi
-    cartItems.value = oldCart; 
-  }
-};
+    if (!token || !userString) {
+      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+      return;
+    }
+    const maKH = JSON.parse(userString).MaKH;
 
-const increaseQty = async (item) => {
-  // 1. Lưu lại số lượng cũ phòng trường hợp API bị lỗi để còn phục hồi
-  const oldQty = item.SoLuong;
+    // 4. GỌI API BÁO CHO BACKEND CẬP NHẬT DATABASE
+    try {
+      const payload = {
+        MaKH: parseInt(maKH),
+        MaPhanLoai: item.MaPhanLoai, // Gửi đúng mã phân loại của món đó
+        soluong: item.SoLuong        // Gửi con số MỚI NHẤT xuống Database
+      };
 
-  // 2. TĂNG SỐ LƯỢNG TRÊN GIAO DIỆN TRƯỚC (Cho khách hàng thấy mượt mà)
-  // (Lưu ý: Bạn có thể thay số 10 bằng item.SoLuongTon nếu API có trả về tồn kho)
-  if (item.SoLuong < item.TonKho) {
-    item.SoLuong++;
-    // Tự động tính lại Thành Tiền cho món đó ngay lập tức
-    item.ThanhTien = item.DonGia * item.SoLuong; 
-  } else {
-    toastStore.showToast("Đã đạt số lượng mua tối đa!", "error");
-    return; // Dừng lại không gọi API nữa
-  }
+      const response = await fetch('http://localhost:3000/api/don_hang/update', {
+        method: 'POST', // Chú ý kiểm tra lại xem Backend của bạn dùng POST hay PUT cho link này nhé
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-  // 3. Lấy thông tin vé (Token) và Mã Khách Hàng
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  
-  if (!token || !userString) {
-    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
-    return;
-  }
-  const maKH = JSON.parse(userString).MaKH;
+      const data = await response.json();
 
-  // 4. GỌI API BÁO CHO BACKEND CẬP NHẬT DATABASE
-  try {
-    const payload = {
-      MaKH: parseInt(maKH),
-      MaPhanLoai: item.MaPhanLoai, // Gửi đúng mã phân loại của món đó
-      soluong: item.SoLuong        // Gửi con số MỚI NHẤT xuống Database
-    };
+      if (!response.ok) {
+        // Nếu Backend báo lỗi (VD: Trong kho không đủ hàng)
+        throw new Error(data.message || "Lỗi cập nhật từ Server");
+      }
+      window.dispatchEvent(new Event('cart-updated'));
+      // Tùy chọn: Hiện thông báo nhỏ gọn (toast) thành công nếu thích
+      // toastStore.showToast("Đã cập nhật số lượng", "success");
 
-    const response = await fetch('http://localhost:3000/api/don_hang/update', {
-      method: 'POST', // Chú ý kiểm tra lại xem Backend của bạn dùng POST hay PUT cho link này nhé
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
+    } catch (error) {
+      console.error("Lỗi cập nhật số lượng:", error);
+      toastStore.showToast("Không thể cập nhật số lượng lúc này!", "error");
+      
+      // BƯỚC QUAN TRỌNG: Nếu API lỗi, phải hoàn tác (Rollback) giao diện về số cũ
+      item.SoLuong = oldQty;
+      item.ThanhTien = item.DonGia * item.SoLuong; 
+    }
+  };
 
-    const data = await response.json();
+  const decreaseQty = async (item) => {
+    const oldQty = item.SoLuong;
 
-    if (!response.ok) {
-      // Nếu Backend báo lỗi (VD: Trong kho không đủ hàng)
-      throw new Error(data.message || "Lỗi cập nhật từ Server");
+    if (item.SoLuong > 1) {
+      item.SoLuong--;
+      item.ThanhTien = item.DonGia * item.SoLuong; 
+    } 
+    else {
+      confirmRemoveItem(item);
+      return; 
     }
 
-    // Tùy chọn: Hiện thông báo nhỏ gọn (toast) thành công nếu thích
-    // toastStore.showToast("Đã cập nhật số lượng", "success");
-
-  } catch (error) {
-    console.error("Lỗi cập nhật số lượng:", error);
-    toastStore.showToast("Không thể cập nhật số lượng lúc này!", "error");
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
     
-    // BƯỚC QUAN TRỌNG: Nếu API lỗi, phải hoàn tác (Rollback) giao diện về số cũ
-    item.SoLuong = oldQty;
-    item.ThanhTien = item.DonGia * item.SoLuong; 
-  }
-};
-
-const decreaseQty = async (item) => {
-  // 1. Lưu lại số lượng cũ phòng trường hợp API bị lỗi để còn phục hồi
-  const oldQty = item.SoLuong;
-
-  // 2. TĂNG SỐ LƯỢNG TRÊN GIAO DIỆN TRƯỚC (Cho khách hàng thấy mượt mà)
-  // (Lưu ý: Bạn có thể thay số 10 bằng item.SoLuongTon nếu API có trả về tồn kho)
-  if (item.SoLuong > 1) {
-    item.SoLuong--;
-    // Tự động tính lại Thành Tiền cho món đó ngay lập tức
-    item.ThanhTien = item.DonGia * item.SoLuong; 
-  } else {
-    toastStore.showToast("Đã đạt số lượng mua tối thiểu!", "error");
-    return; // Dừng lại không gọi API nữa
-  }
-
-  // 3. Lấy thông tin vé (Token) và Mã Khách Hàng
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  
-  if (!token || !userString) {
-    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
-    return;
-  }
-  const maKH = JSON.parse(userString).MaKH;
-
-  // 4. GỌI API BÁO CHO BACKEND CẬP NHẬT DATABASE
-  try {
-    const payload = {
-      MaKH: parseInt(maKH),
-      MaPhanLoai: item.MaPhanLoai, // Gửi đúng mã phân loại của món đó
-      soluong: item.SoLuong        // Gửi con số MỚI NHẤT xuống Database
-    };
-
-    const response = await fetch('http://localhost:3000/api/don_hang/update', {
-      method: 'POST', // Chú ý kiểm tra lại xem Backend của bạn dùng POST hay PUT cho link này nhé
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      // Nếu Backend báo lỗi (VD: Trong kho không đủ hàng)
-      throw new Error(data.message || "Lỗi cập nhật từ Server");
+    if (!token || !userString) {
+      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+      return;
     }
+    const maKH = JSON.parse(userString).MaKH;
 
-    // Tùy chọn: Hiện thông báo nhỏ gọn (toast) thành công nếu thích
-    // toastStore.showToast("Đã cập nhật số lượng", "success");
+    try {
+      const payload = {
+        MaKH: parseInt(maKH),
+        MaPhanLoai: item.MaPhanLoai, 
+        soluong: item.SoLuong        
+      };
 
-  } catch (error) {
-    console.error("Lỗi cập nhật số lượng:", error);
-    toastStore.showToast("Không thể cập nhật số lượng lúc này!", "error");
-    
-    // BƯỚC QUAN TRỌNG: Nếu API lỗi, phải hoàn tác (Rollback) giao diện về số cũ
-    item.SoLuong = oldQty;
-    item.ThanhTien = item.DonGia * item.SoLuong; 
-  }
-};
+      const response = await fetch('http://localhost:3000/api/don_hang/update', {
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-// Đổi tham số nhận vào thành maPL (Mã Phân Loại) cho đúng với HTML
-const removeItem = async (maPL) => { 
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  
-  if (!token || !userString) {
-    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
-    return;
-  }
-  const maKH = JSON.parse(userString).MaKH;
-  const oldCart = [...cartItems.value];
-  
-  // Lọc bỏ món hàng có Mã Phân Loại trùng với mã vừa bấm xóa
-  cartItems.value = cartItems.value.filter(sp => sp.MaPhanLoai !== maPL);
-
-  try {
-    const payload = {
-      MaKH: parseInt(maKH),
-      MaPhanLoai: maPL, // Truyền thẳng maPL vào đây, không dùng item.MaPhanLoai nữa
-    };
-
-    const response = await fetch('http://localhost:3000/api/don_hang/delete', {
-      method: 'POST', // Đảm bảo Backend của bạn dùng app.post('/delete', ...)
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Lỗi xóa hàng từ Server");
+      if (!response.ok) throw new Error("Lỗi cập nhật từ Server");
+      window.dispatchEvent(new Event('cart-updated'));
+    } 
+    catch (error) {
+      console.error("Lỗi cập nhật số lượng:", error);
+      toastStore.showToast("Không thể cập nhật số lượng lúc này!", "error");
+      item.SoLuong = oldQty;
+      item.ThanhTien = item.DonGia * item.SoLuong; 
     }
+  };
 
-    toastStore.showToast("Đã xóa sản phẩm khỏi giỏ hàng", "success");
+  const removeItem = async (maPL) => { 
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
     
-  } catch (error) {
-    console.error("Lỗi cập nhật giỏ hàng:", error);
-    toastStore.showToast("Không thể xoá hàng lúc này!", "error");
+    if (!token || !userString) {
+      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+      return;
+    }
+    const maKH = JSON.parse(userString).MaKH;
+    const oldCart = [...cartItems.value];
     
-    // Nếu Backend lỗi (ví dụ rớt mạng), phục hồi lại giỏ hàng như cũ để khách không bị sốc
-    cartItems.value = oldCart; 
-  }
-};
+    cartItems.value = cartItems.value.filter(sp => sp.MaPhanLoai !== maPL);
 
-const quickAdd = (product) => {
-  toastStore.showToast(`Đã thêm ${product.name} vào giỏ!`, "success");
-};
+    try {
+      const payload = {
+        MaKH: parseInt(maKH),
+        MaPhanLoai: maPL, 
+      };
 
-const goToProduct = (id) => {
-  router.push(`/product/${id}`);
-};
+      const response = await fetch('http://localhost:3000/api/don_hang/delete', {
+        method: 'POST', // Đảm bảo Backend của bạn dùng app.post('/delete', ...)
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Lỗi xóa hàng từ Server");
+      }
+
+      toastStore.showToast("Đã xóa sản phẩm khỏi giỏ hàng", "success");
+      window.dispatchEvent(new Event('cart-updated'));
+    } catch (error) {
+      console.error("Lỗi cập nhật giỏ hàng:", error);
+      toastStore.showToast("Không thể xoá hàng lúc này!", "error");
+      cartItems.value = oldCart; 
+    }
+  };
+
+  const goToProduct = (id) => {
+    router.push(`/product/${id}`);
+  };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-
-/* Hiệu ứng khi xóa item khỏi danh sách */
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
-}
+  .list-enter-active,
+  .list-leave-active {
+    transition: all 0.5s ease;
+  }
+  .list-enter-from,
+  .list-leave-to {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
 </style>

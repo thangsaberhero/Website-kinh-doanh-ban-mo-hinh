@@ -54,23 +54,24 @@
       </section>
 
       <section class="py-12 max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">       
           <div class="lg:col-span-8">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-outline-variant/30">
-              <div class="flex flex-wrap gap-2">
-                <button 
-                  v-for="tab in categories" :key="tab"
-                  @click="activeCategory = tab"
-                  :class="[
-                    'px-5 py-2 rounded-lg font-headline font-bold text-[11px] tracking-widest uppercase transition-all',
-                    activeCategory === tab 
-                      ? 'bg-primary text-black shadow-[0_0_10px_rgba(255,61,0,0.3)]' 
-                      : 'bg-surface-container border border-outline-variant/50 text-on-surface-variant hover:border-primary/50 hover:text-white'
-                  ]"
-                >
-                  {{ tab }}
-                </button>
+              <div class="w-full relative">
+                <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-2 snap-x scroll-smooth">
+                  <button 
+                    v-for="tab in categories" :key="tab"
+                    @click="activeCategory = tab"
+                    :class="[
+                      'snap-start shrink-0 px-5 py-2 rounded-lg font-headline font-bold text-[11px] tracking-widest uppercase transition-all',
+                      activeCategory === tab 
+                        ? 'bg-primary text-black shadow-[0_0_10px_rgba(255,61,0,0.3)]' 
+                        : 'bg-surface-container border border-outline-variant/50 text-on-surface-variant hover:border-primary/50 hover:text-white'
+                    ]"
+                  >
+                    {{ tab }}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -105,7 +106,7 @@
               </article>
             </div>
             
-            <div v-else class="text-center py-20 bg-surface-container rounded-2xl border border-dashed border-outline-variant/50">
+            <div v-else-if="!isLoading" class="text-center py-20 bg-surface-container rounded-2xl border border-dashed border-outline-variant/50">
               <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4">article</span>
               <h3 class="font-headline text-xl font-bold text-white mb-2">Chưa có dữ liệu</h3>
               <p class="text-on-surface-variant text-sm">Chưa có bài viết nào thuộc chuyên mục này.</p>
@@ -138,7 +139,16 @@
             <div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/30">
               <h4 class="font-headline font-bold text-sm tracking-widest uppercase text-white mb-6">Thẻ Phổ Biến</h4>
               <div class="flex flex-wrap gap-2">
-                <span v-for="tag in trendingTags" :key="tag" class="px-3 py-1.5 bg-background border border-outline-variant/50 text-on-surface-variant text-[10px] font-bold tracking-widest uppercase rounded cursor-pointer hover:border-primary hover:text-primary transition-colors">
+                <span 
+                  v-for="tag in trendingTags" :key="tag" 
+                  @click="activeTag = activeTag === tag ? '' : tag"
+                  :class="[
+                    'px-3 py-1.5 border text-[10px] font-bold tracking-widest uppercase rounded cursor-pointer transition-all',
+                    activeTag === tag 
+                      ? 'bg-primary text-black border-primary shadow-[0_0_10px_rgba(255,143,115,0.4)]' 
+                      : 'bg-background border-outline-variant/50 text-on-surface-variant hover:border-primary hover:text-primary'
+                  ]"
+                >
                   #{{ tag }}
                 </span>
               </div>
@@ -151,116 +161,152 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import TheHeader from '@/components/TheHeader.vue';
+  import { ref, computed, onMounted, watch } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import TheHeader from '@/components/TheHeader.vue';
 
-const router = useRouter();
+  const route = useRoute();
+  const router = useRouter();
 
-// 1. KHỞI TẠO CÁC BIẾN CHỨA DỮ LIỆU RỖNG
-const heroNews = ref({});         // Khu vực 1: Bài to nhất trên cùng
-const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
-const mainArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
-const popularNews = ref([]);      // Khu vực 4: Sidebar Đọc nhiều nhất (Cột phải)
+  const heroNews = ref({});         // Khu vực 1: Bài to nhất trên cùng
+  const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
+  const mainArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
+  const popularNews = ref([]);      // Khu vực 4: Sidebar Đọc nhiều nhất (Cột phải)
 
-const categories = ['Tất cả', 'Gundam', 'Anime Figure', 'Mecha & Robot', 'Thị trường'];
-const activeCategory = ref('Tất cả');
-const trendingTags = ['Bandai', 'GoodSmile', 'Metal_Build', 'Pre_Order', 'Unboxing', 'Cyberpunk', 'Gundam_Seed'];
+  const categories = ref(['Tất cả']);
+  const activeCategory = ref('Tất cả');
+  const trendingTags = ref([]);
+  const activeTag = ref('');
 
-const itemsPerPage = 6;
-const visibleCount = ref(itemsPerPage);
+  const itemsPerPage = 6;
+  const visibleCount = ref(itemsPerPage);
+  const isLoading = ref(true);
 
-const loadMore = () => {
-  visibleCount.value += itemsPerPage;
-};
+  const loadMore = () => {
+    visibleCount.value += itemsPerPage;
+  };
 
-watch(activeCategory, () => {
-  visibleCount.value = itemsPerPage;
-});
+  watch(activeCategory, () => {
+    visibleCount.value = itemsPerPage;
+  });
 
-const formatTitle = (rawTitle) => {
-  if (!rawTitle) return '';
-  if (rawTitle.includes(':')) {
-    const parts = rawTitle.split(':');
-    return `${parts[0]}:<br><span class="text-primary">${parts.slice(1).join(':').trim()}</span>`;
-  }
-  
-  if (rawTitle.includes(' - ')) {
-    const parts = rawTitle.split(' - ');
-    return `${parts[0]}<br><span class="text-primary">${parts.slice(1).join(' - ').trim()}</span>`;
-  }
-  return rawTitle;
-};
-// 2. HÀM FETCH DỮ LIỆU TỪ BACKEND VÀ "CHIA BÀI"
-const fetchNewsData = async () => {
-  try {
-    // Gọi API (Giả sử API này trả về đủ 3 mảng: latest, trending, popular)
-    const response = await fetch('http://localhost:3000/api/news');
-    const data = await response.json();
-    
-    if (response.ok) {
-      // BƯỚC 1: XỬ LÝ DANH SÁCH BÀI MỚI NHẤT (latestList)
-      const allLatest = data.latestList.map(item => ({
-        id: item.MaTT,
-        title: item.TieuDe,
-        titleHtml: formatTitle(item.TieuDe),
-        summary: item.TomTat,
-        category: item.TheLoai,
-        date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),
-        readTime: 5, 
-        image: item.AnhDaiDien
-      }));
-
-      // KHU VỰC 1 (HERO): Bốc bài viết MỚI NHẤT (vị trí số 0) để đưa lên Banner to nhất
-      if (allLatest.length > 0) {
-        heroNews.value = allLatest[0];
-      }
-
-      // KHU VỰC 3 (MAIN LIST): Lấy phần còn lại (từ vị trí số 1 trở đi) để đưa xuống danh sách bên dưới, tránh hiển thị trùng bài Banner
-      mainArticles.value = allLatest.slice(1);
-
-      // KHU VỰC 2 (TRENDING): Gắn thẳng vào biến trendingNews
-      trendingNews.value = data.trendingList.map(item => ({
-        id: item.MaTT,
-        title: item.TieuDe,
-        category: item.TheLoai,
-        image: item.AnhDaiDien
-      }));
-
-      // KHU VỰC 4 (POPULAR): Gắn vào sidebar Đọc nhiều nhất
-      popularNews.value = data.popularList.map(item => ({
-        id: item.MaTT,
-        title: item.TieuDe,
-        date: new Date(item.NgayDang).toLocaleDateString('vi-VN')
-      }));
+  const formatTitle = (rawTitle) => {
+    if (!rawTitle) return '';
+    if (rawTitle.includes(':')) {
+      const parts = rawTitle.split(':');
+      return `${parts[0]}:<br><span class="text-primary">${parts.slice(1).join(':').trim()}</span>`;
     }
-  } catch (error) {
-    console.error("Lỗi khi tải tin tức:", error);
-  }
-};
+    
+    if (rawTitle.includes(' - ')) {
+      const parts = rawTitle.split(' - ');
+      return `${parts[0]}<br><span class="text-primary">${parts.slice(1).join(' - ').trim()}</span>`;
+    }
+    return rawTitle;
+  };
+  
+  const fetchNewsData = async () => {
+    isLoading.value = true;
+    try {
+      const response = await fetch('http://localhost:3000/api/news');
+      const data = await response.json();
+      
+      if (response.ok) {
+        const allCategories = data.latestList.map(item => item.TheLoai);
+        const uniqueCategories = [...new Set(allCategories)];
+        categories.value = ['Tất cả', ...uniqueCategories];
+        
+        const allLatest = data.latestList.map(item => ({
+          id: item.MaTT,
+          title: item.TieuDe,
+          titleHtml: formatTitle(item.TieuDe),
+          summary: item.TomTat,
+          category: item.TheLoai,
+          date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),        
+          readTime: Math.max(1, parseInt(item.ThoiGianDoc) || 1), 
+          image: item.AnhDaiDien,
+          tags: item.Tags || ''
+        }));
+        // KHU VỰC 1 (HERO): Bốc bài viết MỚI NHẤT (vị trí số 0) để đưa lên Banner to nhất
+        if (allLatest.length > 0) {
+          heroNews.value = allLatest[0];
+        }
 
-// 3. LOGIC LỌC BÀI VIẾT BÊN TRONG MAIN LIST
-const filteredNews = computed(() => {
-  if (activeCategory.value === 'Tất cả') return mainArticles.value;
-  return mainArticles.value.filter(post => post.category === activeCategory.value);
-});
+        // KHU VỰC 3 (MAIN LIST): Lấy phần còn lại (từ vị trí số 1 trở đi) để đưa xuống danh sách bên dưới, tránh hiển thị trùng bài Banner
+        mainArticles.value = allLatest.slice(1);
 
-const displayNews = computed(() => {
-  return filteredNews.value.slice(0, visibleCount.value);
-});
-// Gọi hàm ngay khi mở trang
-onMounted(() => {
-  fetchNewsData();
-});
+        // KHU VỰC 2 (TRENDING): Gắn thẳng vào biến trendingNews
+        trendingNews.value = data.trendingList.map(item => ({
+          id: item.MaTT,
+          title: item.TieuDe,
+          category: item.TheLoai,
+          image: item.AnhDaiDien
+        }));
+
+        // KHU VỰC 4 (POPULAR): Gắn vào sidebar Đọc nhiều nhất
+        popularNews.value = data.popularList.map(item => ({
+          id: item.MaTT,
+          title: item.TieuDe,
+          date: new Date(item.NgayDang).toLocaleDateString('vi-VN')
+        }));
+
+        const tagCounts = {}; 
+        data.latestList.forEach(item => {
+          if (item.Tags) {
+            const tagsArray = item.Tags.split(',').map(tag => tag.trim());
+            tagsArray.forEach(tag => {
+              if (tag) {
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+              }
+            });
+          }
+        });
+        const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+        trendingTags.value = sortedTags.slice(0, 7);
+      }
+    } 
+    catch (error) {
+      console.error("Lỗi khi tải tin tức:", error);
+    }
+    finally {
+      isLoading.value = false; 
+    }
+  };
+
+  // 3. LOGIC LỌC BÀI VIẾT BÊN TRONG MAIN LIST
+  const filteredNews = computed(() => {
+    let result = mainArticles.value;
+    if (activeCategory.value !== 'Tất cả') {
+      result = result.filter(post => post.category === activeCategory.value);
+    }
+    if (activeTag.value) {
+      result = result.filter(post => post.tags && post.tags.includes(activeTag.value));
+    }
+    return result;
+  });
+
+  watch([activeCategory, activeTag], () => {
+    visibleCount.value = itemsPerPage;
+  });
+
+  const displayNews = computed(() => {
+    return filteredNews.value.slice(0, visibleCount.value);
+  });
+
+  onMounted(() => {
+    document.title = "Tin tức & Đánh giá Mô hình | FigureCollect";
+    fetchNewsData().then(() => {
+      if (route.query.tag) {
+        activeTag.value = route.query.tag; 
+        setTimeout(() => {
+          window.scrollTo({ top: 1200, behavior: 'smooth' });
+        }, 100);
+      }
+    });
+  });
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap');
-
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-.neon-glow { box-shadow: 0 0 20px rgba(255, 61, 0, 0.4); }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .neon-glow { box-shadow: 0 0 20px rgba(255, 61, 0, 0.4); }
 </style>

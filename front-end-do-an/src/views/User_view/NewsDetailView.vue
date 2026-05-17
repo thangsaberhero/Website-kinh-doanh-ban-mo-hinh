@@ -59,17 +59,20 @@
         </div>
 
         <div class="max-w-3xl mx-auto mt-12 pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
-          <div class="flex items-center gap-3">
+          
+          <div v-if="articleTags.length > 0" class="flex items-center gap-3 flex-wrap">
             <span class="text-sm font-headline font-bold text-on-surface-variant uppercase tracking-wider mr-2">Tags: </span> 
-            <span class="px-3 py-1.5 bg-surface-container-highest border border-outline-variant/50 text-on-surface-variant text-[12px] font-bold tracking-widest uppercase rounded hover:border-primary hover:text-primary transition-colors cursor-pointer">
-              #{{ article.TheLoai }}
-            </span>
-            <span class="px-3 py-1.5 bg-surface-container-highest border border-outline-variant/50 text-on-surface-variant text-[12px] font-bold tracking-widest uppercase rounded hover:border-primary hover:text-primary transition-colors cursor-pointer">
-              #Gundam_Models
+            <span 
+              v-for="tag in articleTags" 
+              :key="tag"
+              @click="router.push({ path: '/news', query: { tag: tag } })" 
+              class="px-3 py-1.5 bg-surface-container-highest border border-outline-variant/50 text-on-surface-variant text-[12px] font-bold tracking-widest uppercase rounded hover:border-primary hover:text-primary transition-colors cursor-pointer"
+            >
+              #{{ tag }}
             </span>
           </div>
 
-          <div class="flex items-center gap-3">
+          <div :class="['flex items-center gap-3', articleTags.length === 0 ? 'sm:ml-auto' : '']">
             <span class="text-sm font-headline font-bold text-on-surface-variant uppercase tracking-wider mr-2">Chia sẻ:</span>            
             <button @click="shareFacebook" class="w-10 h-10 rounded-full bg-[#1877F2]/10 text-[#1877F2] border border-[#1877F2]/20 hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all" title="Chia sẻ lên Facebook">
               <span class="material-symbols-outlined text-[18px]">share</span>
@@ -126,7 +129,6 @@
           Quay lại trang tin tức
         </button>
       </div>
-  
     </main>
   </div>
   <button 
@@ -149,7 +151,7 @@
 </template>
     
 <script setup>
-  import { ref, onMounted, watch, onUnmounted } from 'vue';
+  import { ref, onMounted, watch, onUnmounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import TheHeader from '@/components/TheHeader.vue';
   import { useToastStore } from '../../stores/toast';
@@ -176,6 +178,13 @@
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
+
+  const articleTags = computed(() => {
+    if (!article.value || !article.value.Tags || article.value.Tags.toUpperCase() === 'NULL') {
+      return [];
+    }
+    return article.value.Tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+  });
   
   const fetchArticle = async () => {
     try {
