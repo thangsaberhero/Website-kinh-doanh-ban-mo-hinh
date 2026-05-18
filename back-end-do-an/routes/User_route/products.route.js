@@ -7,7 +7,7 @@ router.get('/check_favorite/:MaKH/:MaMoHinh', product_view.check_favorite_produc
 router.get('/list_favorite/:MaKH', product_view.watch_favorite_product);
 
 router.get('/', product_view.getAllProduct);
-
+router.post('/cart-suggestions', product_view.getCartSuggestions);
 router.get('/search', product_view.getProductsBySearch);
 
 router.get('/danhmuc', product_view.getAllvariant);

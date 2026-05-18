@@ -3,8 +3,9 @@ const db = require('../../config/db');
 const newsController = {
     getAllNews: async (req, res) => {
         try{
-            const sqlLatest = `SELECT t.MaTT, t.TieuDe, t.TomTat, t.TheLoai, t.NgayDang, t.LuotXem,
-                                nv.TenNV AS TacGia,
+            const sqlLatest = `SELECT t.MaTT, t.TieuDe, t.TomTat, t.TheLoai, t.Tags, t.NgayDang, t.LuotXem, 
+                                nv.TenNV AS TacGia, 
+                                CEIL((LENGTH(t.NoiDung) - LENGTH(REPLACE(REPLACE(t.NoiDung, '&nbsp;', ' '), ' ', '')) + 1) / 200) AS ThoiGianDoc,
                                 (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
                                 FROM TinTuc t
                                 LEFT JOIN NhanVien nv ON t.MaNV = nv.MaNV
@@ -174,12 +175,12 @@ const newsController = {
     },
     createNews: async(req, res) =>{
         try{
-            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV } = req.body;
+            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV, Tags } = req.body;
             const file = req.file;
 
-            const sqlInsertNews = `INSERT INTO TinTuc (TieuDe, NoiDung, TheLoai, TomTat, TrangThai, NgayDang, LuotXem, MaNV)
-                                    VALUES (?, ?, ?, ?, ?, Now(), 0, ?)`;
-            const [result] = await db.query(sqlInsertNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV]);
+            const sqlInsertNews = `INSERT INTO TinTuc (TieuDe, NoiDung, TheLoai, TomTat, TrangThai, NgayDang, LuotXem, MaNV, Tags)
+                                    VALUES (?, ?, ?, ?, ?, Now(), 0, ?, ?)`;
+            const [result] = await db.query(sqlInsertNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV, Tags]);
             const newNewsId = result.insertId;
 
             if(file){
@@ -202,13 +203,13 @@ const newsController = {
     updateNews: async(req, res) => {
         try{
             const newsId = req.params.id;
-            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai } = req.body;
+            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags } = req.body;
             const file = req.file;
 
             const sqlUpdateNews = `UPDATE TinTuc
-                                    SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?
+                                    SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?, Tags = ?
                                     WHERE MaTT = ?`;
-            await db.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, newsId]);
+            await db.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags, newsId]);
 
             if(file){
                 const imageUrl = `http://localhost:3000/Images_news/${file.filename}`;

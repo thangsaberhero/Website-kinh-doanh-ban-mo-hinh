@@ -32,12 +32,9 @@
           </div>
         </div>
   
-        <main class="flex-1 overflow-y-auto p-8 custom-scrollbar pb-24">
-          
-          <div class="flex flex-col xl:flex-row gap-8 max-w-7xl mx-auto">
-            
-            <div class="flex-1 flex flex-col gap-6">
-              
+        <main class="flex-1 overflow-y-auto p-8 custom-scrollbar pb-24">      
+          <div class="flex flex-col xl:flex-row gap-8 max-w-7xl mx-auto">       
+            <div class="flex-1 flex flex-col gap-6">         
               <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-1 transition-all focus-within:border-[#ff8f73] focus-within:ring-4 focus-within:ring-[#ff8f73]/10">
                 <input 
                   v-model="postData.title" 
@@ -57,15 +54,40 @@
             </div>
   
             <div class="w-full xl:w-80 flex flex-col gap-6 shrink-0">
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                 <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
                   <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">category</span> Chuyên mục
                 </h3>
-                <select v-model="postData.category" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 cursor-pointer">
-                  <option value="Review">Review Mô Hình</option>
-                  <option value="Tin tức">Tin Tức - Sự kiện</option>
-                  <option value="Mẹo vặt">Mẹo vặt - Hướng dẫn</option>
-                </select>
+                
+                <div class="relative">
+                  <input 
+                    v-model="postData.category" 
+                    @focus="showCategoryDropdown = true"
+                    @blur="showCategoryDropdown = false"
+                    placeholder="Chọn hoặc nhập chuyên mục mới..."
+                    class="w-full border border-slate-200 rounded-xl px-4 py-3 pr-10 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50"
+                  >
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none transition-transform" :class="{ 'rotate-180': showCategoryDropdown }">
+                    expand_more
+                  </span>
+
+                  <Transition name="fade-slide">
+                    <ul v-if="showCategoryDropdown" class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar overflow-hidden py-1">
+                      <li 
+                        v-for="cat in filteredCategories" 
+                        :key="cat"
+                        @mousedown.prevent="selectCategory(cat)"
+                        class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] cursor-pointer transition-colors flex items-center justify-between"
+                      >
+                        {{ cat }}
+                        <span v-if="postData.category === cat" class="material-symbols-outlined text-[16px] text-[#ff8f73]">check</span>
+                      </li>
+                      <li v-if="filteredCategories.length === 0" class="px-4 py-2.5 text-sm text-slate-400 italic">
+                        Chưa có chuyên mục nào
+                      </li>
+                    </ul>
+                  </Transition>
+                </div>
               </div>
   
               <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
@@ -104,6 +126,17 @@
                   {{ postData.summary.length }}/180 ký tự
                 </p>
               </div>
+
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+                <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">tag</span> Tags bài viết
+                </h3>
+                <input 
+                  v-model="postData.tags" 
+                  placeholder="VD: Bandai, GoodSmile, Gundam (Cách nhau bằng dấu phẩy)" 
+                  class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all bg-slate-50"
+                >
+              </div>
             </div>
           </div>
         </main>
@@ -112,7 +145,7 @@
 </template>
   
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
@@ -126,6 +159,9 @@
 
   const thumbnailFile = ref(null);
   const isLoading = ref(false);
+  const existingCategories = ref(['Review', 'Tin tức', 'Mẹo vặt']);
+  const showCategoryDropdown = ref(false);
+
   // Trạng thái Layout
   const isSidebarCollapsed = ref(false);
   const isMobileMenuOpen = ref(false);
@@ -140,11 +176,12 @@
     content: '', 
     category: 'Review',
     summary: '',
-    thumbnail: null
+    thumbnail: null,
+    tags: ''
   });
   
   const editorConfig = {
-    height: 600,
+    height: 750,
     menubar: false,
     plugins: [
       'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
@@ -183,6 +220,58 @@
     }
   };
   
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/news');
+      const data = await response.json();
+      if (response.ok && data.latestList) {
+        const allCategories = data.latestList.map(item => item.TheLoai);
+        existingCategories.value = [...new Set(allCategories)];
+      }
+    } catch (error) {
+      console.error("Lỗi tải danh sách chuyên mục:", error);
+    }
+  };
+
+  const fetchPostDetail = async () =>{
+    isLoading.value = true;
+    try{
+        const response = await fetch(`http://localhost:3000/api/news/${postId}`);
+        const result = await response.json();
+
+        if(response.ok){
+            const article = result.data;
+            postData.value = {
+                title: article.TieuDe,
+                content: article.NoiDung,
+                category: article.TheLoai,
+                summary: article.TomTat,
+                thumbnail: article.AnhTinTuc,
+                tags: article.Tags || ''
+            };
+        }
+    }
+    finally{
+        isLoading.value = false;
+    }
+  }
+
+  onMounted(() => {
+    fetchCategories();
+    fetchPostDetail();
+  });
+
+  const selectCategory = (category) => {
+    postData.value.category = category;
+    showCategoryDropdown.value = false;
+  };
+
+  const filteredCategories = computed(() => {
+    if (!postData.value.category) return existingCategories.value;
+    return existingCategories.value.filter(cat => 
+      cat.toLowerCase().includes(postData.value.category.toLowerCase())
+    );
+  });
   // Xử lý Upload Ảnh Thumbnail 
   const fileInputRef = ref(null);
   const triggerFileInput = () => {
@@ -204,6 +293,7 @@
   const submitPost = async (status) => {
     if (!postData.value.title) return toastStore.showToast("Vui lòng nhập Tiêu đề bài viết!", "error");
     if (!postData.value.content) return toastStore.showToast("Nội dung bài viết không được để trống!", "error");
+    if (!postData.value.category.trim()) return toastStore.showToast("Vui lòng nhập hoặc chọn Chuyên mục!", "error");
     
     // 1. Gói toàn bộ dữ liệu vào FormData
     const formData = new FormData();
@@ -212,7 +302,8 @@
     formData.append('TheLoai', postData.value.category);
     formData.append('TomTat', postData.value.summary);
     formData.append('TrangThai', status); 
-    formData.append('MaNV', 1); 
+    formData.append('MaNV', 1);
+    formData.append('Tags', postData.value.tags); 
 
     if (thumbnailFile.value) {
         formData.append('thumbnail', thumbnailFile.value);
@@ -236,28 +327,6 @@
         toastStore.showToast("Không thể kết nối đến máy chủ.", "error");
     }
   };
-  const fetchPostDetail = async () =>{
-    isLoading.value = true;
-    try{
-        const response = await fetch(`http://localhost:3000/api/news/${postId}`);
-        const result = await response.json();
-
-        if(response.ok){
-            const article = result.data;
-            postData.value = {
-                title: article.TieuDe,
-                content: article.NoiDung,
-                category: article.TheLoai,
-                summary: article.TomTat,
-                thumbnail: article.AnhTinTuc
-            };
-        }
-    }
-    finally{
-        isLoading.value = false;
-    }
-  }
-  onMounted(fetchPostDetail);
 </script>
   
 <style scoped>
@@ -265,4 +334,14 @@
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .fade-slide-enter-from,
+  .fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
 </style>
