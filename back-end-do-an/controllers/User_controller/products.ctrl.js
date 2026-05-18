@@ -47,7 +47,7 @@ const product_view = {
             else if(sapxep === 'price_desc')
                 filter = "order by DonGiaKhuyenMai DESC";
             else
-                filter = "order by mh.MaMoHinh DESC";
+                filter = "order by mh.NgayPhatHanh DESC";
 
             const sql_core = `SELECT mh.*,TenHSX , 
                 (
@@ -208,6 +208,36 @@ const product_view = {
         }
         catch (error){
             console.error("Lỗi khi lấy thông tin sản phẩm:,", error);
+            res.status(500).json({
+                message: "Lỗi server khi lấy dữ liệu sản phẩm"
+            });
+        }
+    },
+
+    getVariantProductById: async(req, res) => {
+        try {
+            const id = req.params.id;
+
+            const sql = `
+                SELECT pl.*
+                
+                FROM PhanLoai pl
+                WHERE pl.MaMoHinh = ?
+            `;
+
+            const [product] = await db.query(sql, [id]);
+
+            if(product.length === 0)
+                return res.status(404).json({
+                    message: "Không tìm thấy sản phẩm!"
+            });
+            res.status(200).json({
+                message: "Đã có thông tin của sản phẩm!",
+                data: product
+            });
+        }
+        catch (error){
+            console.error("Lỗi khi lấy thông tin phân loại sản phẩm:,", error);
             res.status(500).json({
                 message: "Lỗi server khi lấy dữ liệu sản phẩm"
             });
@@ -545,41 +575,116 @@ const product_view = {
             });
         }
     },
-    getCartSuggestions: async(req, res) => {
+    getCartSuggestions: async (req, res) => {
         try {
-            const { cartItemIds } = req.body; 
+            const { cartItemIds } = req.body;
             let sql = '';
             let params = [];
-            const MA_DM_PHU_KIEN = 5; 
+            const MA_DM_PHU_KIEN = 5;
 
             if (cartItemIds && cartItemIds.length > 0) {
                 const placeholders = cartItemIds.map(() => '?').join(',');
-                sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.DonGia, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX,
-                    (SELECT COALESCE(SUM(SoLuong), 0) FROM PhanLoai WHERE MaMoHinh = mh.MaMoHinh) AS SoLuong
-                    FROM MoHinh mh 
+
+                // ==========================================
+                // BƯỚC 1: "ĐỌC VỊ" KHÁCH HÀNG TỪ GIỎ HÀNG
+                // Lấy ra các Nhân Vật và Series mà họ đang định mua
+                // ==========================================
+                const sql_find_chars = `SELECT DISTINCT TenNhanVat, Series FROM MoHinh WHERE MaMoHinh IN (${placeholders})`;
+                const [cartInfo] = await db.query(sql_find_chars, cartItemIds);
+
+                // Lọc ra các tên không bị Null hoặc Rỗng
+                const characters = cartInfo.map(item => item.TenNhanVat).filter(Boolean);
+                const series = cartInfo.map(item => item.Series).filter(Boolean);
+
+                // ==========================================
+                // BƯỚC 2: XÂY DỰNG ĐIỀU KIỆN LỌC ĐỘNG
+                // Mặc định luôn có Phụ Kiện (MA_DM = 5) để dự phòng
+                // ==========================================
+                let matchConditions = ["mh.MaDM = ?"];
+                let matchParams = [MA_DM_PHU_KIEN];
+
+                // Nếu giỏ hàng có mô hình nhân vật cụ thể -> Thêm vào điều kiện quét
+                if (characters.length > 0) {
+                    matchConditions.push(`mh.TenNhanVat IN (${characters.map(() => '?').join(',')})`);
+                    matchParams.push(...characters);
+                }
+                if (series.length > 0) {
+                    matchConditions.push(`mh.Series IN (${series.map(() => '?').join(',')})`);
+                    matchParams.push(...series);
+                }
+
+                // ==========================================
+                // BƯỚC 3: QUÉT KHO HÀNG VÀ SẮP XẾP ƯU TIÊN
+                // ==========================================
+                sql = `
+                    SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX, mh.TrangThai,
+                           (SELECT COALESCE(SUM(SoLuong), 0) FROM PhanLoai WHERE MaMoHinh = mh.MaMoHinh) AS SoLuong,
+                           
+                           -- Tích hợp tính giá khuyến mãi chuẩn chỉ
+                           MIN(
+                                pl.DonGia - COALESCE((
+                                    SELECT MAX(CASE WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl.DonGia)) ELSE 0 END)
+                                    FROM ChiTietKhuyenMai ctkm
+                                    INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
+                                    WHERE ctkm.MaPhanLoai = pl.MaPhanLoai AND km.TrangThaiHoatDong = 1 AND km.ThoiGianBD <= NOW() AND km.ThoiGianKT >= NOW()
+                                ), 0)
+                           ) AS DonGiaKhuyenMai
+
+                    FROM MoHinh mh
                     LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
-                    WHERE mh.MaDM = ? AND mh.MaMoHinh NOT IN (${placeholders}) AND mh.HienThi = 1
-                    ORDER BY RAND() LIMIT 4`;
-                params = [MA_DM_PHU_KIEN, ...cartItemIds];
-            } 
-            else {
-                sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.DonGia, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX,
-                    (SELECT COALESCE(SUM(SoLuong), 0) FROM PhanLoai WHERE MaMoHinh = mh.MaMoHinh) AS SoLuong
-                    FROM MoHinh mh 
+                    LEFT JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh
+                    
+                    WHERE mh.MaMoHinh NOT IN (${placeholders})
+                      AND mh.HienThi = 1
+                      AND (${matchConditions.join(' OR ')})
+                    GROUP BY mh.MaMoHinh
+                    
+                    -- Mẹo SQL tối ưu: (mh.MaDM = 5) sẽ trả về 1 (True). 
+                    -- Xếp tăng dần ASC tức là số 0 (Nhân vật/Series) sẽ đứng trên số 1 (Phụ kiện).
+                    ORDER BY (mh.MaDM = ${MA_DM_PHU_KIEN}) ASC, RAND() 
+                    LIMIT 4
+                `;
+
+                params = [...matchParams, ...cartItemIds];
+
+            } else {
+                // ==========================================
+                // TRƯỜNG HỢP GIỎ HÀNG TRỐNG
+                // Trả về 4 sản phẩm mới nhất (Kèm giá khuyến mãi)
+                // ==========================================
+                sql = `
+                    SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX, mh.TrangThai,
+                           (SELECT COALESCE(SUM(SoLuong), 0) FROM PhanLoai WHERE MaMoHinh = mh.MaMoHinh) AS SoLuong,
+                           MIN(
+                                pl.DonGia - COALESCE((
+                                    SELECT MAX(CASE WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl.DonGia)) ELSE 0 END)
+                                    FROM ChiTietKhuyenMai ctkm
+                                    INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
+                                    WHERE ctkm.MaPhanLoai = pl.MaPhanLoai AND km.TrangThaiHoatDong = 1 AND km.ThoiGianBD <= NOW() AND km.ThoiGianKT >= NOW()
+                                ), 0)
+                           ) AS DonGiaKhuyenMai
+                    FROM MoHinh mh
                     LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
+                    LEFT JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh
                     WHERE mh.HienThi = 1
+                    GROUP BY mh.MaMoHinh
                     ORDER BY mh.NgayPhatHanh DESC 
-                    LIMIT 4`;
-                params = []; 
+                    LIMIT 4
+                `;
+                params = [];
             }
+
             const [suggestions] = await db.query(sql, params);
-            res.status(200).json({ 
-                message: "Lấy sản phẩm gợi ý thành công", 
-                data: suggestions 
+            
+            res.status(200).json({
+                success: true,
+                message: "Lấy sản phẩm gợi ý thành công",
+                data: suggestions
             });
+            
         } catch (error) {
-            console.error("Lỗi:", error);
-            res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
+            console.error("Lỗi khi lấy gợi ý giỏ hàng:", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi lấy gợi ý", error: error.message });
         }
     }
 }

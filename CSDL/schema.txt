@@ -324,6 +324,7 @@ CREATE TABLE TinTuc (
     TheLoai VARCHAR(100),
     NgayDang DATETIME DEFAULT CURRENT_TIMESTAMP,
     LuotXem INT DEFAULT 0,
+    Tags Varchar(255)
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
 );
 

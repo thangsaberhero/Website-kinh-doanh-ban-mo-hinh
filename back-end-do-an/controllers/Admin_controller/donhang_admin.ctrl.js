@@ -60,7 +60,7 @@ const donhang_admin = {
             }
             const currentStatus = trang_thai[0].MaTrangThai;
 
-            if(currentStatus === 3 || currentStatus === 4 || currentStatus === 5){
+            if(currentStatus === 5){
                 await connection.rollback();
                 return res.status(400).json({
                     message: "Không thể huỷ! Đơn hàng đã được giao hoặc đã bị hủy trước đó."

@@ -134,13 +134,42 @@ const donhang_user = {
             if(result_giohang.length === 0)
                 return res.status(404).json({ message: "Không tìm thấy mã giỏ hàng"});
 
-            const maGH = result_giohang[0].MaGH;
-            const sql = `SELECT 
+            const MaGH = result_giohang[0].MaGH;
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 5;
+            const offset = (page - 1) * limit;
+            const {sapxep} = req.query;
+            let filter  = "";
+            if(sapxep === 'price_asc')
+                filter = "order by DonGiaKhuyenMai ASC";
+            else if(sapxep === 'price_desc')
+                filter = "order by DonGiaKhuyenMai DESC";
+            else
+                filter = "order by mh.NgayPhatHanh DESC";
+
+            const sql_core = `SELECT 
             mh.MaMoHinh,
             mh.TenMH,
             mh.AnhDaiDien, 
             mh.TienCocToiThieu,
             pl.DonGia,
+            pl.DonGia - Coalesce((
+                    Select MAX(
+                            Case
+                                when ctkm.LoaiGiamGia = 'TienMat' Then ctkm.ChietKhau
+                            
+                                when ctkm.LoaiGiamGia = 'ChietKhau' then 
+                                    LEAST((pl.DonGia * ctkm.ChietKhau / 100), Coalesce(ctkm.GiaTriGiamToiDa, pl.DonGia))
+                                else 0
+                            end
+                            )
+                    from ChiTietKhuyenMai ctkm
+                    inner join KhuyenMai km on ctkm.MaKM = km.MaKM
+                    where ctkm.MaPhanLoai = pl.MaPhanLoai 
+                        and km.TrangThaiHoatDong = 1
+                        and km.ThoiGianBD <= NOW()
+                        and km.ThoiGianKT >= NOW()
+                ), 0) as DonGiaKhuyenMai,
             pl.MaPhanLoai,
             pl.ChiTietPhanLoai,
             ct.SoLuong,
@@ -149,13 +178,26 @@ const donhang_user = {
             FROM MoHinh mh
             inner join PhanLoai pl on mh.MaMoHinh = pl.MaMoHinh
             inner join ChiTietGioHang ct on pl.MaPhanLoai = ct.MaMoHinh
-            where ct.MaGH = ?
-            ORDER BY mh.MaMoHinh DESC`;
-            const [products] = await db.query(sql,[maGH]);
+            where ct.MaGH = ?`;
+            const sql_count = `Select count(*) as total from (${sql_core}) as temptable`
+            const [countResult] = await db.query(sql_count, [MaGH]);
+            const totalItems = countResult[0].total;
+            const totalPage = Math.ceil(totalItems/limit);
+
+            const sql = `${sql_core}
+                        ${filter}
+                        limit ? offset ?`
+            const [products] = await db.query(sql,[MaGH, limit, offset]);
 
             res.status(200).json({
                 message: "Lấy danh sách sản phẩm thành công",
-                data: products
+                data: products,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage
+                }
             });
         } 
         catch (error){

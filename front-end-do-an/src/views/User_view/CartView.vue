@@ -61,9 +61,9 @@
                   </div>
                   <div class="text-right">
                     <span class="block text-primary font-headline font-bold text-2xl tracking-tighter">
-                      <div v-if="item.dongiakhuyenmai">
-                        <span class="text-primary font-bold">{{ formatPrice(item.dongiakhuyenmai) }}</span>
-                        <span class="text-outline line-through text-sm">{{ formatPrice(item.DonGia) }}</span>
+                      <div v-if="Number(item.DonGiaKhuyenMai) < Number(item.DonGia)">
+                        <span class="text-primary font-bold">{{ formatPrice(item.DonGiaKhuyenMai) }}</span>
+                        <!-- <span class="text-outline line-through text-sm">{{ formatPrice(item.DonGia) }}</span> -->
                       </div>
                       <div v-else>
                           <span class="text-on-surface font-bold">{{ formatPrice(item.DonGia) }}</span>
@@ -278,7 +278,7 @@
   const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0));
   const discount = computed(() => {
     return cartItems.value.reduce((sum, item) => {
-      const mucGiamGiaCuaItem = item.dongiakhuyenmai ? (item.DonGia - item.dongiakhuyenmai) : 0;
+      const mucGiamGiaCuaItem = item.DonGiaKhuyenMai ? (item.DonGia - item.DonGiaKhuyenMai) : 0;
       return sum + (mucGiamGiaCuaItem * item.SoLuong);
     }, 0);
   });
