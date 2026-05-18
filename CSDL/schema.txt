@@ -294,10 +294,10 @@ CREATE Table MaGiamGia (
 
 Create table ChiTietMaGiamGia (
 	MaGG INT,
-    MaMoHinh INT,
+    MaPhanLoai INT,
     PRIMARY KEY (MaGG, MaMoHinh),
     FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
-    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
+    FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
 );
 	
 

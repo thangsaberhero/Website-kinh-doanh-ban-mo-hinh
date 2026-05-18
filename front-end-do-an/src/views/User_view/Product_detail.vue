@@ -360,49 +360,12 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <router-link 
-            v-for="item in relatedProducts" :key="item.MaMoHinh"
-            :to="`/product/${item.MaMoHinh}`"
-            class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full overflow-hidden"
-          >
-            <div v-if="item.SoLuong === 0" class="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl">
-              <span class="border-2 border-outline text-outline px-6 py-2 text-sm font-bold tracking-widest uppercase rounded">HẾT HÀNG</span>
-            </div>
-
-            <div class="absolute top-7 left-7 z-10 flex flex-col gap-2">
-              <span v-if="item.TrangThai" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-on-primary-fixed shadow-md">
-                {{ item.TrangThai }}
-              </span>
-              <span v-if="item.LoaiHinhBan" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-tertiary text-on-tertiary-fixed shadow-md">
-                {{ item.LoaiHinhBan }}
-              </span>
-            </div>
-            
-            <div class="relative h-60 w-full mb-6 overflow-hidden rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40"></div>
-              <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" 
-                  :alt="item.TenMH"
-                  :class="['h-full w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110', item.SoLuong === 0 ? 'grayscale opacity-50' : '']"
-              />
-            </div>
-            
-            <div class="space-y-3 flex-1 flex flex-col justify-end">
-              <div>
-                <p class="text-[10px] text-outline font-bold uppercase tracking-[0.2em] mb-2">
-                  {{ item.TenHSX || 'UNKNOWN' }} • {{ item.KichThuoc || 'N/A' }}
-                </p>
-                <h3 class="text-lg font-headline font-bold leading-snug group-hover:text-primary transition-colors text-white line-clamp-2">
-                  {{ item.TenMH }}
-                </h3>
-              </div>
-              
-              <div class="pt-4 mt-auto border-t border-outline-variant/30 flex justify-between items-center relative z-10">
-                <span :class="['text-xl font-headline font-bold tracking-tight', item.SoLuong === 0 ? 'text-outline' : 'text-white']">
-                  {{ formatPrice(item.DonGia) }}
-                </span>
-              </div>
-            </div>
-          </router-link>
+          <ProductCard 
+            v-for="item in relatedProducts" 
+            :key="item.MaMoHinh" 
+            :product="item"
+            :hide-cart="true"
+          />
         </div>
       </section>
     </main>
@@ -461,8 +424,9 @@
 <script setup>
   import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
+  import { useToastStore } from '../../stores/toast';
   import TheHeader from '../../components/TheHeader.vue';
-  import { useToastStore } from '../../stores/toast'
+  import ProductCard from '../../components/ProductCard.vue';
 
   const route = useRoute();
   const router = useRouter();
