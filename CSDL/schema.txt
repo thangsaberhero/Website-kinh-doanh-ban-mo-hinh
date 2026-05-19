@@ -198,7 +198,7 @@ CREATE TABLE DonHang (
 -- 16. Bảng Chi tiết đơn hàng
 CREATE TABLE ChiTietDonHang (
     MaDH INT,
-    MaMoHinh INT,
+    MaPhanLoai INT,
     LaHangKhuyenMai TINYINT default 0,
     SoLuong INT CHECK (SoLuong > 0),
     GiaNhapThucTe DECIMAL(12,2) CHECK (GiaNhapThucTe >= 0),
@@ -239,6 +239,8 @@ CREATE TABLE ThanhToan (
     NgayThanhToan DATETIME,
     SoTienGiaoDich DECIMAL(12,2), 
     LoaiGiaoDich VARCHAR(50), 
+    TrangThaiGiaoDich VARCHAR(50),
+    MaGiaoDichCuaDoiTac VARCHAR(100), -- THÊM CỘT NÀY: Lưu lại mã giao dịch của MoMo (transId) để đối soát
     FOREIGN KEY (MaPT) REFERENCES PhuongThucThanhToan(MaPT),
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
 );
@@ -260,6 +262,7 @@ CREATE TABLE ChiTietKhuyenMai (
     ChietKhau DECIMAL(12,2),
 	GiaTriGiamToiDa DECIMAL(12,2) DEFAULT NULL,
 	SoLuongKM INT default 1,
+    SoLuongDaDung INT DEFAULT 0,
     PRIMARY KEY (MaKM, MaPhanLoai),
     FOREIGN KEY (MaKM) REFERENCES KhuyenMai(MaKM),
     FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
@@ -282,6 +285,7 @@ CREATE Table MaGiamGia (
 	TenMaGiamGia VARCHAR(100) NOT NULL,
 	MaVoucher VARCHAR(20) UNIQUE NOT NULL,
 	SoLuongDungToiDa INT Default 1,
+    SoLuongDaDung INT DEFAULT 0,
 	ThoiGianBD DATETIME,
     ThoiGianKT DATETIME,
 	MaKH INT default null,

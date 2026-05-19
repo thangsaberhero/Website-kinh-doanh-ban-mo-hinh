@@ -107,7 +107,7 @@
                   
                   <div class="flex flex-col gap-1">
                     <span class="text-[10px] font-bold text-outline uppercase tracking-widest">Tổng tiền</span>
-                    <span class="text-base font-bold text-white">{{ formatPrice(order.TongTien) }}</span>
+                    <span class="text-base font-bold text-white">{{ formatPrice(order.ThanhTien) }}</span>
                   </div>
                   
                   <div class="flex flex-col gap-1">
@@ -145,10 +145,42 @@
             </div>
           </TransitionGroup>
 
-          <div v-if="filteredOrders.length === 0" class="text-center py-20 border border-dashed border-outline-variant/30 rounded-2xl bg-surface-container-low">
+          <div v-if="orders.length === 0" class="text-center py-20 border border-dashed border-outline-variant/30 rounded-2xl bg-surface-container-low">
             <span class="material-symbols-outlined text-6xl text-outline-variant mb-4">inventory_2</span>
             <h2 class="font-headline text-2xl text-white font-bold mb-2">Chưa có đơn hàng nào</h2>
             <p class="text-on-surface-variant">Thư mục "{{ activeTab }}" của bạn đang trống.</p>
+          </div>
+
+          <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-10 mb-4">
+            <button 
+              @click="changePage(currentPage - 1)" 
+              :disabled="currentPage === 1" 
+              class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"
+            >
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+
+            <button 
+              v-for="p in totalPages" 
+              :key="p" 
+              @click="changePage(p)"
+              :class="[
+                'w-10 h-10 flex items-center justify-center rounded-lg font-bold text-sm transition-all border',
+                currentPage === p 
+                  ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(255,143,115,0.3)]' 
+                  : 'bg-surface-container-low text-on-surface hover:bg-surface-container-highest border-outline-variant/20'
+              ]"
+            >
+              {{ p }}
+            </button>
+
+            <button 
+              @click="changePage(currentPage + 1)" 
+              :disabled="currentPage === totalPages" 
+              class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"
+            >
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
           </div>
         </div>
 
@@ -181,7 +213,7 @@
 
 <script setup>
 import TheHeader from '../../components/TheHeader.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 
@@ -198,6 +230,11 @@ const orders = ref([]);
 const showPaymentModal = ref(false);
 const selectedOrder = ref(null);
 const repayMethod = ref('Thanh toán toàn bộ');
+
+const currentPage = ref(1);
+const limit = ref(5);
+const totalPages = ref(1);
+const totalItemsCount = ref(0);
 
 // Mở Modal và lưu lại đơn hàng đang chọn
 const openPaymentModal = (order) => {
@@ -257,6 +294,11 @@ const filteredOrders = computed(() => {
   return orders.value.filter(order => order.TrangThaiDonHang === activeTab.value);
 });
 
+watch(activeTab, () => {
+  currentPage.value = 1;
+  fetchOrderdata();
+});
+
 const fetchOrderdata = async () => {
   const token = localStorage.getItem('token');
   const userString = localStorage.getItem('user');
@@ -265,8 +307,15 @@ const fetchOrderdata = async () => {
     return;
   }
   const maKH = JSON.parse(userString).MaKH;
+  const queryParams = new URLSearchParams({
+    page: currentPage.value,
+    limit: limit.value
+  });
+  if (activeTab.value !== 'Tất cả') {
+    queryParams.append('trangthai', activeTab.value);
+  }
   try {
-    const response = await fetch(`http://localhost:3000/api/don_hang/watch_order/${maKH}`, {
+    const response = await fetch(`http://localhost:3000/api/don_hang/watch_order/${maKH}$${queryParams}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -275,8 +324,11 @@ const fetchOrderdata = async () => {
 
     const result = await response.json();
 
-    if (response.ok) {
+    if (result.success) {
       orders.value = result.data; 
+      currentPage.value = result.pagination.currentPage;
+      totalPages.value = result.pagination.totalPage;
+      totalItemsCount.value = result.pagination.totalItems;
     } else {
       console.error(result.message);
       orders.value = [];
@@ -285,6 +337,15 @@ const fetchOrderdata = async () => {
     console.error("Lỗi khi tải giỏ hàng:", error);
   }
 }
+
+const changePage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    fetchOrderdata();
+    // Cuộn lên đầu màn hình nhẹ nhàng
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
 
 const avatarPreview = ref(
   currentUser && currentUser.AnhDaiDien 

@@ -73,21 +73,29 @@
               Danh Sách Sản Phẩm
             </h3>
             
-            <div v-for="item in orderItems" :key="item.MaMoHinh" @click="router.push(`/product/${item.MaMoHinh}`)" class="glass-panel group cursor-pointer overflow-hidden flex flex-col md:flex-row items-center border border-outline-variant/10 rounded-xl transition-all hover:bg-surface-container-high/60 hover:border-primary/30">
+            <div v-for="item in orderItems" :key="item.MaPhanLoai + '-' + item.LaHangKhuyenMai" @click="router.push(`/product/${item.MaMoHinh}`)" class="glass-panel group cursor-pointer overflow-hidden flex flex-col md:flex-row items-center border border-outline-variant/10 rounded-xl transition-all hover:bg-surface-container-high/60 hover:border-primary/30">
               <div class="w-full md:w-48 h-48 bg-surface-container-lowest overflow-hidden flex items-center justify-center p-4">
-                <img :src="'http://localhost:3000/Images_product/'+item.AnhDaiDien" :alt="item.name" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"/>
+                <img :src="'http://localhost:3000/Images_product/'+item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"/>
               </div>
               <div class="flex-1 p-6 flex flex-col md:flex-row justify-between w-full">
                 <div class="space-y-2">
                   <div class="flex gap-2 mb-1">
                     <span class="px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 text-[10px] font-black uppercase rounded-full">{{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</span>
+                    <span v-if="item.LaHangKhuyenMai === 1" class="px-2 py-0.5 bg-error/10 text-error border border-error/20 text-[10px] font-black uppercase rounded-full flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[12px]">local_fire_department</span> SALE
+                    </span>
                   </div>
                   <h4 class="font-headline text-xl font-bold text-white group-hover:text-primary transition-colors">{{ item.TenMH }}</h4>
                   <p class="text-sm text-outline font-medium tracking-tight">Mã định danh: {{ item.MaPhanLoai }}</p>
                 </div>
                 <div class="mt-4 md:mt-0 md:text-right flex flex-col justify-between">
                   <span class="text-xs text-outline font-bold uppercase tracking-widest">Số lượng: 0{{ item.SoLuong }}</span>
-                  <span class="text-2xl font-headline font-black text-primary">{{ formatPrice(item.DonGiaBan) }}</span>
+                  <div class="text-right mt-1">
+                    <div v-if="item.LaHangKhuyenMai === 1" class="text-xs text-outline line-through mb-0.5">
+                      {{ formatPrice(item.DonGiaGoc * item.SoLuong) }}
+                    </div>
+                    <span class="text-2xl font-headline font-black text-primary">{{ formatPrice(item.ThanhTienSP) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -120,6 +128,10 @@
                 <label class="text-[10px] text-outline font-black uppercase tracking-widest">Địa chỉ chi tiết</label>
                 <p class="text-sm text-on-surface-variant leading-relaxed mt-1">{{ orderInfo.DiaChiGiao }}</p>
               </div>
+              <div class="pt-3 border-t border-outline-variant/15">
+                <label class="text-[10px] text-outline font-black uppercase tracking-widest">Ghi chú của bạn</label>
+                <p class="text-sm text-tertiary italic leading-relaxed mt-1">"{{ orderInfo.Note || 'Không có ghi chú' }}"</p>
+              </div>
             </div>
           </section>
 
@@ -131,21 +143,32 @@
             
             <div class="space-y-4 mb-8">
               <div class="flex justify-between items-center text-sm">
-                <span class="text-outline">Tạm tính</span>
-                <span class="font-bold text-white">{{ formatPrice(subtotal) }}</span>
+                <span class="text-outline">Tạm tính (Tiền hàng)</span>
+                <span class="font-bold text-white">{{ formatPrice(orderInfo.TongTien) }}</span>
               </div>
-              <div class="flex justify-between items-center text-sm">
-                <span class="text-outline">Khuyến mãi</span>
-                <span class="text-primary font-bold">- {{ formatPrice(discount) }}</span>
+              
+              <div class="flex justify-between items-center text-sm" v-if="orderInfo.TongTien > orderInfo.ThanhTien">
+                <span class="text-outline">Voucher giảm giá và khuyến mãi</span>
+                <span class="text-error font-bold">- {{ formatPrice(orderInfo.TongTien - orderInfo.ThanhTien) }}</span>
               </div>
-              <!-- <div class="flex justify-between items-center text-sm">
-                <span class="text-outline">Bảo hiểm</span>
-                <span class="font-bold text-white">0₫</span>
-              </div> -->
               
               <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end">
-                <span class="font-headline font-bold text-white uppercase tracking-widest text-xs">Tổng cộng</span>
-                <span class="text-3xl font-headline font-black text-primary">{{ formatPrice(orderInfo.TongTien) }}</span>
+                <span class="font-headline font-bold text-white uppercase tracking-widest text-xs">Tổng Hóa Đơn</span>
+                <span class="text-lg font-headline font-black text-white">{{ formatPrice(orderInfo.ThanhTien) }}</span>
+              </div>
+
+              <div class="flex justify-between items-center text-sm mt-2">
+                <span class="text-outline uppercase font-bold text-[10px] tracking-widest">Đã thanh toán</span>
+                <span class="text-green-400 font-bold">{{ formatPrice(orderInfo.DaThanhToan || 0) }}</span>
+              </div>
+
+              <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end mt-2">
+                <span class="font-headline font-bold text-white uppercase tracking-widest text-[11px] w-2/3">
+                  Số tiền cần trả
+                </span>
+                <span class="text-3xl font-headline font-black text-primary tracking-tighter">
+                  {{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}
+                </span>
               </div>
             </div>
             
