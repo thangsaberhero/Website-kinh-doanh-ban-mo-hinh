@@ -106,7 +106,7 @@ const khuyenmai = {
             let whereClause_sp = condition_sp.length > 0 ? "where " + condition_sp.join(" and ") : "";
             const sql_chi_tiet = `
                 SELECT ctkm.MaPhanLoai, ctkm.LoaiGiamGia, ctkm.ChietKhau, ctkm.GiaTriGiamToiDa, ctkm.SoLuongKM,
-                       pl.MaPhanLoai, pl.TenPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia,
+                       pl.ChiTietPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia,
                        (pl.DonGia - CASE
                            WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
                            WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl.DonGia))
@@ -137,8 +137,8 @@ const khuyenmai = {
             const limit_log = parseInt(req.query.limit_log) || 10;
             const offset_log = (page_log - 1) * limit_log;
 
-            let condition_log = ["ctkm.MaKM = ? "];
-            let value_log = [];
+            let condition_log = ["log.MaKM = ? "];
+            let value_log = [MaKM];
 
             if(keyword_kh){
                 condition_log.push("kh.TenKH COLLATE utf8mb4_unicode_ci like ?");
@@ -170,7 +170,7 @@ const khuyenmai = {
             const sql_log_core = `
                 SELECT log.MaLichSu, log.MaKH, kh.TenKH, log.MaDH, log.SoTienDaGiam, log.ThoiGianSuDung
                 FROM LogSuDungKhuyenMai log
-                inner join KhachHang on kh.MaKh = log.MaKH
+                inner join KhachHang kh on kh.MaKh = log.MaKH
                 ${whereClause_log}
             `;
             
@@ -397,7 +397,7 @@ const khuyenmai = {
             // 1. LẤY THÔNG TIN CHUNG CỦA KHUYẾN MÃI
             // ==========================================
             const sql_tt = `SELECT * FROM MaGiamGia WHERE MaGG = ?`;
-            const [result_tt] = await db.query(sql_tt, [MaKM]);
+            const [result_tt] = await db.query(sql_tt, [MaGG]);
 
             if(result_tt.length === 0) {
                 return res.status(404).json({ success: false, message: "Không tìm thấy chương trình khuyến mãi!" });
@@ -419,8 +419,8 @@ const khuyenmai = {
             }
             let whereClause_sp = condition_sp.length > 0 ? "where " + condition_sp.join(" and ") : "";
             const sql_chi_tiet = `
-                SELECT gg.MaGiamGia, ctgg.MaPhanLoai
-                       pl.TenPhanLoai, pl.MaPhanLoai, pl.chiTietPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia,
+                SELECT gg.MaGG, ctgg.MaPhanLoai,
+                       pl.ChiTietPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia,
                        (pl.DonGia - CASE
                            WHEN gg.LoaiGiamGia = 'TienMat' THEN gg.ChietKhau
                            WHEN gg.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl.DonGia * gg.ChietKhau / 100), COALESCE(gg.GiaTriGiamToiDa, pl.DonGia))
@@ -553,7 +553,7 @@ const khuyenmai = {
                                                                         isVisible, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa]);
             const maGG = them_ma_gg.insertId;
             const sql_them_chi_tiet = `Insert into ChiTietMaGiamGia
-                                        (MaGG, MaMoHinh)
+                                        (MaGG, MaPhanLoai)
                                         values
                                         (?, ?)`;
             if(danhsachchitiet && danhsachchitiet !== 'undefined'){
@@ -605,7 +605,7 @@ const khuyenmai = {
                     await connection.query('Delete from ChiTietMaGiamGia where MaGG = ?', [MaGG]);
                     const ds_km = typeof danhsachchitiet === 'string' ? JSON.parse(danhsachchitiet) : danhsachchitiet;
                     const sql_them_chi_tiet = `Insert into ChiTietMaGiamGia
-                                        (MaGG, MaMoHinh)
+                                        (MaGG, MaPhanLoai)
                                         values
                                         (?, ?)`;
                     if(Array.isArray(ds_km) && ds_km.length>0){
@@ -635,5 +635,187 @@ const khuyenmai = {
             connection.release();
         }
     },
+    xoa_chuong_trinh_khuyen_mai: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const MaKM = req.params.id;
+            await connection.query('DELETE FROM ChiTietKhuyenMai WHERE MaKM = ?', [MaKM]);
+            await connection.query('DELETE FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
+            await connection.query('DELETE FROM LogSuDungKhuyenMai WHERE MaKM = ?', [MaKM]); 
+            await connection.commit();
+            res.status(200).json({ success: true, message: "Đã xóa chương trình khuyến mãi" });
+        } catch (error) {
+            await connection.rollback();
+            res.status(500).json({ success: false, message: "Lỗi khi xóa khuyến mãi (Có thể đã có người sử dụng)" });
+        } finally {
+            connection.release();
+        }
+    },
+
+    xoa_ma_giam_gia: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const MaGG = req.params.id;
+            await connection.query('DELETE FROM ChiTietMaGiamGia WHERE MaGG = ?', [MaGG]);
+            await connection.query('DELETE FROM MaGiamGia WHERE MaGG = ?', [MaGG]);
+            await connection.query('DELETE FROM LogSuDungMaGiamGia WHERE MaGG = ?', [MaGG]);
+            
+            await connection.commit();
+            res.status(200).json({ success: true, message: "Đã xóa mã giảm giá" });
+        } catch (error) {
+            await connection.rollback();
+            res.status(500).json({ success: false, message: "Lỗi khi xóa mã giảm giá" });
+        } finally {
+            connection.release();
+        }
+    },
+    
+    them_sp_km: async(req, res) => {
+        const { MaPhanLoai, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, SoLuongKM } = req.body;
+        const MaKM = req.params.id;
+        try {
+            const [km] = await db.query('SELECT 1 FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
+            if (km.length === 0) {
+                return res.status(404).json({ success: false, message: 'Chương trình khuyến mãi không tồn tại' });
+            }
+            const [pl] = await db.query('SELECT 1 FROM PhanLoai WHERE MaPhanLoai = ?', [MaPhanLoai]);
+            if (pl.length === 0) {
+                return res.status(400).json({ success: false, message: 'Mã phân loại sản phẩm không hợp lệ' });
+            }
+            const [existing] = await db.query('SELECT 1 FROM ChiTietKhuyenMai WHERE MaKM = ? AND MaPhanLoai = ?', [MaKM, MaPhanLoai]);
+            if (existing.length > 0) {
+                return res.status(409).json({ success: false, message: 'Sản phẩm đã có trong chương trình khuyến mãi' });
+            }
+            const giaTriGiamToiDa = (GiaTriGiamToiDa === undefined || GiaTriGiamToiDa === null) ? null : GiaTriGiamToiDa;
+            const soLuongKM = (SoLuongKM === undefined || SoLuongKM === null) ? 1 : SoLuongKM;
+            const sql = `INSERT INTO ChiTietKhuyenMai (MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, SoLuongKM) VALUES (?, ?, ?, ?, ?, ?)`;
+            await db.query(sql, [MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, giaTriGiamToiDa, soLuongKM]);
+            res.status(200).json({ 
+                message: 'Thêm sản phẩm thành công' 
+            });
+        } 
+        catch (error) {
+            console.error('Lỗi API them_sp_km:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    xoa_sp_km: async(req, res) => {
+        try {
+            await db.query(`DELETE FROM ChiTietKhuyenMai WHERE MaKM = ? AND MaPhanLoai = ?`, [req.params.id, req.params.maPhanLoai]);
+            res.status(200).json({ success: true });
+        } 
+        catch (error) { 
+            res.status(500).json({ 
+                success: false 
+            }); 
+        }
+    },
+
+    them_sp_voucher: async(req, res) => {
+        try {
+            const { MaPhanLoai } = req.body;  
+            await db.query(
+                `INSERT INTO ChiTietMaGiamGia (MaGG, MaPhanLoai) VALUES (?, ?)`,
+                [req.params.id, MaPhanLoai]
+            );
+            res.status(200).json({ 
+                success: true 
+            });
+        } 
+        catch (error) { 
+            res.status(500).json({ 
+                success: false, 
+                message: error.message 
+            }); 
+        }
+    },
+
+    xoa_sp_voucher: async(req, res) => {
+        try {
+            await db.query(
+                `DELETE FROM ChiTietMaGiamGia WHERE MaGG = ? AND MaPhanLoai = ?`,
+                [req.params.id, req.params.maPhanLoai]
+            );
+            res.status(200).json({ 
+                success: true 
+            });
+        } 
+        catch (error) { 
+            res.status(500).json({ 
+                success: false 
+            }); 
+        }
+    },
+    tim_kiem_san_pham: async(req, res) => {
+        try {
+            const keyword = req.query.search || '';
+            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia
+                        FROM MoHinh mh
+                        INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
+                        WHERE mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? 
+                        OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?
+                        LIMIT 20`;
+            const [data] = await db.query(sql, [`%${keyword}%`, `%${keyword}%`]);
+            
+            res.status(200).json({ 
+                success: true, 
+                data: data 
+            });
+        } 
+        catch (error) {
+            console.error("Lỗi tìm kiếm sản phẩm: ", error);
+            res.status(500).json({ 
+                success: false, 
+                message: "Lỗi máy chủ khi tìm kiếm sản phẩm" 
+            });
+        }
+    },
+    thong_ke_khuyen_mai: async(req, res) => {
+        try {
+            const sql_km = `SELECT (SELECT COUNT(*) FROM KhuyenMai) as Total,
+                            (SELECT COUNT(*) FROM KhuyenMai WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1) as Active,
+                            (SELECT COUNT(*) FROM LogSuDungKhuyenMai) as TotalUsage,
+                            (SELECT COUNT(DISTINCT ctkm.MaPhanLoai) 
+                            FROM ChiTietKhuyenMai ctkm 
+                            INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM 
+                            WHERE km.ThoiGianBD <= NOW() AND km.ThoiGianKT >= NOW() AND km.TrangThaiHoatDong = 1) as TotalProducts`;
+            const [stat_km] = await db.query(sql_km);
+
+            const sql_gg = `SELECT (SELECT COUNT(*) FROM MaGiamGia) as Total,
+                            (SELECT COUNT(*) FROM MaGiamGia WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1) as Active,
+                            (SELECT COUNT(*) FROM LogSuDungMaGiamGia) as TotalUsage,
+                            (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'PhanTram') as AvgPercent,
+                            (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'TienMat') as AvgCash`;
+            const [stat_gg] = await db.query(sql_gg);
+
+            res.status(200).json({
+                success: true,
+                data: {
+                    promotion: {
+                        total: stat_km[0].Total,
+                        active: stat_km[0].Active,
+                        usage: stat_km[0].TotalUsage,
+                        totalProducts: stat_km[0].TotalProducts
+                    },
+                    voucher: {
+                        total: stat_gg[0].Total,
+                        active: stat_gg[0].Active,
+                        usage: stat_gg[0].TotalUsage,
+                        avgPercent: Math.round(stat_gg[0].AvgPercent),
+                        avgCash: Math.round(stat_gg[0].AvgCash)
+                    }
+                }
+            });
+        } 
+        catch (error) {
+            console.error("Lỗi khi lấy thống kê: ", error);
+            res.status(500).json({ 
+                message: "Lỗi máy chủ khi lấy thống kê" 
+            });
+        }
+    }
 }
 module.exports = khuyenmai;

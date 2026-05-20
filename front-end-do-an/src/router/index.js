@@ -33,6 +33,7 @@ import AdminNewsEdit from '../views/Admin_view/AdminNewsEdit.vue';
 import AdminManufacturer from '../views/Admin_view/AdminManufacturer.vue';
 import AdminCategory from '../views/Admin_view/AdminCategory.vue';
 import AdminCustomerSupport from '../views/Admin_view/AdminCustomerSupport.vue';
+import AdminPromotionDetail from '../views/Admin_view/AdminPromotionDetail.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -190,6 +191,11 @@ const router = createRouter({
       path: '/admin/support',
       name: 'CustomerSupport',
       component: AdminCustomerSupport
+    },
+    {
+      path: '/admin/promotion/:type/:id',
+      name: 'AdminPromotionDetail',
+      component: AdminPromotionDetail
     }
   ]
 });
