@@ -15,7 +15,21 @@
 
       <div v-if="cartItems.length > 0" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div class="lg:col-span-8 space-y-4">
-          
+
+          <div class="flex flex-col sm:flex-row justify-between items-center bg-surface-container-low p-4 rounded-xl border border-outline-variant/10 mb-2">
+            <span class="text-on-surface-variant text-sm font-medium mb-3 sm:mb-0">
+              Đang hiển thị <strong>{{ cartItems.length }}</strong> / {{ totalItemsCount }} sản phẩm
+            </span>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-outline font-bold uppercase tracking-widest">Sắp xếp:</span>
+              <select v-model="sortBy" class="bg-background text-white border border-outline-variant/30 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary cursor-pointer">
+                <option value="default">Vừa thêm gần đây</option>
+                <option value="price_asc">Giá khuyến mãi tăng dần</option>
+                <option value="price_desc">Giá khuyến mãi giảm dần</option>
+              </select>
+            </div>
+          </div>
+
           <TransitionGroup name="list" tag="div" class="space-y-4">
             <div 
               v-for="item in cartItems" 
@@ -59,16 +73,29 @@
                       <span class="material-symbols-outlined text-sm">add</span>
                     </button>
                   </div>
-                  <div class="text-right">
+                  <div class="text-right flex flex-col items-end justify-center">
                     <span class="block text-primary font-headline font-bold text-2xl tracking-tighter">
-                      <div v-if="Number(item.DonGiaKhuyenMai) < Number(item.DonGia)">
-                        <span class="text-primary font-bold">{{ formatPrice(item.DonGiaKhuyenMai) }}</span>
-                        <!-- <span class="text-outline line-through text-sm">{{ formatPrice(item.DonGia) }}</span> -->
-                      </div>
-                      <div v-else>
-                          <span class="text-on-surface font-bold">{{ formatPrice(item.DonGia) }}</span>
-                      </div>
+                      {{ formatPrice(item.ThanhTien) }}
                     </span>
+                    
+                    <div v-if="Number(item.DonGiaKhuyenMai) < Number(item.DonGia)" class="mt-1 flex flex-col items-end gap-0.5">
+                      <div v-if="item.SoLuongMuaGiaGoc === 0">
+                        <span class="text-[10px] text-tertiary font-bold px-1.5 py-0.5 rounded bg-tertiary/10 border border-tertiary/20">
+                          Còn {{ item.SoLuongKhuyenMaiConLai }} suất giá sale
+                        </span>
+                      </div>
+                      <div v-else class="text-right flex flex-col items-end">
+                        <span class="text-[10px] text-error font-bold px-1.5 py-0.5 rounded bg-error/10 border border-error/20 mb-1">
+                          Vượt giới hạn ưu đãi!
+                        </span>
+                        <span class="text-[10px] text-tertiary font-medium">
+                          {{ item.SoLuongDuocGiamGia }} SP x {{ formatPrice(item.DonGiaKhuyenMai) }}
+                        </span>
+                        <span class="text-[10px] text-on-surface-variant font-medium">
+                          {{ item.SoLuongMuaGiaGoc }} SP x {{ formatPrice(item.DonGia) }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -92,18 +119,18 @@
             <div class="space-y-4 mb-6 text-sm font-medium">
               <div class="flex justify-between text-on-surface-variant">
                 <span>Tạm tính ({{ totalItems }} SP)</span>
-                <span class="text-white">{{ formatPrice(subtotal) }}</span>
+                <span class="text-white">{{ formatPrice(cartSummary.subtotal) }}</span>
               </div>
               <div class="flex justify-between text-on-surface-variant">
                 <span>Giảm giá</span>
-                <span class="text-error font-bold">- {{ formatPrice(discount) }}</span>
+                <span class="text-error font-bold">- {{ formatPrice(cartSummary.discount) }}</span>
               </div>
             </div>
             
             <div class="pt-6 border-t border-outline-variant/20 mb-8">
               <div class="flex justify-between items-end">
                 <span class="text-lg font-bold text-white uppercase tracking-widest">Tổng cộng</span>
-                <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(totalPrice) }}</span>
+                <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(cartSummary.totalPrice) }}</span>
               </div>
             </div>
             
@@ -200,10 +227,10 @@
 <script setup>
   import TheHeader from '../../components/TheHeader.vue';
   import ProductCard from '../../components/ProductCard.vue';
-  import { ref, computed } from 'vue';
+  import { ref, computed, watch, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
-  import { onMounted } from 'vue';
+  
 
   const router = useRouter();
   const toastStore = useToastStore();
@@ -212,6 +239,14 @@
   const isClearCartModalOpen = ref(false);
   const isDeleteItemModalOpen = ref(false);
   const itemToDelete = ref(null);
+
+  const sortBy = ref('default');
+
+  const cartSummary = ref({
+    subtotal: 0,
+    discount: 0,
+    totalPrice: 0
+  });
 
   const fetchCartData = async () => {
     const token = localStorage.getItem('token');
@@ -223,8 +258,12 @@
     }
     const maKH = JSON.parse(userString).MaKH;
 
+    const queryParams = new URLSearchParams({
+        sapxep: sortBy.value
+      }).toString();
+
     try {
-      const response = await fetch(`http://localhost:3000/api/don_hang/watch/${maKH}`, {
+      const response = await fetch(`http://localhost:3000/api/don_hang/watch/${maKH}?${queryParams}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -232,9 +271,10 @@
       });
 
       const result = await response.json();
-
-      if (response.ok) {
+      console.log(result)
+      if (result.success) {
         cartItems.value = result.data; 
+        cartSummary.value = result.cartSummary;
       } 
       else {
         console.error(result.message);
@@ -245,6 +285,10 @@
       console.error("Lỗi khi tải giỏ hàng:", error);
     }
   };
+
+  watch(sortBy, () => { 
+    fetchCartData();
+  });
 
   const fetchSuggestions = async () => {
     try {
@@ -271,18 +315,8 @@
   });
 
 
-  //const discount = ref(0); // Giảm giá cố định để demo
-
-  // Tính toán tự động (Reactivity)
-  const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.SoLuong, 0));
-  const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0));
-  const discount = computed(() => {
-    return cartItems.value.reduce((sum, item) => {
-      const mucGiamGiaCuaItem = item.DonGiaKhuyenMai ? (item.DonGia - item.DonGiaKhuyenMai) : 0;
-      return sum + (mucGiamGiaCuaItem * item.SoLuong);
-    }, 0);
-  });
-  const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.value - discount.value) : 0);
+  // Tính toán giá
+  
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -434,6 +468,7 @@
         // Nếu Backend báo lỗi (VD: Trong kho không đủ hàng)
         throw new Error(data.message || "Lỗi cập nhật từ Server");
       }
+      await fetchCartData();
       window.dispatchEvent(new Event('cart-updated'));
       // Tùy chọn: Hiện thông báo nhỏ gọn (toast) thành công nếu thích
       // toastStore.showToast("Đã cập nhật số lượng", "success");
@@ -486,6 +521,7 @@
       });
 
       if (!response.ok) throw new Error("Lỗi cập nhật từ Server");
+      await fetchCartData();
       window.dispatchEvent(new Event('cart-updated'));
     } 
     catch (error) {

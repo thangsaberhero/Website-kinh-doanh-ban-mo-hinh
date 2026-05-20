@@ -16,23 +16,23 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Họ và tên</label>
-                <input v-model="shippingInfo.name" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Nguyễn Văn A" type="text"/>
-                </div>
-                
-                <div>
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Số điện thoại</label>
-                <input v-model="shippingInfo.phone" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="090 123 4567" type="tel"/>
-                </div>
-                
-                <div>
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Email</label>
-                <input v-model="shippingInfo.email" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="example@collect.vn" type="email"/>
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Họ và tên</label>
+                  <input v-model="shippingInfo.name" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Nguyễn Văn A" type="text"/>
                 </div>
                 
                 <div class="md:col-span-2">
-                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Địa chỉ nhận hàng</label>
-                <input v-model="shippingInfo.address" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố" type="text"/>
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Số điện thoại</label>
+                  <input v-model="shippingInfo.phone" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="090 123 4567" type="tel"/>
+                </div>
+                
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Địa chỉ nhận hàng</label>
+                  <input v-model="shippingInfo.address" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố" type="text"/>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Ghi chú đơn hàng (Tùy chọn)</label>
+                  <textarea v-model="shippingInfo.note" rows="2" class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300 custom-scrollbar" placeholder="Ghi chú thêm về thời gian giao hàng, yêu cầu đóng gói..."></textarea>
                 </div>
             </div>
         </section>
@@ -84,19 +84,28 @@
             <h2 class="text-xl font-headline font-bold uppercase tracking-widest mb-6 border-b border-outline-variant/20 pb-4 text-white">Tóm tắt đơn hàng</h2>
             
             <div class="space-y-6 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
-              <div v-for="item in checkoutItems" :key="item.id" class="flex gap-4">
+              <div v-for="item in checkoutItems" :key="item.MaPhanLoai" class="flex gap-4">
                 <div class="w-20 h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
                   <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
                 </div>
                 <div class="flex-grow flex flex-col justify-center">
                   <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
                   <p class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">SL: {{ item.SoLuong }}</p>
-                  <div v-if="item.dongiakhuyenmai">
-                        <span class="mt-1 text-primary font-headline font-bold">{{ formatPrice(item.dongiakhuyenmai) }}</span>
-                        <span class="mt-1 text-outline line-through text-sm">{{ formatPrice(item.DonGia) }}</span>
+                  
+                  <div v-if="Number(item.DonGiaKhuyenMai) < Number(item.DonGia)">
+                      <div v-if="item.SoLuongMuaGiaGoc === 0">
+                          <span class="mt-1 block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
+                          <span class="text-[10px] text-tertiary px-1 py-0.5 bg-tertiary/10 border border-tertiary/20 rounded inline-block mt-1">Giá Sale</span>
                       </div>
-                      <div v-else>
-                          <span class="mt-1 text-primary font-headline font-bold">{{ formatPrice(item.DonGia) }}</span>
+                      <div v-else class="mt-1">
+                          <span class="block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
+                          <span class="text-[10px] text-error font-bold block mt-1">Vượt giới hạn ưu đãi!</span>
+                          <span class="text-[11px] text-tertiary block">{{ item.SoLuongDuocGiamGia }} SP x {{ formatPrice(item.DonGiaKhuyenMai) }} (Sale)</span>
+                          <span class="text-[11px] text-outline block">{{ item.SoLuongMuaGiaGoc }} SP x {{ formatPrice(item.DonGia) }} (Gốc)</span>
+                      </div>
+                  </div>
+                  <div v-else>
+                      <span class="mt-1 block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
                   </div>
                 </div>
               </div>
@@ -105,20 +114,16 @@
             <div class="space-y-4 pt-6 border-t border-outline-variant/20">
               <div class="flex justify-between text-sm text-on-surface-variant font-medium">
                 <span>Tạm tính</span>
-                <span class="text-white">{{ formatPrice(subtotal) }}</span>
-              </div>
-              <div class="flex justify-between text-sm text-on-surface-variant font-medium">
-                <span>Phí vận chuyển</span>
-                <span class="text-primary font-bold">Miễn phí</span>
+                <span class="text-white">{{ formatPrice(cartSummary.subtotal) }}</span>
               </div>
               <div class="flex justify-between text-sm text-on-surface-variant font-medium">
                 <span>Giảm giá</span>
-                <span class="text-error font-bold">- {{ formatPrice(discount) }}</span>
+                <span class="text-error font-bold">- {{ formatPrice(cartSummary.discount) }}</span>
               </div>
               
               <div class="flex justify-between items-end pt-6">
                 <span class="text-sm font-bold uppercase tracking-widest text-white">Tổng cộng</span>
-                <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(totalPrice) }}</span>
+                <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(cartSummary.totalPrice) }}</span>
               </div>
             </div>
 
@@ -177,8 +182,14 @@ const requiresDeposit = computed(() => {
 const shippingInfo = reactive({
   name: '',
   phone: '',
-  email: '',
-  address: ''
+  address: '',
+  note: ''
+});
+
+const cartSummary = ref({
+  subtotal: 0,
+  discount: 0,
+  totalPrice: 0
 });
 
 // Hàm định dạng tiền tệ
@@ -198,6 +209,7 @@ const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.valu
 // HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
 // ===============================================
 onMounted(async () => {
+  window.scroll(0,0);
   const token = localStorage.getItem('token');
   const userString = localStorage.getItem('user');
 
@@ -231,8 +243,9 @@ onMounted(async () => {
     });
     const dataCart = await resCart.json();
 
-    if (resCart.ok) {
+    if (dataCart.success) {
       checkoutItems.value = dataCart.data;
+      cartSummary.value = dataCart.cartSummary;
       
       // Nếu giỏ hàng rỗng, đá khách về trang Giỏ Hàng
       if (checkoutItems.value.length === 0) {
@@ -298,13 +311,10 @@ const processCheckout = async () => {
     // Vì Backend của bạn chỉ yêu cầu MaKH (nhìn dòng: const { MaKH } = req.body;)
     const payload = {
       MaKH: parseInt(maKH),
-      
-      // Bổ sung thêm các trường này vào Payload (Nếu Backend của bạn sau này cần lưu địa chỉ, SĐT)
-      // Hiện tại Backend của bạn chưa thấy có lệnh UPDATE thông tin giao hàng vào bảng DonHang
       TenNguoiNhan: shippingInfo.name,
       SDTNguoiNhan: shippingInfo.phone,
       DiaChiGiao: shippingInfo.address,
-      TongTien: totalPrice.value
+      Note: shippingInfo.note,
     };
 
     console.log("Gói hàng gửi đi:", payload);
