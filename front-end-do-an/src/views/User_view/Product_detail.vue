@@ -867,7 +867,6 @@
       }
   };
 
-  // Hàm xử lý Thêm vào giỏ (Giữ nguyên cũ của bạn)
   const addToCart = async () => {
     const token = localStorage.getItem('token');
     const userString = localStorage.getItem('user');
@@ -904,7 +903,7 @@
 
       if (response.ok) {
         toastStore.showToast("🛒 🎉 " + data.message, "success"); 
-        // Có thể gọi store giỏ hàng ở đây để cập nhật số lượng trên Header
+        window.dispatchEvent(new Event('cart-updated')); 
       } else {
         toastStore.showToast("⚠️ Lỗi: " + data.message, "error"); 
       }
