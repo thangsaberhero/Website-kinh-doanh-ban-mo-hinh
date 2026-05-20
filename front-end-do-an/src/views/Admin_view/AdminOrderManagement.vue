@@ -21,9 +21,9 @@
             </div>
             
             <div class="flex gap-3 w-full xl:w-auto">
-              <button class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
-                <span class="material-symbols-outlined text-[20px]">file_download</span>
-                Xuất báo cáo
+              <button @click="exportExcelReport" class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
+                <span class="material-symbols-outlined text-[20px]" :class="{'animate-bounce': isExporting}">file_download</span>
+                {{ isExporting ? 'Đang tạo file...' : 'Xuất báo cáo' }}
               </button>
               <button class="flex-1 xl:flex-none bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
                 <span class="material-symbols-outlined text-[20px]">inventory</span>
@@ -490,11 +490,11 @@
 </template>
   
 <script setup>
-  import { ref, computed } from 'vue';
+  import { ref, computed, watch } from 'vue';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
 
-  import { onMounted, watch } from 'vue';
+  import { onMounted} from 'vue';
 
   const orders = ref([]);
   const isLoading = ref(true);
@@ -517,6 +517,48 @@
   // Sửa lại để không bị lỗi hiển thị "1 - 10 của 0" khi không có đơn nào
   const startItem = computed(() => totalOrders.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
   const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalOrders.value));
+
+  const isExporting = ref(false);
+
+const exportExcelReport = async () => {
+  isExporting.value = true;
+  try {
+    // 1. Gọi API (Nhớ thêm Token nếu Route của bạn cần xác thực Admin)
+    const response = await fetch('http://localhost:3000/api/invoice_admin/export-excel', {
+      method: 'GET',
+      headers: {
+        // 'Authorization': `Bearer ${localStorage.getItem('token')}` // Bỏ comment nếu có check token
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Lỗi khi tải file từ Server");
+    }
+
+    // 2. Chuyển dữ liệu binary trả về thành dạng Blob
+    const blob = await response.blob();
+    
+    // 3. Tạo một URL ảo cho cục Blob này
+    const url = window.URL.createObjectURL(blob);
+    
+    // 4. Tạo 1 thẻ <a> ẩn, gán link và kích hoạt click để tải xuống
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Bao_Cao_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // 5. Dọn dẹp
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    
+  } catch (error) {
+    console.error("Lỗi xuất Excel:", error);
+    alert("Không thể xuất báo cáo lúc này!");
+  } finally {
+    isExporting.value = false;
+  }
+};
 
   const changePage = (page) => {
     if (page >= 1 && page <= totalPages.value) {
