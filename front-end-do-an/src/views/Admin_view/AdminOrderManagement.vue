@@ -40,7 +40,7 @@
               </div>
               <div class="relative z-10">
                 <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Chờ xác nhận</p>
-                <p class="text-3xl font-brand font-bold text-slate-900">12</p>
+                <p class="text-3xl font-brand font-bold text-slate-900">{{ summary[1] || 0 }}</p>
               </div>
               <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center border border-orange-100 shadow-inner relative z-10">
                 <span class="material-symbols-outlined text-orange-500">pending_actions</span>
@@ -53,8 +53,8 @@
               </div>
               <div class="relative z-10">
                 <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Đang đóng gói</p>
-                <p class="text-3xl font-brand font-bold text-slate-900">48</p>
-              </div>
+                <p class="text-3xl font-brand font-bold text-slate-900">{{ summary[2] || 0 }}</p>
+            </div>
               <div class="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center border border-sky-100 shadow-inner relative z-10">
                 <span class="material-symbols-outlined text-sky-500">package_2</span>
               </div>
@@ -66,8 +66,8 @@
               </div>
               <div class="relative z-10">
                 <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Đang giao</p>
-                <p class="text-3xl font-brand font-bold text-slate-900">156</p>
-              </div>
+                <p class="text-3xl font-brand font-bold text-slate-900">{{ summary[3] || 0 }}</p>
+            </div>
               <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100 shadow-inner relative z-10">
                 <span class="material-symbols-outlined text-amber-500">local_shipping</span>
               </div>
@@ -78,9 +78,9 @@
                  <span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
               </div>
               <div class="relative z-10">
-                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Hoàn thành (24h)</p>
-                <p class="text-3xl font-brand font-bold text-slate-900">32</p>
-              </div>
+                <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Hoàn thành</p>
+                <p class="text-3xl font-brand font-bold text-slate-900">{{ summary[4] || 0 }}</p>
+            </div>
               <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 shadow-inner relative z-10">
                 <span class="material-symbols-outlined text-emerald-500">check_circle</span>
               </div>
@@ -262,15 +262,38 @@
             </div>
             
             <div class="p-6 flex items-center justify-between border-t border-slate-100 bg-slate-50/30">
-              <span class="text-xs font-bold text-slate-400">Hiển thị 1 - 10 của 216 đơn hàng</span>
-              <div class="flex items-center gap-2">
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#ff8f73] text-white text-xs font-bold shadow-lg shadow-[#ff8f73]/20">1</button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">2</button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">3</button>
-                <span class="w-9 h-9 flex items-center justify-center text-slate-400 font-bold">...</span>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] text-xs transition-all">22</button>
-                <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+              <span class="text-xs font-bold text-slate-400">
+                Hiển thị {{ startItem }} - {{ endItem }} của {{ totalOrders }} đơn hàng
+              </span>
+              
+              <div v-if="totalPages > 1" class="flex items-center gap-2">
+                <button 
+                  @click="changePage(currentPage - 1)" 
+                  :disabled="currentPage === 1"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+                >
+                  <span class="material-symbols-outlined text-sm">chevron_left</span>
+                </button>
+                
+                <button 
+                  v-for="p in totalPages" 
+                  :key="p" 
+                  @click="changePage(p)"
+                  :class="currentPage === p 
+                    ? 'bg-[#ff8f73] text-white shadow-lg shadow-[#ff8f73]/20 border-transparent' 
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73]'"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold border transition-all"
+                >
+                  {{ p }}
+                </button>
+                
+                <button 
+                  @click="changePage(currentPage + 1)" 
+                  :disabled="currentPage === totalPages"
+                  class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+                >
+                  <span class="material-symbols-outlined text-sm">chevron_right</span>
+                </button>
               </div>
             </div>
           </div>
@@ -329,13 +352,39 @@
             </div>
             
             <div class="space-y-4">
-              <div v-for="(prod, index) in viewingOrder.products" :key="index" class="flex items-center gap-3">
-                <div class="w-14 h-14 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shrink-0">
-                  <img :src="'http://localhost:3000/Images_product/' + prod.anh" class="w-full h-full object-cover"/>
+              <div v-for="(prod, index) in viewingOrder.products" :key="index" class="flex items-start gap-3 border-b border-slate-50 pb-3 last:border-0">
+                
+                <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shrink-0 p-1">
+                  <img v-if="prod.image" :src="'http://localhost:3000/Images_product/' + prod.image" class="w-full h-full object-contain"/>
+                  <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
+                    <span class="material-symbols-outlined">image_not_supported</span>
+                  </div>
                 </div>
-                <div class="flex-1">
-                  <p class="text-sm font-bold text-slate-900 line-clamp-2" :title="prod.name">{{ prod.name }}</p>
-                  <p class="text-xs font-semibold text-slate-500 mt-1">Số lượng: x{{ prod.quantity }}</p>
+                
+                <div class="flex-1 flex flex-col justify-between h-full">
+                  <div>
+                    <div v-if="prod.isSale" class="mb-1">
+                      <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest bg-rose-50 text-rose-600 border border-rose-200">
+                        <span class="material-symbols-outlined text-[10px]">local_fire_department</span> Flash Sale
+                      </span>
+                    </div>
+                    
+                    <p class="text-sm font-bold text-slate-900 line-clamp-2 leading-tight" :title="prod.name">{{ prod.name }}</p>
+                  </div>
+                  
+                  <div class="flex justify-between items-end mt-2">
+                    <p class="text-xs font-semibold text-slate-500">Số lượng: x{{ prod.quantity }}</p>
+                    
+                    <div class="text-right">
+                      <p v-if="prod.isSale" class="text-[10px] text-slate-400 line-through mb-0.5">
+                        {{ (prod.originalPrice * prod.quantity).toLocaleString('vi-VN') }} ₫
+                      </p>
+                      <p class="text-sm font-bold text-[#ff3d00]">
+                        {{ prod.totalPrice.toLocaleString('vi-VN') }} ₫
+                      </p>
+                    </div>
+                  </div>
+                  
                 </div>
               </div>
             </div>
@@ -347,8 +396,8 @@
                <span class="text-slate-900 font-semibold">{{ viewingOrder.subtotal?.toLocaleString('vi-VN') }} ₫</span>
              </div>
              <div class="flex justify-between items-center text-xs font-medium text-slate-500 border-b border-slate-50 pb-3">
-               <span>Phí vận chuyển:</span>
-               <span class="text-slate-900 font-semibold">{{ viewingOrder.shippingFee?.toLocaleString('vi-VN') }} ₫</span>
+               <span>Khuyến mãi, mã giảm giá:</span>
+               <span class="text-slate-900 font-semibold">{{ viewingOrder.discount?.toLocaleString('vi-VN') }} ₫</span>
              </div>
              <div class="flex justify-between items-center pt-1">
                <span class="text-xs font-bold text-slate-900 uppercase">Tổng thu:</span>
@@ -459,12 +508,22 @@
   const isFilterPanelOpen = ref(false); // Trạng thái mở Sidebar Lọc
   const isSortMenuOpen = ref(false);    // Trạng thái mở Menu Sắp xếp
 
-  const totalOrders = ref(216); // Tổng số đơn từ API
+  const totalOrders = ref(0); 
   const currentPage = ref(1);
   const itemsPerPage = ref(10);
+  const totalPages = ref(1); // Thêm biến tổng số trang
+  const summary = ref({});   // Hứng dữ liệu summary từ API
 
-  const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1);
+  // Sửa lại để không bị lỗi hiển thị "1 - 10 của 0" khi không có đơn nào
+  const startItem = computed(() => totalOrders.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
   const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalOrders.value));
+
+  const changePage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchOrders();
+    }
+  };
   
   const handleToggleSidebar = () => {
     if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
@@ -607,23 +666,30 @@
 
       let url = `http://localhost:3000/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       if (statusParam) url += `&trangthai=${statusParam}`;
+      if (searchQuery.value) url += `&TenKH=${searchQuery.value}`; // Lọc theo Tên KH
+      if (filterDate.value.from) url += `&ngaybatdau=${filterDate.value.from}`;
+      if (filterDate.value.to) url += `&ngayketthuc=${filterDate.value.to}`;
+      if (sortBy.value === 'date_desc') url += `&Sapxep_theothoigian=true`;
+      if (sortBy.value === 'total_desc') url += `&Sapxep_theosotien=true`;
 
       const response = await fetch(url);
       const result = await response.json();
 
       if (result.success) {
         totalOrders.value = result.pagination.totalItems;
+        totalPages.value = result.pagination.totalPage;
+        summary.value = result.summary || {};
         orders.value = result.data.map(item => {
           const d = new Date(item.NgayLapDon);
           return {
             id: item.MaDH,
             code: `#FC-${item.MaDH}`,
             carrier: 'Giao Hàng Nhanh', // Giả định vì danh sách tổng chưa có ĐVVC
-            customer: `Khách hàng (Mã KH: ${item.MaKH})`, // Có thể nối bảng lấy tên sau
+            customer: item.TenNguoiNhan || `Khách hàng (Mã KH: ${item.MaKH})` || `Khách ngoài`, // Có thể nối bảng lấy tên sau
             time: d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
             date: d.toLocaleDateString('vi-VN'),
             paymentStatus: item.TrangThaiThanhToan,
-            total: item.TongTien,
+            total: Number(item.ThanhTien),
             statusId: item.MaTT
           };
         });
@@ -662,12 +728,16 @@
           carrier: info.DonViVanChuyen || 'Giao Hàng Nhanh',
           paymentStatus: info.TrangThaiThanhToan || 'Chưa thanh toán',
           subtotal: info.TongTien || 0,
-          shippingFee: info.PhiVanChuyen || 0,
-          total: (info.TongTien || 0) + (info.PhiVanChuyen || 0),
+          total: info.ThanhTien || 0,
+          discount: (info.TongTien || 0) - (info.ThanhTien || 0),
           products: productsList.map(p => ({
             name: p.TenMH || 'Mô hình',
             quantity: p.SoLuong || 1,
-            price: p.DonGiaBan || 0
+            price: p.DonGiaBan || 0,
+            image: p.AnhDaiDien || '', 
+            isSale: p.LaHangKhuyenMai === 1,
+            originalPrice: p.DonGiaGoc || p.DonGiaBan || 0,
+            totalPrice: p.ThanhTienItem || (p.SoLuong * p.DonGiaBan) || 0
           }))
         };
         isViewOrderDrawerOpen.value = true;

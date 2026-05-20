@@ -958,6 +958,7 @@
             releaseDate: item.NgayPhatHanh ? item.NgayPhatHanh.split('T')[0] : '',
             // Format tiền tệ cho đẹp
             minDeposit: Number(item.TienCocToiThieu || 0).toLocaleString('vi-VN'),
+            basePrice: Number(item.GiaNhap || 0).toLocaleString('vi-VN'),
             sellPrice: Number(item.DonGia || 0).toLocaleString('vi-VN'),
             stock: item.SoLuong || 0,
             isVisible: item.HienThi,

@@ -164,7 +164,7 @@
 
               <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end mt-2">
                 <span class="font-headline font-bold text-white uppercase tracking-widest text-[11px] w-2/3">
-                  Số tiền cần trả
+                  Số tiền cần trả 
                 </span>
                 <span class="text-3xl font-headline font-black text-primary tracking-tighter">
                   {{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}
@@ -197,12 +197,6 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
-const discount = computed(() => {
-  return orderItems.value.reduce((sum, item) => {
-    // Nếu item.KhuyenMai bị null/undefined, nó sẽ tự động biến thành 0
-    return sum + (Number(item.KhuyenMai) || 0);
-  }, 0);
-});
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 const orderItems = ref([]); 

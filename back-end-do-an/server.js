@@ -69,7 +69,7 @@ cron.schedule('* * * * *', async () => {
         // 1. Tìm đơn hàng: Trạng thái 'Chờ duyệt', quá 5 phút
         const sql_tim_don = `
             SELECT MaDH FROM DonHang 
-            WHERE TrangThaiThanhToan = 'Chưa thanh toán' 
+            WHERE TrangThaiThanhToan = 'Chờ thanh toán' 
             AND TIMESTAMPDIFF(MINUTE, NgayLapDon, NOW()) >= 5
         `;
         const [don_qua_han] = await connection.query(sql_tim_don);
@@ -78,26 +78,50 @@ cron.schedule('* * * * *', async () => {
             for (let don of don_qua_han) {
                 const maDH = don.MaDH;
 
-                // 2. Cập nhật trạng thái thành Đã Hủy
+                // 2. Cập nhật trạng thái hóa đơn thành Đã Hủy
                 await connection.query(
                     `UPDATE DonHang SET TrangThaiThanhToan = 'Đã hủy (Quá hạn thanh toán)' WHERE MaDH = ?`, 
                     [maDH]
                 );
 
-                // 3. Hoàn lại số lượng tồn kho (Nhả kho)
+                // 3. Ghi log trạng thái đơn hàng = 5 (Đã hủy) - (Đã xóa dòng lặp code)
+                await connection.query(
+                    `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, 
+                    [maDH]
+                );
+
+                // 4. Hoàn lại số lượng tồn kho (Nhả kho)
                 const sql_hoan_kho = `
                     UPDATE PhanLoai pl
-                    INNER JOIN ChiTietDonHang ct ON pl.MaPhanLoai = ct.MaMoHinh
+                    INNER JOIN ChiTietDonHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
                     SET pl.SoLuong = pl.SoLuong + ct.SoLuong
                     WHERE ct.MaDH = ?
                 `;
                 await connection.query(sql_hoan_kho, [maDH]);
                 
-                // 4. Ghi log trạng thái
-                await connection.query(
-                    `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, 
-                    [maDH]
-                );
+                // 5. HOÀN LẠI FLASH SALE (Cực kỳ gọn gàng nhờ vào cột LaHangKhuyenMai)
+                // Lấy số lượng hàng khuyến mãi đã đặt trả lại cho bảng ChiTietKhuyenMai
+                await connection.query(`
+                    UPDATE ChiTietKhuyenMai ctkm
+                    INNER JOIN ChiTietDonHang ctdh ON ctkm.MaPhanLoai = ctdh.MaPhanLoai
+                    SET ctkm.SoLuongDaDung = ctkm.SoLuongDaDung - ctdh.SoLuong
+                    WHERE ctdh.MaDH = ? AND ctdh.LaHangKhuyenMai = 1
+                `, [maDH]);
+
+                // Sau khi Update xong mới được xóa Log
+                await connection.query(`DELETE FROM LogSuDungKhuyenMai WHERE MaDH = ?`, [maDH]);
+
+                // 6. HOÀN LẠI VOUCHER (MÃ GIẢM GIÁ)
+                // Trừ đi 1 lượt sử dụng để khách khác có thể lấy mã này
+                await connection.query(`
+                    UPDATE MaGiamGia mg
+                    INNER JOIN LogSuDungMaGiamGia log ON log.MaGG = mg.MaGG
+                    SET mg.SoLuongDaDung = mg.SoLuongDaDung - 1 
+                    WHERE log.MaDH = ?
+                `, [maDH]);
+
+                // Sau khi Update xong mới được xóa Log
+                await connection.query(`DELETE FROM LogSuDungMaGiamGia WHERE MaDH = ?`, [maDH]);
 
                 console.log(`❌ Đã tự động hủy đơn FC-${maDH} và hoàn lại kho.`);
             }

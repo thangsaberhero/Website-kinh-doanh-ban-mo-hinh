@@ -25,8 +25,6 @@ const donhang_admin = {
             await connection.query(`Insert into ChiTietTrangThai
                                     (MaDH, MaTrangThai, Thoigian)
                                     Values (?,1,NOW())`, [ma_don_hang_moi]);
-            
-
 
             await connection.commit();
 
@@ -145,8 +143,7 @@ const donhang_admin = {
             const offset = (page - 1) * limit;
 
             const { 
-                trangthai, ngaybatdau, ngayketthuc,          
-                Sapxep_theosotien, Sapxep_theotrangthai, Sapxep_theothoigian
+                trangthai, ngaybatdau, ngayketthuc, TenKH, TenNV, Sapxep_theosotien, Sapxep_theotrangthai, Sapxep_theothoigian
             } = req.query;
 
             let conditions = [];
@@ -155,6 +152,14 @@ const donhang_admin = {
             let havingConditions = [];
             let havingValues = [];
 
+            if(TenKH){
+                condition.push("(dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ?)");
+                whereValues.push(`%${TenKH}%`);
+            }
+            if(TenNV){
+                condition.push("(nv.TenNV COLLATE utf8mb4_unicode_ci LIKE ?)");
+                whereValues.push(`%${TenNV}%`);
+            }
             if (ngaybatdau) {
                 conditions.push("dh.NgayLapDon >= ?");
                 whereValues.push(ngaybatdau);
@@ -184,15 +189,27 @@ const donhang_admin = {
             }
 
             const sql_core = `
-                SELECT dh.MaDH, dh.MaKH, dh.MaNV, dh.NgayLapDon, dh.TongTien, dh.ThanhTien, dh.TrangThaiThanhToan,
+                SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKh, nv.TenNV,
+                dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan,
+                dh.ThanhTien, dh.TrangThaiThanhToan,
                 (
                     SELECT cttt.MaTrangThai
                     FROM ChiTietTrangThai cttt 
                     WHERE cttt.MaDH = dh.MaDH 
                     ORDER BY cttt.MaTrangThai DESC 
                     LIMIT 1
-                ) AS MaTT
+                ) AS MaTT,
+                (
+                    Select tt.TenTrangThai
+                    FROM TrangThai tt
+                    inner join ChiTietTrangThai cttt on tt.MaTrangThai = cttt.MaTrangThai
+                    WHERE cttt.MaDH = dh.MaDH 
+                    ORDER BY cttt.MaTrangThai DESC 
+                    LIMIT 1
+                ) As TrangThai
                 FROM DonHang dh
+                left join NhanVien nv on dh.MaNV = nv.MaNV
+                left join KhachHang kh on kh.MaKH = dh.MaKH
                 ${condition_clause}
                 ${having_clause}
             `;
@@ -213,10 +230,32 @@ const donhang_admin = {
             const sql_params = [...combinedValues, limit, offset];
             const [invoices] = await db.query(sql_ds, sql_params);
 
+            const sql_summary = `
+                SELECT 
+                    LatestStatus.MaTrangThai, 
+                    tt.TenTrangThai,
+                    COUNT(dh.MaDH) AS SoLuongDon
+                FROM DonHang dh
+                INNER JOIN (
+                    -- Tìm trạng thái mới nhất của từng đơn hàng
+                    SELECT MaDH, MAX(MaTrangThai) as MaTrangThai
+                    FROM ChiTietTrangThai
+                    GROUP BY MaDH
+                ) LatestStatus ON dh.MaDH = LatestStatus.MaDH
+                INNER JOIN TrangThai tt ON tt.MaTrangThai = LatestStatus.MaTrangThai
+                GROUP BY LatestStatus.MaTrangThai, tt.TenTrangThai
+            `;
+            const [summaryData] = await db.query(sql_summary);
+            const summaryCounters = summaryData.reduce((acc, item) => {
+                acc[item.MaTrangThai] = item.SoLuongDon;
+                return acc;
+            }, {});
+
             res.status(200).json({
                 success: true,
                 message: "Lấy thông tin danh sách đơn hàng thành công!",
                 data: invoices,
+                summary: summaryCounters,
                 pagination: {
                     currentPage: page,
                     limit: limit,
@@ -235,8 +274,13 @@ const donhang_admin = {
         try {
             const MaDH = req.params.MaDH;
             const sql_donhang = `
-                SELECT TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien, NgayLapDon
-                FROM DonHang WHERE MaDH = ?
+                SELECT 
+                TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, 
+                TongTien, ThanhTien, NgayLapDon, Note, MaVoucher
+                FROM DonHang
+                left join LogSuDungMaGiamGia log on log.MaDH = DonHang.MaDH
+                left join MaGiamGia ma on ma.MaGG = log.MaGG
+                WHERE DonHang.MaDH = ?
             `;
             const [donhang_info] = await db.query(sql_donhang, [MaDH]);
 
@@ -251,15 +295,16 @@ const donhang_admin = {
             mh.MaMoHinh,
             mh.TenMH,
             mh.AnhDaiDien, 
-            pl.DonGia,
+            ct.GiaNhapThucTe,
+            ct.DonGiaGoc,
             ct.DonGiaBan,
             pl.MaPhanLoai,
             pl.ChiTietPhanLoai,
             ct.SoLuong,
-            ((pl.DonGia - ct.DonGiaBan) * ct.SoLuong) AS KhuyenMai
+            ((ct.DonGiaGoc - ct.DonGiaBan) * ct.SoLuong) AS KhuyenMai
             FROM MoHinh mh
             inner join PhanLoai pl on mh.MaMoHinh = pl.MaMoHinh
-            inner join ChiTietDonHang ct on pl.MaPhanLoai = ct.MaMoHinh
+            inner join ChiTietDonHang ct on pl.MaPhanLoai = ct.MaPhanLoai
             where ct.MaDH = ?
             ORDER BY mh.MaMoHinh DESC`;
             const [products] = await db.query(sql,[MaDH]);
@@ -300,7 +345,7 @@ const donhang_admin = {
             const sql_lay_trang_thai = `
                 Select
                     MaTrangThai
-                    inner join ChiTietTrangThai
+                    from ChiTietTrangThai
                     where MaDH = ?
                     order by MaTrangThai DESC
                     limit 1
