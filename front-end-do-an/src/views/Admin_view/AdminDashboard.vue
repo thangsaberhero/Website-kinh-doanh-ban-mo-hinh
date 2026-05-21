@@ -35,9 +35,9 @@
               </div>
             </div>
 
-            <button class="flex items-center gap-2 bg-white text-slate-500 text-xs font-bold px-4 py-2.5 border border-slate-200 rounded shadow-sm hover:text-slate-900 hover:bg-slate-50 active:scale-95 transition-all">
-              <span class="material-symbols-outlined text-[18px]">download</span>
-              XUẤT BÁO CÁO
+            <button @click="exportExcelReport" class="flex items-center gap-2 bg-white text-slate-500 text-xs font-bold px-4 py-2.5 border border-slate-200 rounded shadow-sm hover:text-slate-900 hover:bg-slate-50 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-[20px]" :class="{'animate-bounce': isExporting}">file_download</span>
+              {{ isExporting ? 'Đang tạo file...' : 'Xuất báo cáo' }}
             </button>
           </div>
         </section>
@@ -336,6 +336,48 @@
   const currentFilterLabel = ref('30 NGÀY QUA');
   const currentFilterValue = ref('30d');
 
+
+  const isExporting = ref(false);
+
+  const exportExcelReport = async () => {
+    isExporting.value = true;
+    try {
+      // 1. Gọi API (Nhớ thêm Token nếu Route của bạn cần xác thực Admin)
+      const response = await fetch('http://localhost:3000/api/thong_ke/admin/export-excel', {
+        method: 'GET',
+        headers: {
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}` // Bỏ comment nếu có check token
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi tải file từ Server");
+      }
+
+      // 2. Chuyển dữ liệu binary trả về thành dạng Blob
+      const blob = await response.blob();
+      
+      // 3. Tạo một URL ảo cho cục Blob này
+      const url = window.URL.createObjectURL(blob);
+      
+      // 4. Tạo 1 thẻ <a> ẩn, gán link và kích hoạt click để tải xuống
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Bao_Cao_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // 5. Dọn dẹp
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error("Lỗi xuất Excel:", error);
+      alert("Không thể xuất báo cáo lúc này!");
+    } finally {
+      isExporting.value = false;
+    }
+  };
   // --- Hàm mô phỏng lấy dữ liệu ---
   const fetchDashboardData = (range) => {
     console.log("Đang tải dữ liệu mới cho mốc thời gian:", range);

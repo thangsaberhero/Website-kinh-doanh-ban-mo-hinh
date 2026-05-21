@@ -168,3 +168,7 @@ app.use('/api/reviews/admin', adminReviewRoutes);
 
 const adminContactRoutes = require('./routes/Admin_route/contact.route.js');
 app.use('/api/contact/admin', adminContactRoutes);
+
+// //Báo cáo thống kê
+// const bao_cao_route = require('./routes/Admin_route/thong_ke.route.js');
+// app.use('/api/thong_ke/admin', bao_cao_route);
