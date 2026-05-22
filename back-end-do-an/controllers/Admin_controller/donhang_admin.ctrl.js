@@ -143,7 +143,7 @@ const donhang_admin = {
             const offset = (page - 1) * limit;
 
             const { 
-                trangthai, ngaybatdau, ngayketthuc, TenKH, TenNV, Sapxep_theosotien, Sapxep_theotrangthai, Sapxep_theothoigian
+                trangthai, ngaybatdau, ngayketthuc, timkiem, sapxep
             } = req.query;
 
             let conditions = [];
@@ -152,13 +152,10 @@ const donhang_admin = {
             let havingConditions = [];
             let havingValues = [];
 
-            if(TenKH){
-                condition.push("(dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ?)");
-                whereValues.push(`%${TenKH}%`);
-            }
-            if(TenNV){
-                condition.push("(nv.TenNV COLLATE utf8mb4_unicode_ci LIKE ?)");
-                whereValues.push(`%${TenNV}%`);
+            if(timkiem){
+                const timkiem_gon = timkiem.replace(/^FC-/i, '').trim();
+                conditions.push("(dh.MaDH like ? or dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ? or nv.TenNV COLLATE utf8mb4_unicode_ci LIKE ?)");
+                whereValues.push(`%${timkiem_gon}%`,`%${timkiem}%`,`%${timkiem}%`);
             }
             if (ngaybatdau) {
                 conditions.push("dh.NgayLapDon >= ?");
@@ -176,17 +173,10 @@ const donhang_admin = {
             }
             let having_clause = havingConditions.length > 0 ? "HAVING " + havingConditions.join(" AND ") : "";
 
-            let orderParams = [];
-            if (Sapxep_theothoigian === 'true') orderParams.push("dh.NgayLapDon DESC");
-            if (Sapxep_theosotien === 'true') orderParams.push("dh.TongTien DESC");
-            if (Sapxep_theotrangthai === 'true') orderParams.push("MaTT ASC");
-
-            let filter = "";
-            if (orderParams.length > 0) {
-                filter = "ORDER BY " + orderParams.join(", ");
-            } else {
-                filter = "ORDER BY dh.NgayLapDon DESC";
-            }
+            let filter = "ORDER BY dh.NgayLapDon DESC";
+            if (sapxep === 'date_asc') filter = ("ORDER BY dh.NgayLapDon ASC");
+            if (sapxep === 'total_desc') filter = ("ORDER BY dh.TongTien DESC");
+            if (sapxep === 'total_asc') filter = ("ORDER BY dh.TongTien ASC");
 
             const sql_core = `
                 SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKh, nv.TenNV,

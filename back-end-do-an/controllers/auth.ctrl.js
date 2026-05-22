@@ -61,9 +61,12 @@ const authController = {
         try {
             const { TenDN, MatKhau } = req.body;
             const sql_login = `
-                SELECT tk.*, kh.MaKH, tk.AnhDaiDien
+                SELECT tk.*, 
+                    kh.MaKH, kh.TenKH,
+                    nv.MaNV, nv.TenNV
                 FROM TaiKhoan tk
                 LEFT JOIN khachhang kh ON tk.MaTK = kh.MaTK
+                LEFT JOIN NhanVien nv ON tk.MaTK = nv.MaTK
                 WHERE tk.TenDN = ?
             `;
             const [users] = await db.query(sql_login, [TenDN]);
@@ -82,7 +85,10 @@ const authController = {
 
             // Tạo vé thông hành (Token) có hạn 1 ngày
             const token = jwt.sign(
-                { id: user.MaTK, role: user.MaQuyen }, 
+                { 
+                    id: user.MaTK, 
+                    role: user.MaQuyen 
+                }, 
                 process.env.JWT_SECRET, 
                 { expiresIn: '1d' }
             );
@@ -97,7 +103,9 @@ const authController = {
                     email: user.Email,
                     MaKH: user.MaKH,
                     role: user.MaQuyen,
-                    TenKH: user.TenKH,
+                    HoTen: user.TenKH || user.TenNV || 'Người dùng hệ thống',
+                    MaKH: user.MaKH || null,
+                    MaNV: user.MaNV || null
                     AnhDaiDien: user.AnhDaiDien
                 }
             });

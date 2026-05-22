@@ -706,13 +706,14 @@ const exportExcelReport = async () => {
       else if (activeTab.value === 'shipping') statusParam = 3;
       else if (activeTab.value === 'completed') statusParam = 4;
 
+      // Xây dựng URL với các tham số Tối ưu
       let url = `http://localhost:3000/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      
       if (statusParam) url += `&trangthai=${statusParam}`;
-      if (searchQuery.value) url += `&TenKH=${searchQuery.value}`; // Lọc theo Tên KH
+      if (searchQuery.value) url += `&timkiem=${encodeURIComponent(searchQuery.value)}`; 
       if (filterDate.value.from) url += `&ngaybatdau=${filterDate.value.from}`;
       if (filterDate.value.to) url += `&ngayketthuc=${filterDate.value.to}`;
-      if (sortBy.value === 'date_desc') url += `&Sapxep_theothoigian=true`;
-      if (sortBy.value === 'total_desc') url += `&Sapxep_theosotien=true`;
+      if (sortBy.value) url += `&sapxep=${sortBy.value}`; // Truyền thẳng biến: date_desc, total_asc...
 
       const response = await fetch(url);
       const result = await response.json();
@@ -721,13 +722,16 @@ const exportExcelReport = async () => {
         totalOrders.value = result.pagination.totalItems;
         totalPages.value = result.pagination.totalPage;
         summary.value = result.summary || {};
+        
         orders.value = result.data.map(item => {
           const d = new Date(item.NgayLapDon);
           return {
             id: item.MaDH,
             code: `#FC-${item.MaDH}`,
-            carrier: 'Giao Hàng Nhanh', // Giả định vì danh sách tổng chưa có ĐVVC
-            customer: item.TenNguoiNhan || `Khách hàng (Mã KH: ${item.MaKH})` || `Khách ngoài`, // Có thể nối bảng lấy tên sau
+            carrier: 'Giao Hàng Nhanh',
+            customer: item.TenNguoiNhan || `Khách hàng (Mã KH: ${item.MaKH})`,
+            staffName: item.TenNV || 'Chưa phân công',
+            orderStatus: item.TrangThai || 'Chờ duyệt',
             time: d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
             date: d.toLocaleDateString('vi-VN'),
             paymentStatus: item.TrangThaiThanhToan,
@@ -745,7 +749,32 @@ const exportExcelReport = async () => {
 
   // Tự động tải khi mở trang & đổi Tab
   onMounted(() => fetchOrders());
-  watch(activeTab, () => { currentPage.value = 1; fetchOrders(); });
+  // --- KỸ THUẬT DEBOUNCE & GỘP WATCHER TỐI ƯU ---
+  let fetchTimeout = null;
+
+  watch(
+    [
+      activeTab,                   // Theo dõi thay đổi Tab (Tất cả, Chờ duyệt...)
+      searchQuery,                 // Theo dõi người dùng gõ tìm kiếm
+      () => filterDate.value.from, // Theo dõi ngày bắt đầu
+      () => filterDate.value.to,   // Theo dõi ngày kết thúc
+      sortBy                       // Theo dõi kiểu sắp xếp
+    ], 
+    () => {
+      // 1. Luôn reset về trang 1 mỗi khi thay đổi điều kiện lọc
+      currentPage.value = 1;
+
+      // 2. Clear timeout cũ nếu người dùng vẫn đang gõ/click liên tục
+      if (fetchTimeout) {
+        clearTimeout(fetchTimeout);
+      }
+
+      // 3. Đợi 500ms (0.5 giây) sau khi người dùng DỪNG thao tác thì mới gọi API
+      fetchTimeout = setTimeout(() => {
+        fetchOrders();
+      }, 500); 
+    }
+  );
 
   // 2. GỌI API XEM CHI TIẾT ĐƠN HÀNG
   const viewOrderDetails = async (order) => {

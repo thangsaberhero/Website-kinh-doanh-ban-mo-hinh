@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const product_view = require('../../controllers/User_controller/products.ctrl.js');
 
+
 router.post('/add_remove_favorite', product_view.toggle_favorite_product);
 router.post('/cart-suggestions', product_view.getCartSuggestions);
 router.get('/check_favorite/:MaKH/:MaMoHinh', product_view.check_favorite_product);
