@@ -58,6 +58,50 @@
               </div>
             </div>
           </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+            <div class="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-200 shadow-sm flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+                <span class="material-symbols-outlined text-2xl">payments</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Doanh thu mang lại</p>
+                <h3 class="text-xl font-black text-slate-900 mt-1">
+                  {{ formatCurrency(detailData.TongDoanhThuMangLai) }}
+                </h3>
+                <p class="text-[11px] text-slate-400 font-medium mt-0.5">Từ {{ detailData.TongSoDonHang || 0 }} đơn hàng thành công</p>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-rose-50 to-white p-5 rounded-2xl border border-rose-200 shadow-sm flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-md shadow-rose-500/20">
+                <span class="material-symbols-outlined text-2xl">price_check</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-rose-600 font-bold uppercase tracking-widest">Chi phí đã giảm (Marketing)</p>
+                <h3 class="text-xl font-black text-rose-600 mt-1">
+                  -{{ formatCurrency(detailData.TongTienDaGiam) }}
+                </h3>
+                <p class="text-[11px] text-slate-400 font-medium mt-0.5">Tổng số tiền đã trợ giá</p>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-purple-50 to-white p-5 rounded-2xl border border-purple-200 shadow-sm flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-purple-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20">
+                <span class="material-symbols-outlined text-2xl">monitoring</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-purple-600 font-bold uppercase tracking-widest">Tỷ lệ Chi phí / Doanh thu</p>
+                <h3 class="text-xl font-black text-purple-700 mt-1">
+                  {{ costToRevenueRatio }}%
+                </h3>
+                <p class="text-[11px] font-medium mt-0.5 animate-pulse" 
+                  :class="costToRevenueRatio > 15 ? 'text-amber-600' : 'text-emerald-600'">
+                  {{ costToRevenueRatio > 15 ? '⚠️ Chi phí Marketing cao' : '✅ Chiến dịch hiệu quả tốt' }}
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div class="flex gap-1 bg-slate-200/50 p-1 rounded-xl w-fit border border-slate-200">
             <button @click="activeSubTab = 'products'" :class="activeSubTab === 'products' ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500'" class="px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
@@ -118,7 +162,13 @@
           </div>
 
           <!-- Tab Lịch sử -->
-          <div v-if="activeSubTab === 'logs'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div v-if="activeSubTab === 'logs'" class="space-y-4">
+            <div class="flex justify-end">
+              <button @click="exportLogsToExcel" :disabled="isExporting" class="bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-300 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all">
+                <span class="material-symbols-outlined text-[16px]">{{ isExporting ? 'hourglass_empty' : 'download' }}</span> 
+                {{ isExporting ? 'Đang tạo báo cáo...' : 'Xuất báo cáo Excel' }}
+              </button>
+            </div>
             <table class="w-full text-left border-collapse whitespace-nowrap">
               <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-bold tracking-wider uppercase">
                 <tr>
@@ -148,13 +198,12 @@
             </div>
           </div>
         </template>
-
-        <!-- Nếu không có dữ liệu và không loading -->
         <div v-else class="text-center text-slate-500 py-12">Không tìm thấy thông tin chương trình.</div>
       </main>
     </div>
 
     <div v-if="isAddProductModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -163,31 +212,72 @@
           </h3>
           <button @click="isAddProductModalOpen = false" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Tìm kiếm Mô hình / Sản phẩm</label>
-            <div class="relative">
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4 bg-slate-50/50">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div class="md:col-span-2 relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
               <input v-model="searchProductQuery" @input="debounceSearchProduct" type="text" placeholder="Nhập tên mô hình..."
-                     class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none">
+                    class="w-full border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-emerald-500 focus:ring-1 outline-none">
             </div>
-            <div v-if="searchedProducts.length > 0" class="mt-2 border border-slate-200 rounded-xl overflow-hidden max-h-48 overflow-y-auto">
+            
+            <div>
+              <select v-model="filterCategory" @change="searchProductsWithFilter" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 outline-none bg-white cursor-pointer">
+                <option value="">Tất cả danh mục</option>
+                <option v-for="cat in categories" :key="cat.MaDM" :value="cat.MaDM">{{ cat.TenDM }}</option>
+              </select>
+            </div>
+
+            <div>
+              <select v-model="filterBrand" @change="searchProductsWithFilter" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 outline-none bg-white cursor-pointer">
+                <option value="">Tất cả hãng SX</option>
+                <option v-for="brand in brands" :key="brand.MaHSX" :value="brand.MaHSX">{{ brand.TenHSX }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col h-[300px]">
+            <div class="flex justify-between items-center px-4 py-3 border-b border-slate-100 bg-slate-50 shrink-0">
+              <span class="text-xs font-bold text-slate-500">Tìm thấy <span class="text-emerald-600">{{ searchedProducts.length }}</span> phân loại</span>
+              <button @click="toggleSelectAll" class="text-xs font-bold text-emerald-500 hover:text-emerald-600 transition-colors bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                {{ selectedProductIds.length === searchedProducts.length && searchedProducts.length > 0 ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
+              </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
               <div v-for="prod in searchedProducts" :key="prod.MaPhanLoai"
-                   @click="selectProduct(prod)"
-                   class="px-4 py-3 border-b border-slate-100 cursor-pointer hover:bg-emerald-50 flex justify-between items-center"
-                   :class="selectedProduct?.MaPhanLoai === prod.MaPhanLoai ? 'bg-emerald-100/50 border-l-4 border-emerald-500' : ''">
-                <div>
-                  <p class="font-bold text-slate-800 text-sm">{{ prod.TenMH }}</p>
-                  <p class="text-[11px] text-slate-500">Phân loại: {{ prod.TenPhanLoai || 'Mặc định' }} - Giá: {{ formatCurrency(prod.DonGia) }}</p>
+                  @click="toggleSelectProduct(prod.MaPhanLoai)"
+                  class="px-3 py-2.5 mb-1 rounded-lg border border-transparent cursor-pointer hover:bg-emerald-50 flex items-center gap-3 transition-all"
+                  :class="selectedProductIds.includes(prod.MaPhanLoai) ? 'bg-emerald-50 border-emerald-200' : ''">
+                
+                <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors shrink-0"
+                    :class="selectedProductIds.includes(prod.MaPhanLoai) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 bg-white'">
+                  <span v-if="selectedProductIds.includes(prod.MaPhanLoai)" class="material-symbols-outlined text-[14px] font-bold">check</span>
                 </div>
-                <span v-if="selectedProduct?.MaPhanLoai === prod.MaPhanLoai" class="material-symbols-outlined text-emerald-500">check_circle</span>
+
+                <div class="w-10 h-10 bg-slate-100 rounded-md overflow-hidden shrink-0 border border-slate-200">
+                  <img v-if="prod.AnhDaiDien" :src="`http://localhost:3000/Images_product/${prod.AnhDaiDien}`" class="w-full h-full object-cover"/>
+                  <span v-else class="material-symbols-outlined text-slate-300 flex items-center justify-center h-full">image</span>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <p class="font-bold text-slate-800 text-sm truncate" :title="prod.TenMH">{{ prod.TenMH }}</p>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-500">{{ prod.ChiTietPhanLoai || 'Mặc định' }}</span>
+                    <span class="text-[11px] font-bold text-[#ff8f73]">{{ formatCurrency(prod.DonGia) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="searchedProducts.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400">
+                <span class="material-symbols-outlined text-4xl mb-2 opacity-50">search_off</span>
+                <p class="text-sm font-medium">Không có sản phẩm nào phù hợp</p>
               </div>
             </div>
-            <p v-else-if="searchProductQuery && searchedProducts.length === 0 && !selectedProduct" class="text-xs text-rose-500 mt-2">Không tìm thấy sản phẩm.</p>
           </div>
-          <div v-if="selectedProduct && promoType === 'campaign'" class="p-4 bg-orange-50 rounded-xl border border-orange-100">
-            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-3">Cấu hình mức giảm cho sản phẩm này</h4>
-            <div class="grid grid-cols-2 gap-4">
+
+          <div v-if="selectedProductIds.length > 0 && promoType === 'campaign'" class="p-4 bg-orange-50 rounded-xl border border-orange-100 animate-[fadeIn_0.2s_ease-out]">
+            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-3">Cấu hình mức giảm cho {{ selectedProductIds.length }} sản phẩm đã chọn</h4>
+            <div class="grid grid-cols-3 gap-4">
               <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Loại giảm giá</label>
                 <select v-model="addProductForm.LoaiGiamGia" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm">
@@ -199,12 +289,17 @@
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Mức giảm</label>
                 <input v-model="addProductForm.ChietKhau" type="number" min="0" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm">
               </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">Giảm tối đa (đ)</label>
+                <input v-model="addProductForm.GiaTriGiamToiDa" :disabled="addProductForm.LoaiGiamGia === 'TienMat'" type="number" min="0" placeholder="Bỏ trống = Không giới hạn" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm disabled:bg-orange-50/50">
+              </div>
             </div>
           </div>
         </div>
+
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
           <button @click="isAddProductModalOpen = false" class="px-6 py-2.5 text-sm font-bold text-slate-500 bg-slate-100 rounded-xl">Hủy</button>
-          <button @click="submitAddProduct" :disabled="!selectedProduct" class="px-6 py-2.5 text-sm font-bold text-white bg-emerald-500 rounded-xl disabled:opacity-50">Lưu</button>
+          <button @click="submitAddProduct" :disabled="selectedProductIds.length === 0" class="px-6 py-2.5 text-sm font-bold text-white bg-emerald-500 rounded-xl disabled:opacity-50">Lưu</button>
         </div>
       </div>
     </div>
@@ -228,254 +323,366 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
-import AdminHeader from "../../components/Admin/AdminHeader.vue";
-import { useToastStore } from '../../stores/toast';
+  import { ref, onMounted, computed, watch } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
+  import AdminHeader from "../../components/Admin/AdminHeader.vue";
+  import { useToastStore } from '../../stores/toast';
 
-const route = useRoute();
-const router = useRouter();
-const toastStore = useToastStore();
+  const route = useRoute();
+  const router = useRouter();
+  const toastStore = useToastStore();
 
-const isSidebarCollapsed = ref(false);
-const isMobileMenuOpen = ref(false);
-const activeSubTab = ref('products');
-const isLoading = ref(true);
-const isDeleteProductModalOpen = ref(false);
-const productToDelete = ref(null);
+  const isSidebarCollapsed = ref(false);
+  const isMobileMenuOpen = ref(false);
+  const activeSubTab = ref('products');
+  const isLoading = ref(true);
+  const isDeleteProductModalOpen = ref(false);
+  const productToDelete = ref(null);
 
-const promoId = route.params.id;
-const promoType = computed(() => route.path.includes('/voucher/') ? 'voucher' : 'campaign');
+  const promoId = route.params.id;
+  const promoType = computed(() => route.path.includes('/voucher/') ? 'voucher' : 'campaign');
 
-const detailData = ref(null);
-const productsList = ref([]);
-const logsList = ref([]);
-const paginationSP = ref({ currentPage: 1, totalPage: 1 });
-const paginationLog = ref({ currentPage: 1, totalPage: 1 });
+  const detailData = ref(null);
+  const productsList = ref([]);
+  const logsList = ref([]);
+  const paginationSP = ref({ currentPage: 1, totalPage: 1 });
+  const paginationLog = ref({ currentPage: 1, totalPage: 1 });
 
-// Modal
-const isAddProductModalOpen = ref(false);
-const searchProductQuery = ref('');
-const searchedProducts = ref([]);
-const selectedProduct = ref(null);
-const addProductForm = ref({
-  MaPhanLoai: '',
-  LoaiGiamGia: 'ChietKhau',
-  ChietKhau: 0,
-  GiaTriGiamToiDa: null,
-  SoLuongKM: null
-});
-
-// Helper
-const formatDate = (dateString) => {
-  if (!dateString) return '---';
-  const date = new Date(dateString);
-  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-};
-const formatCurrency = (value) => {
-  if (value === undefined || value === null) return '0₫';
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-};
-
-// Fetch chính
-const fetchDetailData = async () => {
-  isLoading.value = true;
-  try {
-    const endpoint = promoType.value === 'campaign'
-      ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`
-      : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`;
-    const res = await fetch(endpoint, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    const result = await res.json();
-    if (result.success) {
-      detailData.value = result.data.tt;
-      productsList.value = result.data.detail || [];
-      logsList.value = result.data.log || [];
-      paginationSP.value = {
-        currentPage: result.pagination_sp?.currentPage || 1,
-        totalPage: result.pagination_sp?.totalPage || 1
-      };
-      paginationLog.value = {
-        currentPage: result.pagination_log?.currentPage || 1,
-        totalPage: result.pagination_log?.totalPage || 1
-      };
-    } else {
-      console.error('API error:', result.message);
-    }
-  } catch (error) {
-    console.error('Fetch error:', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-// Phân trang
-const changeSPPage = (page) => {
-  if (page < 1 || page > paginationSP.value.totalPage) return;
-  paginationSP.value.currentPage = page;
-  fetchDetailData();
-};
-const changeLogPage = (page) => {
-  if (page < 1 || page > paginationLog.value.totalPage) return;
-  paginationLog.value.currentPage = page;
-  fetchDetailData();
-};
-
-const openDeleteProductModal = (product) => {
-  productToDelete.value = product;
-  isDeleteProductModalOpen.value = true;
-};
-
-const confirmDeleteProduct = async () => {
-  if (!productToDelete.value) return;
-  const product = productToDelete.value;
-  try {
-    const endpoint = promoType.value === 'campaign'
-      ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}/products/${product.MaPhanLoai}`
-      : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}/products/${product.MaPhanLoai}`;
-    const res = await fetch(endpoint, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (res.ok) {
-      toastStore.showToast('Xóa sản phẩm thành công!', 'success');
-      fetchDetailData();
-    } 
-    else {
-      toastStore.showToast('Xóa thất bại', 'error');
-    }
-  } 
-  catch (error) {
-    console.error(error);
-    toastStore.showToast('Lỗi kết nối máy chủ', 'error');
-  } 
-  finally {
-    isDeleteProductModalOpen.value = false;
-    productToDelete.value = null;
-  }
-};
-
-// Tìm kiếm sản phẩm
-let searchTimeout;
-const debounceSearchProduct = () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(async () => {
-    if (!searchProductQuery.value.trim()) {
-      searchedProducts.value = [];
-      return;
-    }
+  const isAddProductModalOpen = ref(false);
+  const searchProductQuery = ref('');
+  const searchedProducts = ref([]);
+  const selectedProductIds = ref([]);
+  const addProductForm = ref({
+    MaPhanLoai: '',
+    LoaiGiamGia: 'ChietKhau',
+    ChietKhau: 0,
+    GiaTriGiamToiDa: null,
+    SoLuongKM: null
+  });
+  // Thêm state cho bộ lọc
+  const filterCategory = ref('');
+  const filterBrand = ref('');
+  const categories = ref([]); 
+  const brands = ref([]);
+  const fetchFiltersData = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/khuyen_mai_admin/search/products?search=${encodeURIComponent(searchProductQuery.value)}`, {
+      const token = localStorage.getItem('token');
+      
+      const [resCate, resBrand] = await Promise.all([
+        fetch('http://localhost:3000/api/product_admin/get_all_cate?getAll=true', {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch('http://localhost:3000/api/product_admin/get_all_brand', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const dataCate = await resCate.json();
+      const dataBrand = await resBrand.json();
+
+      if (dataCate.success) categories.value = dataCate.data;
+      if (dataBrand.success) brands.value = dataBrand.data;
+    } 
+    catch (error) {
+      console.error("Lỗi khi tải bộ lọc: ", error);
+    }
+  };
+
+  const searchProductsWithFilter = async () => {
+    try {
+      const params = new URLSearchParams({
+        search: searchProductQuery.value,
+        maDM: filterCategory.value,
+        maHSX: filterBrand.value
+      }).toString();
+
+      const res = await fetch(`http://localhost:3000/api/khuyen_mai_admin/search/products?${params}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const result = await res.json();
       if (result.success) searchedProducts.value = result.data;
       else searchedProducts.value = [];
-    } 
-    catch (error) {
+    } catch (error) {
       console.error(error);
       searchedProducts.value = [];
     }
-  }, 500);
-};
+  };
 
-const selectProduct = (product) => {
-  selectedProduct.value = product;
-  addProductForm.value.MaPhanLoai = product.MaPhanLoai;
-  searchProductQuery.value = `${product.TenMH} - ${product.TenPhanLoai || ''}`;
-  searchedProducts.value = [];
-};
+  // Cập nhật lại hàm debounce
+  let searchTimeout;
+  const debounceSearchProduct = () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      searchProductsWithFilter();
+    }, 500);
+  };
 
-const openAddProductModal = () => {
-  selectedProduct.value = null;
-  addProductForm.value = { MaPhanLoai: '', LoaiGiamGia: 'ChietKhau', ChietKhau: 0, GiaTriGiamToiDa: null, SoLuongKM: null };
-  searchProductQuery.value = '';
-  searchedProducts.value = [];
-  isAddProductModalOpen.value = true;
-};
+  const openAddProductModal = () => {
+    selectedProductIds.value = []; 
+    addProductForm.value = { MaPhanLoai: '', LoaiGiamGia: 'ChietKhau', ChietKhau: 0, GiaTriGiamToiDa: null, SoLuongKM: null };
+    searchProductQuery.value = '';
+    filterCategory.value = '';
+    filterBrand.value = '';
+    isAddProductModalOpen.value = true;
+    searchProductsWithFilter(); 
+  }; 
 
-const submitAddProduct = async () => {
-  if (!selectedProduct.value) {
-    toastStore.showToast('Vui lòng chọn một sản phẩm', 'error');
-    return;
-  }
-  if (!selectedProduct.value.MaPhanLoai) {
-    toastStore.showToast('Sản phẩm không có mã phân loại hợp lệ', 'error');
-    return;
-  }
+  const toggleSelectProduct = (MaPhanLoai) => {
+    const index = selectedProductIds.value.indexOf(MaPhanLoai);
+    if (index === -1) {
+      selectedProductIds.value.push(MaPhanLoai); 
+    } else {
+      selectedProductIds.value.splice(index, 1); 
+    }
+  };
 
-  // Tạo payload an toàn, tránh gửi undefined/null không cần thiết
-  let payload = {};
-  if (promoType.value === 'campaign') {
-    const chietKhau = Number(addProductForm.value.ChietKhau);
-    
-    if (isNaN(chietKhau) || chietKhau <= 0) {
-      toastStore.showToast('Vui lòng nhập mức giảm giá hợp lệ (>0)', 'error');
+  const toggleSelectAll = () => {
+    if (searchedProducts.value.length === 0) return;
+    const currentSearchIds = searchedProducts.value.map(p => p.MaPhanLoai);
+    const isAllSelected = currentSearchIds.every(id => selectedProductIds.value.includes(id));
+
+    if (isAllSelected) {
+      selectedProductIds.value = selectedProductIds.value.filter(id => !currentSearchIds.includes(id));
+    } 
+    else {
+      const newIds = currentSearchIds.filter(id => !selectedProductIds.value.includes(id));
+      selectedProductIds.value.push(...newIds);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '---';
+    const date = new Date(dateString);
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  };
+  const formatCurrency = (value) => {
+    if (value === undefined || value === null) return '0₫';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  };
+
+  const fetchDetailData = async () => {
+    isLoading.value = true;
+    try {
+      const endpoint = promoType.value === 'campaign'
+        ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`
+        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`;
+      const res = await fetch(endpoint, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      const result = await res.json();
+      if (result.success) {
+        detailData.value = result.data.tt;
+        productsList.value = result.data.detail || [];
+        logsList.value = result.data.log || [];
+        paginationSP.value = {
+          currentPage: result.pagination_sp?.currentPage || 1,
+          totalPage: result.pagination_sp?.totalPage || 1
+        };
+        paginationLog.value = {
+          currentPage: result.pagination_log?.currentPage || 1,
+          totalPage: result.pagination_log?.totalPage || 1
+        };
+      } else {
+        console.error('API error:', result.message);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  // Phân trang
+  const changeSPPage = (page) => {
+    if (page < 1 || page > paginationSP.value.totalPage) return;
+    paginationSP.value.currentPage = page;
+    fetchDetailData();
+  };
+  const changeLogPage = (page) => {
+    if (page < 1 || page > paginationLog.value.totalPage) return;
+    paginationLog.value.currentPage = page;
+    fetchDetailData();
+  };
+
+  const openDeleteProductModal = (product) => {
+    productToDelete.value = product;
+    isDeleteProductModalOpen.value = true;
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete.value) return;
+    const product = productToDelete.value;
+    try {
+      const endpoint = promoType.value === 'campaign'
+        ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}/products/${product.MaPhanLoai}`
+        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}/products/${product.MaPhanLoai}`;
+      const res = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        toastStore.showToast('Xóa sản phẩm thành công!', 'success');
+        fetchDetailData();
+      } 
+      else {
+        toastStore.showToast('Xóa thất bại', 'error');
+      }
+    } 
+    catch (error) {
+      console.error(error);
+      toastStore.showToast('Lỗi kết nối máy chủ', 'error');
+    } 
+    finally {
+      isDeleteProductModalOpen.value = false;
+      productToDelete.value = null;
+    }
+  };
+
+  const selectProduct = (product) => {
+    selectedProduct.value = product;
+    addProductForm.value.MaPhanLoai = product.MaPhanLoai;
+    searchProductQuery.value = `${product.TenMH} - ${product.TenPhanLoai || ''}`;
+    searchedProducts.value = [];
+  };
+
+  const submitAddProduct = async () => {
+    if (selectedProductIds.value.length === 0) {
+      toastStore.showToast('Vui lòng tích chọn ít nhất một sản phẩm', 'error');
       return;
     }
 
-    payload = {
-      MaPhanLoai: selectedProduct.value.MaPhanLoai,
-      LoaiGiamGia: addProductForm.value.LoaiGiamGia,
-      ChietKhau: chietKhau,
-      GiaTriGiamToiDa: addProductForm.value.GiaTriGiamToiDa ? Number(addProductForm.value.GiaTriGiamToiDa) : null,
-      SoLuongKM: addProductForm.value.SoLuongKM ? Number(addProductForm.value.SoLuongKM) : null
-    };
-  } else {
-    payload = {
-      MaPhanLoai: selectedProduct.value.MaPhanLoai
-    };
-  }
+    let payload = {};
+    if (promoType.value === 'campaign') {
+      const chietKhau = Number(addProductForm.value.ChietKhau);
+      
+      if (isNaN(chietKhau) || chietKhau <= 0) {
+        toastStore.showToast('Vui lòng nhập mức giảm giá hợp lệ (>0)', 'error');
+        return;
+      }
+      if (addProductForm.value.LoaiGiamGia === 'ChietKhau' && chietKhau > 100) {
+        toastStore.showToast('Mức giảm phần trăm không được vượt quá 100%', 'error');
+        return;
+      }
 
-  console.log('📦 Payload gửi đi:', payload); // Debug
-
-  try {
-    const endpoint = promoType.value === 'campaign'
-      ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}/products`
-      : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}/products`;
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await res.json();
-    console.log('📡 Response:', result);
-
-    if (res.ok && result.success) {
-      toastStore.showToast('Thêm sản phẩm thành công!', 'success');
-      isAddProductModalOpen.value = false;
-      fetchDetailData(); 
-    } 
-    else {
-      toastStore.showToast(result.message || 'Thêm thất bại, vui lòng kiểm tra lại dữ liệu', 'error');
+      payload = {
+        DanhSachMaPhanLoai: selectedProductIds.value,
+        LoaiGiamGia: addProductForm.value.LoaiGiamGia,
+        ChietKhau: chietKhau,
+        GiaTriGiamToiDa: addProductForm.value.GiaTriGiamToiDa ? Number(addProductForm.value.GiaTriGiamToiDa) : null,
+        SoLuongKM: addProductForm.value.SoLuongKM ? Number(addProductForm.value.SoLuongKM) : null
+      };
+    } else {
+      payload = {
+        DanhSachMaPhanLoai: selectedProductIds.value
+      };
     }
-  } 
-  catch (error) {
-    console.error('❌ Lỗi khi gọi API:', error);
-    toastStore.showToast('Lỗi kết nối máy chủ', 'error');
-  }
-};
+    try {
+      const endpoint = promoType.value === 'campaign'
+        ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}/products`
+        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}/products`;
 
-const handleToggleSidebar = () => {
-  if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
-  else isSidebarCollapsed.value = !isSidebarCollapsed.value;
-};
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-onMounted(() => {
-  fetchDetailData();
-});
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
+        toastStore.showToast('Thêm sản phẩm thành công!', 'success');
+        isAddProductModalOpen.value = false;
+        fetchDetailData(); 
+      } 
+      else {
+        if (result.duplicates && result.duplicates.length > 0) {
+            toastStore.showToast(result.message, 'error');
+            
+            selectedProductIds.value = selectedProductIds.value.filter(
+                id => !result.duplicates.includes(id)
+            );
+        } 
+        else {
+            toastStore.showToast(result.message || 'Thêm thất bại, vui lòng kiểm tra lại dữ liệu', 'error');
+        }
+      }
+    } 
+    catch (error) {
+      console.error('❌ Lỗi khi gọi API:', error);
+      toastStore.showToast('Lỗi kết nối máy chủ', 'error');
+    }
+  };
+
+  const handleToggleSidebar = () => {
+    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
+    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  };
+
+  onMounted(() => {
+    fetchDetailData();
+    fetchFiltersData();
+  });
+
+  const isExporting = ref(false); 
+
+  const exportLogsToExcel = async () => {
+    isExporting.value = true;
+    try {
+      const endpoint = promoType.value === 'campaign'
+        ? `http://localhost:3000/api/khuyen_mai_admin/export/${promoId}`
+        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/export/${promoId}`;
+
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+        }
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Lỗi khi xuất file');
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Bao_Cao_${promoType.value}_${promoId}.xlsx`); 
+      
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toastStore.showToast('Xuất báo cáo Excel thành công!', 'success');
+    } 
+    catch (error) {
+      console.error("Export error:", error);
+      toastStore.showToast(error.message || 'Không thể tải xuống báo cáo', 'error');
+    } 
+    finally {
+      isExporting.value = false;
+    }
+  };
+
+  const costToRevenueRatio = computed(() => {
+    if (!detailData.value || !detailData.value.TongDoanhThuMangLai || detailData.value.TongDoanhThuMangLai === 0) {
+      return 0;
+    }
+    const ratio = (detailData.value.TongTienDaGiam / detailData.value.TongDoanhThuMangLai) * 100;
+    return Math.round(ratio * 10) / 10; 
+  });
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>

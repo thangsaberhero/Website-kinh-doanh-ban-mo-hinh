@@ -5,6 +5,8 @@ const verifyToken = require('../../middlewares/auth.middleware.js');
 
 router.get('/search/products', verifyToken, khuyenmaiController.tim_kiem_san_pham);
 router.get('/dashboard/stats', verifyToken, khuyenmaiController.thong_ke_khuyen_mai);
+router.get('/logs/recent', verifyToken, khuyenmaiController.lay_nhat_ky_hoat_dong);
+router.get('/logs/all', verifyToken, khuyenmaiController.lay_tat_ca_log_phan_trang);
 
 router.get('/', khuyenmaiController.liet_ke_chuong_trinh_khuyen_mai);
 router.get('/:MaKM', verifyToken, khuyenmaiController.xem_chi_tiet_khuyen_mai);
@@ -20,8 +22,10 @@ router.delete('/vouchers/delete/:id', verifyToken, khuyenmaiController.xoa_ma_gi
 
 router.post('/:id/products', verifyToken, khuyenmaiController.them_sp_km);
 router.delete('/:id/products/:maPhanLoai', verifyToken, khuyenmaiController.xoa_sp_km);
+router.get('/export/:id', khuyenmaiController.xuat_bao_cao_khuyen_mai);
 
 router.post('/vouchers/:id/products', verifyToken, khuyenmaiController.them_sp_voucher);
 router.delete('/vouchers/:id/products/:maPhanLoai', verifyToken, khuyenmaiController.xoa_sp_voucher);
+router.get('/vouchers/export/:id', khuyenmaiController.xuat_bao_cao_voucher);
 
 module.exports = router;

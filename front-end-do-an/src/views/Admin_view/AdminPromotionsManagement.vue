@@ -79,7 +79,7 @@
               <div class="flex items-end gap-3">
                 <h3 class="text-3xl font-brand font-bold text-slate-900">{{ displayStats.active }}</h3>
                 <span class="text-emerald-500 text-xs font-bold pb-1.5 flex items-center gap-0.5">
-                  <span class="material-symbols-outlined text-[14px]">bolt</span> Tại trang này
+                  <span class="material-symbols-outlined text-[14px]">bolt</span> Toàn hệ thống
                 </span>
               </div>
             </div>
@@ -163,8 +163,7 @@
           </div>
 
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <table class="w-full text-left border-collapse">
-              
+            <table class="w-full text-left border-collapse">        
               <thead v-if="currentTypeTab === 'promotion'" class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-bold tracking-wider uppercase">
                 <tr>
                   <th class="py-4 px-6">Tên chiến dịch</th>
@@ -187,8 +186,7 @@
               </thead>
 
               <tbody>
-                <tr v-for="item in filteredData" :key="item.id" class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
-                  
+                <tr v-for="item in filteredData" :key="item.id" class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">          
                   <template v-if="currentTypeTab === 'promotion'">
                     <td class="py-4 px-6 font-semibold text-slate-900 text-sm">{{ item.TenKM }}</td>
                     <td class="py-4 px-6 text-xs text-slate-500">
@@ -256,6 +254,15 @@
                     </div>
                   </td>
                 </tr>
+                <tr v-if="filteredData.length === 0">
+                  <td colspan="6" class="py-16 text-center text-slate-500 bg-slate-50/30">
+                    <div class="flex flex-col items-center justify-center">
+                      <span class="material-symbols-outlined text-5xl mb-3 text-slate-300">inventory_2</span>
+                      <p class="font-bold text-slate-600">Không tìm thấy dữ liệu</p>
+                      <p class="text-xs mt-1">Thử thay đổi bộ lọc hoặc thêm mới chương trình.</p>
+                    </div>
+                  </td>
+                </tr>
               </tbody>
             </table>            
             <div v-if="totalPages >= 1 && filteredData.length > 0" class="flex items-center justify-between bg-white p-4 border-t border-slate-100">
@@ -282,6 +289,36 @@
                   <span class="material-symbols-outlined text-sm">chevron_right</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <div class="flex justify-between items-center mb-6">
+            <h4 class="font-headline text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span class="material-symbols-outlined text-sky-500">history_edu</span> Nhật ký thao tác Khuyến mãi
+            </h4>
+            <button @click="openAllLogsModal" class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest hover:underline hover:text-[#ff3d00] transition-colors">
+              Xem tất cả
+            </button>
+          </div>
+          
+          <div class="space-y-4">
+            <div v-for="log in securityLogs" :key="log.MaLog" class="flex items-start gap-4 p-4 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-100 group">
+              <div class="w-10 h-10 shrink-0 flex items-center justify-center bg-slate-50 text-slate-500 rounded-full border border-slate-200 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
+                <span class="material-symbols-outlined text-[20px]">edit_note</span>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-slate-800 leading-snug">{{ log.NoiDung }}</p>
+                <p class="text-[10px] text-slate-400 mt-2 font-bold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px]">schedule</span>
+                  {{ new Date(log.ThoiGian).toLocaleString('vi-VN') }}
+                </p>
+              </div>
+            </div>
+            
+            <div v-if="securityLogs.length === 0" class="text-center py-8 text-sm text-slate-400 font-medium">
+              Hệ thống chưa ghi nhận hoạt động nào gần đây.
             </div>
           </div>
         </div>
@@ -328,19 +365,6 @@
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chương trình KM (*)</label>
           <input v-model="promotionForm.TenKM" type="text" placeholder="VD: Flash Sale Mùa Hè" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 focus:ring-2 outline-none"/>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Loại giảm giá</label>
-            <select v-model="promotionForm.LoaiGiamGia" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none">
-              <option value="PhanTram">Phần trăm (%)</option>
-              <option value="TienMat">Giảm tiền trực tiếp</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Mức giảm (*)</label>
-            <input v-model="promotionForm.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-          </div>
-        </div>
       </div>
 
       <div v-else class="space-y-4">
@@ -351,14 +375,21 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Mã Code (*)</label>
-            <input v-model="voucherForm.MaVoucher" type="text" placeholder="VD: MEGA24" class="w-full border border-slate-200 rounded-xl p-3 text-sm font-mono uppercase focus:border-sky-500 outline-none"/>
+            <div class="relative">
+              <input v-model="voucherForm.MaVoucher" type="text" placeholder="VD: MEGA24" 
+                     class="w-full border border-slate-200 rounded-xl pl-3 pr-10 py-3 text-sm font-mono uppercase focus:border-sky-500 outline-none"/>
+              <button @click="generateRandomVoucherCode" title="Tạo mã ngẫu nhiên"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all">
+                <span class="material-symbols-outlined text-[18px]">casino</span>
+              </button>
+            </div>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Lượt dùng tối đa</label>
             <input v-model="voucherForm.SoLuongDungToiDa" type="number" min="1" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
           </div>
         </div>
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-4 gap-4">
           <div class="col-span-1">
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Loại giảm</label>
             <select v-model="voucherForm.LoaiGiamGia" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none">
@@ -374,26 +405,32 @@
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Đơn tối thiểu</label>
             <input v-model="voucherForm.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
           </div>
+          <div class="col-span-1" v-show="voucherForm.LoaiGiamGia === 'PhanTram'">
+            <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-1">Giảm tối đa (đ)</label>
+            <input v-model="voucherForm.GiaTriGiamToiDa" type="number" min="0" placeholder="Bỏ trống = Vô hạn" class="w-full border border-purple-200 rounded-xl p-3 text-sm focus:border-purple-500 outline-none bg-purple-50/30"/>
+          </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Thời gian bắt đầu (*)</label>
-          <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianBD" type="datetime-local" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
-          <input v-else v-model="voucherForm.ThoiGianBD" type="datetime-local" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
+          <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianBD" type="datetime-local" :min="currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
+          <input v-else v-model="voucherForm.ThoiGianBD" type="datetime-local" :min="currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Thời gian kết thúc (*)</label>
-          <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianKT" type="datetime-local" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
-          <input v-else v-model="voucherForm.ThoiGianKT" type="datetime-local" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
+          <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianKT" type="datetime-local" :min="promotionForm.ThoiGianBD || currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
+          <input v-else v-model="voucherForm.ThoiGianKT" type="datetime-local" :min="voucherForm.ThoiGianBD || currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
         </div>
       </div>
 
       <div class="mt-6 flex justify-end gap-3">
         <button @click="isModalOpen = false" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-colors">Hủy</button>
-        <button @click="submitCreateForm" class="px-6 py-2.5 bg-[#ff8f73] hover:bg-[#ff3d00] text-white font-bold rounded-xl shadow-lg shadow-[#ff8f73]/20 transition-colors">
-          Xác nhận Tạo
+        <button @click="submitCreateForm"
+          :class="isSubmitting ? 'opacity-50 cursor-wait' : 'hover:bg-[#ff3d00]'"
+          class="px-6 py-2.5 bg-[#ff8f73] text-white font-bold rounded-xl shadow-lg transition-colors">
+          {{ isSubmitting ? 'Đang tạo...' : 'Xác nhận Tạo' }}
         </button>
       </div>
     </div>
@@ -419,37 +456,21 @@
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chương trình KM (*)</label>
             <input v-model="editingPromo.TenKM" type="text" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Loại giảm giá</label>
-              <select v-model="editingPromo.LoaiGiamGia" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none">
-                <option value="PhanTram">Phần trăm (%)</option>
-                <option value="TienMat">Giảm tiền trực tiếp (VNĐ)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Mức giảm (*)</label>
-              <input v-model="editingPromo.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-            </div>
-          </div>
         </template>
 
         <template v-else>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chiến dịch Voucher (*)</label>
-            <input v-model="editingPromo.TenMaGiamGia" type="text" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Mã Code (Không thể sửa)</label>
-              <input v-model="editingPromo.MaVoucher" disabled type="text" class="w-full border border-slate-200 rounded-xl p-3 text-sm font-mono uppercase bg-slate-100 text-slate-400 cursor-not-allowed"/>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-2">
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chiến dịch Voucher (*)</label>
+              <input v-model="editingPromo.TenMaGiamGia" type="text" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
             </div>
-            <div>
+            <div class="col-span-1">
               <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Lượt dùng tối đa</label>
               <input v-model="editingPromo.SoLuongDungToiDa" type="number" min="1" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
             </div>
           </div>
-          <div class="grid grid-cols-3 gap-4">
+
+          <div class="grid grid-cols-4 gap-4">
             <div class="col-span-1">
               <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Loại giảm</label>
               <select v-model="editingPromo.LoaiGiamGia" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none">
@@ -465,6 +486,11 @@
               <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Đơn tối thiểu</label>
               <input v-model="editingPromo.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
             </div>
+            
+            <div class="col-span-1" v-show="editingPromo.LoaiGiamGia === 'PhanTram'">
+              <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-1">Giảm tối đa (đ)</label>
+              <input v-model="editingPromo.GiaTriGiamToiDa" type="number" min="0" placeholder="Bỏ trống = Vô hạn" class="w-full border border-purple-200 rounded-xl p-3 text-sm focus:border-purple-500 outline-none bg-purple-50/30"/>
+            </div>
           </div>
         </template>
 
@@ -478,8 +504,17 @@
             <input v-model="editingPromo.ThoiGianKT" type="datetime-local" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
           </div>
         </div>
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div>
+            <label class="block text-sm font-bold text-slate-900">Trạng thái Kích hoạt</label>
+            <p class="text-xs text-slate-500">Bật để cho phép áp dụng, tắt để tạm dừng chiến dịch.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" v-model="editingPromo.TrangThaiHoatDong" class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          </label>
+        </div>
       </div>
-      
       <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
         <button @click="isEditPromoModalOpen = false" class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
         <button @click="submitEditPromo" class="px-6 py-2.5 text-sm font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-lg shadow-sky-500/20 rounded-xl transition-all flex items-center gap-2">
@@ -505,15 +540,43 @@
       </div>
     </div>
   </div>
+
+  <div v-if="isAllLogsModalOpen" class="fixed inset-0 z-[300] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col h-[80vh] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-sky-500">history</span> Toàn bộ nhật ký thao tác
+        </h3>
+        <button @click="isAllLogsModalOpen = false" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      
+      <div class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50/50">
+        <div v-for="log in allLogsList" :key="'all-'+log.MaLog" class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-start gap-4">
+          <span class="material-symbols-outlined text-slate-400 text-[18px] mt-0.5">adjust</span>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-slate-800 leading-normal">{{ log.NoiDung }}</p>
+            <p class="text-[10px] text-slate-400 font-bold mt-1.5">{{ new Date(log.ThoiGian).toLocaleString('vi-VN') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3 border-t border-slate-100 bg-white flex justify-between items-center shrink-0">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trang {{ allLogsPagination.currentPage }} / {{ allLogsPagination.totalPage }}</p>
+        <div class="flex gap-2">
+          <button @click="changeLogPage(allLogsPagination.currentPage - 1)" :disabled="allLogsPagination.currentPage === 1" class="px-3 py-1 text-xs font-bold border rounded-lg bg-white disabled:opacity-50">Trước</button>
+          <button @click="changeLogPage(allLogsPagination.currentPage + 1)" :disabled="allLogsPagination.currentPage === allLogsPagination.totalPage" class="px-3 py-1 text-xs font-bold border rounded-lg bg-white disabled:opacity-50">Sau</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
   
 <script setup>
-  import { ref, computed } from 'vue';
+  import { ref, computed, onMounted, watch } from 'vue';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
-  import { onMounted, watch } from 'vue';
   
   const router = useRouter();
   const toastStore = useToastStore();
@@ -521,7 +584,6 @@
   const isMobileMenuOpen = ref(false);
   const isLoading = ref(true);
 
-  const activeTab = ref('all');
   const currentTypeTab = ref('promotion'); 
   const activeStatusFilter = ref('all'); 
 
@@ -530,8 +592,6 @@
 
   const promotionForm = ref({
     TenKM: '',
-    LoaiGiamGia: 'TienMat', 
-    ChietKhau: 0,
     ThoiGianBD: '',
     ThoiGianKT: '',
     DanhSachSanPham: [] 
@@ -543,6 +603,7 @@
     LoaiGiamGia: 'PhanTram', 
     ChietKhau: 0,
     MucGiaToiThieu: 0,
+    GiaTriGiamToiDa: null,
     SoLuongDungToiDa: 100,
     ThoiGianBD: '',
     ThoiGianKT: ''
@@ -568,12 +629,27 @@
       MaVoucher: '', 
       LoaiGiamGia: 'PhanTram', 
       ChietKhau: 0, 
-      MucGiaToiThieu: 0, 
+      MucGiaToiThieu: 0,
+      GiaTriGiamToiDa: null, 
       SoLuongDungToiDa: 100, 
       ThoiGianBD: '', 
       ThoiGianKT: '' 
     };
   };
+
+  const generateRandomVoucherCode = () => {
+    const prefixes = ['SUMMER', 'SALE', 'VOUCHER', 'MUAHE', 'GIAMGIA', 'FLASH', 'HOT', 'DEAL', 'FREESHIP', 'WELCOME', 'MEGA', 'FIGURECOLLECT'];
+    const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const randomNum = Math.floor(Math.random() * 900 + 100);     
+    let code = `${randomPrefix}${randomNum}`;
+    if (code.length > 20) code = code.slice(0, 20);
+    voucherForm.value.MaVoucher = code.toUpperCase();
+  };
+  const currentDateTimeLocal = computed(() => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  });
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa có';
@@ -616,8 +692,15 @@
           const end = new Date(item.ThoiGianKT);
           
           let currentStatus = 'Đang chạy';
-          if (now < start) currentStatus = 'Đã lên lịch';
-          else if (now > end) currentStatus = 'Đã hết hạn';
+          if (now > end) {
+            currentStatus = 'Đã hết hạn';
+          } 
+          else if (item.TrangThaiHoatDong === 0) {
+            currentStatus = 'Tạm dừng';
+          } 
+          else if (now < start) {
+            currentStatus = 'Đã lên lịch';
+          }
 
           return {
             id: item.MaKM,
@@ -627,7 +710,9 @@
             SoLuongSP: item.SoLuotDung || 0, 
             status: currentStatus,
             LoaiGiamGia: item.LoaiGiamGia || 'PhanTram',
-            ChietKhau: item.ChietKhau || 0   
+            ChietKhau: item.ChietKhau || 0,
+            status: currentStatus,
+            TrangThaiHoatDong: item.TrangThaiHoatDong 
           };
         });
         totalPages.value = result.pagination.totalPage;
@@ -664,8 +749,15 @@
           const end = new Date(item.ThoiGianKT);
           
           let currentStatus = 'Đang chạy';
-          if (now < start) currentStatus = 'Đã lên lịch';
-          else if (now > end) currentStatus = 'Đã hết hạn';
+          if (now > end) {
+            currentStatus = 'Đã hết hạn';
+          } 
+          else if (item.TrangThaiHoatDong === 0) {
+            currentStatus = 'Tạm dừng';
+          } 
+          else if (now < start) {
+            currentStatus = 'Đã lên lịch';
+          }
 
           return {
             id: item.MaGG,
@@ -674,11 +766,13 @@
             LoaiGiamGia: item.LoaiGiamGia,
             GiamGia: item.ChietKhau,
             MucGiaToiThieu: item.MucGiaToiThieu,
+            GiaTriGiamToiDa: item.GiaTriGiamToiDa,
             DaDung: item.SoLuotDung || 0,
             ThoiGianBD: item.ThoiGianBD,
             SoLuong: item.SoLuongDungToiDa,
             ThoiGianKT: item.ThoiGianKT,
-            status: currentStatus
+            status: currentStatus,
+            TrangThaiHoatDong: item.TrangThaiHoatDong
           };
         });
         totalPages.value = result.pagination.totalPage;
@@ -702,7 +796,8 @@
       if (result.success) {
         serverStats.value = result.data;
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Lỗi tải thống kê:", error);
     }
   };
@@ -731,15 +826,57 @@
     }
   });
 
+  const securityLogs = ref([]);
+  const isAllLogsModalOpen = ref(false);
+  const allLogsList = ref([]);
+  const allLogsPagination = ref({ currentPage: 1, totalPage: 1 });
+
+  const fetchSecurityLogs = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/khuyen_mai_admin/logs/recent', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const result = await res.json();
+      if (result.success) securityLogs.value = result.data;
+    } 
+    catch (error) { 
+      console.error(error); 
+    }
+  };
+
+  const fetchAllLogs = async () => {
+    try {
+      const res = await fetch(`http://localhost:3000/api/khuyen_mai_admin/logs/all?page=${allLogsPagination.value.currentPage}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const result = await res.json();
+      if (result.success) {
+        allLogsList.value = result.data;
+        allLogsPagination.value = result.pagination;
+      }
+    } 
+    catch (error) {
+      console.error(error); 
+    }
+  };
+
+  const openAllLogsModal = () => {
+    allLogsPagination.value.currentPage = 1;
+    fetchAllLogs();
+    isAllLogsModalOpen.value = true;
+  };
+
+  const changeLogPage = (page) => {
+    if (page < 1 || page > allLogsPagination.value.totalPage) return;
+    allLogsPagination.value.currentPage = page;
+    fetchAllLogs();
+  };
+
   onMounted(() => {
     fetchDashboardStats();
     fetchPromotions();
     fetchVouchers(); 
-  });
-
-  watch(activeTab, () => {
-    currentPage.value = 1;
-    fetchPromotions();
+    fetchSecurityLogs(); 
   });
 
   // Lắng nghe khi chuyển bộ lọc trạng thái
@@ -787,6 +924,10 @@
             toastStore.showToast("Ngày kết thúc phải lớn hơn ngày bắt đầu", "error");
             return;
           }
+          if (new Date(promotionForm.value.ThoiGianKT) <= new Date()) { 
+              toastStore.showToast("Ngày kết thúc không được nằm trong quá khứ!", "error");
+              return;
+          }
 
           url = 'http://localhost:3000/api/khuyen_mai_admin';
           payload = {
@@ -806,20 +947,24 @@
             toastStore.showToast("Ngày kết thúc phải lớn hơn ngày bắt đầu", "error");
             return;
           }
+          if (new Date(voucherForm.value.ThoiGianKT) <= new Date()) { 
+              toastStore.showToast("Ngày kết thúc không được nằm trong quá khứ!", "error");
+              return;
+          }
 
           url = 'http://localhost:3000/api/khuyen_mai_admin/vouchers/create';
           payload = {
             TenMaGiamGia: voucherForm.value.TenMaGiamGia,
             MaVoucher: voucherForm.value.MaVoucher.toUpperCase(),
             LoaiGiamGia: voucherForm.value.LoaiGiamGia,
-            ChietKhau: voucherForm.value.ChietKhau,
-            MucGiaToiThieu: voucherForm.value.MucGiaToiThieu,
-            SoLuongDungToiDa: voucherForm.value.SoLuongDungToiDa,
+            ChietKhau: Number(voucherForm.value.ChietKhau),
+            MucGiaToiThieu: Number(voucherForm.value.MucGiaToiThieu),
+            SoLuongDungToiDa: Number(voucherForm.value.SoLuongDungToiDa),
             ThoiGianBD: voucherForm.value.ThoiGianBD,
             ThoiGianKT: voucherForm.value.ThoiGianKT,
             TrangThaiHoatDong: 1,
             MaKH: null,
-            GiaTriGiamToiDa: null,
+            GiaTriGiamToiDa: voucherForm.value.LoaiGiamGia === 'PhanTram' && voucherForm.value.GiaTriGiamToiDa ? Number(voucherForm.value.GiaTriGiamToiDa) : null,
             danhsachchitiet: [] 
           };
         }
@@ -842,6 +987,7 @@
           
           if (currentTypeTab.value === 'promotion') fetchPromotions();
           else fetchVouchers();
+          fetchSecurityLogs();
         } 
         else {
           toastStore.showToast(data.message || "Có lỗi xảy ra khi tạo", "error");
@@ -871,8 +1017,7 @@
         TenKM: item.TenKM,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
-        LoaiGiamGia: item.LoaiGiamGia || 'TienMat',   
-        ChietKhau: item.ChietKhau || 0
+        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? true : false
       };
     } 
     else {
@@ -886,7 +1031,8 @@
         SoLuongDungToiDa: item.SoLuong,
         GiaTriGiamToiDa: item.GiaTriGiamToiDa || null,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
-        ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT)
+        ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
+        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? true : false 
       };
     }
     isEditPromoModalOpen.value = true;
@@ -908,7 +1054,7 @@
             TenKM: editingPromo.value.TenKM,
             ThoiGianBD: editingPromo.value.ThoiGianBD,
             ThoiGianKT: editingPromo.value.ThoiGianKT,
-            TrangThaiHoatDong: 1 
+            TrangThaiHoatDong: editingPromo.value.TrangThaiHoatDong ? 1 : 0 
           };
         } 
         else {
@@ -920,13 +1066,13 @@
             TenMaGiamGia: editingPromo.value.TenMaGiamGia,
             MaVoucher: editingPromo.value.MaVoucher, 
             LoaiGiamGia: editingPromo.value.LoaiGiamGia,
-            ChietKhau: editingPromo.value.ChietKhau,
-            MucGiaToiThieu: editingPromo.value.MucGiaToiThieu,
-            SoLuongDungToiDa: editingPromo.value.SoLuongDungToiDa,
-            GiaTriGiamToiDa: editingPromo.value.GiaTriGiamToiDa || null,
+            ChietKhau: Number(editingPromo.value.ChietKhau),
+            MucGiaToiThieu: Number(editingPromo.value.MucGiaToiThieu),
+            SoLuongDungToiDa: Number(editingPromo.value.SoLuongDungToiDa),
+            GiaTriGiamToiDa: editingPromo.value.LoaiGiamGia === 'PhanTram' && editingPromo.value.GiaTriGiamToiDa ? Number(editingPromo.value.GiaTriGiamToiDa) : null,
             ThoiGianBD: editingPromo.value.ThoiGianBD,
             ThoiGianKT: editingPromo.value.ThoiGianKT,
-            TrangThaiHoatDong: 1
+            TrangThaiHoatDong: editingPromo.value.TrangThaiHoatDong ? 1 : 0
           };
         }
 
@@ -952,6 +1098,7 @@
           fetchDashboardStats();
           if (currentTypeTab.value === 'promotion') fetchPromotions();
           else fetchVouchers();
+          fetchSecurityLogs();
         } 
         else {
           toastStore.showToast(data.message || "Lỗi khi cập nhật", "error");
@@ -983,16 +1130,19 @@
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+      const data = await res.json(); 
 
-      if (res.ok) {
-        toastStore.showToast("Đã xóa thành công!", "success");
+      if (res.ok && data.success) {
+        toastStore.showToast(data.message, data.isSoftDeleted ? "warning" : "success");
         isDeleteModalOpen.value = false;
         fetchDashboardStats();
         if (currentTypeTab.value === 'promotion') fetchPromotions();
         else fetchVouchers();
+        fetchSecurityLogs();
       } 
       else {
-        toastStore.showToast("Xóa thất bại", "error");
+        toastStore.showToast(data.message || "Xóa thất bại", "error");
       }
     } 
     catch (error) {
@@ -1004,8 +1154,7 @@
     if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
     else isSidebarCollapsed.value = !isSidebarCollapsed.value;
   };
-  
-  
+    
   const isFilterMenuOpen = ref(false);
   const filters = ref({
     type: 'all',  
@@ -1030,24 +1179,23 @@
 
   const filteredData = computed(() => {
     let baseData = currentTypeTab.value === 'promotion' ? promotionsList.value : vouchersList.value;
-    if (currentTypeTab.value === 'voucher') {
-      if (filters.value.type !== 'all') {
-        baseData = baseData.filter(item => {
-          if (filters.value.type === 'Phần trăm') return item.LoaiGiamGia === 'PhanTram';
-          if (filters.value.type === 'Cố định') return item.LoaiGiamGia === 'TienMat';
-          return true;
-        });
-      }
 
-      if (filters.value.limit !== 'all') {
-        baseData = baseData.filter(item => {
-          const limitVal = item.SoLuong;
-          const isUnlimited = !limitVal || limitVal === 0;
-          if (filters.value.limit === 'unlimited') return isUnlimited;
-          if (filters.value.limit === 'limited') return !isUnlimited;
-          return true;
-        });
-      }
+    if (filters.value.type !== 'all') {
+      baseData = baseData.filter(item => {
+        if (filters.value.type === 'Phần trăm') return item.LoaiGiamGia === 'PhanTram';
+        if (filters.value.type === 'Cố định') return item.LoaiGiamGia === 'TienMat';
+        return true;
+      });
+    }
+
+    if (currentTypeTab.value === 'voucher' && filters.value.limit !== 'all') {
+      baseData = baseData.filter(item => {
+        const limitVal = item.SoLuong;
+        const isUnlimited = !limitVal || limitVal === 0;
+        if (filters.value.limit === 'unlimited') return isUnlimited;
+        if (filters.value.limit === 'limited') return !isUnlimited;
+        return true;
+      });
     }
 
     return baseData;
@@ -1086,6 +1234,17 @@
     }
   };
 
+  watch(() => voucherForm.value.LoaiGiamGia, (newType) => {
+    if (newType === 'TienMat') {
+      voucherForm.value.GiaTriGiamToiDa = null;
+    }
+  });
+
+  watch(() => editingPromo.value.LoaiGiamGia, (newType) => {
+    if (newType === 'TienMat') {
+      editingPromo.value.GiaTriGiamToiDa = null;
+    }
+  });
   // 1. Tính độ dài thanh Progress Bar (%)
   const getProgressWidth = (item) => {
     if (!item.SoLuong || item.SoLuong === 0) return '100%';
@@ -1105,17 +1264,22 @@
     if (status === 'Đang chạy') return 'text-emerald-600';
     if (status === 'Đã lên lịch') return 'text-amber-600';
     if (status === 'Đã hết hạn') return 'text-rose-600';
+    if (status === 'Tạm dừng') return 'text-slate-500'; 
     return 'text-slate-500';
   };
   const getStatusDotColor = (status) => {
     if (status === 'Đang chạy') return 'bg-emerald-500 shadow-[0_0_8px_#10b981]';
     if (status === 'Đã lên lịch') return 'bg-amber-500 shadow-[0_0_8px_#f59e0b]';
     if (status === 'Đã hết hạn') return 'bg-rose-500 shadow-[0_0_8px_#f43f5e]';
+    if (status === 'Tạm dừng') return 'bg-slate-400'; 
     return 'bg-slate-400';
   };
   const getStatusPingColor = (status) => {
     if (status === 'Đang chạy') return 'bg-emerald-400';
-    return '';
+    if (status === 'Đã lên lịch') return 'bg-amber-500';
+    if (status === 'Đã hết hạn') return 'bg-rose-500';
+    if (status === 'Tạm dừng') return 'bg-slate-400'; 
+    return 'bg-slate-400';
   };
   
 </script>
