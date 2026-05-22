@@ -83,6 +83,10 @@ const authController = {
                 return res.status(401).json({ message: "Mật khẩu không chính xác!" });
             }
 
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            await db.query(`UPDATE TaiKhoan SET DangNhapCuoi = NOW(), IPDangNhap = ? WHERE MaTK = ?`, [userIp, user.MaTK]);
+
             // Tạo vé thông hành (Token) có hạn 1 ngày
             const token = jwt.sign(
                 { 
