@@ -29,8 +29,13 @@ CREATE TABLE TaiKhoan (
 
 CREATE TABLE LogHoatDongTaiKhoan (
     MaLog INT PRIMARY KEY AUTO_INCREMENT,
+    MaTK INT, -- LƯU VẾT AI LÀ NGƯỜI THỰC HIỆN (Khóa ngoại nối sang bảng TaiKhoan)
+    LoaiLog VARCHAR(50) NOT NULL, -- PHÂN LOẠI LOG (Ví dụ: 'SECURITY', 'PRODUCT', 'VOUCHER', 'SYSTEM')
     NoiDung TEXT NOT NULL,
-    ThoiGian DATETIME DEFAULT CURRENT_TIMESTAMP
+    ThoiGian DATETIME DEFAULT CURRENT_TIMESTAMP,
+    IPAddress VARCHAR(45), -- (Tùy chọn) Lưu IP để phòng trường hợp bị hack
+    
+    FOREIGN KEY (MaTK) REFERENCES TaiKhoan(MaTK) ON DELETE SET NULL
 );
 
 -- 3. Bảng Khách hàng

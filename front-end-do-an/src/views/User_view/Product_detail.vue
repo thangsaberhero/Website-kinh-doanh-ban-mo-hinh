@@ -155,8 +155,10 @@
                              isFavorite 
                              ? 'bg-red-950/50 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:bg-red-950' 
                              : 'bg-surface-container-low border-outline-variant/30 text-outline hover:border-primary/50 hover:text-primary']">
-                    <span class="material-symbols-outlined font-bold text-3xl">
-                        {{ isFavorite ? 'favorite' : 'favorite_border' }}
+                    
+                    <span class="material-symbols-outlined font-bold text-3xl transition-all" 
+                          :class="{ 'is-favorite-icon': isFavorite }">
+                        favorite
                     </span>
                 </button>
               </div>
@@ -606,8 +608,7 @@
 
     if (token && userString) {
         try {
-            const userObj = JSON.parse(userString);
-            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${userObj.MaKH}/${id}`, {
+            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const favData = await resFav.json();
@@ -818,22 +819,19 @@
   const toggleFavorite = async () => {
       // 1. Bóc tách thông tin đăng nhập
       const token = localStorage.getItem('token');
-      const userString = localStorage.getItem('user');
       
       // 2. Kiểm tra nếu chưa đăng nhập -> đá sang trang Login
-      if (!token || !userString) {
+      if (!token) {
           toastStore.showToast("💖 Bạn cần đăng nhập để thả tim mô hình nhé!", "error");
           // Ghi nhớ trang hiện tại để login xong thì quay lại đây
           router.push({ path: '/login', query: { redirect: route.fullPath } });
           return;
       }
 
-      const userObj = JSON.parse(userString);
 
       try {
           // 3. Gửi payload lên API "Toggle" ở Backend
           const payload = {
-              MaKH: userObj.MaKH,
               MaMoHinh: product.value.MaMoHinh
           };
 
@@ -870,22 +868,23 @@
   const addToCart = async () => {
     const token = localStorage.getItem('token');
     const userString = localStorage.getItem('user');
-    let maKH = null;
-    
-    if (userString) {
-      const userObj = JSON.parse(userString);
-      maKH = userObj.MaKH;
-    }
 
-    if (!token || !maKH) {
+    // 1. CHẶN NẾU CHƯA ĐĂNG NHẬP (Chỉ cần kiểm tra có Token hay chưa)
+    if (!token || !userString) {
       toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error");
-      router.push({ path: '/login', query: { redirect: route.fullPath } })
+      router.push({ path: '/login', query: { redirect: route.fullPath } });
       return;
     }
 
+    const userObj = JSON.parse(userString);
+    if (userObj.role === 1 || userObj.role === 2) {
+      toastStore.showToast("⚠️ Tài khoản nội bộ (Admin/Nhân viên) không được phép đặt hàng online!", "error");
+      return;
+    }
+
+    // 3. NẾU LÀ KHÁCH HÀNG HỢP LỆ -> ĐI TIẾP LUỒNG GỌI API
     try {
       const payload = {
-        MaKH: parseInt(maKH),
         MaPhanLoai: selectedVariant.value.MaPhanLoai, 
         soluong: buyQuantity.value          
       };
@@ -910,7 +909,7 @@
 
     } catch (error) {
       console.error("Lỗi khi kết nối API thêm giỏ hàng:", error);
-      alert("Có lỗi mạng xảy ra khi thêm vào giỏ!");
+      toastStore.showToast("⚠️ Có lỗi mạng xảy ra khi thêm vào giỏ!", "error");
     }
   };
 </script>
