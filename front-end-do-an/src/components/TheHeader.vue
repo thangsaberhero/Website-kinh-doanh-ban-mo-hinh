@@ -53,7 +53,7 @@
                     class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
                 >
                     <div class="w-14 h-14 shrink-0 rounded-md overflow-hidden bg-surface-container-lowest border border-white/10">
-                      <img :src="'/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover" />
+                      <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover" />
                     </div>
                     <div class="flex-1 flex flex-col justify-center">
                       <h4 class="text-sm font-bold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">

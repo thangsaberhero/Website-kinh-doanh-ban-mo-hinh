@@ -3,22 +3,15 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const fix_user_info = {
+const admin_info_ctrl = {
     laythongtin: async(req, res) => {
         try {
             const { MaTK } = req.params; 
-
-            const sql = `SELECT tk.*, kh.TenKH, kh.DiaChi,kh.SDT,
-                    (SELECT COUNT(DISTINCT ct.MaPhanLoai) FROM DonHang dh JOIN ChiTietDonHang ct ON dh.MaDH = ct.MaDH WHERE dh.MaKH = kh.MaKH AND dh.TrangThaiThanhToan != 'Đã hủy') AS SoFigureDaMua,
-                    (SELECT COUNT(dg.MaDG) FROM DanhGia dg WHERE dg.MaKH = kh.MaKH AND dg.TrangThai = 1) AS SoDanhGia
-                    FROM TaiKhoan tk 
-                    INNER JOIN KhachHang kh ON tk.MaTK = kh.MaTK 
-                    WHERE tk.MaTK = ?`;
-            
+            const sql = 'SELECT tk.*, nv.TenNV, nv.DiaChi, nv.SDT FROM TaiKhoan tk INNER JOIN NhanVien nv ON tk.MaTK = nv.MaTK WHERE tk.MaTK = ?';
             const [info] = await db.query(sql, [MaTK]);
 
             if (info.length === 0) {
-                return res.status(404).json({ message: "Không tìm thấy thông tin tài khoản!" });
+                return res.status(404).json({ message: "Không tìm thấy thông tin tài khoản Quản trị!" });
             }
 
             res.status(200).json({
@@ -27,14 +20,14 @@ const fix_user_info = {
             });
         }
         catch (error){
-            console.error("Lỗi khi lấy dữ liệu thông tin cá nhân: ", error);
+            console.error("Lỗi khi lấy dữ liệu admin: ", error);
             res.status(500).json({ message: "Lỗi server khi lấy dữ liệu cá nhân!" });
         }
     },
 
     capnhatthongtin: async(req, res) => {
         try {
-            const { MaTK, email, TenKH, DiaChi, SDT, isAvatarRemoved } = req.body;
+            const { MaTK, email, TenNV, DiaChi, SDT, isAvatarRemoved } = req.body;
             const newFileName = req.file ? req.file.filename : null; 
 
             if (newFileName) {
@@ -46,7 +39,6 @@ const fix_user_info = {
                     const oldFilePath = path.join(__dirname, '..', 'public', 'Images_user', oldFileName);
                     fs.unlink(oldFilePath, (err) => { if (err) console.error("Lỗi khi gỡ ảnh cũ: ", err); });
                 }
-                
                 await db.query('UPDATE TaiKhoan SET AnhDaiDien = ?, Email = ? WHERE MaTK = ?', [newFileName, email, MaTK]);
             } 
             else if (isAvatarRemoved === 'true') {
@@ -63,41 +55,42 @@ const fix_user_info = {
             else {
                 await db.query('UPDATE TaiKhoan SET Email = ? WHERE MaTK = ?', [email, MaTK]);
             }
-            await db.query('UPDATE KhachHang SET TenKH = ?, DiaChi = ?, SDT = ? WHERE MaTK = ?', [TenKH, DiaChi, SDT, MaTK]);
+            await db.query('UPDATE NhanVien SET TenNV = ?, DiaChi = ?, SDT = ? WHERE MaTK = ?', [TenNV, DiaChi, SDT, MaTK]);
             
             res.status(200).json({ 
-                message: "Cập nhật thông tin thành công!", 
-                newAvatarName: isAvatarRemoved === 'true' ? null : (newFileName || undefined)
+                message: "Cập nhật thông tin quản trị viên thành công!", 
+                newAvatarName: newFileName
             });
         }
         catch (error){
-            console.error("Lỗi khi cập nhật thông tin: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác thông tin khách hàng!"});
+            console.error("Lỗi khi cập nhật thông tin admin: ", error);
+            res.status(500).json({ message: "Lỗi server khi thao tác thông tin!"});
         }
     },
-
     doi_mat_khau: async(req, res) => {
         try {
             const { MaTK, MatKhauCu, MatKhauMoi } = req.body;
-            const [check] = await db.query('SELECT MatKhau FROM TaiKhoan WHERE MaTK = ?', [MaTK]);
-            if (check.length === 0) {
-                return res.status(404).json({ message: "Tài khoản không tồn tại!" });
+            const [taikhoan] = await db.query('SELECT MatKhau FROM TaiKhoan WHERE MaTK = ?', [MaTK]);
+            
+            if (taikhoan.length === 0) {
+                return res.status(404).json({ message: "Không tìm thấy tài khoản!" });
             }
 
-            const is_match = await bcrypt.compare(MatKhauCu, check[0].MatKhau);
-            if (!is_match) {
-                return res.status(400).json({ message: "Mật khẩu cũ không chính xác!" });
+            const isMatch = await bcrypt.compare(MatKhauCu, taikhoan[0].MatKhau);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Mật khẩu hiện tại không chính xác!" });
             }
 
-            const hash = await bcrypt.hash(MatKhauMoi, 10);
-            await db.query('UPDATE TaiKhoan SET MatKhau = ? WHERE MaTK = ?', [hash, MaTK]);
+            const saltRounds = 10;
+            const hashedNewPassword = await bcrypt.hash(MatKhauMoi, saltRounds);
+            await db.query('UPDATE TaiKhoan SET MatKhau = ? WHERE MaTK = ?', [hashedNewPassword, MaTK]);
 
             res.status(200).json({ message: "Đổi mật khẩu thành công!" });
         }
-        catch (error){
-            console.error("Lỗi khi đổi mật khẩu: ", error);
-            res.status(500).json({ message: "Lỗi server khi đổi mật khẩu!"});
+        catch (error) {
+            console.error("Lỗi khi đổi mật khẩu admin: ", error);
+            res.status(500).json({ message: "Lỗi server khi đổi mật khẩu!" });
         }
     }
 }
-module.exports = fix_user_info;
+module.exports = admin_info_ctrl;

@@ -1,52 +1,8 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
     <TheHeader />
-
     <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
-      
-      <aside class="w-72 hidden md:flex flex-col border-r border-outline-variant/20 bg-surface-container-low pt-8">
-        <div class="px-6 flex flex-col items-center gap-3 mb-8">
-          <div class="relative group cursor-pointer">
-            <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-              <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="avatarPreview"/>
-            </div>
-            <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
-              <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
-            </div>
-          </div>
-          <div class="text-center">
-            <h3 class="font-headline font-bold text-lg text-on-surface">{{ authStore.user?.username || authStore.user?.TenKH || 'Collector' }}</h3>
-            <p class="text-[10px] text-primary uppercase tracking-widest font-bold">Elite Member</p>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1 flex-1">
-          <router-link to = "/profile" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent cursor-pointer">
-            <span class="material-symbols-outlined">person</span>
-            <span>Thông tin cá nhân</span>
-          </router-link>
-          <router-link to = "/change-password" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">lock</span>
-            <span>Đổi mật khẩu</span>
-          </router-link>
-          <router-link to = "/wishlist" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">favorite</span>
-            <span>Danh sách yêu thích</span>
-          </router-link>
-          <router-link to = "/orders" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">inventory_2</span>
-            <span>Lịch sử đơn hàng</span>
-          </router-link>
-        </div>
-
-        <div class="p-6 border-t border-outline-variant/10">
-          <button @click="handleLogout" class="flex items-center gap-3 text-sm font-bold transition-all text-outline hover:text-error w-full">
-            <span class="material-symbols-outlined">logout</span>
-            <span>Đăng xuất</span>
-          </button>
-        </div>
-      </aside>
+      <UserSidebar />
 
       <main class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
@@ -64,7 +20,7 @@
             <div class="flex flex-col sm:flex-row items-center gap-8 pb-8 border-b border-outline-variant/15">
               <div class="relative group cursor-pointer shrink-0">
                 <div class="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-surface-container-highest overflow-hidden neon-glow transition-all duration-300 group-hover:border-primary/50">
-                  <img class="w-full h-full object-cover" alt="Avatar" :src="avatarPreview"/>
+                  <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="computedAvatar"/>
                 </div>
                 </div>
 
@@ -115,7 +71,7 @@
             </div>
 
             <div class="pt-8 flex items-center justify-between border-t border-outline-variant/15">
-              <button type="button" class="text-xs font-bold uppercase tracking-widest text-outline hover:text-white transition-colors">
+              <button type="button" @click="fetchUserData" class="text-xs font-bold uppercase tracking-widest text-outline hover:text-white transition-colors">
                 Hủy thay đổi
               </button>
               <button type="submit" class="bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-widest px-8 py-3.5 rounded-lg neon-glow hover:brightness-110 active:scale-95 transition-all flex items-center gap-2">
@@ -130,190 +86,203 @@
           <div class="glass-panel p-6 rounded-2xl border border-tertiary/20 hover:border-tertiary/50 transition-colors">
             <span class="material-symbols-outlined text-tertiary mb-4 text-3xl">person</span>
             <h5 class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Thành viên từ</h5>
-            <p class="text-3xl font-headline font-bold text-tertiary">Tháng 03, 2026</p>
+            <p class="text-3xl font-headline font-bold text-tertiary">{{ joinDateDisplay }}</p>
           </div>
           <div class="glass-panel p-6 rounded-2xl border border-secondary/20 hover:border-secondary/50 transition-colors">
             <span class="material-symbols-outlined text-secondary mb-4 text-3xl">inventory_2</span>
             <h5 class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Bộ sưu tập</h5>
-            <p class="text-3xl font-headline font-bold text-white">42 <span class="text-sm font-medium text-secondary">Figures</span></p>
+            <p class="text-3xl font-headline font-bold text-white">{{ stats.totalFigures }} <span class="text-sm font-medium text-secondary">Figures</span></p>
           </div>
           <div class="glass-panel p-6 rounded-2xl border border-primary/20 hover:border-primary/50 transition-colors">
-            <span class="material-symbols-outlined text-primary mb-4 text-3xl">auto_awesome</span>
-            <h5 class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Điểm uy tín</h5>
-            <p class="text-3xl font-headline font-bold text-white">4.9 <span class="text-sm font-medium text-primary">/ 5.0</span></p>
+            <span class="material-symbols-outlined text-primary mb-4 text-3xl">rate_review</span>
+            <h5 class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Đã đánh giá</h5>
+            <p class="text-3xl font-headline font-bold text-white">{{ stats.totalReviews }} <span class="text-sm font-medium text-primary">Lượt</span></p>
           </div>
-        </div>
 
+        </div>
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../../stores/auth';
-import { useToastStore } from '../../stores/toast';
-import TheHeader from '../../components/TheHeader.vue';
+  import { ref, reactive, onMounted, computed } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth';
+  import { useToastStore } from '../../stores/toast';
+  import TheHeader from '../../components/TheHeader.vue';
+  import UserSidebar from '../../components/UserSidebar.vue';
 
-const toastStore = useToastStore();
-const router = useRouter();
-const authStore = useAuthStore();
+  const router = useRouter();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore();
 
-const isSaving = ref(false);
+  const isSaving = ref(false);
+  const isAvatarRemoved = ref(false); 
+  const ngayTaoFromDB = ref(null);   
 
-// 1. Mở két sắt lấy Mã Tài Khoản (để biết phải hỏi thông tin của ai)
-const userString = localStorage.getItem('user');
-const currentUser = userString ? JSON.parse(userString) : null;
+  const userString = localStorage.getItem('user');
+  const currentUser = userString ? JSON.parse(userString) : null;
 
-// Quản lý file ảnh và đường dẫn ảnh mặc định
-const fileInput = ref(null); 
-const selectedFile = ref(null); 
-const defaultAvatar = 'default_avatar.jpg';
+  const fileInput = ref(null); 
+  const selectedFile = ref(null); 
 
-// Ảnh Preview lúc đầu cứ gán mặc định, lát gọi API xong sẽ đè lên sau
-const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
+  const stats = reactive({
+    totalFigures: 0,
+    totalReviews: 0
+  });
 
-// Khởi tạo Form rỗng
-const form = reactive({
-  name: '',
-  email: '', 
-  phone: '', 
-  address: '' 
-});
+  const displayName = computed(() => form.name || currentUser?.TenKH || currentUser?.username || 'Collector');
+  const defaultAvatar = computed(() => `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&background=ff8f73&color=fff&bold=true&size=128`);
+  const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : '');
 
-// ==========================================
-// THÊM MỚI: HÀM TỰ ĐỘNG KÉO THÔNG TIN TỪ SERVER VỀ
-// ==========================================
-const fetchUserData = async () => {
-  if (!currentUser) return;
-  
-  try {
-    // Gọi đường link API lấy thông tin bạn vừa viết (truyền MaTK vào đuôi)
-    const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
-    const dataJSON = await res.json();
+  const computedAvatar = computed(() => {
+    if (avatarPreview.value) return avatarPreview.value;
+    return defaultAvatar.value;
+  });
+
+  const form = reactive({
+    name: '',
+    email: '', 
+    phone: '', 
+    address: '' 
+  });
+
+  const joinDateDisplay = computed(() => {
+    const targetDate = ngayTaoFromDB.value || currentUser?.NgayTao;
+    if (!targetDate) return 'Đang tải...';
+    const d = new Date(targetDate);
+    return `Tháng ${String(d.getMonth() + 1).padStart(2, '0')}, ${d.getFullYear()}`;
+  });
+
+  const fetchUserData = async () => {
+    if (!currentUser) return;
     
-    if (res.ok && dataJSON.data) {
-      const userData = dataJSON.data;
+    try {
+      const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
+      const dataJSON = await res.json();
       
-      // Đổ dữ liệu từ Server vào Form
-      form.name = userData.TenKH || userData.TenDN || '';
-      form.email = userData.Email || ''; 
-      form.phone = userData.SDT || '';
-      form.address = userData.diachi || '';
-      
-      // Đổ ảnh đại diện ra màn hình (nếu có)
-      if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
-        avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+      if (res.ok && dataJSON.data) {
+        const userData = dataJSON.data;
+        
+        form.name = userData.TenKH || userData.TenDN || '';
+        form.email = userData.Email || ''; 
+        form.phone = userData.SDT || '';
+        form.address = userData.DiaChi || ''; 
+        ngayTaoFromDB.value = userData.NgayTao; 
+        stats.totalFigures = userData.SoFigureDaMua || 0;
+        stats.totalReviews = userData.SoDanhGia || 0;
+        
+        if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
+          avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+          isAvatarRemoved.value = false;
+        } 
+        else {
+          avatarPreview.value = '';
+        }
       }
+    } 
+    catch (error) {
+      console.error("Lỗi kéo thông tin người dùng:", error);
     }
-  } catch (error) {
-    console.error("Lỗi kéo thông tin người dùng:", error);
-  }
-};
+  };
 
-// ==========================================
-// CHẠY NGAY KHI VỪA MỞ TRANG PROFILE LÊN
-// ==========================================
-onMounted(() => {
-  window.scroll(0,0);
-  if (!currentUser && !localStorage.getItem('token')) {
-    router.push('/login');
-  } else {
-    // Nếu đã đăng nhập thì gọi hàm kéo dữ liệu
-    fetchUserData();
-  }
-});
+  onMounted(() => {
+    window.scroll(0,0);
+    if (!currentUser && !localStorage.getItem('token')) {
+      router.push('/login');
+    } 
+    else {
+      fetchUserData();
+    }
+  });
 
-// Các hàm chọn ảnh (Giữ nguyên)
-const triggerFileInput = () => {
-  if (fileInput.value) fileInput.value.click();
-};
+  const triggerFileInput = () => {
+    if (fileInput.value) fileInput.value.click();
+  };
 
-const onFileSelected = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  const onFileSelected = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  if (file.size > 5 * 1024 * 1024) {
-    toastStore.showToast("Dung lượng ảnh quá lớn! Tối đa 5MB.", "error");
-    return;
-  }
-  selectedFile.value = file; 
-  avatarPreview.value = URL.createObjectURL(file); 
-};
+    if (file.size > 5 * 1024 * 1024) {
+      toastStore.showToast("Dung lượng ảnh quá lớn! Tối đa 5MB.", "error");
+      return;
+    }
+    selectedFile.value = file; 
+    avatarPreview.value = URL.createObjectURL(file); 
+    isAvatarRemoved.value = false; 
+  };
 
-const removeAvatar = () => {
-  selectedFile.value = null;
-  avatarPreview.value = defaultAvatar;
-  if(fileInput.value) fileInput.value.value = ''; 
-};
+  const removeAvatar = () => {
+    selectedFile.value = null;
+    avatarPreview.value = '';
+    isAvatarRemoved.value = true;
+    if(fileInput.value) fileInput.value.value = ''; 
+  };
 
-const handleLogout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  router.push('/login');
-};
+  const saveProfile = async () => {
+    const token = localStorage.getItem('token');
+    if (!token || !currentUser) {
+      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+      return;
+    }
 
-// Hàm lưu Profile (Giữ nguyên như bản hoàn chỉnh trước đó)
-const saveProfile = async () => {
-  const token = localStorage.getItem('token');
-  if (!token || !currentUser) {
-    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
-    return;
-  }
-
-  isSaving.value = true;
-  
-  try {
-    const formData = new FormData();
-    formData.append('MaTK', currentUser.id);
-    formData.append('TenKH', form.name);
-    formData.append('email', form.email);
-    formData.append('SDT', form.phone);
-    formData.append('DiaChi', form.address);
+    isSaving.value = true;
     
-    if (selectedFile.value) {
-      formData.append('avatar', selectedFile.value); 
+    try {
+      const formData = new FormData();
+      formData.append('MaTK', currentUser.id);
+      formData.append('TenKH', form.name);
+      formData.append('email', form.email);
+      formData.append('SDT', form.phone);
+      formData.append('DiaChi', form.address);
+      formData.append('isAvatarRemoved', isAvatarRemoved.value); 
+      
+      if (selectedFile.value) {
+        formData.append('avatar', selectedFile.value); 
+      }
+
+      const response = await fetch('http://localhost:3000/api/info_user/change_info', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData 
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Lỗi khi lưu thông tin");
+
+      const updatedUser = {
+        ...currentUser,
+        TenKH: form.name,
+        username: form.name
+      };
+      
+      if (isAvatarRemoved.value) {
+        updatedUser.AnhDaiDien = null;
+      } 
+      else if (data.newAvatarName) {
+        updatedUser.AnhDaiDien = data.newAvatarName;
+      }
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      if (authStore.user) authStore.user = updatedUser;
+
+      toastStore.showToast("🎉 Đã cập nhật hồ sơ thành công!", "success");
+      isAvatarRemoved.value = false;
+
+    } 
+    catch (error) {
+      console.error("Lỗi cập nhật profile:", error);
+      toastStore.showToast(error.message, "error");
+    } 
+    finally {
+      isSaving.value = false;
     }
-
-    const response = await fetch('http://localhost:3000/api/info_user/change_info', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData 
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Lỗi khi lưu thông tin");
-
-    // Cập nhật lại két sắt Local Storage để Header đồng bộ
-    const updatedUser = {
-      ...currentUser,
-      TenKH: form.name,
-      username: form.name
-    };
-    if (data.newAvatarName) {
-      updatedUser.AnhDaiDien = data.newAvatarName;
-    }
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    if (authStore.user) authStore.user = updatedUser;
-
-    toastStore.showToast("🎉 Đã cập nhật hồ sơ thành công!", "success");
-
-  } catch (error) {
-    console.error("Lỗi cập nhật profile:", error);
-    toastStore.showToast(error.message, "error");
-  } finally {
-    isSaving.value = false;
-  }
-};
+  };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-
 .glass-panel {
   background: rgba(28, 31, 43, 0.4);
   backdrop-filter: blur(16px);
