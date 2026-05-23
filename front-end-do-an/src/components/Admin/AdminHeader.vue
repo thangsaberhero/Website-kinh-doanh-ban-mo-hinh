@@ -120,7 +120,7 @@
               <p class="text-[10px] text-[#ff8f73] uppercase font-bold tracking-wider">{{ roleName }}</p>
             </div>
             <div class="w-9 h-9 rounded-full bg-[#ff8f73]/10 border border-[#ff8f73]/30 flex items-center justify-center text-[#ff8f73] font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-[#ff8f73]/30 transition-all">
-               <img :src="`https://ui-avatars.com/api/?name=${user?.username}&background=ff8f73&color=fff&bold=true`" alt="Avatar" class="w-full h-full object-cover">
+              <img :src="user?.AnhDaiDien ? `http://localhost:3000/Images_user/${user.AnhDaiDien}` : `https://ui-avatars.com/api/?name=${user?.username}&background=ff8f73&color=fff&bold=true`" alt="Avatar" class="w-full h-full object-cover">
             </div>
           </div>
   
@@ -130,12 +130,13 @@
               <p class="text-sm font-bold text-slate-900 truncate">{{ user?.email || 'phong.admin@figure.vn' }}</p>
             </div>
             <div class="py-1">
-              <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73]">
+              <RouterLink to="/admin/profile" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73]">
                 <span class="material-symbols-outlined text-[18px]">person</span> Hồ sơ cá nhân
-              </a>
-              <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73]">
+              </RouterLink>
+              
+              <RouterLink to="/admin/change-password" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73]">
                 <span class="material-symbols-outlined text-[18px]">shield_person</span> Bảo mật tài khoản
-              </a>
+              </RouterLink>
             </div>
             <div class="py-1 border-t border-slate-100">
               <button @click="handleLogout" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium">
@@ -144,7 +145,6 @@
             </div>
           </div>
         </div>
-  
       </div>
     </header>
 </template>

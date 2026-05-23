@@ -8,10 +8,15 @@ const fix_user_info = {
         try {
             const MaTK = req.user.id; 
 
-            const sql = 'SELECT tk.*, kh.TenKH, kh.diachi, kh.SDT FROM TaiKhoan tk INNER JOIN KhachHang kh ON tk.MaTK = kh.MaTK WHERE tk.MaTK = ?';
+            const sql = `SELECT tk.*, kh.TenKH, kh.DiaChi,kh.SDT,
+                    (SELECT COUNT(DISTINCT ct.MaPhanLoai) FROM DonHang dh JOIN ChiTietDonHang ct ON dh.MaDH = ct.MaDH WHERE dh.MaKH = kh.MaKH AND dh.TrangThaiThanhToan != 'Đã hủy') AS SoFigureDaMua,
+                    (SELECT COUNT(dg.MaDG) FROM DanhGia dg WHERE dg.MaKH = kh.MaKH AND dg.TrangThai = 1) AS SoDanhGia
+                    FROM TaiKhoan tk 
+                    INNER JOIN KhachHang kh ON tk.MaTK = kh.MaTK 
+                    WHERE tk.MaTK = ?`;
+            
             const [info] = await db.query(sql, [MaTK]);
 
-            // Kiểm tra xem có tìm thấy tài khoản không
             if (info.length === 0) {
                 return res.status(404).json({ message: "Không tìm thấy thông tin tài khoản!" });
             }
@@ -39,7 +44,7 @@ const fix_user_info = {
                 const sql_lay_anh_cu = 'SELECT AnhDaiDien FROM TaiKhoan WHERE MaTK = ?';
                 const [result_anh_cu] = await connection.query(sql_lay_anh_cu, [MaTK]);
                 
-                if (result_anh_cu.length > 0) {
+                if (result_anh_cu.length > 0 && result_anh_cu[0].AnhDaiDien) {
                     const oldFileName = result_anh_cu[0].AnhDaiDien;
                     if (oldFileName && oldFileName !== '') {
                       const oldFilePath = path.join(__dirname, '..', 'public', 'Images_user', oldFileName);
@@ -60,9 +65,8 @@ const fix_user_info = {
             // 3. ĐÃ BỔ SUNG TRẢ VỀ TÊN ẢNH MỚI CHO FRONTEND
             res.status(200).json({ 
                 message: "Cập nhật thông tin thành công!", 
-                newAvatarName: newFileName
+                newAvatarName: isAvatarRemoved === 'true' ? null : (newFileName || undefined)
             });
-
         }
         catch (error){
             await connection.rollback();
@@ -85,10 +89,11 @@ const fix_user_info = {
                 await connection.rollback();
                 res.status(200).json({message: "Sai dữ liệu!"});
             }
-            else{
-                const hash = await bcrypt.hash(MatKhau, 10);
-                await db.query('Update MatKhau from TaiKhoan set MatKhau = ? where MaTK = ?',[hash,MaTK]);
-            }
+
+            const hash = await bcrypt.hash(MatKhauMoi, 10);
+            await db.query('UPDATE TaiKhoan SET MatKhau = ? WHERE MaTK = ?', [hash, MaTK]);
+
+            res.status(200).json({ message: "Đổi mật khẩu thành công!" });
         }
         catch (error){
             await connection.rollback();

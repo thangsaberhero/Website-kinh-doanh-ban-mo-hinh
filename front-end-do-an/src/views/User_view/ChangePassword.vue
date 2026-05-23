@@ -1,52 +1,8 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
     <TheHeader />
-
     <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
-      
-      <aside class="w-72 hidden md:flex flex-col border-r border-outline-variant/20 bg-surface-container-low pt-8">
-        <div class="px-6 flex flex-col items-center gap-3 mb-8">
-          <div class="relative group cursor-pointer">
-            <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-              <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="avatarPreview"/>
-            </div>
-            <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
-              <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
-            </div>
-          </div>
-          <div class="text-center">
-            <h3 class="font-headline font-bold text-lg text-on-surface">{{ authStore.user?.username || authStore.user?.TenKH || 'Collector' }}</h3>
-            <p class="text-[10px] text-primary uppercase tracking-widest font-bold">Elite Member</p>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1 flex-1">
-          <router-link to = "/profile" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">person</span>
-            <span>Thông tin cá nhân</span>
-          </router-link>
-          <router-link to = "/change-password" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent cursor-pointer">
-            <span class="material-symbols-outlined">lock</span>
-            <span>Đổi mật khẩu</span>
-          </router-link>
-          <router-link to = "/wishlist" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">favorite</span>
-            <span>Danh sách yêu thích</span>
-          </router-link>
-          <router-link to = "/orders" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">inventory_2</span>
-            <span>Lịch sử đơn hàng</span>
-          </router-link>
-        </div>
-
-        <div class="p-6 border-t border-outline-variant/10">
-          <button @click="handleLogout" class="flex items-center gap-3 text-sm font-bold transition-all text-outline hover:text-error w-full">
-            <span class="material-symbols-outlined">logout</span>
-            <span>Đăng xuất</span>
-          </button>
-        </div>
-      </aside>
+      <UserSidebar />
 
       <main class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
@@ -60,7 +16,6 @@
 
         <div class="glass-panel rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">
           <form @submit.prevent="updatePassword" class="relative z-10 divide-y divide-outline-variant/15">
-            
             <div class="p-8 md:p-10">
               <div class="flex items-start gap-4 mb-8">
                 <div class="bg-surface-container-highest p-3 rounded-lg border border-outline-variant/30 shadow-inner">
@@ -180,157 +135,111 @@
             <strong class="text-white">Mẹo bảo mật:</strong> Đừng sử dụng mật khẩu dễ đoán như ngày sinh, tên thú cưng hoặc mật khẩu bạn đã sử dụng cho các trang web khác. 
           </div>
         </div>
-
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../../stores/auth';
-import { useToastStore } from '../../stores/toast'; // Đảm bảo bạn đã tạo store Toast như bài trước nhé!
+  import { ref, reactive, computed, onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth';
+  import { useToastStore } from '../../stores/toast';
+  import TheHeader from '../../components/TheHeader.vue';
+  import UserSidebar from '../../components/UserSidebar.vue';
 
-const router = useRouter();
-const authStore = useAuthStore();
-const toastStore = useToastStore();
+  const router = useRouter();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore();
 
-const isSaving = ref(false);
+  const isSaving = ref(false);
 
-// Toggles cho con mắt hiển thị mật khẩu
-const showCurrent = ref(false);
-const showNew = ref(false);
-const showConfirm = ref(false);
-const userString = localStorage.getItem('user');
-const currentUser = userString ? JSON.parse(userString) : null;
-const defaultAvatar = 'default_avatar.jpg';
+  // Toggles cho con mắt hiển thị mật khẩu
+  const showCurrent = ref(false);
+  const showNew = ref(false);
+  const showConfirm = ref(false);
+ 
+  const form = reactive({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
 
-// 2. Tạo biến chứa ảnh đại diện (Lúc đầu lấy từ máy, sau đó sẽ nạp từ Server)
-const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
+  // Logic bắt lỗi Real-time cho Mật khẩu mới
+  const validations = computed(() => ({
+    length: form.newPassword.length >= 8,
+    uppercase: /[A-Z]/.test(form.newPassword),
+    number: /[0-9]/.test(form.newPassword),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(form.newPassword)
+  }));
 
-// 3. Hàm tự động kéo thông tin mới nhất (bao gồm cả ảnh) từ Server
-const fetchUserData = async () => {
-  if (!currentUser) return;
-  
-  try {
-    const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
-    const dataJSON = await res.json();
+  // Kiểm tra form có hợp lệ để bật nút Submit không
+  const isFormValid = computed(() => {
+    const allValid = Object.values(validations.value).every(Boolean);
+    return allValid && form.currentPassword && form.newPassword === form.confirmPassword;
+  });
+
+  onMounted(() => {
+    if (!authStore.user && !localStorage.getItem('token')) {
+      router.push('/login');
+    }
+  });
+
+  const resetForm = () => {
+    form.currentPassword = '';
+    form.newPassword = '';
+    form.confirmPassword = '';
+  };
+
+  const updatePassword = async () => {
+    if (form.newPassword !== form.confirmPassword) {
+      toastStore.showToast("Mật khẩu xác nhận không khớp!", "error");
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
+      router.push('/login');
+      return;
+    }
+
+    isSaving.value = true;
     
-    if (res.ok && dataJSON.data) {
-      const userData = dataJSON.data;
-      // Nếu Server có ảnh mới, lập tức cập nhật lên màn hình
-      if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
-        avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          currentPassword: form.currentPassword,
+          newPassword: form.newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toastStore.showToast("🎉 " + data.message, "success");
+        resetForm(); 
+      } 
+      else {
+        toastStore.showToast("⚠️ " + (data.message || "Lỗi đổi mật khẩu!"), "error");
       }
+    } 
+    catch (error) {
+      console.error("Lỗi kết nối:", error);
+      toastStore.showToast("Lỗi kết nối đến máy chủ!", "error");
+    } 
+    finally {
+      isSaving.value = false;
     }
-  } catch (error) {
-    console.error("Lỗi kéo thông tin người dùng:", error);
-  }
-};
-
-// 4. Gọi hàm lấy dữ liệu ngay khi vừa mở trang
-onMounted(() => {
-  if (!authStore.user && !localStorage.getItem('token')) {
-    router.push('/login');
-  } else {
-    fetchUserData(); // [THÊM DÒNG NÀY]
-  }
-});
-const form = reactive({
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-});
-
-// Logic bắt lỗi Real-time cho Mật khẩu mới
-const validations = computed(() => ({
-  length: form.newPassword.length >= 8,
-  uppercase: /[A-Z]/.test(form.newPassword),
-  number: /[0-9]/.test(form.newPassword),
-  special: /[!@#$%^&*(),.?":{}|<>]/.test(form.newPassword)
-}));
-
-// Kiểm tra form có hợp lệ để bật nút Submit không
-const isFormValid = computed(() => {
-  const allValid = Object.values(validations.value).every(Boolean);
-  return allValid && form.currentPassword && form.newPassword === form.confirmPassword;
-});
-
-onMounted(() => {
-  if (!authStore.user && !localStorage.getItem('token')) {
-    router.push('/login');
-  }
-});
-
-const handleLogout = () => {
-  if (authStore.logout) authStore.logout();
-  else localStorage.removeItem('token');
-  router.push('/login');
-};
-
-const resetForm = () => {
-  form.currentPassword = '';
-  form.newPassword = '';
-  form.confirmPassword = '';
-};
-
-const updatePassword = async () => {
-  // Check xác nhận mật khẩu lại một lần nữa cho chắc ăn
-  if (form.newPassword !== form.confirmPassword) {
-    toastStore.showToast("Mật khẩu xác nhận không khớp!", "error");
-    return;
-  }
-
-  // Lấy Token để lấy vé thông hành
-  const token = localStorage.getItem('token');
-  if (!token) {
-    toastStore.showToast("Vui lòng đăng nhập lại!", "error");
-    router.push('/login');
-    return;
-  }
-
-  isSaving.value = true;
-  
-  try {
-    // Gọi API xuống Backend
-    const response = await fetch('http://localhost:3000/api/auth/change-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // Gắn token vào header
-      },
-      body: JSON.stringify({
-        currentPassword: form.currentPassword,
-        newPassword: form.newPassword
-      })
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.success) {
-      toastStore.showToast("🎉 " + data.message, "success");
-      resetForm(); // Đổi xong thì xóa trắng các ô nhập
-    } else {
-      // Nếu nhập sai pass cũ, nó sẽ báo lỗi đỏ ở đây
-      toastStore.showToast("⚠️ " + (data.message || "Lỗi đổi mật khẩu!"), "error");
-    }
-  } catch (error) {
-    console.error("Lỗi kết nối:", error);
-    toastStore.showToast("Lỗi kết nối đến máy chủ!", "error");
-  } finally {
-    isSaving.value = false;
-  }
-};
+  };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-
 .glass-panel {
   background: rgba(28, 31, 43, 0.4);
   backdrop-filter: blur(16px);
