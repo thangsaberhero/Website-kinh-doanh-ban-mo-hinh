@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const info_userController = require('../../controllers/User_controller/info_user.ctrl.js');
-
+const authMiddleware = require('../../middlewares/auth.middleware.js');
 const multer = require('multer');
 const path = require('path');
 
@@ -32,8 +32,8 @@ const upload = multer({
 
 
 // 3. Sửa Route: Thêm middleware 'upload.single('avatar')' vào giữa
-router.get('/laythongtin/:MaTK', info_userController.laythongtin);
-router.post('/change_info', upload.single('avatar'), info_userController.capnhatthongtin);
-router.post('/change_password', info_userController.doi_mat_khau);
+router.get('/laythongtin/:MaTK', authMiddleware.verifyToken, info_userController.laythongtin);
+router.post('/change_info', authMiddleware.verifyToken, upload.single('avatar'), info_userController.capnhatthongtin);
+router.post('/change_password', authMiddleware.verifyToken, info_userController.doi_mat_khau);
 
 module.exports = router;

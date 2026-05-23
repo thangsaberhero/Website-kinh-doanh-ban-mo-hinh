@@ -5,36 +5,58 @@ const product_view = {
         try {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 9;
+            if (!page || isNaN(page) || page < 1) page = 1;
+            if (!limit || isNaN(limit) || limit < 1) limit = 9;
+            if (limit > 27) limit = 27;
 
             const offset = (page - 1) * limit;
-            const {keyword, danhmuc, thuonghieu, chitietdanhmuc, gia, sapxep} = req.query;
+            let {keyword, danhmuc, thuonghieu, chitietdanhmuc, gia, sapxep} = req.query;
 
             let condition = [];
             let havingcondition = [];
             let value = [];
-            if(keyword){
-                condition.push("(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR HangSanXuat.TenHSX COLLATE utf8mb4_unicode_ci LIKE ?)");
-                value.push(`%${keyword}%`, `%${keyword}%`);
+            if (keyword) {
+                const safeKeyword = keyword.toString().trim();
+                if (safeKeyword !== '') {
+                    condition.push("(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR HangSanXuat.TenHSX COLLATE utf8mb4_unicode_ci LIKE ?)");
+                    value.push(`%${safeKeyword}%`, `%${safeKeyword}%`);
+                }
             }
+            const parseArrayParam = (param) => {
+                if (!param) return [];
+                // Nếu Express đã parse thành Array (?dm=1&dm=2) thì dùng luôn
+                if (Array.isArray(param)) return param; 
+                // Nếu là String (?dm=1,2) thì tách chuỗi
+                return param.toString().split(',').map(item => item.trim()).filter(item => item !== '');
+            };
             if(danhmuc){
-                const dmArray = danhmuc.split(','); 
-                condition.push(`mh.MaDM IN (?)`);
-                value.push(dmArray);
+                const dmArray = parseArrayParam(danhmuc);
+                if (dmArray.length > 0) { // Đảm bảo mảng không rỗng để tránh lỗi SQL IN ()
+                    condition.push(`mh.MaDM IN (?)`);
+                    value.push(dmArray);
+                }
             }
             if(chitietdanhmuc){
-                const ctdmArray = chitietdanhmuc.split(',');
-                condition.push(`mh.MaChiTietDM IN (?)`);
-                value.push(ctdmArray);
+                const ctdmArray = parseArrayParam(chitietdanhmuc);
+                if (ctdmArray.length > 0) {
+                    condition.push(`mh.MaChiTietDM IN (?)`);
+                    value.push(ctdmArray);
+                }
             }
             if(thuonghieu){
-                const thArray = thuonghieu.split(',');
-                condition.push(`TenHSX IN (?)`);
-                value.push(thArray);
+                const thArray = parseArrayParam(thuonghieu);
+                if (thArray.length > 0) {
+                    condition.push(`TenHSX IN (?)`);
+                    value.push(thArray);
+                }
             }
 
             if(gia){
-                havingcondition.push("DonGiaKhuyenMai <= ?");
-                value.push(gia);
+                const parsedGia = parseInt(gia);
+                if (!isNaN(parsedGia) && parsedGia >= 0) {
+                    havingcondition.push("DonGiaKhuyenMai <= ?");
+                    value.push(parsedGia);
+                }
             }
 
             let whereClause = condition.length > 0 ? " and " + condition.join(" and "): "";
@@ -136,6 +158,13 @@ const product_view = {
     getProductById: async(req, res) => {
         try {
             const id = req.params.id;
+            const parsedId = Number(id);
+                if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Mã sản phẩm không hợp lệ!"
+                    });
+                }
             const sql = `
                 SELECT 
                     mh.*, 
@@ -217,12 +246,18 @@ const product_view = {
     getVariantProductById: async(req, res) => {
         try {
             const id = req.params.id;
-
+            const parsedId = Number(id);
+                if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Mã sản phẩm không hợp lệ!"
+                    });
+                }
             const sql = `
                 SELECT pl.*
                 
                 FROM PhanLoai pl
-                WHERE pl.MaMoHinh = ?
+                WHERE pl.MaMoHinh = ? and pl.HienThi = 1
             `;
 
             const [product] = await db.query(sql, [id]);
@@ -285,6 +320,13 @@ const product_view = {
     getAlldetailvariant: async(req, res) => {
         try {
             const maDM = req.params.maDM;
+            const parsedId = Number(maDM);
+                if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Mã sản phẩm không hợp lệ!"
+                    });
+                }
             const sql = 'SELECT * FROM ChiTietDanhMuc where MaDM = ?';
             const [products] = await db.query(sql,[maDM]);
 
@@ -320,43 +362,44 @@ const product_view = {
         }
     },
     // Lấy thông tin các sản phẩm theo chi tiết danh mục
-    getProductsByDetailVariant: async(req, res) => {
-        try {
-            const maCTDM = req.params.maCTDM;
-            const sql = `SELECT MoHinh.*, TenHSX FROM MoHinh 
-            inner join ChiTietDanhMuc on MoHinh.MaChiTietDM = ChiTietDanhMuc.MaChiTietDM 
-            INNER JOIN HangSanXuat ON MoHinh.MaHSX = HangSanXuat.MaHSX
-            where MoHinh.MaChiTietDM = ? ORDER BY MaMoHinh DESC`;
-            const [products] = await db.query(sql, [maCTDM]);
+    // getProductsByDetailVariant: async(req, res) => {
+    //     try {
+    //         const maCTDM = req.params.maCTDM;
+    //         const sql = `SELECT MoHinh.*, TenHSX FROM MoHinh 
+    //         inner join ChiTietDanhMuc on MoHinh.MaChiTietDM = ChiTietDanhMuc.MaChiTietDM 
+    //         INNER JOIN HangSanXuat ON MoHinh.MaHSX = HangSanXuat.MaHSX
+    //         where MoHinh.MaChiTietDM = ? ORDER BY MaMoHinh DESC`;
+    //         const [products] = await db.query(sql, [maCTDM]);
 
-            res.status(200).json({
-                message: "Lấy danh sách sản phẩm thành công",
-                data: products
-            });
-        }
-        catch (error){
-            console.error("Lỗi khi lấy danh sách sản phẩm theo chi tiết danh mục:,", error);
-            res.status(500).json({
-                message: "Lỗi server khi lấy dữ liệu danh sách danh mục!"
-            });
-        }
-    },
+    //         res.status(200).json({
+    //             message: "Lấy danh sách sản phẩm thành công",
+    //             data: products
+    //         });
+    //     }
+    //     catch (error){
+    //         console.error("Lỗi khi lấy danh sách sản phẩm theo chi tiết danh mục:,", error);
+    //         res.status(500).json({
+    //             message: "Lỗi server khi lấy dữ liệu danh sách danh mục!"
+    //         });
+    //     }
+    // },
     // Lấy thông tin các sản phẩm theo tìm kiếm
     getProductsBySearch: async (req, res) => {
         try {
             const keyword = req.query.keyword;
-            
-            if (!keyword) {
+            const safeKeyword = keyword.toString().trim();
+            if (!safeKeyword) {
                 return res.status(400).json({ message: "Vui lòng nhập từ khóa tìm kiếm" });
             }
 
             const sql = `
-                SELECT MaMoHinh, TenMH, AnhDaiDien, DonGia 
-                FROM MoHinh 
-                WHERE TenMH LIKE ? 
+                SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.DonGia, hsx.TenHSX
+                FROM MoHinh mh
+                Inner join HangSanXuat hsx on hsx.MaHSX = mh.MaHSX
+                WHERE (TenMH COLLATE utf8mb4_unicode_ci LIKE ? or hsx.TenHSX COLLATE utf8mb4_unicode_ci LIKE ?) And mh.HienThi = 1
                 LIMIT 10
             `;
-            const [results] = await db.query(sql, [`%${keyword}%`]);
+            const [results] = await db.query(sql, [`%${keyword}%`,`%${keyword}%`]);
 
             res.status(200).json({
                 message: "Tìm kiếm thành công",
@@ -371,72 +414,146 @@ const product_view = {
 
     //Thêm/bỏ sản phẩm yêu thích
     toggle_favorite_product: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
+
+        const connection = await db.getConnection();
         try {
-            const { MaKH, MaMoHinh } = req.body; 
+            await connection.beginTransaction();
+            const { MaMoHinh } = req.body; 
+            const MaTK = req.user.id;
 
-            // 1. Tìm mã danh sách yêu thích của khách hàng
-            const tim_ma_yeu_thich = `SELECT MaYeuThich FROM DanhMucYeuThich WHERE MaKH = ?`;
-            const [check] = await db.query(tim_ma_yeu_thich, [MaKH]);
-            
-            if (check.length === 0) { 
-                return res.status(404).json({ message: "Không tìm thấy danh sách yêu thích của khách hàng này!" });
+            // 2. Chuẩn hóa ID
+            const parsedId = Number(MaMoHinh); // Đã fix tên biến maDM
+            if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Mã sản phẩm không hợp lệ!"
+                });
             }
-            
-            const Ma_dmyt = check[0].MaYeuThich;
 
-            // 2. Kiểm tra xem sản phẩm đã có trong danh sách hay chưa
-            const sql_kiem_tra = `SELECT 1 FROM ChiTietYeuThich WHERE MaYeuThich = ? AND MaMoHinh = ? LIMIT 1`;
-            const [kiem_tra_ton_tai] = await db.query(sql_kiem_tra, [Ma_dmyt, MaMoHinh]);
+            // 3. TỐI ƯU HÓA: Tìm thẳng MaYeuThich thông qua MaTK bằng 1 lần JOIN
+            const sql_get_info = `
+                SELECT yt.MaYeuThich 
+                FROM KhachHang kh
+                INNER JOIN DanhMucYeuThich yt ON kh.MaKH = yt.MaKH
+                WHERE kh.MaTK = ?
+            `;
+            const [info_result] = await connection.query(sql_get_info, [MaTK]);
             
-            // 3. Xử lý Logic Bật/Tắt (Toggle)
+            if (info_result.length === 0) { 
+                await connection.rollback();
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy danh sách yêu thích của khách hàng này!" 
+                });
+            }
+            const Ma_dmyt = info_result[0].MaYeuThich;
+
+            // 4. Kiểm tra sản phẩm có tồn tại không (Chỉ cần bảng MoHinh, không cần Tồn kho)
+            const sql_check_mo_hinh = `SELECT 1 FROM MoHinh WHERE MaMoHinh = ? AND HienThi = 1`;
+            const [moHinh] = await connection.query(sql_check_mo_hinh, [parsedId]);
+
+            if (moHinh.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Sản phẩm này không tồn tại hoặc đang tạm thời ngừng kinh doanh!" 
+                });
+            }
+
+            // 5. Kiểm tra xem sản phẩm đã có trong danh sách hay chưa
+            const sql_kiem_tra = `SELECT 1 FROM ChiTietYeuThich WHERE MaYeuThich = ? AND MaMoHinh = ? LIMIT 1`;
+            const [kiem_tra_ton_tai] = await connection.query(sql_kiem_tra, [Ma_dmyt, parsedId]);
+            
+            // 6. Xử lý Logic Bật/Tắt (Toggle)
             if (kiem_tra_ton_tai.length > 0) {
                 // TRƯỜNG HỢP 1: ĐÃ CÓ -> Tiến hành XÓA
                 const sql_xoa = `DELETE FROM ChiTietYeuThich WHERE MaYeuThich = ? AND MaMoHinh = ?`;
-                await db.query(sql_xoa, [Ma_dmyt, MaMoHinh]);
+                await connection.query(sql_xoa, [Ma_dmyt, parsedId]);
+                await connection.commit();
                 
                 return res.status(200).json({ 
+                    success: true,
                     message: "Đã bỏ sản phẩm khỏi danh sách yêu thích!",
-                    action: "removed" // Trả về chữ này để Frontend biết mà đổi màu trái tim (rỗng)
+                    action: "removed" 
                 });
             } else {
                 // TRƯỜNG HỢP 2: CHƯA CÓ -> Tiến hành THÊM
                 const sql_them = `INSERT INTO ChiTietYeuThich (MaYeuThich, MaMoHinh) VALUES (?, ?)`;
-                await db.query(sql_them, [Ma_dmyt, MaMoHinh]);
+                await connection.query(sql_them, [Ma_dmyt, parsedId]);
+                await connection.commit();
                 
                 return res.status(200).json({ 
+                    success: true,
                     message: "Đã thêm sản phẩm vào danh sách yêu thích!",
-                    action: "added" // Trả về chữ này để Frontend biết mà đổi màu trái tim (đỏ)
+                    action: "added" 
                 });
             }
 
         } catch (error) {
+            await connection.rollback();
             console.error("Lỗi khi thao tác (Toggle) danh mục yêu thích:", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác danh sách yêu thích!" });
+            res.status(500).json({ success: false, message: "Lỗi server khi thao tác danh sách yêu thích!" });
+        } finally {
+            connection.release(); 
         }
     },
 
     check_favorite_product: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
         try {
-            const { MaKH, MaMoHinh } = req.params; 
+            const {id} = req.params; 
 
+            const MaTK = req.user.id;
+
+            // 2. Chuẩn hóa ID
+            const parsedId = Number(id); // Đã fix tên biến maDM
+            if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Mã sản phẩm không hợp lệ!"
+                });
+            }
             // 1. Tìm mã danh sách yêu thích của khách hàng
-            const tim_ma_yeu_thich = `SELECT MaYeuThich FROM DanhMucYeuThich WHERE MaKH = ?`;
-            const [check] = await db.query(tim_ma_yeu_thich, [MaKH]);
+            const sql_get_info = `
+                SELECT yt.MaYeuThich 
+                FROM KhachHang kh
+                INNER JOIN DanhMucYeuThich yt ON kh.MaKH = yt.MaKH
+                WHERE kh.MaTK = ?
+            `;
+            const [info_result] = await db.query(sql_get_info, [MaTK]);
             
-            if (check.length === 0) { 
-                return res.status(200).json({ isFavorite: false });
+            if (info_result.length === 0) { 
+                return res.status(404).json({
+                    isFavorite: false
+                });
             }
-            
-            const Ma_dmyt = check[0].MaYeuThich;
+            const Ma_dmyt = info_result[0].MaYeuThich;
 
-            // 2. Kiểm tra xem sản phẩm đã có trong danh sách hay chưa
-            const sql_kiem_tra = `SELECT 1 FROM ChiTietYeuThich WHERE MaYeuThich = ? AND MaMoHinh = ? LIMIT 1`;
-            const [kiem_tra_ton_tai] = await db.query(sql_kiem_tra, [Ma_dmyt, MaMoHinh]);
-            if (kiem_tra_ton_tai.length > 0) {
-                return res.status(200).json({ isFavorite: true }); // Đã tim
-            } else {
-                return res.status(200).json({ isFavorite: false }); // Chưa tim
-            }
+            // 4. Kiểm tra sản phẩm có tồn tại không (Chỉ cần bảng MoHinh)
+            const sql_kiem_tra = `
+                SELECT 1 
+                FROM ChiTietYeuThich ct
+                INNER JOIN MoHinh mh ON ct.MaMoHinh = mh.MaMoHinh
+                WHERE ct.MaYeuThich = ? AND ct.MaMoHinh = ? AND mh.HienThi = 1
+                LIMIT 1
+            `;
+            const [kiem_tra_ton_tai] = await db.query(sql_kiem_tra, [Ma_dmyt, parsedId]);
+            
+            // Trả về true nếu mảng có dữ liệu, false nếu mảng rỗng
+            return res.status(200).json({ 
+                isFavorite: kiem_tra_ton_tai.length > 0 
+            });
 
         } catch (error) {
             console.error("Lỗi khi thao tác (Toggle) danh mục yêu thích:", error);
@@ -445,12 +562,21 @@ const product_view = {
     },
 
     watch_favorite_product: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
         try {
-            const { MaKH } = req.params; 
+            const MaTK = req.user.id;
 
             // 1. Tìm mã danh sách yêu thích của khách hàng
-            const tim_ma_yeu_thich = `SELECT MaYeuThich FROM DanhMucYeuThich WHERE MaKH = ?`;
-            const [check] = await db.query(tim_ma_yeu_thich, [MaKH]);
+            const tim_ma_yeu_thich = `SELECT yt.MaYeuThich 
+                                    FROM DanhMucYeuThich yt
+                                    inner join KhachHang kh on kh.MaKH = yt.MaKH
+                                    WHERE kh.MaTK = ?`;
+            const [check] = await db.query(tim_ma_yeu_thich, [MaTK]);
             
             if (check.length === 0) { 
                 return res.status(200).json({ 
@@ -461,22 +587,54 @@ const product_view = {
             
             const Ma_dmyt = check[0].MaYeuThich;
 
+            let page = parseInt(req.query.page) || 1;
+            let limit = parseInt(req.query.limit) || 9;
+            
+
+            if (!page || isNaN(page) || page < 1) page = 1;
+            if (!limit || isNaN(limit) || limit < 1) limit = 9;
+            if (limit > 27) limit = 27;
+
+            const offset = (page - 1) * limit;
+
             // 2. lấy danh sách sản phẩm yêu thích
-            const sql_kiem_tra = `SELECT mh.*,TenHSX , 
-            (
-                SELECT COALESCE(SUM(SoLuong), 0) 
-                FROM PhanLoai 
-                WHERE MaMoHinh = mh.MaMoHinh
-            ) AS SoLuong
-            FROM MoHinh mh
-            INNER JOIN HangSanXuat ON mh.MaHSX = HangSanXuat.MaHSX 
-            inner join ChiTietYeuThich on mh.MaMoHinh = ChiTietYeuThich.MaMoHinh
-            Where ChiTietYeuThich.MaYeuThich = ?
-            ORDER BY mh.MaMoHinh DESC`;
-            const [products] = await db.query(sql_kiem_tra, [Ma_dmyt]);
+            const sql_core = `
+                SELECT 
+                    mh.MaMoHinh, mh.AnhDaiDien, mh.TenMH, hsx.TenHSX,
+                    (
+                        SELECT MIN(DonGia) 
+                        FROM PhanLoai 
+                        WHERE MaMoHinh = mh.MaMoHinh
+                    ) AS DonGia,
+                    (
+                        SELECT COALESCE(SUM(SoLuong), 0) 
+                        FROM PhanLoai 
+                        WHERE MaMoHinh = mh.MaMoHinh
+                    ) AS SoLuong
+                FROM MoHinh mh
+                LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX 
+                INNER JOIN ChiTietYeuThich ct ON mh.MaMoHinh = ct.MaMoHinh
+                WHERE ct.MaYeuThich = ? AND mh.HienThi = 1
+                ORDER BY mh.MaMoHinh DESC
+            `;
+            const sql_count = `Select count(*) as total from (${sql_core}) as temptable`;
+            const [countResult] = await db.query(sql_count, Ma_dmyt);
+            const totalItems = countResult[0].total;
+            const totalPage = Math.ceil(totalItems / limit);
+            const sql_ds = `
+                ${sql_core}
+                LIMIT ? OFFSET ?
+            `;
+            const [ds] = await db.query(sql_ds, [Ma_dmyt, limit, offset]);
             res.status(200).json({
                 message: "Lấy danh sách sản phẩm thành công",
-                data: products
+                data: ds,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage
+                }
             });
 
         } catch (error) {
@@ -486,11 +644,18 @@ const product_view = {
     },
     getRelatedProducts: async (req, res) => {
         try {
-            const { id } = req.params;
+            const {id} = req.params;
+            const parsedId = Number(id);
+            if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Mã sản phẩm không hợp lệ!"
+                });
+            }
 
             // BƯỚC 1: Lấy thông tin Nhân Vật, Series, và Danh Mục của sản phẩm hiện tại làm "Mồi nhử"
             const sql_target = `SELECT MaDM, TenNhanVat, Series FROM MoHinh WHERE MaMoHinh = ?`;
-            const [targetInfo] = await db.query(sql_target, [id]);
+            const [targetInfo] = await db.query(sql_target, [parsedId]);
 
             if (targetInfo.length === 0) {
                 return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm gốc" });
@@ -555,7 +720,7 @@ const product_view = {
 
             // Chú ý: Cần truyền đủ các tham số theo đúng thứ tự của dấu "?" trong câu SQL
             const [relatedProducts] = await db.query(sql_related, [
-                id, 
+                parsedId, 
                 TenNhanVat, Series, MaDM, // Nhóm biến cho mệnh đề WHERE
                 TenNhanVat, Series        // Nhóm biến cho mệnh đề ORDER BY CASE
             ]);

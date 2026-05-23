@@ -4,6 +4,13 @@ const reviewController = {
     getReviewsByProduct: async(req, res) => {
         try{
             const { id } = req.params;
+            const parsedId = Number(id); // Đã fix tên biến maDM
+            if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Mã sản phẩm không hợp lệ!"
+                });
+            }
             const sql = `SELECT dg.*, kh.TenKH, tk.AnhDaiDien, pl.ChiTietPhanLoai
                         FROM DanhGia dg
                         INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
@@ -11,11 +18,12 @@ const reviewController = {
                         LEFT JOIN PhanLoai pl ON pl.MaPhanLoai = dg.MaPhanLoai
                         WHERE dg.MaMH = ? AND dg.TrangThai = 1
                         ORDER BY dg.ThoiGianDG DESC`;
-            const [result] = await db.query(sql, [id]);
+            const [result] = await db.query(sql, [parsedId]);
             const processedReviews = result.map(item => ({
                 ...item, HinhAnh: item.HinhAnh ? JSON.parse(item.HinhAnh) : []
             }));
             res.status(200).json({
+                success: true,
                 message: "Tải dữ liệu đánh giá thành công",
                 data: processedReviews
             });
@@ -23,12 +31,19 @@ const reviewController = {
         catch(error){
             console.error("Lỗi API getReviewsByProduct: ", error);
             res.status(500).json({
+                success: false,
                 message: "Lỗi máy chủ khi lấy đánh giá",
                 error: error.message
             });
         }
     },
     createReview: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
         try{
             const MaTK = req.user.id; 
             const [khachHang] = await db.query('SELECT MaKH FROM KhachHang WHERE MaTK = ?', [MaTK]);
@@ -54,6 +69,12 @@ const reviewController = {
         }
     },  
     checkPurchaseStatus: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
         try{
             const MaTK = req.user.id; 
             const [khachHang] = await db.query('SELECT MaKH FROM KhachHang WHERE MaTK = ?', [MaTK]);
@@ -64,7 +85,7 @@ const reviewController = {
             const sql = `SELECT dh.MaDH
                         FROM DonHang dh
                         JOIN ChiTietDonHang ctdh ON ctdh.MaDH = dh.MaDH
-                        JOIN PhanLoai pl ON pl.MaPhanLoai = ctdh.MaMoHinh
+                        JOIN PhanLoai pl ON pl.MaPhanLoai = ctdh.MaPhanLoai
                         JOIN ChiTietTrangThai cttt ON cttt.MaDH = dh.MaDH
                         JOIN TrangThai tt ON tt.MaTrangThai = cttt.MaTrangThai
                         WHERE dh.MaKH = ? AND pl.MaMoHinh = ? AND tt.TenTrangThai = 'Đã giao'`;

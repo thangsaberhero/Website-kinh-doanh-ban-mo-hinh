@@ -4,135 +4,358 @@ const db = require('../../config/db.js');
 
 const donhang_user = {
     them_hang_vao_gio: async(req, res) =>{
-        try {
-            const {MaKH, MaPhanLoai, soluong} = req.body;
-            const sql_laymagiohang = 'Select MaGH from GioHang where MaKH = ?';
-            const [result_giohang] = await db.query(sql_laymagiohang,[MaKH]);
+        // 1. Kiểm tra quyền
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
 
-            if(result_giohang.length === 0)
-                return res.status(404).json({ message: "Không tìm thấy mã giỏ hàng"});
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const { MaPhanLoai, soluong } = req.body;
+            const MaTK = req.user.id;
+
+            // ==========================================
+            // CHỐT CHẶN BẢO MẬT 1: KIỂM TRA ĐẦU VÀO TỪ API
+            // ==========================================
+            if (!MaPhanLoai || !soluong || isNaN(soluong) || parseInt(soluong) <= 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Dữ liệu đầu vào không hợp lệ (số lượng phải lớn hơn 0)!" });
+            }
+
+            // 2. Tìm Giỏ Hàng
+            const sql_laymagiohang = `
+                Select gh.MaGH 
+                from GioHang gh
+                inner join KhachHang kh on kh.MaKH = gh.MaKH 
+                where kh.MaTK = ?
+            `;
+            const [result_giohang] = await connection.query(sql_laymagiohang, [MaTK]);
+
+            if(result_giohang.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giỏ hàng" });
+            }
 
             const maGH = result_giohang[0].MaGH;
 
-            //check món hàng đã có chưa
-            const sql_check = 'Select * from ChiTietGioHang where MaGH = ? and MaMoHinh = ?';
-            const [check] = await db.query(sql_check,[MaKH, MaPhanLoai]);
-            if (check.length === 0){
-                const sql_themhangmoivaogio = `Insert into ChiTietGioHang(MaGH, MaMoHinh, SoLuong) values (?,?,?)`;
-                await db.query(sql_themhangmoivaogio,[maGH,MaPhanLoai,soluong]);
+            // ==========================================
+            // CHỐT CHẶN BẢO MẬT 2: KIỂM TRA SẢN PHẨM & TỒN KHO 
+            // ==========================================
+            const sql_kiemtra_kho = `SELECT SoLuong AS TonKho FROM PhanLoai WHERE MaPhanLoai = ? and HienThi = 1`;
+            const [kho] = await connection.query(sql_kiemtra_kho, [MaPhanLoai]);
 
-                res.status(200).json({
-                message: "Thêm hàng mới vào giỏ thành công!",
-                MaGioHangCuaKhach: maGH
-            });
+            // Chặn nếu sản phẩm không tồn tại (bị xóa) hoặc gửi mã bậy bạ
+            if (kho.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Sản phẩm này không tồn tại hoặc đang tạm thời ngừng kinh doanh!" });
+            }
+
+            const tonKho = kho[0].TonKho;
+
+            // Chặn nếu kho đã cạn kiệt
+            if (tonKho <= 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Sản phẩm này đã hết hàng trong kho!" });
+            }
+
+            // 3. Tiến hành xử lý thêm hoặc cập nhật
+            const sql_check = 'Select SoLuong from ChiTietGioHang where MaGH = ?';
+            const [check] = await connection.query(sql_check, [maGH, MaPhanLoai]);
+            
+            let thongBao = "";
+
+            if (check.length === 0) {
+                // TRƯỜNG HỢP: CHƯA CÓ TRONG GIỎ
+                let so_luong_them = parseInt(soluong);
+                
+                // Tránh việc khách thêm ngay 9999 cái ngay lần đầu tiên
+                if (so_luong_them > tonKho) {
+                    so_luong_them = tonKho;
+                    thongBao = `Đã thêm tối đa số lượng kho hiện có (${tonKho} sản phẩm).`;
+                } else {
+                    thongBao = "Thêm hàng mới vào giỏ thành công!";
                 }
-            else{
-                const sql_kiemtra = `Select ctgh.SoLuong as TrongGio, pl.SoLuong as TonKho
-                    from ChiTietGioHang ctgh
-                    inner join Phanloai pl on ctgh.MaMoHinh = pl.MaPhanLoai
-                    where ctgh.MaGH = ? and ctgh.MaMoHinh = ?`;
-                const [kiem_tra] = await db.query(sql_kiemtra,[maGH, MaPhanLoai]);
-                const tronggio = kiem_tra[0].TrongGio;
-                const tonkho = kiem_tra[0].TonKho;
-                let so_luong_moi = tronggio + soluong;
-                let thongBao = "Cập nhật giỏ hàng thành công!";
 
-                if (so_luong_moi >= tonkho) {
-                    so_luong_moi = tonkho;
-                    thongBao = `Đã đạt giới hạn! Kho hiện chỉ còn ${tonkho} sản phẩm.`;
+                const sql_themhangmoivaogio = `Insert into ChiTietGioHang(MaGH, MaPhanLoai, SoLuong) values (?,?,?)`;
+                await connection.query(sql_themhangmoivaogio, [maGH, MaPhanLoai, so_luong_them]);
+                
+            } else {
+                // TRƯỜNG HỢP: ĐÃ CÓ SẴN, CỘNG DỒN SỐ LƯỢNG
+                const trongGio = check[0].SoLuong;
+                let so_luong_moi = trongGio + parseInt(soluong);
+
+                if (so_luong_moi >= tonKho) {
+                    so_luong_moi = tonKho;
+                    thongBao = `Đã đạt giới hạn! Kho hiện chỉ còn ${tonKho} sản phẩm.`;
+                } else {
+                    thongBao = "Cập nhật số lượng giỏ hàng thành công!";
                 }
 
-                const sql_themhangvaogio = 'Update ChiTietGioHang set SoLuong = ? where MaGH = ? and MaMoHinh = ?'
-                await db.query(sql_themhangvaogio,[so_luong_moi,maGH,MaPhanLoai])
-
-                res.status(200).json({
-                message: "Cập nhật giỏ hàng thành công!",
-                MaGioHangCuaKhach: maGH
-            });
+                const sql_themhangvaogio = 'Update ChiTietGioHang set SoLuong = ? where MaGH = ? and MaPhanLoai = ?';
+                await connection.query(sql_themhangvaogio, [so_luong_moi, maGH, MaPhanLoai]);
             } 
+            
+            // LƯU TOÀN BỘ VÀ TRẢ KẾT QUẢ
+            await connection.commit();
+            res.status(200).json({
+                success: true,
+                message: thongBao,
+                MaGioHangCuaKhach: maGH
+            });
         }
         catch (error){
+            await connection.rollback();
             console.error("Lỗi khi thêm vào giỏ: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác giỏ hàng!"});
+            res.status(500).json({ 
+                success: false,
+                message: "Lỗi server khi thao tác giỏ hàng!"
+            });
+        }
+        finally{
+            connection.release();
         }
     },
 
     cap_nhat_gio_hang: async(req, res) =>{
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                });
+            }
+        const connection = await db.getConnection();
         try {
-            const {MaKH, MaPhanLoai, soluong} = req.body;
-            const sql_laymagiohang = 'Select MaGH from GioHang where MaKH = ?';
-            const [result_giohang] = await db.query(sql_laymagiohang,[MaKH]);
+            await connection.beginTransaction();
+            const {MaPhanLoai, soluong} = req.body;
+            const MaTK = req.user.id;
+            if (!MaPhanLoai || !soluong || isNaN(soluong) || parseInt(soluong) <= 0) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Dữ liệu đầu vào không hợp lệ (số lượng phải lớn hơn 0)!" 
+                });
+            }
 
-            if(result_giohang.length === 0)
-                return res.status(404).json({ message: "Không tìm thấy mã giỏ hàng"});
+            const sql_laymagiohang = `
+                Select gh.MaGH 
+                from GioHang gh
+                inner join KhachHang kh on kh.MaKH = gh.MaKH 
+                where kh.MaTK = ?
+            `;
+            const [result_giohang] = await connection.query(sql_laymagiohang, [MaTK]);
+
+            if(result_giohang.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giỏ hàng" });
+            }
 
             const maGH = result_giohang[0].MaGH;
-            await db.query('Update ChiTietGioHang set SoLuong = ? where MaMoHinh = ? and MaGH = ?',[soluong, MaPhanLoai, maGH]);
 
+            const sql_kiemtra_kho = `SELECT SoLuong AS TonKho FROM PhanLoai WHERE MaPhanLoai = ?  and HienThi = 1`;
+            const [kho] = await connection.query(sql_kiemtra_kho, [MaPhanLoai]);
+            if (kho.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Sản phẩm này không tồn tại hoặc đang tạm thời ngừng kinh doanh!" });
+            }
+
+            const tonKho = kho[0].TonKho;
+
+            if (tonKho <= 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Sản phẩm này đã hết hàng trong kho!" });
+            }
+
+            let so_luong_chot = parseInt(soluong);
+            let thongBao = "Cập nhật giỏ hàng thành công!";
+
+            // Ép số lượng về mức tồn kho tối đa nếu khách nhập quá
+            if (so_luong_chot > tonKho) {
+                so_luong_chot = tonKho;
+                thongBao = `Đã cập nhật về mức tối đa! Kho hiện chỉ còn ${tonKho} sản phẩm.`;
+            }
+
+            // Thực hiện Update
+            const [updateResult] = await connection.query(
+                'UPDATE ChiTietGioHang SET SoLuong = ? WHERE MaPhanLoai = ? AND MaGH = ?',
+                [so_luong_chot, MaPhanLoai, maGH]
+            );
+
+            // FIX: Chặn lỗi cập nhật "Bóng ma" (Món đồ chưa từng được thêm vào giỏ)
+            if (updateResult.affectedRows === 0) {
+                await connection.rollback();
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Sản phẩm này không có trong giỏ hàng của bạn!" 
+                });
+            }
+
+            await connection.commit();
             res.status(200).json({
-                message: "Cập nhật giỏ hàng thành công!",
-                MaGioHangCuaKhach: maGH
+                success: true,
+                message: thongBao, // Trả thông báo động cho mượt
+                MaGioHangCuaKhach: maGH,
+                SoLuongMoi: so_luong_chot // Trả về số lượng chốt để Frontend tự render lại ô Input nếu cần
             });
         }
         catch (error) {
+            await connection.rollback();
             console.error("Lỗi khi thêm vào giỏ: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác giỏ hàng!"});
+            res.status(500).json({
+                success: false,
+                message: "Lỗi server khi thao tác giỏ hàng!"});
+        }
+        finally{
+            connection.release();
         }
     },
 
 
     xoa_hang_trong_gio: async(req, res) =>{
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                });
+            }
+        const connection = await db.getConnection();
         try {
-            const {MaKH, MaPhanLoai} = req.body;
-            const sql_laymagiohang = 'Select MaGH from GioHang where MaKH = ?';
-            const [result_giohang] = await db.query(sql_laymagiohang,[MaKH]);
+            await connection.beginTransaction();
+            const {MaPhanLoai} = req.body;
+            const MaTK = req.user.id;
+            if (!MaPhanLoai) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Dữ liệu đầu vào không hợp lệ!" 
+                });
+            }
+            const sql_laymagiohang = `
+                Select gh.MaGH 
+                from GioHang gh
+                inner join KhachHang kh on kh.MaKH = gh.MaKH 
+                where kh.MaTK = ?
+            `;
+            const [result_giohang] = await connection.query(sql_laymagiohang, [MaTK]);
 
-            if(result_giohang.length === 0)
-                return res.status(404).json({ message: "Không tìm thấy mã giỏ hàng"});
+            if(result_giohang.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giỏ hàng" });
+            }
 
             const maGH = result_giohang[0].MaGH;
-            await db.query('Delete from ChiTietGioHang where MaMoHinh = ? and MaGH = ?',[MaPhanLoai, maGH]);
+
+            const [updateResult] = await connection.query('Delete from ChiTietGioHang where MaPhanLoai = ? and MaGH = ?',[MaPhanLoai, maGH]);
+            if (updateResult.affectedRows === 0) {
+                await connection.rollback();
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Sản phẩm này không có trong giỏ hàng của bạn!" 
+                });
+            }
+
+            await connection.commit();
             res.status(200).json({
-                message: "Xoá món hàng trong giỏ thành công!",
+                success: true,
+                message: "Sản phẩm đã được xoá khỏi giỏ hàng của bạn.",
                 MaGioHangCuaKhach: maGH
-            })
+            });
         }
         catch (error){
+            await connection.rollback();
             console.error("Lỗi khi xoá hàng trong giỏ: ", error);
             res.status(500).json({ message: "Lỗi server khi thao tác giỏ hàng!"});
+        }
+        finally{
+            connection.release();
         }
     },
 
     xoa_het_hang_trong_gio: async(req, res) =>{
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                });
+            }
+        const connection = await db.getConnection();
         try {
-            const {MaKH} = req.body;
-            const sql_laymagiohang = 'Select MaGH from GioHang where MaKH = ?';
-            const [result_giohang] = await db.query(sql_laymagiohang,[MaKH]);
+            await connection.beginTransaction();
+            const MaTK = req.user.id;
+            const sql_laymagiohang = `
+                Select gh.MaGH 
+                from GioHang gh
+                inner join KhachHang kh on kh.MaKH = gh.MaKH 
+                where kh.MaTK = ?
+            `;
+            const [result_giohang] = await connection.query(sql_laymagiohang, [MaTK]);
 
-            if(result_giohang.length === 0)
-                return res.status(404).json({ message: "Không tìm thấy mã giỏ hàng"});
+            if(result_giohang.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giỏ hàng" });
+            }
 
             const maGH = result_giohang[0].MaGH;
-            await db.query('Delete from ChiTietGioHang where MaGH = ?',[maGH]);
+
+            const [check] = await connection.query(`select * from ChiTietGioHang where MaGH = ?`,[maGH]);
+            if(check.length === 0){
+                await connection.rollback();
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Giỏ hàng của bạn không có sản phẩm nào!" 
+                });
+            }
+            const [updateResult] = await connection.query('Delete from ChiTietGioHang where MaGH = ?',[maGH]);
+            if (updateResult.affectedRows === 0) {
+                await connection.rollback();
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Giỏ hàng của bạn đang trống!" 
+                });
+            }
+            await connection.commit();
             res.status(200).json({
-                message: "Xoá món hàng trong giỏ thành công!",
+                success: true,
+                message: "Tất cả sản phẩm đã được xoá khỏi giỏ hàng của bạn!",
                 MaGioHangCuaKhach: maGH
-            })
+            });
         }
         catch (error){
+            await connection.rollback();
             console.error("Lỗi khi xoá hết hàng trong giỏ: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác giỏ hàng!"});
+            res.status(500).json({
+                success: false,
+                message: "Lỗi server khi thao tác giỏ hàng!"});
+        }
+        finally{
+            connection.release();
         }
     },
 
     xem_hang_trong_gio: async(req, res) =>{
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                });
+            }
         try {
-            const MaKH = req.params.MaKH;
-            const sql_laymagiohang = 'Select MaGH from GioHang where MaKH = ?';
-            const [result_giohang] = await db.query(sql_laymagiohang,[MaKH]);
+            const MaTK = req.user.id;
+            const sql_laymagiohang = `
+                Select gh.MaGH 
+                from GioHang gh
+                inner join KhachHang kh on kh.MaKH = gh.MaKH 
+                where kh.MaTK = ?
+            `;
+            const [result_giohang] = await db.query(sql_laymagiohang, [MaTK]);
 
-            if(result_giohang.length === 0)
-                return res.status(404).json({ message: "Không tìm thấy mã giỏ hàng"});
+            if(result_giohang.length === 0) {
+                await db.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giỏ hàng" });
+            }
 
             const MaGH = result_giohang[0].MaGH;
             const {sapxep} = req.query;
@@ -157,7 +380,7 @@ const donhang_user = {
                     
                 FROM MoHinh mh
                 INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
-                INNER JOIN ChiTietGioHang ct ON pl.MaPhanLoai = ct.MaMoHinh
+                INNER JOIN ChiTietGioHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
                 
                 -- TUYỆT CHIÊU: GOM LOGIC KHUYẾN MÃI VÀO 1 BẢNG ẢO (LEFT JOIN)
                 LEFT JOIN (
@@ -192,7 +415,7 @@ const donhang_user = {
                     ) AS TotalDiscount
                     
                 FROM ChiTietGioHang ct
-                INNER JOIN PhanLoai pl ON pl.MaPhanLoai = ct.MaMoHinh
+                INNER JOIN PhanLoai pl ON pl.MaPhanLoai = ct.MaPhanLoai
                 LEFT JOIN (
                     SELECT 
                         ctkm.MaPhanLoai,
@@ -265,19 +488,35 @@ const donhang_user = {
     },
 
     xac_nhan_don_hang: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                });
+            }
         const connection = await db.getConnection(); 
-
         try {
-            const { MaKH, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note , MaGG} = req.body;
-           
-            const sql_laymagiohang = 'SELECT MaGH FROM GioHang WHERE MaKH = ?';
-            const [result_giohang] = await connection.query(sql_laymagiohang, [MaKH]);
+            const {TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note, MaGG} = req.body;
+            const MaTK = req.user.id;
+            if (!TenNguoiNhan || !SDTNguoiNhan || !DiaChiGiao) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Thông tin quan trọng không được trống!" });
+            }
+            const sql_laymagiohang = `
+                Select gh.MaGH, kh.MaKH
+                from GioHang gh
+                inner join KhachHang kh on kh.MaKH = gh.MaKH 
+                where kh.MaTK = ?
+            `;
+            const [result_giohang] = await connection.query(sql_laymagiohang, [MaTK]);
 
             if(result_giohang.length === 0) {
-                connection.release();
-                return res.status(404).json({ success: false, message: "Không tìm thấy mã giỏ hàng"});
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giỏ hàng" });
             }
+
             const MaGH = result_giohang[0].MaGH;
+            const MaKH = result_giohang[0].MaKH;
             
             // 1. Kiểm tra giỏ hàng có đồ không? Giỏ trống thì không cho đặt!
             
@@ -300,7 +539,7 @@ const donhang_user = {
                     
                 FROM MoHinh mh
                 INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
-                INNER JOIN ChiTietGioHang ct ON pl.MaPhanLoai = ct.MaMoHinh
+                INNER JOIN ChiTietGioHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
                 
                 -- TUYỆT CHIÊU: GOM LOGIC KHUYẾN MÃI VÀO 1 BẢNG ẢO (LEFT JOIN)
                 LEFT JOIN (
@@ -325,7 +564,7 @@ const donhang_user = {
                 WHERE ct.MaGH = ?`;
             const [cart_item] = await connection.query(sql_get_cart_item, [MaGH]);
             if (cart_item.length === 0) {
-                connection.release();
+                await connection.rollback();
                 return res.status(400).json({ success: false,
                     message: "Giỏ hàng đang trống, không thể đặt hàng!" });
             }
@@ -339,7 +578,6 @@ const donhang_user = {
             for (let item of cart_item){
                 if(item.SoLuong > item.TonKho){
                     await connection.rollback();
-                    connection.release();
                     return res.status(400).json({
                         success: false,
                         message: `Sản phẩm ${item.TenMH} phân loại ${item.ChiTietPhanLoai} chỉ còn ${item.TonKho}, vui lòng cập nhật lại giỏ hàng!`
@@ -364,13 +602,13 @@ const donhang_user = {
             }
             
             let tongTienThanhToan = TongTienHang - TongTienKhuyenMai;
+           
             //Xử lý voucher
-
             let soTienGiamVoucher = 0;
             if (MaGG) {
                 const sql_check_voucher = `
                     SELECT * FROM MaGiamGia 
-                    WHERE MaGG = ? AND ThoiGianBD <= NOW() AND ThoiGianKT >= NOW()
+                    WHERE MaGG = ? AND TrangThaiHoatDong = 1 AND ThoiGianBD <= NOW() AND ThoiGianKT >= NOW()
                 `;
                 const [voucherInfo] = await connection.query(sql_check_voucher, [MaGG]);
                 
@@ -383,22 +621,20 @@ const donhang_user = {
                     const [check_used] = await connection.query(sql_check_used, [MaGG, MaKH]);
                     if(check_used.length > 0){
                         await connection.rollback();
-                        connection.release();
                         return res.status(400).json({
                             success: false,
                             message: `Mã voucher ${voucherInfo[0].MaVoucher} đã được bạn sử dụng!`
                         });
                     }
 
-                    if(v.SoLuongDaDung > v.SoLuongDungToiDa){
+                    if(v.SoLuongDaDung >= v.SoLuongDungToiDa){
                         await connection.rollback();
-                        connection.release();
                         return res.status(400).json({
                             success: false,
                             message: `Mã voucher ${voucherInfo[0].MaVoucher} đã đạt giới hạn sử dụng!`
                         });
                     }
-                    // Ở đây bạn có thể thêm logic kiểm tra SoLuongDaDung < SoLuong
+                    
                     
                     if (v.LoaiGiamGia === 'TienMat') {
                         soTienGiamVoucher = Number(v.ChietKhau);
@@ -411,7 +647,6 @@ const donhang_user = {
                     if (tongTienThanhToan < 0) tongTienThanhToan = 0;
                 } else {
                     await connection.rollback();
-                        connection.release();
                         return res.status(400).json({
                             success: false,
                             message: `Mã voucher ${voucherInfo[0].MaVoucher} không tồn tại hoặc hết hạn!`
@@ -422,7 +657,7 @@ const donhang_user = {
             // 2. Tạo Đơn hàng mới 
             const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
             VALUES (?, ?, ?, NOW(), 'Chưa Thanh Toán', ?, ? ,?, ?)`;
-            const [tao_don] = await connection.query(sql_tao_don, [MaKH, TongTien, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note]);
+            const [tao_don] = await connection.query(sql_tao_don, [MaKH, TongTienHang, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note]);
             
             // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động
             const maDH_moi = tao_don.insertId; 
@@ -481,12 +716,11 @@ const donhang_user = {
                     INSERT INTO LogSuDungMaGiamGia (MaGG, MaKH, MaDH, SoTienDaGiam, ThoiGianSuDung)
                     VALUES (?, ?, ?, ?, NOW())
                 `, [MaGG, MaKH, maDH_moi, soTienGiamVoucher]);
+                await connection.query(`UPDATE MaGiamGia SET SoLuongDaDung = SoLuongDaDung + 1 WHERE MaGG = ?`, [MaGG]);
             }
 
             await connection.query(`DELETE FROM ChiTietGioHang WHERE MaGH = ?`, [MaGH]);
             await connection.commit();
-            connection.release();
-
             res.status(200).json({ 
                 success: true,
                 message: "🎉 Đặt hàng thành công!",
@@ -495,18 +729,42 @@ const donhang_user = {
             
         } catch (error) {
             await connection.rollback(); 
-            connection.release();
-            
             console.error("Lỗi khi xác nhận đơn hàng: ", error);
             res.status(500).json({ message: "Lỗi server khi thao tác đơn hàng!"});
+        }
+        finally{
+            connection.release();
         }
     },
 
     xem_don_hang: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                });
+            }
         try{
-            const maKH = req.params.MaKH;
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 5;
+            const MaTK = req.user.id;
+            const sql_laymakhachhang = `
+                Select MaKH
+                from KhachHang
+                where MaTK = ?
+            `;
+            const [result_kh] = await db.query(sql_laymagiohang, [MaTK]);
+
+            if(result_kh.length === 0) {
+                await db.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã khách hàng!" });
+            }
+            const MaKH = result_kh[0].MaKH;
+            let page = parseInt(req.query.page) || 1;
+            let limit = parseInt(req.query.limit) || 5;
+
+            if (!page || isNaN(page) || page < 1) page = 1;
+            if (!limit || isNaN(limit) || limit < 1) limit = 5;
+            if (limit > 10) limit = 10;
+
             const offset = (page - 1) * limit;
 
             const {
@@ -514,11 +772,12 @@ const donhang_user = {
             } = req.query;
 
             let conditions = ["MaKH = ?"];
-            let values = [maKH];
+            let values = [MaKH];
 
             let where_clause = "WHERE " + conditions.join(" AND ");
             let having_clause = "";
             if(trangthai){
+                const trangthai_word = trangthai.toString().trim();
                 having_clause = "HAVING TrangThaiDonHang = ?";
                 values.push(trangthai);
             }
@@ -576,8 +835,26 @@ const donhang_user = {
     },
     
     xem_hang_trong_don_hang: async(req, res) =>{
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                });
+            }
         try {
-            const MaKH = req.params.MaKH;
+            const MaTK = req.user.id;
+            const sql_laymakhachhang = `
+                Select MaKH
+                from KhachHang
+                where MaTK = ?
+            `;
+            const [result_kh] = await connection.query(sql_laymakhachhang, [MaTK]);
+
+            if(result_kh.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã khách hàng!" });
+            }
+            const MaKH = result_kh[0].MaKH;
             const MaDH = req.params.MaDH;
             const sql_donhang = `
                 SELECT TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note,
@@ -589,7 +866,9 @@ const donhang_user = {
             const [donhang_info] = await db.query(sql_donhang, [MaDH, MaKH]);
 
             if (donhang_info.length === 0) {
-                return res.status(404).json({ message: "Không tìm thấy đơn hàng!"});
+                return res.status(404).json({ 
+                    success: false,
+                    message: "Không tìm thấy đơn hàng!"});
             }
 
             const sql = `SELECT 
@@ -622,6 +901,7 @@ const donhang_user = {
             const [trangthai] = await db.query(sql_trangthai,[MaDH]);
 
             res.status(200).json({
+                success: true,
                 message: "Lấy danh sách sản phẩm trong đơn hàng thành công",
                 data: {
                     ThongTinGiaoHang: donhang_info[0],
@@ -632,7 +912,9 @@ const donhang_user = {
         } 
         catch (error){
             console.error("Lỗi khi xem đơn hàng: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác đơn hàng!"});
+            res.status(500).json({
+                success: false,
+                 message: "Lỗi server khi thao tác đơn hàng!"});
         }
     },
 
@@ -653,7 +935,7 @@ const donhang_user = {
                 const sql_tinh_tien_coc = `Select SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc
                                             from MoHinh mh
                                             inner join Phanloai pl on pl.MaMoHinh = mh.MaMoHinh
-                                            inner join ChiTietDonHang ct on ct.MaMoHinh = pl.MaPhanLoai
+                                            inner join ChiTietDonHang ct on ct.MaPhanLoai = pl.MaPhanLoai
                                             where ct.MaDH = ? 
                                             limit 1`;
                 const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH])                   

@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { Connection } = require('mysql2');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -19,40 +20,50 @@ const transporter = nodemailer.createTransport({
 const authController = {
     // 1. ĐĂNG KÝ
     register: async (req, res) => {
+        const connection = await db.getConnection();
         try {
+            await connection.beginTransaction();
             const { TenDN, email, MatKhau} = req.body;
-
             // Kiểm tra xem Tên đăng nhập đã tồn tại chưa
-            const [checkUser] = await db.query('SELECT * FROM TaiKhoan WHERE TenDN = ?', [TenDN]);
+            const [checkUser] = await connection.query('SELECT * FROM TaiKhoan WHERE TenDN = ? or email = ?', [TenDN, email]);
             if (checkUser.length > 0) {
-                return res.status(400).json({ message: "Tên đăng nhập đã tồn tại!" });
+                return res.status(400).json({ message: "Tên đăng nhập hoặc email đã tồn tại!" });
             }
-
             // Mã hóa mật khẩu
             const salt = await bcrypt.genSalt(10);
             const hashedPass = await bcrypt.hash(MatKhau, salt);
 
             // Lưu vào Database (MaQuyen = 3 là Khách hàng bình thường)
             const sqltk = 'INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES (?, ?, ?, 3)';
-            const [resultTK] = await db.query(sqltk, [TenDN, hashedPass, email]);
+            const [resultTK] = await connection.query(sqltk, [TenDN, hashedPass, email]);
             
             const maTK = resultTK.insertId;
 
             const sqlkh = 'INSERT INTO KhachHang (TenKH, MaTK) VALUES(?,?)';
-            const [resultKH] = await db.query(sqlkh, [TenDN,maTK]);
+            const [resultKH] = await connection.query(sqlkh, [TenDN,maTK]);
 
             const maKH = resultKH.insertId;
 
             const sql_giohang = 'INSERT INTO GioHang (MaKH) VALUES (?)';
-            await db.query(sql_giohang, [maKH]);
+            await connection.query(sql_giohang, [maKH]);
 
             const sql_danhmucyeuthich = `Insert into DanhMucYeuThich (MaKH) Values (?)`;
-            await db.query(sql_danhmucyeuthich, [maKH]);
+            await connection.query(sql_danhmucyeuthich, [maKH]);
 
-            res.status(201).json({ message: "Đăng ký thành công!" });
+            await connection.commit();
+            res.status(201).json({
+                success: true,
+                message: "Đăng ký thành công!" 
+            });
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Lỗi server khi đăng ký" });
+            await connection.rollback();
+            console.error("Lỗi khi đăng ký: ", error);
+            res.status(500).json({ 
+                success: false,
+                message: "Lỗi server khi đăng ký" });
+        }
+        finally{
+            connection.release();
         }
     },
 
@@ -103,14 +114,7 @@ const authController = {
                 token: token,
                 user: {
                     id: user.MaTK,
-                    username: user.TenDN,
-                    email: user.Email,
-                    MaKH: user.MaKH,
-                    role: user.MaQuyen,
-                    HoTen: user.TenKH || user.TenNV || 'Người dùng hệ thống',
-                    MaKH: user.MaKH || null,
-                    MaNV: user.MaNV || null
-                    AnhDaiDien: user.AnhDaiDien
+                    role: user.MaQuyen
                 }
             });
         } catch (error) {

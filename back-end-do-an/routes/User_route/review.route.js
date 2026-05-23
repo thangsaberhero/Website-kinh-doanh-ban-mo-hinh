@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../../controllers/User_controller/review.ctrl.js');
-const verifyToken = require('../../middlewares/auth.middleware.js');
+const authMiddleware = require('../../middlewares/auth.middleware.js');
 const { uploadReview } = require('../../middlewares/upload.js');
 
 router.get('/product/:id', reviewController.getReviewsByProduct);
-router.post('/create', verifyToken, reviewController.createReview);
-router.get('/check-purchase-status', verifyToken, reviewController.checkPurchaseStatus);
+router.post('/create', authMiddleware.verifyToken, reviewController.createReview);
+router.get('/check-purchase-status', authMiddleware.verifyToken, reviewController.checkPurchaseStatus);
 
-router.post('/upload', verifyToken, uploadReview.array('images', 5), (req, res) => {
+router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 5), (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "Không tìm thấy file tải lên" });

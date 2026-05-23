@@ -3,8 +3,8 @@ const db = require('../../config/db');
 const khuyenmai = {
     liet_ke_chuong_trinh_khuyen_mai: async(req, res) =>{
         try{
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
+            let page = parseInt(req.query.page) || 1;
+            let limit = parseInt(req.query.limit) || 10;
 
             const offset = (page - 1) * limit;
 
