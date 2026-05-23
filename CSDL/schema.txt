@@ -315,7 +315,6 @@ Create table ChiTietMaGiamGia (
     FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
     FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
 );
-	
 
 Create table LogSuDungMaGiamGia (
 	MaLichSu INT PRIMARY KEY AUTO_INCREMENT,
@@ -327,6 +326,12 @@ Create table LogSuDungMaGiamGia (
 	FOREIGN KEY (MaGG) REFERENCES MaGiamGia(MaGG),
 	FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
 	FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+CREATE TABLE LogHoatDongKhuyenMai (
+    MaLog INT PRIMARY KEY AUTO_INCREMENT,
+    NoiDung TEXT NOT NULL,
+    ThoiGian DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 21. Bảng Tin tức

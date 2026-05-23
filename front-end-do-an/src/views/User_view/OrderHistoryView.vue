@@ -1,52 +1,8 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
     <TheHeader />
-
     <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
-      
-      <aside class="w-72 hidden md:flex flex-col border-r border-outline-variant/20 bg-surface-container-low pt-8">
-        <div class="px-6 flex flex-col items-center gap-3 mb-8">
-          <div class="relative group cursor-pointer">
-            <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-              <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="avatarPreview"/>
-            </div>
-            <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
-              <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
-            </div>
-          </div>
-          <div class="text-center">
-            <h3 class="font-headline font-bold text-lg text-on-surface">{{ authStore.user?.username || authStore.user?.TenKH || 'Collector' }}</h3>
-            <p class="text-[10px] text-primary uppercase tracking-widest font-bold">Elite Member</p>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-1 flex-1">
-          <router-link to = "/profile" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">person</span>
-            <span>Thông tin cá nhân</span>
-          </router-link>
-          <router-link to = "/change-password" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">lock</span>
-            <span>Đổi mật khẩu</span>
-          </router-link>
-          <router-link to = "/wishlist" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest cursor-pointer">
-            <span class="material-symbols-outlined">favorite</span>
-            <span>Danh sách yêu thích</span>
-          </router-link>
-          <router-link to = "/orders" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent cursor-pointer">
-            <span class="material-symbols-outlined">inventory_2</span>
-            <span>Lịch sử đơn hàng</span>
-          </router-link>
-        </div>
-
-        <div class="p-6 border-t border-outline-variant/10">
-          <button @click="handleLogout" class="flex items-center gap-3 text-sm font-bold transition-all text-outline hover:text-error w-full">
-            <span class="material-symbols-outlined">logout</span>
-            <span>Đăng xuất</span>
-          </button>
-        </div>
-      </aside>
+      <UserSidebar />
 
       <main class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
@@ -212,217 +168,180 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../../stores/auth';
+  import { ref, computed, onMounted, watch } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth';
+  import { useToastStore } from '../../stores/toast';
+  import TheHeader from '../../components/TheHeader.vue';
+  import UserSidebar from '../../components/UserSidebar.vue';
 
-const router = useRouter();
-const authStore = useAuthStore();
+  const router = useRouter();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore();
 
-const activeTab = ref('Tất cả');
+  const activeTab = ref('Tất cả');
 
-const userString = localStorage.getItem('user');
-const currentUser = userString ? JSON.parse(userString) : null;
-// Dữ liệu giả lập Đơn hàng
-const orders = ref([]);
-
-const showPaymentModal = ref(false);
-const selectedOrder = ref(null);
-const repayMethod = ref('Thanh toán toàn bộ');
-
-const currentPage = ref(1);
-const limit = ref(5);
-const totalPages = ref(1);
-const totalItemsCount = ref(0);
-
-// Mở Modal và lưu lại đơn hàng đang chọn
-const openPaymentModal = (order) => {
-  selectedOrder.value = order;
-  showPaymentModal.value = true;
-};
-
-// Gọi API tạo link MoMo từ Modal
-const handleRepay = async () => {
-  const token = localStorage.getItem('token');
-  if (!selectedOrder.value) return;
-
-  try {
-    const response = await fetch('http://localhost:3000/api/payment/momo/create', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ 
-        MaDH: selectedOrder.value.MaDH,
-        HinhThuc: repayMethod.value 
-      })
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      // Bế khách sang trang MoMo màu hồng!
-      window.location.href = data.checkoutUrl;
-    } else {
-      toastStore.showToast(data.message, "error");
-    }
-  } catch (error) {
-    console.error("Lỗi thanh toán lại:", error);
-    toastStore.showToast("Lỗi kết nối máy chủ thanh toán", "error");
-  }
-};
-
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-
-
-// Hàm chọn màu Badge dựa trên trạng thái
-const getStatusColor = (status) => {
-  switch(status) {
-    case 'Đang vận chuyển': return 'bg-tertiary/10 text-tertiary border-tertiary/20';
-    case 'Đã giao': return 'bg-green-500/10 text-green-400 border-green-500/20';
-    case 'Đang đóng gói': return 'bg-secondary/10 text-secondary border-secondary/20';
-    case 'Chờ duyệt': return 'bg-secondary/10 text-secondary border-secondary/20';  
-    case 'Đã hủy': return 'bg-error/10 text-error border-error/20';
-    default: return 'bg-outline/10 text-outline border-outline/20';
-  }
-};
-
-// Lọc đơn hàng theo Tab
-const filteredOrders = computed(() => {
-  if (activeTab.value === 'Tất cả') return orders.value;
-  return orders.value.filter(order => order.TrangThaiDonHang === activeTab.value);
-});
-
-watch(activeTab, () => {
-  currentPage.value = 1;
-  fetchOrderdata();
-});
-
-const fetchOrderdata = async () => {
-  const token = localStorage.getItem('token');
   const userString = localStorage.getItem('user');
-  if (!token || !userString) {
-    router.push('/login');
-    return;
-  }
-  const maKH = JSON.parse(userString).MaKH;
-  const queryParams = new URLSearchParams({
-    page: currentPage.value,
-    limit: limit.value
+  const orders = ref([]);
+
+  const showPaymentModal = ref(false);
+  const selectedOrder = ref(null);
+  const repayMethod = ref('Thanh toán toàn bộ');
+
+  const currentPage = ref(1);
+  const limit = ref(5);
+  const totalPages = ref(1);
+  const totalItemsCount = ref(0);
+
+  // Mở Modal và lưu lại đơn hàng đang chọn
+  const openPaymentModal = (order) => {
+    selectedOrder.value = order;
+    showPaymentModal.value = true;
+  };
+
+  // Gọi API tạo link MoMo từ Modal
+  const handleRepay = async () => {
+    const token = localStorage.getItem('token');
+    if (!selectedOrder.value) return;
+
+    try {
+      const response = await fetch('http://localhost:3000/api/payment/momo/create', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          MaDH: selectedOrder.value.MaDH,
+          HinhThuc: repayMethod.value 
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        // Bế khách sang trang MoMo màu hồng!
+        window.location.href = data.checkoutUrl;
+      } 
+      else {
+        toastStore.showToast(data.message, "error");
+      }
+    } 
+    catch (error) {
+      console.error("Lỗi thanh toán lại:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ thanh toán", "error");
+    }
+  };
+
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+  // Hàm chọn màu Badge dựa trên trạng thái
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'Đang vận chuyển': return 'bg-tertiary/10 text-tertiary border-tertiary/20';
+      case 'Đã giao': return 'bg-green-500/10 text-green-400 border-green-500/20';
+      case 'Đang đóng gói': return 'bg-secondary/10 text-secondary border-secondary/20';
+      case 'Chờ duyệt': return 'bg-secondary/10 text-secondary border-secondary/20';  
+      case 'Đã hủy': return 'bg-error/10 text-error border-error/20';
+      default: return 'bg-outline/10 text-outline border-outline/20';
+    }
+  };
+
+  // Lọc đơn hàng theo Tab
+  const filteredOrders = computed(() => {
+    if (activeTab.value === 'Tất cả') return orders.value;
+    return orders.value.filter(order => order.TrangThaiDonHang === activeTab.value);
   });
-  if (activeTab.value !== 'Tất cả') {
-    queryParams.append('trangthai', activeTab.value);
-  }
-  try {
-    const response = await fetch(`http://localhost:3000/api/don_hang/watch_order/${maKH}$${queryParams}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
 
-    const result = await response.json();
-
-    if (result.success) {
-      orders.value = result.data; 
-      currentPage.value = result.pagination.currentPage;
-      totalPages.value = result.pagination.totalPage;
-      totalItemsCount.value = result.pagination.totalItems;
-    } else {
-      console.error(result.message);
-      orders.value = [];
-    }
-  } catch (error) {
-    console.error("Lỗi khi tải giỏ hàng:", error);
-  }
-}
-
-const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
+  watch(activeTab, () => {
+    currentPage.value = 1;
     fetchOrderdata();
-    // Cuộn lên đầu màn hình nhẹ nhàng
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-};
+  });
 
-const avatarPreview = ref(
-  currentUser && currentUser.AnhDaiDien 
-    ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` 
-    : 'default_avatar.jpg'
-);
-
-const fetchUserData = async () => {
-  if (!currentUser) return;
-  
-  try {
-    // Gọi đường link API lấy thông tin bạn vừa viết (truyền MaTK vào đuôi)
-    const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
-    const dataJSON = await res.json();
-    
-    if (res.ok && dataJSON.data) {
-      const userData = dataJSON.data;
-      if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
-        avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
-      }
+  const fetchOrderdata = async () => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    if (!token || !userString) {
+      router.push('/login');
+      return;
     }
-  } catch (error) {
-    console.error("Lỗi kéo thông tin người dùng:", error);
+    const maKH = JSON.parse(userString).MaKH;
+    const queryParams = new URLSearchParams({
+      page: currentPage.value,
+      limit: limit.value
+    });
+    if (activeTab.value !== 'Tất cả') {
+      queryParams.append('trangthai', activeTab.value);
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/api/don_hang/watch_order/${maKH}?${queryParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        orders.value = result.data; 
+        currentPage.value = result.pagination.currentPage;
+        totalPages.value = result.pagination.totalPage;
+        totalItemsCount.value = result.pagination.totalItems;
+      } 
+      else {
+        console.error(result.message);
+        orders.value = [];
+      }
+    } 
+    catch (error) {
+      console.error("Lỗi khi tải giỏ hàng:", error);
+    }
   }
-};
 
-onMounted(() => {
-  window.scroll(0,0);
-  fetchOrderdata();
-  fetchUserData();
-});
+  const changePage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchOrderdata();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
-// Hàm chuyển đổi ngày tháng từ MySQL sang định dạng thân thiện
-const formatDate = (dateString) => {
-  if (!dateString) return 'Đang cập nhật';
-  
-  const date = new Date(dateString);
-  
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
+  onMounted(() => {
+    window.scroll(0,0);
+    fetchOrderdata();
+  });
 
-  // Bạn có thể tùy chỉnh hiển thị ở đây. Hiện tại đang là: 26/03/2026 - 15:37
-  return `${day}/${month}/${year} - ${hours}:${minutes}`;
-};
-
-const handleLogout = () => {
-  if (authStore.logout) authStore.logout();
-  else localStorage.removeItem('token');
-  router.push('/login');
-};
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Đang cập nhật';
+    
+    const date = new Date(dateString);
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} - ${hours}:${minutes}`;
+  };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+  /* Hiệu ứng mượt mà khi lọc danh sách */
+  .list-enter-active,
+  .list-leave-active {
+    transition: all 0.4s ease;
+  }
+  .list-enter-from,
+  .list-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .list-leave-active {
+    position: absolute;
+  }
 
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-
-/* Hiệu ứng mượt mà khi lọc danh sách */
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.4s ease;
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-.list-leave-active {
-  position: absolute;
-}
-
-.custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
 </style>

@@ -34,6 +34,8 @@ import AdminManufacturer from '../views/Admin_view/AdminManufacturer.vue';
 import AdminCategory from '../views/Admin_view/AdminCategory.vue';
 import AdminCustomerSupport from '../views/Admin_view/AdminCustomerSupport.vue';
 import AdminPromotionDetail from '../views/Admin_view/AdminPromotionDetail.vue';
+import AdminProfile from '../views/Admin_view/AdminProfile.vue';
+import AdminChangePassword from '../views/Admin_view/AdminChangePassword.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -196,7 +198,17 @@ const router = createRouter({
       path: '/admin/promotion/:type/:id',
       name: 'AdminPromotionDetail',
       component: AdminPromotionDetail
-    }
+    },
+    {
+      path: '/admin/profile',
+      name: 'AdminProfile',
+      component: AdminProfile
+    },
+    {
+      path: '/admin/change-password',
+      name: 'AdminChangePassword',
+      component: AdminChangePassword
+    },
   ]
 });
 
