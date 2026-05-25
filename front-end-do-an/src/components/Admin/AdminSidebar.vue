@@ -92,7 +92,8 @@ const mainMenuItems = [
   { name: 'Hỗ trợ khách hàng', path: '/admin/support', icon: 'support_agent' },
   { name: 'Quản lý người dùng', path: '/admin/users', icon: 'group' },
   { name: 'Quản lý tin tức', path: '/admin/news', icon: 'newspaper' },
-  { name: 'Quản lý khuyến mãi', path: '/admin/promotion', icon: 'confirmation_number' }
+  { name: 'Quản lý khuyến mãi', path: '/admin/promotion', icon: 'confirmation_number' },
+  { name: 'Báo cáo và Thống kê', path: '/admin/report', icon: 'bar_chart' }
 ];
 </script>
 

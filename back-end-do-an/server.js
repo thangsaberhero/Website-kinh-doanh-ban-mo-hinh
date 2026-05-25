@@ -172,6 +172,9 @@ app.use('/api/contact/admin', adminContactRoutes);
 const adminInfoRouter = require('./routes/Admin_route/admin_info.route');
 app.use('/api/admin_info', adminInfoRouter);
 
+const thongkeRouter = require('./routes/Admin_route/thongke.route.js'); 
+app.use('/api/thongke', thongkeRouter);
+
 // //Báo cáo thống kê
 // const bao_cao_route = require('./routes/Admin_route/thong_ke.route.js');
 // app.use('/api/thong_ke/admin', bao_cao_route);

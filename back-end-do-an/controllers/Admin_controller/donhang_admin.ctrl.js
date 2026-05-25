@@ -417,8 +417,8 @@ const donhang_admin = {
             if (sapxep === 'total_asc') filter = ("ORDER BY dh.TongTien ASC");
 
             const sql_core = `
-                SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKh, nv.TenNV,
-                dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan,
+                SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
+                dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan,
                 dh.ThanhTien, dh.TrangThaiThanhToan,
                 (
                     SELECT cttt.MaTrangThai
@@ -428,16 +428,16 @@ const donhang_admin = {
                     LIMIT 1
                 ) AS MaTT,
                 (
-                    Select tt.TenTrangThai
+                    SELECT tt.TenTrangThai
                     FROM TrangThai tt
-                    inner join ChiTietTrangThai cttt on tt.MaTrangThai = cttt.MaTrangThai
+                    INNER JOIN ChiTietTrangThai cttt ON tt.MaTrangThai = cttt.MaTrangThai
                     WHERE cttt.MaDH = dh.MaDH 
                     ORDER BY cttt.ThoiGian DESC 
                     LIMIT 1
-                ) As TrangThai
+                ) AS TrangThai
                 FROM DonHang dh
-                left join NhanVien nv on dh.MaNV = nv.MaNV
-                left join KhachHang kh on kh.MaKH = dh.MaKH
+                LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
+                LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
                 ${condition_clause}
                 ${having_clause}
             `;
@@ -589,7 +589,7 @@ const donhang_admin = {
             `;
             const [trangthai] = await connection.query(sql_lay_trang_thai, [MaDH]);
 
-            if (trangthai.length === 0) {
+            if (trangthai_cu.length === 0) {
                 await connection.rollback();
                 return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!"});
             }
@@ -639,6 +639,7 @@ const donhang_admin = {
             res.status(500).json({ success: false, message: "Lỗi server khi cập nhật trạng thái!"});
         }
         finally{
+            if (connection) connection.release();
             if (connection) connection.release();
         }
     },
