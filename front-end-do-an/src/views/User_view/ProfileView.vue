@@ -159,7 +159,8 @@
     if (!currentUser) return;
     
     try {
-      const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3000/api/info_user/laythongtin`, {headers: {'Authorization': `Bearer ${token}`}});
       const dataJSON = await res.json();
       
       if (res.ok && dataJSON.data) {

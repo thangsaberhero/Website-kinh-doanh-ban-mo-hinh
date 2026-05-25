@@ -26,6 +26,7 @@ const newsController = {
             const [[latestList], [trendingList], [popularList]] = await Promise.all([db.query(sqlLatest), db.query(sqlTrending), db.query(sqlPopular)]);
             
             res.status(200).json({
+                success: true,
                 message: "Tải dữ liệu tin tức thành công",
                 latestList: latestList,
                 trendingList: trendingList,
@@ -34,6 +35,7 @@ const newsController = {
         } catch(error){
             console.error("Lỗi API getAllNews: ", error);
             res.status(500).json({
+                success: false,
                 message: "Lỗi máy chủ nội bộ",
                 error: error.message
             })
@@ -52,10 +54,12 @@ const newsController = {
             const [rows] = await db.query(sql, [newsId]);
             if(rows.length === 0){
                 return res.status(404).json({
+                    success: false,
                     message: "Không tìm thấy bài viết"
                 });
             }
             res.status(200).json({
+                success: true,
                 message: "Tải dữ liệu tin tức thành công",
                 data: rows[0]
             })
@@ -80,10 +84,12 @@ const newsController = {
             const [rows] = await db.query(sql, [newsId, newsId]);
             if(rows.length === 0){
                 return res.status(404).json({
+                    success: false,
                     message: "Không tìm thấy bài viết"
                 });
             }
             res.status(200).json({
+                success: true,
                 message: "Tải tin tức liên quan thành công",
                 data: rows
             })
@@ -91,6 +97,7 @@ const newsController = {
         catch(error){
             console.error("Lỗi API getRelatedNews: ", error);
             res.status(500).json({
+                success: false,
                 message: "Lỗi máy chủ khi lấy tin tức liên quan",
                 error: error.message
             })
@@ -98,8 +105,8 @@ const newsController = {
     },
     getAdminNews: async(req, res) =>{
         try{
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 5;
+            const page = Math.max(parseInt(req.query.page) || 1, 1);
+            const limit = Math.max(parseInt(req.query.limit) || 5, 5);
             const offset = (page - 1) * limit;
             const search = req.query.search || '';
             const status = req.query.status || '';
@@ -174,91 +181,174 @@ const newsController = {
         }
     },
     createNews: async(req, res) =>{
+        const connection = await db.getConnection();
         try{
-            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV, Tags } = req.body;
+            await connection.beginTransaction();
+            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags } = req.body;
             const file = req.file;
+            const MaTK = req.user.id;
+            const [check] = await connection.query(`Select MaTT from TinTuc where TieuDe = ?`, [TieuDe]);
+            if(check.length > 0){
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Đã có tin tức trùng tiêu đề!"
+                })
+            }
 
             const sqlInsertNews = `INSERT INTO TinTuc (TieuDe, NoiDung, TheLoai, TomTat, TrangThai, NgayDang, LuotXem, MaNV, Tags)
                                     VALUES (?, ?, ?, ?, ?, Now(), 0, ?, ?)`;
-            const [result] = await db.query(sqlInsertNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV, Tags]);
+            const [result] = await connection.query(sqlInsertNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV, Tags]);
             const newNewsId = result.insertId;
 
             if(file){
                 const imageUrl = `http://localhost:3000/Images_news/${file.filename}`;
                 const sqlInsertImage = `INSERT INTO AnhTinTuc (MaTT, LinkAnh) VALUES (?, ?)`;
-                await db.query(sqlInsertImage, [newNewsId, imageUrl]);
+                await connection.query(sqlInsertImage, [newNewsId, imageUrl]);
             }
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            const noiDungLog = `Tạo tin tức mới #${newNewsId} tiêu đề: ${TieuDe}"`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'NEWS_CREATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+            await connection.commit();
             res.status(200).json({
-                message: "Tạo bài viết thành công",
+                success: true,
+                message: "Tạo bài viết thành công!",
                 dataId: newNewsId
             });
         }catch(error){
             console.error("Lỗi API createNews: ", error);
             res.status(500).json({
+                success: false,
                 message: "Lỗi máy chủ khi tạo bài viết",
                 error: error.message
             })
         }
+        finally{
+            connection.release();
+        }
     },
     updateNews: async(req, res) => {
+        const connection = await db.getConnection();
         try{
+            await connection.beginTransaction();
             const newsId = req.params.id;
+            const MaTK = req.user.id;
             const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags } = req.body;
             const file = req.file;
+            const [check] = await connection.query(`Select TieuDe from TinTuc where MaTT = ?`, [newsId]);
+            if(check.length > 0){
+                await connection.rollback();
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy tin tức cần sửa!"
+                })
+            }
+            if(check[0].TieuDe === TieuDe)
+                {
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Đã có tin tức trùng tiêu đề!"
+                })
+            }
 
             const sqlUpdateNews = `UPDATE TinTuc
                                     SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?, Tags = ?
                                     WHERE MaTT = ?`;
-            await db.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags, newsId]);
+            await connection.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags, newsId]);
 
             if(file){
                 const imageUrl = `http://localhost:3000/Images_news/${file.filename}`;
-                const [checkImage] = await db.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
+                const [checkImage] = await connection.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
 
                 if(checkImage.length > 0){
-                    await db.query(`UPDATE AnhTinTuc SET LinkAnh = ? WHERE MaTT = ?`, [imageUrl, newsId]);
+                    await connection.query(`UPDATE AnhTinTuc SET LinkAnh = ? WHERE MaTT = ?`, [imageUrl, newsId]);
                 }
                 else{
-                    await db.query(`INSERT INTO AnhTinTuc(MaTT, LinkAnh) VALUES (?, ?)`, [newsId, imageUrl]);
+                    await connection.query(`INSERT INTO AnhTinTuc(MaTT, LinkAnh) VALUES (?, ?)`, [newsId, imageUrl]);
                 }
             }
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            const noiDungLog = `Sửa tin tức #${newsId} tiêu đề: ${TieuDe}"`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'NEWS_UPDATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+            await connection.commit()
             res.status(200).json({
+                success: true,
                 message: "Cập nhật tin tức thành công"
             });
         }
         catch(error){
+            await connection.rollback();
             console.error("Lỗi API updateNews: ", error);
             res.status(500).json({
+                success: false,
                 message: "Lỗi máy chủ khi cập nhật bài viết",
                 error: error.message
             })
         }
+        finally{
+            connection.release();
+        }
     },
     deleteNews: async(req, res) => {
+        const connection = await db.getConnection();
         try{
+            await connection.beginTransaction();
             const newsId = req.params.id;
+            const MaTK = req.user.id;
+            const [check] = await connection.query(`Select TieuDe from TinTuc where MaTT = ?`, [newsId]);
+            if(check.length > 0){
+                await connection.rollback();
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy tin tức cần sửa!"
+                })
+            }
+            const TieuDe = check[0].TieuDe;
 
             const sqlDeleteImage = `DELETE FROM AnhTinTuc WHERE MaTT = ?`;
-            await db.query(sqlDeleteImage, [newsId]);
+            await connection.query(sqlDeleteImage, [newsId]);
 
             const sqlDeleteNews = `DELETE FROM TinTuc WHERE MaTT = ?`;
-            const [result] = await db.query(sqlDeleteNews, [newsId]);
+            const [result] = await connection.query(sqlDeleteNews, [newsId]);
 
             if(result.affectedRows == 0){
                 return res.status(404).json({
                     message: "Không tìm thấy bài viết để xóa"
                 });
             }
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            const noiDungLog = `Xoá tin tức #${newsId} tiêu đề: ${TieuDe}"`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'NEWS_UPDATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+            await connection.commit();
             res.status(200).json({
+                success: true,
                 message: "Xóa bài viết thành công"
             });
         }
         catch(error){
+            await connection.rollback();
             console.error("Lỗi API deleteNews: ", error);
             res.status(500).json({
+                success: false,
                 message: "Lỗi máy chủ khi xóa bài viết",
                 error: error.message
             })
+        }
+        finally{
+            connection.release();
         }
     },
     incrementView: async(req, res) => {

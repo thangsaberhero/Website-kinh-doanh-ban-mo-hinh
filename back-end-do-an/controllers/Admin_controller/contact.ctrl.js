@@ -4,8 +4,8 @@ const nodemailer = require('nodemailer');
 const contactController = {
     getAllContactsAdmin: async (req, res) => {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 5;
+            const page = Math.max(parseInt(req.query.page) || 1, 1);
+            const limit = Math.max(parseInt(req.query.limit) || 5, 5);
             const offset = (page - 1) * limit;
             
             const search = req.query.search || '';
@@ -48,6 +48,7 @@ const contactController = {
             const contactStats = statsResult[0];
 
             res.status(200).json({
+                success: true,
                 data: result,
                 pagination: { totalPages, currentPage: page, totalItems, limit },
                 stats: contactStats 
@@ -55,6 +56,7 @@ const contactController = {
         } catch (error) {
             console.error("Lỗi API getAllContactsAdmin:", error);
             res.status(500).json({ 
+                success: false,
                 message: "Lỗi máy chủ khi lấy tin nhắn liên hệ", 
                 error: error.message 
             });
@@ -62,15 +64,20 @@ const contactController = {
     },
 
     replyContact: async (req, res) => {
+        const connection = await db.getConnection();
         try {
+            await connection.beginTransaction();
             const { MaLH } = req.params;
             const { replyContent } = req.body;
 
             if (!req.user) return res.status(401).json({ message: "Thiếu Token" });
             const MaTK = req.user.id || req.user.MaTK;
 
-            const [contactObj] = await db.query('SELECT * FROM LienHe WHERE MaLH = ?', [MaLH]);
-            if (contactObj.length === 0) return res.status(404).json({ message: "Không tìm thấy liên hệ" });
+            const [contactObj] = await connection.query('SELECT * FROM LienHe WHERE MaLH = ?', [MaLH]);
+            if (contactObj.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy liên hệ" });
+            }
             const contact = contactObj[0];
 
             const transporter = nodemailer.createTransport({
@@ -104,20 +111,34 @@ const contactController = {
 
             await transporter.sendMail(mailOptions);
 
-            const [nv] = await db.query('SELECT MaNV FROM NhanVien WHERE MaTK = ?', [MaTK]);
+            const [nv] = await connection.query('SELECT MaNV FROM NhanVien WHERE MaTK = ?', [MaTK]);
             const MaNV = nv.length > 0 ? nv[0].MaNV : null;
 
             const sql = `UPDATE LienHe SET TrangThai = 1, MaNV_XuLy = ?, NgayXuLy = NOW(), PhanHoiShop = ? WHERE MaLH = ?`;
-            await db.query(sql, [MaNV, replyContent, MaLH]);
+            await connection.query(sql, [MaNV, replyContent, MaLH]);
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            const noiDungLog = `Trả lời liên hệ #${MaLH} của khách hàng "${contact.HoTen}"`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'CONTACT', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+            await connection.commit();
             res.status(200).json({ 
+                success: true,
                 message: "Đã gửi email và lưu hệ thống" 
             });
         } catch (error) {
+            await connection.rollback();
             console.error("Lỗi gửi email: ", error);
             res.status(500).json({ 
+                success: false,
                 message: "Lỗi khi gửi email", 
                 error: error.message 
             });
+        }
+        finally{
+            connection.release();
         }
     }
 };

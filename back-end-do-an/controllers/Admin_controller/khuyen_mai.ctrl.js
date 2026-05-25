@@ -2,59 +2,84 @@ const db = require('../../config/db');
 const excel = require('exceljs');
 
 const khuyenmai = {
-    liet_ke_chuong_trinh_khuyen_mai: async(req, res) =>{
-        try{
+    liet_ke_chuong_trinh_khuyen_mai: async(req, res) => {
+        try {
             let page = parseInt(req.query.page) || 1;
             let limit = parseInt(req.query.limit) || 10;
+            if (!page || isNaN(page) || page < 1) page = 1;
+            if (!limit || isNaN(limit) || limit < 1) limit = 10;
+            if (limit > 50) limit = 50; // Nên nới lỏng ra để Admin dễ xem trên màn hình lớn
 
             const offset = (page - 1) * limit;
 
-            const {keyword, 
-                trangthai
-            } = req.query;
+            const { keyword, trangthai } = req.query;
             
             let condition = [];
             let value = [];
 
-            if(keyword){
-                condition.push("TenKM COLLATE utf8mb4_unicode_ci like ?");
+            if (keyword) {
+                // Chỉ định rõ bảng km.TenKM để tránh lỗi Ambiguous nếu sau này JOIN nhiều bảng
+                condition.push("km.TenKM COLLATE utf8mb4_unicode_ci LIKE ?"); 
                 value.push(`%${keyword}%`);
             }
 
-            if(trangthai){
-                if(trangthai === 'DangChay'){
-                    condition.push("km.ThoiGianBD <= NOW() and km.ThoiGianKT >= NOW()");
-                }
-                else if(trangthai === 'SapToi'){
-                    condition.push("km.ThoiGianBD > NOW()");
-                }
-                else if(trangthai === 'HetHan'){
-                    condition.push("km.ThoiGianKT < NOW()");
+            // ĐÃ TỐI ƯU LOGIC: Kết hợp cả thời gian VÀ cờ bật/tắt (TrangThaiHoatDong)
+            if (trangthai) {
+                if (trangthai === 'DangChay') {
+                    condition.push("km.ThoiGianBD <= NOW() AND km.ThoiGianKT >= NOW() AND km.TrangThaiHoatDong = 1");
+                } else if (trangthai === 'SapToi') {
+                    condition.push("km.ThoiGianBD > NOW() AND km.TrangThaiHoatDong = 1");
+                } else if (trangthai === 'HetHan') {
+                    condition.push("km.ThoiGianKT < NOW()"); // Đã qua ngày kết thúc thì không cần xét cờ bật tắt
+                } else if (trangthai === 'TamDung') {
+                    condition.push("km.TrangThaiHoatDong = 0 AND km.ThoiGianKT >= NOW()"); // Bị tắt bằng tay nhưng chưa hết hạn
                 }
             }
-            let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
-            const sql_core = `Select km.MaKM, km.TenKM, km.ThoiGianBD, km.ThoiGianKT, km.TrangThaiHoatDong, Count(log.MaLichSu) as SoLuotDung
-                                from KhuyenMai km
-                                left join LogSuDungKhuyenMai log on km.MaKM = log.MaKM
-                                ${whereClause}
-                                group by km.MaKM`;
+            
+            let whereClause = condition.length > 0 ? "WHERE " + condition.join(" AND ") : "";
+            
+            const sql_core = `
+                SELECT 
+                    km.MaKM, km.TenKM, km.ThoiGianBD, km.ThoiGianKT, km.TrangThaiHoatDong, 
+                    COUNT(log.MaLichSu) AS SoLuotDung
+                FROM KhuyenMai km
+                LEFT JOIN LogSuDungKhuyenMai log ON km.MaKM = log.MaKM
+                ${whereClause}
+                GROUP BY km.MaKM
+            `;
+            
             const sql_count = `SELECT COUNT(*) AS total FROM (${sql_core}) as temptable`;
-            const [countResult] = await db.query(sql_count,value);
+            const [countResult] = await db.query(sql_count, value);
             const totalItems = countResult[0].total;
-            //Làm tròn lên
-            const totalPage = Math.ceil(totalItems/limit);
-            const sql_ds = `${sql_core}
-                order by km.MaKM DESC, km.ThoiGianBD DESC
-                Limit ? offset ?`;
+            const totalPage = Math.ceil(totalItems / limit);
+            
+            // Xóa ThoiGianBD DESC đi vì MaKM tự tăng đã bao hàm thời gian rồi, tránh MySQL phải sort 2 lần
+            const sql_ds = `
+                ${sql_core}
+                ORDER BY km.MaKM DESC 
+                LIMIT ? OFFSET ?
+            `;
 
-
-            const sql_params = [...value, limit, offset]
+            const sql_params = [...value, limit, offset];
             const [chuongtrinh] = await db.query(sql_ds, sql_params);
+
+            // TÍNH NĂNG MỚI: Thống kê số lượng từng trạng thái để Frontend vẽ Tab/Badge
+            const sql_summary = `
+                SELECT 
+                    SUM(CASE WHEN ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1 THEN 1 ELSE 0 END) AS DangChay,
+                    SUM(CASE WHEN ThoiGianBD > NOW() AND TrangThaiHoatDong = 1 THEN 1 ELSE 0 END) AS SapToi,
+                    SUM(CASE WHEN ThoiGianKT < NOW() THEN 1 ELSE 0 END) AS HetHan,
+                    SUM(CASE WHEN TrangThaiHoatDong = 0 AND ThoiGianKT >= NOW() THEN 1 ELSE 0 END) AS TamDung,
+                    COUNT(*) as TatCa
+                FROM KhuyenMai
+            `;
+            const [summaryResult] = await db.query(sql_summary);
 
             res.status(200).json({
                 success: true,
                 message: "Lấy thông tin danh sách chương trình khuyến mãi thành công!",
                 data: chuongtrinh,
+                summary: summaryResult[0], // Trả thêm cục này về cho Frontend
                 pagination: {
                     currentPage: page,
                     limit: limit,
@@ -63,12 +88,11 @@ const khuyenmai = {
                 }
             });
 
-        }
-        catch (error){
-            console.error("Xảy ra lỗi khi lấy danh sách chương trình khuyến mãi: " + error);
+        } catch (error) {
+            console.error("Xảy ra lỗi khi lấy danh sách chương trình khuyến mãi: ", error);
             res.status(500).json({
                 success: false,
-                message: "Xảy ra lỗi khi lấy danh sách chương trình khuyến mãi!"
+                message: "Xảy ra lỗi khi lấy dữ liệu từ máy chủ!"
             });
         }
     },
@@ -104,8 +128,11 @@ const khuyenmai = {
             // ==========================================
             // 2. LẤY DANH SÁCH SẢN PHẨM ÁP DỤNG (CÓ PHÂN TRANG)
             // ==========================================
-            const page_sp = parseInt(req.query.page_sp) || 1;
-            const limit_sp = parseInt(req.query.limit_sp) || 10;
+            let page_sp = parseInt(req.query.page_sp) || 1;
+            let limit_sp = parseInt(req.query.limit_sp) || 10;
+            if (!page_sp || isNaN(page_sp) || page_sp < 1) page_sp = 1;
+            if (!limit_sp || isNaN(limit_sp) || limit_sp < 1) limit_sp = 10;
+            if (limit_sp > 20) limit_sp = 20;
             const offset_sp = (page_sp - 1) * limit_sp;
 
             const {keyword_sp, keyword_kh, ma_kh, ma_dh, tu_ngay, den_ngay} = req.query;
@@ -148,8 +175,11 @@ const khuyenmai = {
             // ==========================================
             // 3. LẤY LỊCH SỬ SỬ DỤNG (CÓ PHÂN TRANG)
             // ==========================================
-            const page_log = parseInt(req.query.page_log) || 1;
-            const limit_log = parseInt(req.query.limit_log) || 10;
+            let page_log = parseInt(req.query.page_log) || 1;
+            let limit_log = parseInt(req.query.limit_log) || 10;
+            if (!page_log || isNaN(page_log) || page_log < 1) page_log = 1;
+            if (!limit_log || isNaN(limit_log) || limit_log < 1) limit_log = 10;
+            if (limit_log > 20) limit_log = 20;
             const offset_log = (page_log - 1) * limit_log;
 
             let condition_log = ["log.MaKM = ? "];
@@ -166,8 +196,8 @@ const khuyenmai = {
             }
 
             if(ma_dh){
-                condition_log.push("log.MaDH = ?")
-                value_log.push(ma_dh);
+                condition_log.push("(log.MaDH = ? OR dh.MaDonHangHienThi LIKE ?)")
+                value_log.push(ma_dh, `%${ma_dh}%`);
             }
 
             if(tu_ngay){
@@ -183,9 +213,11 @@ const khuyenmai = {
             let whereClause_log = condition_log.length > 0 ? "where " + condition_log.join(" and ") : "";
 
             const sql_log_core = `
-                SELECT log.MaLichSu, log.MaKH, kh.TenKH, log.MaDH, log.SoTienDaGiam, log.ThoiGianSuDung
+                SELECT log.MaLichSu, log.MaKH, COALESCE(kh.TenKH, dh.TenNguoiNhan), 
+                log.MaDH, log.SoTienDaGiam, log.ThoiGianSuDung
                 FROM LogSuDungKhuyenMai log
-                inner join KhachHang kh on kh.MaKh = log.MaKH
+                inner join DonHang dh on dh.MaDH = log.MaDH
+                left join KhachHang kh on kh.MaKH = log.MaKH
                 ${whereClause_log}
             `;
             
@@ -237,103 +269,131 @@ const khuyenmai = {
         }
     },
 
-    them_chuong_trinh_khuyen_mai: async(req, res) =>{
+    them_chuong_trinh_khuyen_mai: async(req, res) => {
         const connection = await db.getConnection();
-        try{
+        try {
             await connection.beginTransaction();
-            const {TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong, danhsachchitiet} = req.body;
-            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
-            const sql_them_khuyen_mai = `Insert into KhuyenMai(TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong)
-                                        values(?, ?, ?, ?)`;
-            const isVisible = TrangThaiHoatDong !== 'undefined'? TrangThaiHoatDong : 0;
+            const { TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong} = req.body;
+            const MaTK = req.user.id; // Lấy ID thực tế từ Token thay vì lấy tên
+
+            // 1. VALIDATION BẮT BUỘC
+            if (!TenKM || !ThoiGianBD || !ThoiGianKT) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ tên và thời gian chương trình!" });
+            }
+
+            if (new Date(ThoiGianBD) >= new Date(ThoiGianKT)) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!" });
+            }
+
+            // 2. TẠO CHƯƠNG TRÌNH KHUYẾN MÃI
+            const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
+            
+            const sql_them_khuyen_mai = `INSERT INTO KhuyenMai(TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong) VALUES(?, ?, ?, ?)`;
             const [them_khuyen_mai] = await connection.query(sql_them_khuyen_mai, [TenKM, ThoiGianBD, ThoiGianKT, isVisible]);
             const maKM = them_khuyen_mai.insertId;
-            const sql_them_chi_tiet = `Insert into ChiTietKhuyenMai
-                                        (MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, SoLuongKM)
-                                        values
-                                        (?, ?, ?, ?, ?, ?)`;
-            if(danhsachchitiet && danhsachchitiet !== 'undefined'){
-                const ds_km = typeof danhsachchitiet === 'string' ? JSON.parse(danhsachchitiet) : danhsachchitiet;
-                if(Array.isArray(ds_km) && ds_km.length>0){
-                    for(let detail of ds_km){
-                        await connection.query(sql_them_chi_tiet, [
-                            maKM, detail.MaPhanLoai, detail.LoaiGiamGia,
-                            detail.ChietKhau, detail.GiaTriGiamToiDa, detail.SoLuongKM
-                        ]);
-                    }
-                }
-            }
-            await connection.query(
-                `INSERT INTO LogHoatDongKhuyenMai (NoiDung) VALUES (?)`,
-                [`${nguoiThucHien} đã tạo chương trình khuyến mãi mới: "${TenKM}"`]
-            );
+
+            // 4. GHI LOG BẢO MẬT (Dùng lại bảng LogHoatDongTaiKhoan chuẩn)
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Tạo mới chương trình khuyến mãi #${maKM}: "${TenKM}"`;
+            
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'PROMOTION_CREATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
             await connection.commit();
             res.status(200).json({
                 success: true,
                 message: "Thêm chương trình khuyến mãi mới thành công!"
             });
-        }
-        catch (error){
+
+        } catch (error) {
             await connection.rollback();
-            console.error("Lỗi khi thao tác thêm chương trình khuyến mãi: " + error);
-            res.status(500).json({
-                success: false,
-                message: "Lỗi khi thêm chương trình khuyến mãi!"
-            });
-        }
-        finally{
-            connection.release();
+            console.error("Lỗi khi thao tác thêm chương trình khuyến mãi: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi thêm chương trình khuyến mãi!" });
+        } finally {
+            if (connection) connection.release();
         }
     },
 
-    sua_chuong_trinh_khuyen_mai: async(req, res)=>{
+    sua_chuong_trinh_khuyen_mai: async(req, res) => {
         const connection = await db.getConnection();
-        try{
+        try {
             await connection.beginTransaction();
             const MaKM = req.params.id;
-            const {TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong, danhsachchitiet} = req.body;
-            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
-            const sql_sua_khuyen_mai = `Update KhuyenMai set TenKM = ?, ThoiGianBD = ?, ThoiGianKT = ?, TrangThaiHoatDong = ?
-                                        where MaKM = ?`;
-            const isVisible = TrangThaiHoatDong !== 'undefined'? TrangThaiHoatDong : 0;
-            const [sua_khuyen_mai] = await connection.query(sql_sua_khuyen_mai, [TenKM, ThoiGianBD, ThoiGianKT, isVisible, MaKM]);
-            if(danhsachchitiet && danhsachchitiet !== 'undefined'){
-                await connection.query('Delete from ChiTietKhuyenMai where MaKM = ?', [MaKM]);
-                const ds_km = typeof danhsachchitiet === 'string' ? JSON.parse(danhsachchitiet) : danhsachchitiet;
-                const sql_them_chi_tiet = `Insert into ChiTietKhuyenMai
-                                    (MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, SoLuongKM)
-                                    values
-                                    (?, ?, ?, ?, ?, ?)`;
-                if(Array.isArray(ds_km) && ds_km.length>0){
-                    for(let detail of ds_km){
-                        if(detail.MaPhanLoai)
-                        await connection.query(sql_them_chi_tiet, [
-                            MaKM, detail.MaPhanLoai, detail.LoaiGiamGia,
-                            detail.ChietKhau, detail.GiaTriGiamToiDa, detail.SoLuongKM
-                        ]);
-                    }
-                }
+            const { TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong} = req.body;
+            const MaTK = req.user.id;
+
+            if (!TenKM || !ThoiGianKT) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ Tên và Thời gian kết thúc!" });
             }
-            await connection.query(
-                `INSERT INTO LogHoatDongKhuyenMai (NoiDung) VALUES (?)`,
-                [`${nguoiThucHien} đã cập nhật thông tin của chương trình khuyến mãi: "${TenKM}"`]
-            );
+
+            // 1. LẤY THÔNG TIN KM HIỆN TẠI TỪ DATABASE (Cột mốc sự thật)
+            const [check] = await connection.query(`SELECT MaKM, ThoiGianBD FROM KhuyenMai WHERE MaKM = ?`, [MaKM]);
+            if (check.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy chương trình khuyến mãi cần sửa!" });
+            }
+
+            // Lấy thời gian gốc trong Database để so sánh, KHÔNG dùng thời gian từ Frontend
+            const db_ThoiGianBD = check[0].ThoiGianBD; 
+            const isStarted = new Date(db_ThoiGianBD) <= new Date();
+
+            // 2. GIẢI QUYẾT XUNG ĐỘT THỜI GIAN BẮT ĐẦU
+            let final_ThoiGianBD = ThoiGianBD;
+
+            if (isStarted) {
+                // CHỐT CHẶN VÀNG: Đã chạy rồi thì cấm đổi giờ bắt đầu. Ép dùng lại giờ cũ của DB!
+                final_ThoiGianBD = db_ThoiGianBD; 
+            } else if (!ThoiGianBD) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng chọn Thời gian bắt đầu!" });
+            }
+
+            // 3. KIỂM TRA LOGIC THỜI GIAN MỚI NHẤT
+            if (new Date(final_ThoiGianBD) >= new Date(ThoiGianKT)) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!" });
+            }
+
+            // 4. CẬP NHẬT THÔNG TIN CHUNG
+            const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
+            const sql_sua_khuyen_mai = `
+                UPDATE KhuyenMai 
+                SET TenKM = ?, ThoiGianBD = ?, ThoiGianKT = ?, TrangThaiHoatDong = ?
+                WHERE MaKM = ?
+            `;
+            // Truyền final_ThoiGianBD vào để cập nhật
+            await connection.query(sql_sua_khuyen_mai, [TenKM, final_ThoiGianBD, ThoiGianKT, isVisible, MaKM]);
+
+            // 6. GHI LOG HOẠT ĐỘNG
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Cập nhật thông tin chương trình khuyến mãi #${MaKM}: "${TenKM}"`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'PROMOTION_UPDATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+            
             await connection.commit();
             res.status(200).json({
                 success: true,
-                message: "Sửa thông tin chương trình khuyến mãi mới thành công!"
+                message: "Cập nhật chương trình khuyến mãi thành công!"
             });
         }
-        catch (error){
+        catch (error) {
             await connection.rollback();
-            console.error("Lỗi khi thao tác sửa thông tin chương trình khuyến mãi: " + error);
-            res.status(500).json({
-                success: false,
-                message: "Lỗi khi sửa thông tin chương trình khuyến mãi!"
-            });
+            console.error("Lỗi khi thao tác sửa thông tin chương trình khuyến mãi: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi sửa chương trình khuyến mãi!" });
         }
-        finally{
-            connection.release();
+        finally {
+            if (connection) connection.release();
         }
     },
 
@@ -341,7 +401,9 @@ const khuyenmai = {
         try{
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
-
+            if (!page || isNaN(page) || page < 1) page = 1;
+            if (!limit || isNaN(limit) || limit < 1) limit = 5;
+            if (limit > 10) limit = 10;
             const offset = (page - 1) * limit;
 
             const {keyword, 
@@ -352,40 +414,39 @@ const khuyenmai = {
             let value = [];
 
             if(keyword){
-                condition.push("gg.TenMaGiamGia like ?");
+                condition.push("gg.TenMaGiamGia COLLATE utf8mb4_unicode_ci like ?");
                 value.push(`%${keyword}%`);
             }
 
-            if(trangthai){
-                if(trangthai === 'DangChay'){
-                    condition.push("gg.ThoiGianBD <= NOW() and gg.ThoiGianKT >= NOW()");
-                }
-                else if(trangthai === 'SapToi'){
-                    condition.push("gg.ThoiGianBD > NOW()");
-                }
-                else if(trangthai === 'HetHan'){
-                    condition.push("gg.ThoiGianKT < NOW()");
+            if (trangthai) {
+                if (trangthai === 'DangChay') {
+                    condition.push("gg.ThoiGianBD <= NOW() AND gg.ThoiGianKT >= NOW() AND gg.TrangThaiHoatDong = 1");
+                } else if (trangthai === 'SapToi') {
+                    condition.push("gg.ThoiGianBD > NOW() AND gg.TrangThaiHoatDong = 1");
+                } else if (trangthai === 'HetHan') {
+                    condition.push("gg.ThoiGianKT < NOW()"); // Đã qua ngày kết thúc thì không cần xét cờ bật tắt
+                } else if (trangthai === 'TamDung') {
+                    condition.push("gg.TrangThaiHoatDong = 0 AND gg.ThoiGianKT >= NOW()"); // Bị tắt bằng tay nhưng chưa hết hạn
                 }
             }
 
             if(ma){
-                condition.push("gg.MaVoucher = ?");
-                value.push(ma);
+                condition.push("gg.MaVoucher like ?");
+                value.push(`%${ma}%`);
             }
 
             let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
-            const sql_core = `Select gg.*, Count(log.MaLichSu) as SoLuotDung
-                                from MaGiamGia gg
-                                left join LogSuDungMaGiamGia log on gg.MaGG = log.MaGG
-                                ${whereClause}
-                                group by gg.MaGG`;
+            const sql_core = `
+                SELECT gg.* FROM MaGiamGia gg 
+                ${whereClause}
+            `;
             const sql_count = `SELECT COUNT(*) AS total FROM (${sql_core}) as temptable`;
             const [countResult] = await db.query(sql_count,value);
             const totalItems = countResult[0].total;
             //Làm tròn lên
             const totalPage = Math.ceil(totalItems/limit);
             const sql_ds = `${sql_core}
-                order by gg.MaGG DESC, gg.ThoiGianBD DESC
+                order by gg.MaGG DESC
                 Limit ? offset ?`;
 
 
@@ -445,8 +506,10 @@ const khuyenmai = {
             // ==========================================
             // 2. LẤY DANH SÁCH SẢN PHẨM ÁP DỤNG (CÓ PHÂN TRANG)
             // ==========================================
-            const page_sp = parseInt(req.query.page_sp) || 1;
-            const limit_sp = parseInt(req.query.limit_sp) || 10;
+            let page_sp = parseInt(req.query.page_sp) || 1;
+            let limit_sp = parseInt(req.query.limit_sp) || 10;
+            if (isNaN(page_sp) || page_sp < 1) page_sp = 1;
+            if (isNaN(limit_sp) || limit_sp < 1) limit_sp = 10;
             const offset_sp = (page_sp - 1) * limit_sp;
             const {keyword_sp, keyword_kh, ma_kh, ma_dh, tu_ngay, den_ngay} = req.query;
             let condition_sp = ["ctgg.MaGG = ? "];
@@ -487,8 +550,10 @@ const khuyenmai = {
             // ==========================================
             // 3. LẤY LỊCH SỬ SỬ DỤNG (CÓ PHÂN TRANG)
             // ==========================================
-            const page_log = parseInt(req.query.page_log) || 1;
-            const limit_log = parseInt(req.query.limit_log) || 10;
+            let page_log = parseInt(req.query.page_log) || 1;
+            let limit_log = parseInt(req.query.limit_log) || 10;
+            if (isNaN(page_log) || page_log < 1) page_log = 1;
+            if (isNaN(limit_log) || limit_log < 1) limit_log = 10;
             const offset_log = (page_log - 1) * limit_log;
             let condition_log = ["ctgg.MaGG = ? "];
             let value_log = [MaGG];
@@ -504,8 +569,8 @@ const khuyenmai = {
             }
 
             if(ma_dh){
-                condition_log.push("log.MaDH = ?")
-                value_log.push(ma_dh);
+                condition_log.push("(log.MaDH = ? OR dh.MaDonHangHienThi LIKE ?)")
+                value_log.push(ma_dh, `%${ma_dh}%`);
             }
 
             if(tu_ngay){
@@ -520,10 +585,13 @@ const khuyenmai = {
 
             let whereClause_log = condition_log.length > 0 ? "where " + condition_log.join(" and ") : "";
             const sql_log_core = `
-                SELECT log.MaLichSu, log.MaKH, log.MaDH, kh.TenKH, log.SoTienDaGiam, log.ThoiGianSuDung
+                SELECT 
+                    log.MaLichSu, log.MaKH, log.MaDH, dh.MaDonHangHienThi, 
+                    COALESCE(kh.TenKH, dh.TenNguoiNhan) AS TenKH, 
+                    log.SoTienDaGiam, log.ThoiGianSuDung
                 FROM LogSuDungMaGiamGia log
-                inner join KhachHang kh on kh.MaKH= log.MaKH
-                WHERE log.MaGG = ?
+                left join KhachHang kh on kh.MaKH= log.MaKH
+                inner join DonHang dh on dh.MaDH =log.MaDH
             `;
             
             const sql_count_log = `SELECT COUNT(*) AS total FROM (${sql_log_core}) as temptable`;
@@ -574,126 +642,218 @@ const khuyenmai = {
         }
     },
 
-    them_ma_giam_gia: async(req, res) =>{
+    them_ma_giam_gia: async(req, res) => {
         const connection = await db.getConnection();
-        try{
+        try {
             await connection.beginTransaction();
-            const {TenMaGiamGia, MaVoucher, SoLuongDungToiDa, 
+            const { 
+                TenMaGiamGia, MaVoucher, SoLuongDungToiDa, 
                 ThoiGianBD, ThoiGianKT, MaKH, MucGiaToiThieu,
-                TrangThaiHoatDong, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, danhsachchitiet} = req.body;
-            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
-            const sql_them_ma_gg = `Insert into MaGiamGia
-                                        (TenMaGiamGia, MaVoucher, SoLuongDungToiDa, ThoiGianBD,
-                                        ThoiGianKT, MaKH, MucGiaToiThieu, TrangThaiHoatDong,
-                                        LoaiGiamGia, ChietKhau, GiaTriGiamToiDa)
-                                        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-            const isVisible = TrangThaiHoatDong !== 'undefined'? TrangThaiHoatDong : 0;
-            const [them_ma_gg] = await connection.query(sql_them_ma_gg, [TenMaGiamGia, MaVoucher, SoLuongDungToiDa, 
-                                                                        ThoiGianBD, ThoiGianKT, MaKH || null, MucGiaToiThieu,
-                                                                        isVisible, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa]);
-            const maGG = them_ma_gg.insertId;
-            const sql_them_chi_tiet = `Insert into ChiTietMaGiamGia
-                                        (MaGG, MaPhanLoai)
-                                        values
-                                        (?, ?)`;
-            if(danhsachchitiet && danhsachchitiet !== 'undefined'){
-                const ds_km = typeof danhsachchitiet === 'string' ? JSON.parse(danhsachchitiet) : danhsachchitiet;
-                if(Array.isArray(ds_km) && ds_km.length>0){
-                    for(let detail of ds_km){
-                        await connection.query(sql_them_chi_tiet, [
-                            maGG, detail.MaMoHinh
-                        ]);
-                    }
-                }
+                TrangThaiHoatDong, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa
+            } = req.body;
+            
+            const MaTK = req.user.id;
+
+            // 1. VALIDATION CƠ BẢN
+            if (!TenMaGiamGia || !MaVoucher || !ThoiGianBD || !ThoiGianKT || !SoLuongDungToiDa) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ các thông tin bắt buộc!" });
             }
-            await connection.query(
-                `INSERT INTO LogHoatDongKhuyenMai (NoiDung) VALUES (?)`,
-                [`${nguoiThucHien} đã tạo chương trình mã giảm giá mới: "${TenMaGiamGia}"`]
-            );
+
+            if (new Date(ThoiGianBD) >= new Date(ThoiGianKT)) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!" });
+            }
+
+            // 2. KIỂM TRA TRÙNG LẶP MÃ VOUCHER (CHỐT CHẶN QUAN TRỌNG)
+            const maVoucherClean = MaVoucher.trim().toUpperCase(); // Tự động xóa khoảng trắng và viết hoa
+            const [checkMa] = await connection.query(`SELECT MaGG FROM MaGiamGia WHERE MaVoucher = ?`, [maVoucherClean]);
+            
+            if (checkMa.length > 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Mã Voucher này đã tồn tại! Vui lòng nhập mã khác." });
+            }
+
+            // 3. TẠO MÃ GIẢM GIÁ
+            const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
+            const maxDiscount = LoaiGiamGia === 'TienMat' ? null : GiaTriGiamToiDa;
+            
+            const sql_them_ma_gg = `
+                INSERT INTO MaGiamGia (
+                    TenMaGiamGia, MaVoucher, SoLuongDungToiDa, ThoiGianBD,
+                    ThoiGianKT, MaKH, MucGiaToiThieu, TrangThaiHoatDong,
+                    LoaiGiamGia, ChietKhau, GiaTriGiamToiDa
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            
+            const [them_ma_gg] = await connection.query(sql_them_ma_gg, [
+                TenMaGiamGia, maVoucherClean, SoLuongDungToiDa, 
+                ThoiGianBD, ThoiGianKT, MaKH || null, MucGiaToiThieu || 0,
+                isVisible, LoaiGiamGia, ChietKhau, maxDiscount
+            ]);
+            
+            const maGG = them_ma_gg.insertId;
+
+            // 5. GHI LOG BẢO MẬT (Dùng bảng chuẩn)
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Tạo mới mã giảm giá #${maGG}: "${maVoucherClean}"`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'VOUCHER_CREATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
             await connection.commit();
             res.status(200).json({
                 success: true,
                 message: "Thêm mã giảm giá mới thành công!"
             });
-        }
-        catch (error){
+
+        } catch (error) {
             await connection.rollback();
-            console.error("Lỗi khi thao tác thêm mã giảm giá: " + error);
-            res.status(500).json({
-                success: false,
-                message: "Lỗi khi thêm mã giảm giá!"
-            });
-        }
-        finally{    
-            connection.release();
+            console.error("Lỗi khi thao tác thêm mã giảm giá: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi thêm mã giảm giá!" });
+        } finally {
+            if (connection) connection.release();
         }
     },
 
-    sua_ma_giam_gia: async(req, res)=>{
+    sua_ma_giam_gia: async(req, res) => {
         const connection = await db.getConnection();
-        try{
+        try {
             await connection.beginTransaction();
             const MaGG = req.params.id;
-            const {TenMaGiamGia, MaVoucher, SoLuongDungToiDa, 
+            const {
+                TenMaGiamGia, MaVoucher, SoLuongDungToiDa, 
                 ThoiGianBD, ThoiGianKT, MaKH, MucGiaToiThieu,
-                TrangThaiHoatDong, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, danhsachchitiet} = req.body;
-            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
-            const sql_sua_ma_gg = `Update MaGiamGia set
-                                        TenMaGiamGia = ?, MaVoucher = ?, SoLuongDungToiDa = ?, ThoiGianBD = ?,
-                                        ThoiGianKT = ?, MaKH = ?, MucGiaToiThieu = ?, TrangThaiHoatDong = ?,
-                                        LoaiGiamGia = ?, ChietKhau = ?, GiaTriGiamToiDa = ? where MaGG = ?`;
-            const isVisible = TrangThaiHoatDong !== 'undefined'? TrangThaiHoatDong : 0;
-            const [sua_khuyen_mai] = await connection.query(sql_sua_ma_gg, [TenMaGiamGia, MaVoucher, SoLuongDungToiDa, 
-                                                                        ThoiGianBD, ThoiGianKT, MaKH || null, MucGiaToiThieu,
-                                                                        isVisible, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, MaGG]);
-            if(danhsachchitiet && danhsachchitiet !== 'undefined'){
-                await connection.query('Delete from ChiTietMaGiamGia where MaGG = ?', [MaGG]);
-                const ds_km = typeof danhsachchitiet === 'string' ? JSON.parse(danhsachchitiet) : danhsachchitiet;
-                const sql_them_chi_tiet = `Insert into ChiTietMaGiamGia
-                                    (MaGG, MaPhanLoai)
-                                    values
-                                    (?, ?)`;
-                if(Array.isArray(ds_km) && ds_km.length>0){
-                    for(let detail of ds_km){
-                        if(detail.MaMoHinh)
-                        await connection.query(sql_them_chi_tiet, [
-                            MaGG, detail.MaMoHinh
-                        ]);
-                    }
-                }
+                TrangThaiHoatDong, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa,
+            } = req.body;
+            
+            const MaTK = req.user.id;
+
+            // 1. VALIDATION CƠ BẢN
+            if (!TenMaGiamGia || !MaVoucher || !ThoiGianKT || !SoLuongDungToiDa) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ các thông tin bắt buộc!" });
             }
-            await connection.query(
-                `INSERT INTO LogHoatDongKhuyenMai (NoiDung) VALUES (?)`,
-                [`${nguoiThucHien} đã cập nhật thông tin của chương trình mã giảm giá: "${TenMaGiamGia}"`]
+
+            // 2. LẤY THÔNG TIN GỐC TỪ DATABASE (Cột mốc sự thật)
+            const [check] = await connection.query(`SELECT MaGG, ThoiGianBD FROM MaGiamGia WHERE MaGG = ?`, [MaGG]);
+            if(check.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giảm giá cần sửa!" });
+            }
+
+            const db_ThoiGianBD = check[0].ThoiGianBD;
+            const isStarted = new Date(db_ThoiGianBD) <= new Date();
+
+            // 3. GIẢI QUYẾT XUNG ĐỘT THỜI GIAN BẮT ĐẦU
+            let final_ThoiGianBD = ThoiGianBD;
+            if (isStarted) {
+                final_ThoiGianBD = db_ThoiGianBD; // Đã chạy thì ép dùng giờ cũ
+            } else if (!ThoiGianBD) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng chọn Thời gian bắt đầu!" });
+            }
+
+            if (new Date(final_ThoiGianBD) >= new Date(ThoiGianKT)) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!" });
+            }
+
+            // 4. KIỂM TRA TRÙNG LẶP MÃ VOUCHER (Ngoại trừ chính mã đang sửa)
+            const maVoucherClean = MaVoucher.trim().toUpperCase();
+            const [checkTrungMa] = await connection.query(
+                `SELECT MaGG FROM MaGiamGia WHERE MaVoucher = ? AND MaGG != ?`, 
+                [maVoucherClean, MaGG]
             );
+            if (checkTrungMa.length > 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Mã Voucher này đã bị trùng với một chương trình khác!" });
+            }
+
+            // 5. CẬP NHẬT THÔNG TIN CHUNG
+            const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
+            const maxDiscount = LoaiGiamGia === 'TienMat' ? null : GiaTriGiamToiDa; // Làm sạch dữ liệu
+
+            const sql_sua_ma_gg = `
+                UPDATE MaGiamGia SET
+                    TenMaGiamGia = ?, MaVoucher = ?, SoLuongDungToiDa = ?, ThoiGianBD = ?,
+                    ThoiGianKT = ?, MaKH = ?, MucGiaToiThieu = ?, TrangThaiHoatDong = ?, 
+                    LoaiGiamGia = ?, ChietKhau = ?, GiaTriGiamToiDa = ? 
+                WHERE MaGG = ?
+            `;
+            // Lưu ý: Sử dụng final_ThoiGianBD và maxDiscount đã được làm sạch
+            await connection.query(sql_sua_ma_gg, [
+                TenMaGiamGia, maVoucherClean, SoLuongDungToiDa, final_ThoiGianBD, 
+                ThoiGianKT, MaKH || null, MucGiaToiThieu || 0, isVisible, 
+                LoaiGiamGia, ChietKhau, maxDiscount, MaGG
+            ]);
+
+            // 7. GHI LOG HOẠT ĐỘNG (Bảo mật)
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Cập nhật thông tin mã giảm giá #${MaGG}: "${maVoucherClean}"`;
+            
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'VOUCHER_UPDATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+            
             await connection.commit();
             res.status(200).json({
                 success: true,
                 message: "Sửa thông tin mã giảm giá thành công!"
             });
-        }
-        catch (error){
+
+        } catch (error) {
             await connection.rollback();
-            console.error("Lỗi khi thao tác sửa thông tin mã giảm giá: " + error);
-            res.status(500).json({
-                success: false,
-                message: "Lỗi khi sửa thông tin mã giảm giá!"
-            });
-        }
-        finally{
-            connection.release();
+            console.error("Lỗi khi thao tác sửa thông tin mã giảm giá: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi sửa thông tin mã giảm giá!" });
+        } finally {
+            if (connection) connection.release();
         }
     },
+
     xoa_chuong_trinh_khuyen_mai: async(req, res) => {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
             const MaKM = req.params.id;
-            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
+            const MaTK = req.user.id;
+
+            // 1. KIỂM TRA TỒN TẠI & LẤY TÊN CHƯƠNG TRÌNH ĐỂ GHI LOG CHÍNH XÁC
+            const [checkKM] = await connection.query('SELECT TenKM FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
+            if (checkKM.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy chương trình khuyến mãi này trong hệ thống!" });
+            }
+            const tenKhuyenMaiStr = checkKM[0].TenKM;
+
+            // 2. KIỂM TRA LỊCH SỬ SỬ DỤNG TRONG ĐƠN HÀNG
             const [logs] = await connection.query('SELECT 1 FROM LogSuDungKhuyenMai WHERE MaKM = ? LIMIT 1', [MaKM]);
-            
+
+            // Chuẩn bị thông tin IP cho Log đối soát
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            let noiDungLog = '';
+
+            // =====================================
+            // TRƯỜNG HỢP 1: SOFT DELETE (VÔ HIỆU HÓA)
+            // =====================================
             if (logs.length > 0) {
+                // Giữ nguyên TrangThaiHoatDong theo đúng thiết kế bảng KhuyenMai của bạn
                 await connection.query('UPDATE KhuyenMai SET TrangThaiHoatDong = 0 WHERE MaKM = ?', [MaKM]);
+
+                // BỔ SUNG: Ghi nhận hoạt động vô hiệu hóa vào hệ thống log tập trung
+                noiDungLog = `Hủy kích hoạt chiến dịch khuyến mãi #${MaKM} ("${tenKhuyenMaiStr}") do đã phát sinh lịch sử mua hàng.`;
+                await connection.query(`
+                    INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                    VALUES (?, 'PROMOTION_DEACTIVATE', ?, ?, NOW())
+                `, [MaTK, noiDungLog, userIp]);
+
                 await connection.commit();
                 return res.status(200).json({ 
                     success: true, 
@@ -702,29 +862,36 @@ const khuyenmai = {
                 });
             }
 
+            // =====================================
+            // TRƯỜNG HỢP 2: HARD DELETE (XÓA VĨNH VIỄN)
+            // =====================================
+            // Xóa chi tiết các sản phẩm áp dụng trước để tránh lỗi ràng buộc khóa ngoại (Foreign Key Constraint)
             await connection.query('DELETE FROM ChiTietKhuyenMai WHERE MaKM = ?', [MaKM]);
             await connection.query('DELETE FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
-            await connection.query(
-                `INSERT INTO LogHoatDongKhuyenMai (NoiDung) VALUES (?)`,
-                [`${nguoiThucHien} đã xóa chương trình khuyến mãi: "${MaKM}"`]
-            );
+
+            // Ghi nhận hoạt động xóa vĩnh viễn
+            noiDungLog = `Xóa vĩnh viễn chương trình khuyến mãi #${MaKM} ("${tenKhuyenMaiStr}").`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'PROMOTION_DELETE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
             await connection.commit();
             res.status(200).json({ 
                 success: true, 
                 isSoftDeleted: false, 
                 message: "Đã xóa chương trình khuyến mãi vĩnh viễn." 
             });
-        } 
-        catch (error) {
+
+        } catch (error) {
             await connection.rollback();
             console.error("Lỗi khi xóa khuyến mãi: ", error);
             res.status(500).json({ 
                 success: false, 
                 message: "Lỗi máy chủ khi thao tác xóa." 
             });
-        } 
-        finally {
-            connection.release();
+        } finally {
+            if (connection) connection.release();
         }
     },
 
@@ -733,41 +900,75 @@ const khuyenmai = {
         try {
             await connection.beginTransaction();
             const MaGG = req.params.id;
-            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
-            const [logs] = await connection.query('SELECT 1 FROM LogSuDungMaGiamGia WHERE MaGG = ? LIMIT 1', [MaGG]);
+            const MaTK = req.user.id;
             
+            // 1. KIỂM TRA TỒN TẠI & LẤY MÃ VOUCHER ĐỂ GHI LOG
+            const [checkGG] = await connection.query('SELECT MaVoucher FROM MaGiamGia WHERE MaGG = ?', [MaGG]);
+            if (checkGG.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy mã giảm giá này trong hệ thống!" });
+            }
+            const maVoucherStr = checkGG[0].MaVoucher;
+
+            // 2. KIỂM TRA LỊCH SỬ SỬ DỤNG
+            const [logs] = await connection.query('SELECT 1 FROM LogSuDungMaGiamGia WHERE MaGG = ? LIMIT 1', [MaGG]);
+
+            // Chuẩn bị thông tin IP cho Log
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            let noiDungLog = '';
+
+            // =====================================
+            // TRƯỜNG HỢP 1: SOFT DELETE (VÔ HIỆU HÓA)
+            // =====================================
             if (logs.length > 0) {
+                // FIX LỖI SẬP: Đổi TrangThaiHoatDong thành TrangThai
                 await connection.query('UPDATE MaGiamGia SET TrangThaiHoatDong = 0 WHERE MaGG = ?', [MaGG]);
+
+                // BỔ SUNG GHI LOG KHI XÓA MỀM
+                noiDungLog = `Hủy kích hoạt mã giảm giá #${MaGG} ("${maVoucherStr}") do đã có người sử dụng.`;
+                await connection.query(`
+                    INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                    VALUES (?, 'VOUCHER_DEACTIVATE', ?, ?, NOW())
+                `, [MaTK, noiDungLog, userIp]);
+
                 await connection.commit();
                 return res.status(200).json({ 
                     success: true, 
                     isSoftDeleted: true,
-                    message: "Mã giảm giá này đã có người sử dụng. Hệ thống đã tự động chuyển sang trạng thái Ngừng Hoạt Động thay vì xóa để bảo toàn dữ liệu kế toán." 
+                    message: "Mã giảm giá này đã có người sử dụng. Hệ thống đã tự động chuyển sang trạng thái Ngừng Hoạt Động để bảo toàn dữ liệu kế toán." 
                 });
             }
+
+            // =====================================
+            // TRƯỜNG HỢP 2: HARD DELETE (XÓA VĨNH VIỄN)
+            // =====================================
             await connection.query('DELETE FROM ChiTietMaGiamGia WHERE MaGG = ?', [MaGG]);
             await connection.query('DELETE FROM MaGiamGia WHERE MaGG = ?', [MaGG]);
-            await connection.query(
-                `INSERT INTO LogHoatDongKhuyenMai (NoiDung) VALUES (?)`,
-                [`${nguoiThucHien} đã xóa chương trình mã giảm giá: "${MaGG}"`]
-            );
+
+            // Ghi Log Xóa vĩnh viễn
+            noiDungLog = `Xóa vĩnh viễn mã giảm giá #${MaGG} ("${maVoucherStr}").`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'VOUCHER_DELETE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
             await connection.commit();
             res.status(200).json({ 
                 success: true, 
                 isSoftDeleted: false, 
                 message: "Đã xóa mã giảm giá vĩnh viễn." 
             });
-        } 
-        catch (error) {
+
+        } catch (error) {
             await connection.rollback();
             console.error("Lỗi khi xóa mã giảm giá: ", error);
             res.status(500).json({ 
                 success: false, 
                 message: "Lỗi máy chủ khi thao tác xóa." 
             });
-        } 
-        finally {
-            connection.release();
+        } finally {
+            if (connection) connection.release();
         }
     },
     
@@ -777,22 +978,32 @@ const khuyenmai = {
             await connection.beginTransaction();
             const { DanhSachMaPhanLoai, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, SoLuongKM } = req.body;
             const MaKM = req.params.id;
+            const MaTK = req.user.id;
 
             if (!DanhSachMaPhanLoai || !Array.isArray(DanhSachMaPhanLoai) || DanhSachMaPhanLoai.length === 0) {
+                await connection.rollback();
                 return res.status(400).json({ success: false, message: 'Vui lòng chọn ít nhất 1 sản phẩm' });
             }
 
-            const [currentKM] = await connection.query('SELECT ThoiGianBD, ThoiGianKT FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
+            // KIỂM TRA TỒN TẠI VÀ CHỐT CHẶN BẮT ĐẦU
+            const [currentKM] = await connection.query('SELECT TenKM, ThoiGianBD, ThoiGianKT FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
             if (currentKM.length === 0) {
+                await connection.rollback();
                 return res.status(404).json({ success: false, message: 'Chương trình khuyến mãi không tồn tại' });
             }
-            const { ThoiGianBD, ThoiGianKT } = currentKM[0];
+            
+            const { TenKM, ThoiGianBD, ThoiGianKT } = currentKM[0];
+            if (new Date(ThoiGianBD) <= new Date()) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: 'Không thể thêm sản phẩm! Chiến dịch này đã hoặc đang diễn ra.' });
+            }
 
+            // KIỂM TRA TRÙNG LẶP KHUNG GIỜ KHUYẾN MÃI (Giữ nguyên logic cực hay của bạn)
             const placeholders = DanhSachMaPhanLoai.map(() => '?').join(',');
             const sqlCheckOverlap = `
                 SELECT ct.MaPhanLoai, km.TenKM 
                 FROM ChiTietKhuyenMai ct
-                JOIN KhuyenMai km ON ct.MaKM = km.MaKM
+                INNER JOIN KhuyenMai km ON ct.MaKM = km.MaKM
                 WHERE ct.MaPhanLoai IN (${placeholders})
                 AND ct.MaKM != ? 
                 AND km.TrangThaiHoatDong = 1
@@ -811,21 +1022,25 @@ const khuyenmai = {
                 });
             }
 
-            const giaTriGiamToiDa = (GiaTriGiamToiDa === undefined || GiaTriGiamToiDa === null) ? null : GiaTriGiamToiDa;
+            // XỬ LÝ INSERT HÀNG LOẠT
+            const maxDiscount = LoaiGiamGia === 'TienMat' ? null : GiaTriGiamToiDa;
             const soLuongKM = (SoLuongKM === undefined || SoLuongKM === null) ? 1 : SoLuongKM;
             
             const values = DanhSachMaPhanLoai.map(MaPhanLoai => [
-                MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, giaTriGiamToiDa, soLuongKM
+                MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, maxDiscount, soLuongKM
             ]);
 
             const sqlInsert = `INSERT IGNORE INTO ChiTietKhuyenMai (MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, SoLuongKM) VALUES ?`;
             const [result] = await connection.query(sqlInsert, [values]);
 
+            // GHI LOG
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'PROMOTION_UPDATE', ?, ?, NOW())`, 
+                [MaTK, `Thêm ${result.affectedRows} sản phẩm vào khuyến mãi #${MaKM}: "${TenKM}"`, userIp]);
+
             await connection.commit();
-            res.status(200).json({ 
-                success: true, 
-                message: `Đã thêm thành công ${result.affectedRows} sản phẩm vào chiến dịch` 
-            });
+            res.status(200).json({ success: true, message: `Đã thêm thành công ${result.affectedRows} sản phẩm vào chiến dịch` });
         } 
         catch (error) {
             await connection.rollback();
@@ -833,19 +1048,40 @@ const khuyenmai = {
             res.status(500).json({ success: false, message: "Lỗi máy chủ khi thêm sản phẩm" });
         } 
         finally {
-            connection.release();
+            if (connection) connection.release();
         }
     },
 
     xoa_sp_km: async(req, res) => {
+        const connection = await db.getConnection();
         try {
-            await db.query(`DELETE FROM ChiTietKhuyenMai WHERE MaKM = ? AND MaPhanLoai = ?`, [req.params.id, req.params.maPhanLoai]);
-            res.status(200).json({ success: true });
+            await connection.beginTransaction();
+            const MaKM = req.params.id;
+            const MaPhanLoai = req.params.maPhanLoai;
+            const MaTK = req.user.id;
+
+            const [currentKM] = await connection.query('SELECT TenKM, ThoiGianBD FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
+            if (currentKM.length > 0 && new Date(currentKM[0].ThoiGianBD) <= new Date()) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: 'Không thể xóa! Chiến dịch này đã bắt đầu.' });
+            }
+
+            await connection.query(`DELETE FROM ChiTietKhuyenMai WHERE MaKM = ? AND MaPhanLoai = ?`, [MaKM, MaPhanLoai]);
+            
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'PROMOTION_UPDATE', ?, ?, NOW())`, 
+                [MaTK, `Xóa phân loại SP #${MaPhanLoai} khỏi khuyến mãi #${MaKM}`, userIp]);
+
+            await connection.commit();
+            res.status(200).json({ success: true, message: "Xóa sản phẩm thành công" });
         } 
         catch (error) { 
-            res.status(500).json({ 
-                success: false 
-            }); 
+            await connection.rollback();
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi xóa sản phẩm" }); 
+        }
+        finally {
+            if (connection) connection.release();
         }
     },
 
@@ -855,58 +1091,80 @@ const khuyenmai = {
             await connection.beginTransaction();
             const { DanhSachMaPhanLoai } = req.body;  
             const MaGG = req.params.id;
+            const MaTK = req.user.id;
 
             if (!DanhSachMaPhanLoai || !Array.isArray(DanhSachMaPhanLoai) || DanhSachMaPhanLoai.length === 0) {
+                await connection.rollback();
                 return res.status(400).json({ success: false, message: 'Vui lòng chọn ít nhất 1 sản phẩm' });
             }
 
-            let addedCount = 0;
-            const sql_insert = `INSERT INTO ChiTietMaGiamGia (MaGG, MaPhanLoai) VALUES (?, ?)`;
-
-            for (const MaPhanLoai of DanhSachMaPhanLoai) {
-                const [existing] = await connection.query('SELECT 1 FROM ChiTietMaGiamGia WHERE MaGG = ? AND MaPhanLoai = ?', [MaGG, MaPhanLoai]);
-                
-                if (existing.length === 0) {
-                    await connection.query(sql_insert, [MaGG, MaPhanLoai]);
-                    addedCount++;
-                }
+            const [currentVoucher] = await connection.query('SELECT MaVoucher, ThoiGianBD FROM MaGiamGia WHERE MaGG = ?', [MaGG]);
+            if (currentVoucher.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: 'Mã giảm giá không tồn tại' });
+            }
+            if (new Date(currentVoucher[0].ThoiGianBD) <= new Date()) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: 'Không thể thêm sản phẩm! Mã giảm giá này đã bắt đầu có hiệu lực.' });
             }
 
+            // TỐI ƯU SIÊU TỐC: Bỏ vòng lặp for, dùng INSERT IGNORE Bulk giống hệt Khuyến Mãi
+            const values = DanhSachMaPhanLoai.map(MaPhanLoai => [MaGG, MaPhanLoai]);
+            const sql_insert = `INSERT IGNORE INTO ChiTietMaGiamGia (MaGG, MaPhanLoai) VALUES ?`;
+            const [result] = await connection.query(sql_insert, [values]);
+
+            // GHI LOG
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'VOUCHER_UPDATE', ?, ?, NOW())`, 
+                [MaTK, `Thêm ${result.affectedRows} sản phẩm vào Voucher #${MaGG}: "${currentVoucher[0].MaVoucher}"`, userIp]);
+
             await connection.commit();
-            res.status(200).json({ 
-                success: true,
-                message: `Đã thêm thành công ${addedCount} sản phẩm vào Voucher` 
-            });
+            res.status(200).json({ success: true, message: `Đã thêm thành công ${result.affectedRows} sản phẩm vào Voucher` });
         } 
         catch (error) { 
             await connection.rollback();
             console.error("Lỗi API them_sp_voucher:", error);
-            res.status(500).json({ 
-                success: false, 
-                message: "Lỗi máy chủ khi thêm sản phẩm vào Voucher" 
-            }); 
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi thêm sản phẩm vào Voucher" }); 
         } 
         finally {
-            connection.release();
+            if (connection) connection.release();
         }
     },
 
     xoa_sp_voucher: async(req, res) => {
+        const connection = await db.getConnection();
         try {
-            await db.query(
-                `DELETE FROM ChiTietMaGiamGia WHERE MaGG = ? AND MaPhanLoai = ?`,
-                [req.params.id, req.params.maPhanLoai]
-            );
-            res.status(200).json({ 
-                success: true 
-            });
+            await connection.beginTransaction();
+            const MaGG = req.params.id;
+            const MaPhanLoai = req.params.maPhanLoai;
+            const MaTK = req.user.id;
+
+            const [currentVoucher] = await connection.query('SELECT MaVoucher, ThoiGianBD FROM MaGiamGia WHERE MaGG = ?', [MaGG]);
+            if (currentVoucher.length > 0 && new Date(currentVoucher[0].ThoiGianBD) <= new Date()) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: 'Không thể xóa! Mã giảm giá này đã có hiệu lực.' });
+            }
+
+            await connection.query(`DELETE FROM ChiTietMaGiamGia WHERE MaGG = ? AND MaPhanLoai = ?`, [MaGG, MaPhanLoai]);
+            
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'VOUCHER_UPDATE', ?, ?, NOW())`, 
+                [MaTK, `Xóa phân loại SP #${MaPhanLoai} khỏi Voucher #${MaGG}`, userIp]);
+
+            await connection.commit();
+            res.status(200).json({ success: true, message: "Xóa sản phẩm thành công" });
         } 
         catch (error) { 
-            res.status(500).json({ 
-                success: false 
-            }); 
+            await connection.rollback();
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi xóa sản phẩm" }); 
+        }
+        finally {
+            if (connection) connection.release();
         }
     },
+
     tim_kiem_san_pham: async(req, res) => {
         try {
             const keyword = req.query.search || '';
@@ -945,22 +1203,30 @@ const khuyenmai = {
             res.status(500).json({ success: false, message: "Lỗi máy chủ khi tìm kiếm sản phẩm" });
         }
     },
+
     thong_ke_khuyen_mai: async(req, res) => {
         try {
-            const sql_km = `SELECT (SELECT COUNT(*) FROM KhuyenMai) as Total,
-                            (SELECT COUNT(*) FROM KhuyenMai WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1) as Active,
-                            (SELECT COUNT(*) FROM LogSuDungKhuyenMai) as TotalUsage,
-                            (SELECT COUNT(DISTINCT ctkm.MaPhanLoai) 
-                            FROM ChiTietKhuyenMai ctkm 
-                            INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM 
-                            WHERE km.ThoiGianBD <= NOW() AND km.ThoiGianKT >= NOW() AND km.TrangThaiHoatDong = 1) as TotalProducts`;
+            const sql_km = `
+                SELECT 
+                    (SELECT COUNT(*) FROM KhuyenMai) as Total,
+                    (SELECT COUNT(*) FROM KhuyenMai WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1) as Active,
+                    (SELECT COUNT(*) FROM LogSuDungKhuyenMai) as TotalUsage,
+                    (SELECT COUNT(DISTINCT ctkm.MaPhanLoai) 
+                     FROM ChiTietKhuyenMai ctkm 
+                     INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM 
+                     WHERE km.ThoiGianBD <= NOW() AND km.ThoiGianKT >= NOW() AND km.TrangThaiHoatDong = 1) as TotalProducts
+            `;
             const [stat_km] = await db.query(sql_km);
 
-            const sql_gg = `SELECT (SELECT COUNT(*) FROM MaGiamGia) as Total,
-                            (SELECT COUNT(*) FROM MaGiamGia WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1) as Active,
-                            (SELECT COUNT(*) FROM LogSuDungMaGiamGia) as TotalUsage,
-                            (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'PhanTram') as AvgPercent,
-                            (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'TienMat') as AvgCash`;
+            // FIX: Sửa TrangThaiHoatDong thành TrangThai, thêm điều kiện SoLuongDaDung
+            const sql_gg = `
+                SELECT 
+                    (SELECT COUNT(*) FROM MaGiamGia) as Total,
+                    (SELECT COUNT(*) FROM MaGiamGia WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThai = 1 AND SoLuongDaDung < SoLuongDungToiDa) as Active,
+                    (SELECT COUNT(*) FROM LogSuDungMaGiamGia) as TotalUsage,
+                    (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'PhanTram') as AvgPercent,
+                    (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'TienMat') as AvgCash
+            `;
             const [stat_gg] = await db.query(sql_gg);
 
             res.status(200).json({
@@ -984,14 +1250,14 @@ const khuyenmai = {
         } 
         catch (error) {
             console.error("Lỗi khi lấy thống kê: ", error);
-            res.status(500).json({ 
-                message: "Lỗi máy chủ khi lấy thống kê" 
-            });
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi lấy thống kê" });
         }
     },
+
     xuat_bao_cao_khuyen_mai: async (req, res) => {
         try {
             const MaKM = req.params.id;
+            const MaTK = req.user.id;
             const sql_tt = `SELECT TenKM FROM KhuyenMai WHERE MaKM = ?`;
             const [result_tt] = await db.query(sql_tt, [MaKM]);
             
@@ -1002,8 +1268,12 @@ const khuyenmai = {
                 });
             }
             const tenChienDich = result_tt[0].TenKM;
-            const sql_log = `SELECT log.MaLichSu, log.MaDH, kh.TenKH, log.SoTienDaGiam, log.ThoiGianSuDung
+            const sql_log = `SELECT 
+                                log.MaLichSu, dh.MaDonHangHienThi, 
+                                COALESCE(kh.TenKH, dh.TenNguoiNhan) AS TenKhachHang, 
+                                log.SoTienDaGiam, log.ThoiGianSuDung
                             FROM LogSuDungKhuyenMai log
+                            INNER JOIN DonHang dh ON dh.MaDH = log.MaDH
                             LEFT JOIN KhachHang kh ON kh.MaKH = log.MaKH
                             WHERE log.MaKM = ?
                             ORDER BY log.ThoiGianSuDung DESC`;
@@ -1015,7 +1285,7 @@ const khuyenmai = {
             worksheet.columns = [
                 { header: 'Mã Lịch Sử', key: 'maLS', width: 15 },
                 { header: 'Tên Khách Hàng', key: 'tenKH', width: 30 },
-                { header: 'Mã Đơn Hàng', key: 'maDH', width: 15 },
+                { header: 'Mã Đơn Hàng', key: 'maDH', width: 20 },
                 { header: 'Số Tiền Đã Giảm (VNĐ)', key: 'soTien', width: 25 },
                 { header: 'Thời Gian Sử Dụng', key: 'thoiGian', width: 25 }
             ];
@@ -1030,8 +1300,8 @@ const khuyenmai = {
 
                 worksheet.addRow({
                     maLS: `#${log.MaLichSu}`,
-                    tenKH: log.TenKH || 'Khách ẩn danh',
-                    maDH: `#${log.MaDH}`,
+                    tenKH: log.TenKhachHang,
+                    maDH: `#${log.MaDonHangHienThi}`,
                     soTien: Number(log.SoTienDaGiam), 
                     thoiGian: formattedDate
                 });
@@ -1042,6 +1312,12 @@ const khuyenmai = {
             
             const safeFileName = tenChienDich.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
             res.setHeader('Content-Disposition', `attachment; filename=Bao_Cao_${safeFileName}.xlsx`);
+
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            const TenKM = result_tt[0].TenKM;
+            await db.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'PROMOTION_REPORT', ?, ?, NOW())`, 
+                [MaTK, `Xuất báo cáo chương trình khuyến mãi #${MaKM}: "${TenKM}"`, userIp]);
 
             await workbook.xlsx.write(res);
             res.status(200).end();
@@ -1055,6 +1331,7 @@ const khuyenmai = {
     xuat_bao_cao_voucher: async (req, res) => {
         try {
             const MaGG = req.params.id;
+            const MaTK = req.user.id;
             const sql_tt = `SELECT TenMaGiamGia, MaVoucher FROM MaGiamGia WHERE MaGG = ?`;
             const [result_tt] = await db.query(sql_tt, [MaGG]);
             
@@ -1062,8 +1339,12 @@ const khuyenmai = {
                 return res.status(404).json({ success: false, message: "Không tìm thấy mã giảm giá!" });
             }
             const tenChienDich = `${result_tt[0].MaVoucher}_${result_tt[0].TenMaGiamGia}`;
-            const sql_log = `SELECT log.MaLichSu, log.MaDH, kh.TenKH, log.SoTienDaGiam, log.ThoiGianSuDung
+            const sql_log = `SELECT 
+                                log.MaLichSu, dh.MaDonHangHienThi, 
+                                COALESCE(kh.TenKH, dh.TenNguoiNhan) AS TenKhachHang, 
+                                log.SoTienDaGiam, log.ThoiGianSuDung
                             FROM LogSuDungMaGiamGia log
+                            INNER JOIN DonHang dh ON dh.MaDH = log.MaDH
                             LEFT JOIN KhachHang kh ON kh.MaKH = log.MaKH
                             WHERE log.MaGG = ?
                             ORDER BY log.ThoiGianSuDung DESC`;
@@ -1075,7 +1356,7 @@ const khuyenmai = {
             worksheet.columns = [
                 { header: 'Mã Lịch Sử', key: 'maLS', width: 15 },
                 { header: 'Tên Khách Hàng', key: 'tenKH', width: 30 },
-                { header: 'Mã Đơn Hàng', key: 'maDH', width: 15 },
+                { header: 'Mã Đơn Hàng', key: 'maDH', width: 20 },
                 { header: 'Số Tiền Đã Giảm (VNĐ)', key: 'soTien', width: 25 },
                 { header: 'Thời Gian Sử Dụng', key: 'thoiGian', width: 25 }
             ];
@@ -1090,8 +1371,8 @@ const khuyenmai = {
 
                 worksheet.addRow({
                     maLS: `#${log.MaLichSu}`,
-                    tenKH: log.TenKH || 'Khách ẩn danh',
-                    maDH: `#${log.MaDH}`,
+                    tenKH: log.TenKhachHang,
+                    maDH: `#${log.MaDonHangHienThi}`,
                     soTien: Number(log.SoTienDaGiam), 
                     thoiGian: formattedDate
                 });
@@ -1103,6 +1384,12 @@ const khuyenmai = {
             const safeFileName = tenChienDich.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
             res.setHeader('Content-Disposition', `attachment; filename=Bao_Cao_Voucher_${safeFileName}.xlsx`);
 
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            const TenGG = result_tt[0].TenMaGiamGia;
+            await db.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'VOUCHER_REPORT', ?, ?, NOW())`, 
+                [MaTK, `Xuất báo cáo chương trình mã giảm giá #${MaGG}: "${TenGG}"`, userIp]);
+
             await workbook.xlsx.write(res);
             res.status(200).end();
 
@@ -1112,19 +1399,34 @@ const khuyenmai = {
             res.status(500).json({ success: false, message: "Lỗi máy chủ khi tạo báo cáo!" });
         }
     },
+
     lay_nhat_ky_hoat_dong: async(req, res) => {
         try {
-            const sql = `SELECT * FROM LogHoatDongKhuyenMai ORDER BY ThoiGian DESC LIMIT 4`;
+            // Lấy 4 dòng mới nhất để hiển thị ở màn hình Dashboard thu gọn
+            // Dùng COALESCE để lấy HoTen, nếu không có thì lấy TenDN, nếu vẫn không có thì hiện 'Admin'
+            const sql = `
+                SELECT 
+                    log.*, 
+                    COALESCE(nv.TenNV, tk.TenDN, 'Admin') AS NguoiThucHien 
+                FROM LogHoatDongTaiKhoan log
+                inner JOIN TaiKhoan tk ON log.MaTK = tk.MaTK
+                inner join NhanVien nv on nv.MaTK = tk.MaTK
+                WHERE log.LoaiLog LIKE 'PROMOTION_%' OR log.LoaiLog LIKE 'VOUCHER_%'
+                ORDER BY log.ThoiGian DESC 
+                LIMIT 4
+            `;
             const [logs] = await db.query(sql);
+            
             res.status(200).json({ 
                 success: true, 
                 data: logs 
             });
         } 
         catch (error) {
+            console.error("Lỗi khi lấy nhật ký hoạt động thu gọn: ", error);
             res.status(500).json({ 
                 success: false,
-                message: "Lỗi máy chủ!" 
+                message: "Lỗi máy chủ khi tải nhật ký!" 
             });
         }
     },
@@ -1132,26 +1434,50 @@ const khuyenmai = {
     lay_tat_ca_log_phan_trang: async(req, res) => {
         try {
             const page = parseInt(req.query.page) || 1;
-            const limit = 10; 
+            const limit = parseInt(req.query.limit) || 10; 
             const offset = (page - 1) * limit;
 
-            const [countResult] = await db.query(`SELECT COUNT(*) AS total FROM LogHoatDongKhuyenMai`);
-            const totalPage = Math.ceil(countResult[0].total / limit);
+            // Điều kiện lọc chung cho cả lệnh Đếm và lệnh Lấy danh sách
+            const whereClause = `WHERE LoaiLog LIKE 'PROMOTION_%' OR LoaiLog LIKE 'VOUCHER_%'`;
 
-            const [logs] = await db.query(
-                `SELECT * FROM LogHoatDongKhuyenMai ORDER BY ThoiGian DESC LIMIT ? OFFSET ?`,
-                [limit, offset]
-            );
+            const sql_count = `SELECT COUNT(*) AS total FROM LogHoatDongTaiKhoan ${whereClause}`;
+            
+            const sql_ds = `
+                SELECT 
+                    log.*, 
+                    COALESCE(tk.HoTen, tk.TenDN, 'Admin') AS NguoiThucHien 
+                FROM LogHoatDongTaiKhoan log
+                LEFT JOIN TaiKhoan tk ON log.MaTK = tk.MaTK
+                ${whereClause}
+                ORDER BY log.ThoiGian DESC 
+                LIMIT ? OFFSET ?
+            `;
+
+            // CHẠY SONG SONG TỐI ƯU TỐC ĐỘ
+            const [[countResult], [logs]] = await Promise.all([
+                db.query(sql_count),
+                db.query(sql_ds, [limit, offset])
+            ]);
+
+            const totalItems = countResult[0].total;
+            const totalPage = Math.ceil(totalItems / limit);
 
             res.status(200).json({
-                success: true, data: logs,
-                pagination: { currentPage: page, totalPage: totalPage }
+                success: true, 
+                data: logs,
+                pagination: { 
+                    currentPage: page, 
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage 
+                }
             });
         } 
         catch (error) {
+            console.error("Lỗi khi lấy nhật ký hoạt động phân trang: ", error);
             res.status(500).json({ 
                 success: false, 
-                message: "Lỗi máy chủ!" 
+                message: "Lỗi máy chủ khi tải nhật ký!" 
             });
         }
     }

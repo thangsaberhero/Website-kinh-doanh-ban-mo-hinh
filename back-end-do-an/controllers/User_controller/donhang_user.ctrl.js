@@ -751,7 +751,7 @@ const donhang_user = {
                 from KhachHang
                 where MaTK = ?
             `;
-            const [result_kh] = await db.query(sql_laymagiohang, [MaTK]);
+            const [result_kh] = await db.query(sql_laymakhachhang, [MaTK]);
 
             if(result_kh.length === 0) {
                 await db.rollback();
@@ -915,6 +915,183 @@ const donhang_user = {
             res.status(500).json({
                 success: false,
                  message: "Lỗi server khi thao tác đơn hàng!"});
+        }
+    },
+
+    huy_don_hang: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const { MaDH } = req.body;
+            const MaTK = req.user.id; // Lấy từ Token để xác thực
+
+            // 1. Kiểm tra đơn hàng có tồn tại và CÓ PHẢI CỦA NGƯỜI NÀY KHÔNG
+            const sql_kiemtra_tt = `
+                SELECT cttt.MaTrangThai, dh.MaKH, dh.MaDonHangHienThi
+                FROM DonHang dh
+                LEFT JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
+                INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH
+                WHERE dh.MaDH = ? AND kh.MaTK = ?
+                ORDER BY cttt.Thoigian DESC LIMIT 1
+            `;
+            const [don_hang] = await connection.query(sql_kiemtra_tt, [MaDH, MaTK]);
+
+            if(don_hang.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng của bạn!" });
+            }
+
+            const currentStatus = don_hang[0].MaTrangThai;
+            const maHienThi = don_hang[0].MaDonHangHienThi;
+
+            // 2. NGHIỆP VỤ: Khách chỉ được hủy khi đơn đang "Chờ duyệt" (Mã 1)
+            // (Mã 2: Đang đóng gói, 3: Đang vận chuyển, 4: Đã giao... thì không được hủy online)
+            if(currentStatus !== 1){
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Không thể huỷ! Đơn hàng của bạn đã được Shop tiếp nhận xử lý hoặc đã giao cho đơn vị vận chuyển, vui lòng liên hệ nhân viên để có hướng xử lý."
+                });
+            }
+
+            // 3. THÊM TRẠNG THÁI HỦY (Mã 5)
+            await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, [MaDH]);
+
+            // 4. Lấy chi tiết đơn hàng (Gom nhóm số lượng theo Phân Loại để tránh cộng đúp)
+            const sql_lay_chi_tiet = `
+                SELECT MaPhanLoai, SUM(SoLuong) AS TongSoLuong 
+                FROM ChiTietDonHang 
+                WHERE MaDH = ? 
+                GROUP BY MaPhanLoai
+            `;
+            const [chi_tiet_don] = await connection.query(sql_lay_chi_tiet, [MaDH]);
+
+            // 5. HOÀN TRẢ TỒN KHO 
+            for (let item of chi_tiet_don) {
+                await connection.query(`
+                    UPDATE PhanLoai SET SoLuong = SoLuong + ? WHERE MaPhanLoai = ?
+                `, [item.TongSoLuong, item.MaPhanLoai]);
+            }
+
+            // 6. HOÀN TRẢ KHUYẾN MÃI (Flash Sale)
+            const sql_lay_khuyen_mai = `SELECT MaKM, MaKH, SoTienDaGiam FROM LogSuDungKhuyenMai WHERE MaDH = ?`;
+            const [log_km] = await connection.query(sql_lay_khuyen_mai, [MaDH]);
+            
+            for (let km of log_km) {
+                // Hoàn lại số lượng dựa trên số lượng hàng khuyến mãi trong ChiTietDonHang
+                const [hang_km] = await connection.query(`
+                    SELECT SoLuong FROM ChiTietDonHang 
+                    WHERE MaDH = ? AND LaHangKhuyenMai = 1
+                `, [MaDH]);
+                
+                if(hang_km.length > 0) {
+                    await connection.query(`
+                        UPDATE ChiTietKhuyenMai SET SoLuongDaDung = GREATEST(0, SoLuongDaDung - ?) 
+                        WHERE MaKM = ?
+                    `, [hang_km[0].SoLuong, km.MaKM]);
+                }
+            }
+            // Xóa log dùng khuyến mãi để sau này tính toán báo cáo không bị sai
+            await connection.query(`DELETE FROM LogSuDungKhuyenMai WHERE MaDH = ?`, [MaDH]);
+
+            // 7. HOÀN TRẢ MÃ GIẢM GIÁ (VOUCHER)
+            const sql_lay_voucher = `SELECT MaGG FROM LogSuDungMaGiamGia WHERE MaDH = ?`;
+            const [log_voucher] = await connection.query(sql_lay_voucher, [MaDH]);
+            
+            if (log_voucher.length > 0) {
+                await connection.query(`
+                    UPDATE MaGiamGia SET SoLuongDaDung = GREATEST(0, SoLuongDaDung - 1) 
+                    WHERE MaGG = ?
+                `, [log_voucher[0].MaGG]);
+                
+                // Xóa log dùng voucher để khách có thể áp mã lại cho đơn sau
+                await connection.query(`DELETE FROM LogSuDungMaGiamGia WHERE MaDH = ?`, [MaDH]);
+            }
+
+            // 8. GHI LOG HOẠT ĐỘNG
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Khách hàng tự hủy đơn hàng #${MaDH} (${maHienThi})`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'ORDER_CANCEL', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            await connection.commit();
+            res.status(200).json({
+                success: true,
+                message: "Huỷ đơn hàng thành công! Số lượng và mã giảm giá đã được hoàn trả."
+            });
+        }
+        catch (error) {
+            await connection.rollback();
+            console.error("Lỗi khi huỷ đơn hàng: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi huỷ đơn hàng!"});
+        }
+        finally {
+            if (connection) connection.release();
+        }
+    },
+
+    sua_thong_tin_don_hang_client: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const { MaDH, sdt, hoten, diachi } = req.body;
+            const MaTK = req.user.id; // ID tài khoản của chính khách hàng đang đăng nhập
+
+            if (!MaDH || !sdt || !hoten || !diachi) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Thông tin không được để trống!" });
+            }
+
+            // RÀNG BUỘC BẢO MẬT: Phải INNER JOIN với KhachHang để chắc chắn đơn này do MaTK này đặt
+            const sql_check_owner = `
+                SELECT cttt.MaTrangThai, dh.MaDonHangHienThi
+                FROM DonHang dh
+                INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH
+                LEFT JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
+                WHERE dh.MaDH = ? AND kh.MaTK = ?
+                ORDER BY cttt.Thoigian DESC LIMIT 1
+            `;
+            const [don_hang] = await connection.query(sql_check_owner, [MaDH, MaTK]);
+
+            if (don_hang.length === 0) {
+                await connection.rollback();
+                return res.status(403).json({ success: false, message: "Bạn không có quyền chỉnh sửa đơn hàng này!" });
+            }
+
+            const currentStatus = don_hang[0].MaTrangThai;
+
+            // RÀNG BUỘC NGHIỆP VỤ: Khách hàng CHỈ được sửa khi trạng thái là "Chờ duyệt" (Mã 1)
+            if (currentStatus !== 1) {
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Không thể tự sửa thông tin! Đơn hàng đã được tiếp nhận đóng gói hoặc vận chuyển. Vui lòng liên hệ Hotline shop để được hỗ trợ thủ công."
+                });
+            }
+
+            // Tiến hành cập nhật địa chỉ mới
+            const sql_update = `
+                UPDATE DonHang 
+                SET TenNguoiNhan = ?, SDTNguoiNhan = ?, DiaChiGiao = ? 
+                WHERE MaDH = ?
+            `;
+            await connection.query(sql_update, [hoten, sdt, diachi, MaDH]);
+
+            await connection.commit();
+            res.status(200).json({
+                success: true,
+                message: "Cập nhật thông tin nhận hàng thành công!"
+            });
+        } catch (error) {
+            await connection.rollback();
+            console.error("Lỗi khách hàng sửa thông tin đơn: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi chỉnh sửa thông tin!" });
+        } finally {
+            if (connection) connection.release();
         }
     },
 

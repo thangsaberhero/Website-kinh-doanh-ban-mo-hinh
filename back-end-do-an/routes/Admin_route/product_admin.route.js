@@ -35,7 +35,7 @@ router.put('/fix_brand/:id', uploadBrand.single('Logo'), authMiddleware.verifyTo
 router.post('/add_variant', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_danh_muc_moi);
 router.post('/add_product_variant', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_phan_loai_cho_san_pham);
 
-router.post('/add_detail_variant', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_chi_tiet_danh_muc_moi);
+// router.post('/add_detail_variant', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_chi_tiet_danh_muc_moi);
 
 router.put('/fix_info/:id', upload.fields([
     { name: 'AnhDaiDien', maxCount: 1 },
@@ -48,10 +48,9 @@ router.post('/an_phan_loai', authMiddleware.verifyToken, authMiddleware.verifyAd
 
 
 
-router.post('/delete_brand', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_HSX);
+router.delete('/delete_brand', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_HSX);
 router.post('/add_brand', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_hang_san_xuat_moi);
 
-router.put('/fix_brand/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.sua_thong_tin_HSX);
 router.put('/fix_cate/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.sua_thong_tin_danh_muc);
 
 router.delete('/delete_detail/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_danh_muc);
@@ -64,11 +63,11 @@ router.delete('/delete_detail_variant/:id', authMiddleware.verifyToken, authMidd
 router.get('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.liet_ke_mat_hang);
 router.get('/get_brand', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.get_brand);
 router.get('/get_all_brand', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.liet_ke_brand);
-router.get('/get_all_cate', authMiddleware.verifyToken, authMiddleware.verifyStaff,product_Controller.liet_ke_danh_muc);
+router.get('/get_all_cate', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.liet_ke_danh_muc);
 router.get('/getvariant', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.getAllvariant);
 router.get('/getdetailvariant/:MaDM', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.getAlldetailvariant);
 router.get('/watch/:MaMH', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.xem_thong_tin_san_pham);
 
-router.get('/thong_ke_hsx', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.thong_ke_hang_san_xuat);
+router.get('/thong_ke_hsx', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.thong_ke_hang_san_xuat);
 
 module.exports = router;

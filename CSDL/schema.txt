@@ -103,6 +103,7 @@ CREATE TABLE MoHinh (
     TienCocToiThieu DECIMAL(12,2) CHECK (TienCocToiThieu >= 0),
 	HienThi TINYINT default 0,
     MaVach_Serial VARCHAR(100) UNIQUE NOT NULL,
+    Is_Minted TINYINT DEFAULT 0,
     FOREIGN KEY (MaHSX) REFERENCES HangSanXuat(MaHSX),
     FOREIGN KEY (MaDM) REFERENCES DanhMuc(MaDM),
     FOREIGN KEY (MaChiTietDM) REFERENCES ChiTietDanhMuc(MaChiTietDM)
@@ -193,6 +194,7 @@ CREATE TABLE ChiTietGioHang (
 -- 15. Bảng Đơn hàng
 CREATE TABLE DonHang (
     MaDH INT PRIMARY KEY AUTO_INCREMENT,
+    MaDonHangHienThi Varchar(50) UNIQUE,
     MaKH INT,
     MaNV INT,
     NgayLapDon DATETIME,
@@ -388,7 +390,6 @@ CREATE TABLE DanhGia (
     MaNV_PhanHoi INT NULL,  
     TrangThai TINYINT DEFAULT 1, 
     ThoiGianDG DATETIME DEFAULT CURRENT_TIMESTAMP,
-    MaNV_PhanHoi INT NULL;
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
     FOREIGN KEY (MaMH) REFERENCES MoHinh(MaMoHinh),
     FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai),

@@ -5,6 +5,12 @@ const bcrypt = require('bcryptjs');
 
 const fix_user_info = {
     laythongtin: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
         try {
             const MaTK = req.user.id; 
 
@@ -33,12 +39,27 @@ const fix_user_info = {
     },
 
     capnhatthongtin: async(req, res) => {
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
             const {email, TenKH, DiaChi, SDT} = req.body;
             const MaTK = req.user.id; 
             const newFileName = req.file ? req.file.filename : null; 
+
+            const [check] = await connection(`Select Email from TaiKhoan where Email = ? and MaTK != ?`,[email, MaTK]);
+            if([check.length > 0]){
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Không thay đổi được do trùng Email!"
+                });
+            }
 
             if (newFileName) {
                 const sql_lay_anh_cu = 'SELECT AnhDaiDien FROM TaiKhoan WHERE MaTK = ?';
@@ -79,26 +100,45 @@ const fix_user_info = {
     },
 
     doi_mat_khau: async(req, res) =>{
+        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+            });
+        }
         const connection = await db.getConnection();
         try {
             const {MatKhau} = req.body;
             const MaTK = req.user.id; 
             const [check] = await connection.query('Select MatKhau from TaiKhoan where MaTK = ?',[MaTK]);
+            if(check.length > 0){
+                await connection.rollback();
+                return res.status(404).json({ 
+                    success: false,
+                    message: "Không tìm thấy tài khoản!" });
+            }            
             const is_match = await bcrypt.compare(MatKhau, check.MatKhau);
             if(is_match){
                 await connection.rollback();
-                res.status(200).json({message: "Sai dữ liệu!"});
+                res.status(200).json({
+                    success: false,
+                    message: "Mật khẩu trùng mật khẩu cũ!"});
             }
 
             const hash = await bcrypt.hash(MatKhauMoi, 10);
-            await db.query('UPDATE TaiKhoan SET MatKhau = ? WHERE MaTK = ?', [hash, MaTK]);
+            await connection.query('UPDATE TaiKhoan SET MatKhau = ? WHERE MaTK = ?', [hash, MaTK]);
 
-            res.status(200).json({ message: "Đổi mật khẩu thành công!" });
+            await connection.commit();
+            res.status(200).json({
+                success: true,
+                 message: "Đổi mật khẩu thành công!" });
         }
         catch (error){
             await connection.rollback();
             console.error("Lỗi khi đổi mật khẩu: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác thông tin khách hàng!"});
+            res.status(500).json({
+                success: false,
+                message: "Lỗi server khi thao tác thông tin khách hàng!"});
         }
         finally{
             connection.release();

@@ -32,7 +32,7 @@ const upload = multer({
 
 
 // 3. Sửa Route: Thêm middleware 'upload.single('avatar')' vào giữa
-router.get('/laythongtin/:MaTK', authMiddleware.verifyToken, info_userController.laythongtin);
+router.get('/laythongtin', authMiddleware.verifyToken, info_userController.laythongtin);
 router.post('/change_info', authMiddleware.verifyToken, upload.single('avatar'), info_userController.capnhatthongtin);
 router.post('/change_password', authMiddleware.verifyToken, info_userController.doi_mat_khau);
 

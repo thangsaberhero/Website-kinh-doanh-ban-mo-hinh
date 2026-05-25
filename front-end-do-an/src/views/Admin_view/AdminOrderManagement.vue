@@ -858,6 +858,26 @@ const exportExcelReport = async () => {
     }
     activeMenuId.value = null;
   };
+  const handlePrintInvoice = (maDHGoc) => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        toastStore.showToast("⚠️ Vui lòng đăng nhập lại!", "error");
+        return;
+    }
+
+    // Đường dẫn trỏ trực tiếp đến API in hóa đơn vừa tạo ở Backend
+    const printUrl = `http://localhost:3000/api/orders/print/${maDHGoc}`;
+
+    // Mở một popup/tab ẩn của trình duyệt để load giao diện HTML hóa đơn
+    const printWindow = window.open(printUrl, '_blank', 'width=800,height=600');
+    
+    if (printWindow) {
+        printWindow.focus();
+    } else {
+        toastStore.showToast("⚠️ Trình duyệt đã chặn cửa sổ Popup. Vui lòng cấp quyền mở Popup cho trang web!", "error");
+    }
+};
 </script>
   
 <style scoped>

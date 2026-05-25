@@ -846,7 +846,12 @@
 
   const fetchBrands = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/product_admin/get_brand');
+      const token = localStorage.getItem('token'); // Lấy thẻ
+      const response = await fetch('http://localhost:3000/api/product_admin/get_brand',{
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const result = await response.json();
       if (result.success) {
         Brands.value = [{ MaHSX: 'all', TenHSX: 'Tất cả' }, ...result.data];
@@ -890,7 +895,12 @@
   // 1. Hàm lấy danh sách Danh mục lớn
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/product_admin/getvariant');
+      const token = localStorage.getItem('token'); // Lấy thẻ
+      const response = await fetch('http://localhost:3000/api/product_admin/getvariant',
+        {
+          headers: {'Authorization': `Bearer ${token}`}
+        }
+      );
       const result = await response.json();
       if (result.success) filterCategories.value = result.data;
     } catch (error) { console.error("Lỗi lấy danh mục:", error); }
@@ -904,7 +914,12 @@
       return;
     }
     try {
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${MaDM}`);
+      const token = localStorage.getItem('token'); // Lấy thẻ
+      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${MaDM}`,
+        {
+          headers: {'Authorization': `Bearer ${token}`}
+        }
+      );
       const result = await response.json();
       if (result.success) detailCategories.value = result.data;
     } catch (error) { console.error("Lỗi lấy danh mục con:", error); }
@@ -920,6 +935,7 @@
   const fetchProducts = async () => {
     isLoading.value = true;
     try {
+      const token = localStorage.getItem('token'); // Lấy thẻ
       let url = `http://localhost:3000/api/product_admin?page=${currentPage.value}&limit=${limit}`;
       if (activeFilter.value !== 'all') url += `&hsx=${activeFilter.value}`;
       if (stockFilter.value !== 'all') url += `&TinhTrangTonKho=${stockFilter.value}`;
@@ -930,7 +946,7 @@
       if (maxprice.value) url += `&maxprice=${maxprice.value}`;
       if (sortBy.value) url += `&sapxep=${sortBy.value}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, {headers: {'Authorization': `Bearer ${token}`}});
       const result = await response.json();
 
       if (result.success) {

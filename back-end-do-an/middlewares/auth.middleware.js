@@ -20,7 +20,7 @@ const auth_middleware = {
         // Hàm này bắt buộc phải đứng sau verifyToken trong Route.
         // Nhờ verifyToken chạy trước, ta đã có biến req.user
         
-        if (req.user && req.user.role === '1') {
+        if (req.user && req.user.role === 1) {
             next(); // Đúng chức vụ, mời vào!
         } else {
             return res.status(403).json({ 
@@ -31,7 +31,7 @@ const auth_middleware = {
     },
 
     verifyStaff: (req, res, next) => {
-        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+        if (req.user && (req.user.role === 1 || req.user.role === 2)) {
             next();
         } else {
             return res.status(403).json({ 
@@ -40,6 +40,7 @@ const auth_middleware = {
             });
         }
     },
+    
     verifyUser: (req, res, next) => {
         if (req.user && (req.user.role == 1 || req.user.role == 2)) {
             next();
