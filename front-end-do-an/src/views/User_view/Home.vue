@@ -354,9 +354,6 @@
       toastStore.showToast("Có lỗi mạng xảy ra khi thêm vào giỏ!", "error");
     }
   };
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-  };
 
   onMounted(async () => {
     try {
@@ -371,10 +368,6 @@
     }
     await fetchBrands();
   });
-
-  const goToDetail = (id) => {
-    router.push(`/product/${id}`); 
-  };
 </script>
 
 <style scoped>

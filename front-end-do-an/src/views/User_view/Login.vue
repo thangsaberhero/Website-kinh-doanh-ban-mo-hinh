@@ -163,100 +163,81 @@
         </div>
       </div>
     </main>
-
-    <Transition name="slide-fade">
-      <div 
-        v-if="toastMessage" 
-        class="fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 bg-surface-container-highest border border-error/50 text-error-dim rounded-xl shadow-2xl z-50 max-w-sm"
-      >
-        <span class="material-symbols-outlined text-error">error</span>
-        <span class="text-sm font-medium">{{ toastMessage }}</span>
-        <button @click="toastMessage = ''" class="ml-auto text-on-surface-variant hover:text-white transition-colors">
-          <span class="material-symbols-outlined text-sm">close</span>
-        </button>
-      </div>
-    </Transition>
-
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '../../stores/auth.js'
+import { useAuthStore } from '../../stores/auth.js';
+import { useToastStore } from '../../stores/toast.js';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const toastStore = useToastStore();
 
-// 1. Khai báo các biến mà giao diện đang đòi hỏi
+// 1. Khai báo các biến
 const form = reactive({
-  identity: '', // Đây chính là Username/Email
+  identity: '',
   password: '', 
   remember: false
 });
 
-const showPassword = ref(false); // Biến để bật/tắt con mắt xem mật khẩu
-const isLoading = ref(false);    // Biến tạo hiệu ứng quay vòng lúc đang đăng nhập
-const toastMessage = ref('');    // Biến chứa thông báo lỗi màu đỏ góc dưới
+const showPassword = ref(false); 
+const isLoading = ref(false);    
 
 // 2. Hàm xử lý khi bấm nút Đăng Nhập
 const handleLogin = async () => {
-  isLoading.value = true;   // Bật trạng thái đang load
-  toastMessage.value = '';  // Xóa lỗi cũ
-
+  isLoading.value = true;  
   try {
-    // BƯỚC 1: Gọi API Đăng nhập xuống Backend
     const response = await fetch('http://localhost:3000/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        TenDN: form.identity,  // Khớp với req.body.TenDN ở Backend
-        MatKhau: form.password // Khớp với req.body.MatKhau ở Backend
+        TenDN: form.identity,  
+        MatKhau: form.password 
       })
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      // BƯỚC 2: Đăng nhập thành công -> Lưu dữ liệu vào Kho (LocalStorage)
+      // Đăng nhập thành công -> Lưu dữ liệu vào Kho (LocalStorage)
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-
-      // Cập nhật lên Store để toàn bộ web biết là đã login
       authStore.user = data.user;
+      toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
 
-      // BƯỚC 3: RẼ NHÁNH PHÂN QUYỀN
+      // RẼ NHÁNH PHÂN QUYỀN
       const userRole = data.user.role;
       
-      // Giả sử Role 1 là Admin, Role 2 là Nhân viên -> Cho vào trang Quản trị
-      if (userRole === 1 || userRole === 2) {
-        router.push('/admin');
-      } 
-      // Role khác (ví dụ Role 3 là Khách hàng) -> Về trang chủ hoặc trang trước đó
-      else {
-        const redirectPath = route.query.redirect || '/';
-        router.push(redirectPath);
-      }
-
-    } else {
-      toastMessage.value = data.message || 'Đăng nhập thất bại!';
+      setTimeout(() => {
+        if (userRole === 1 || userRole === 2) {
+          router.push('/admin');
+        } else {
+          const redirectPath = route.query.redirect || '/';
+          router.push(redirectPath);
+        }
+      }, 500);
+    } 
+    else {
+      toastStore.showToast(data.message || 'Sai tên đăng nhập hoặc mật khẩu!', 'error', 4000, 'top-right');
     }
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Lỗi khi kết nối API login:", error);
-    toastMessage.value = "Lỗi kết nối đến máy chủ! Vui lòng thử lại sau.";
-  } finally {
-    isLoading.value = false; // Tắt trạng thái load
+    toastStore.showToast("Lỗi kết nối máy chủ! Vui lòng thử lại sau.", 'error', 4000, 'top-right');
+  } 
+  finally {
+    isLoading.value = false; 
   }
 };
 </script>
 
 <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-
   .glass-panel {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(24px) saturate(180%);
@@ -271,16 +252,5 @@ const handleLogin = async () => {
 
   .input-focus-glow:focus {
     box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
-  }
-
-  /* Hiệu ứng trượt cho Toast */
-  .slide-fade-enter-active,
-  .slide-fade-leave-active {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .slide-fade-enter-from,
-  .slide-fade-leave-to {
-    transform: translateX(50px);
-    opacity: 0;
   }
 </style>

@@ -75,10 +75,6 @@
                       </div>
                     </div>
   
-                    <p v-if="errorMessage" class="text-error text-xs font-bold text-center bg-error/10 py-2 rounded">
-                      {{ errorMessage }}
-                    </p>
-  
                     <button 
                       type="submit" 
                       :disabled="isSubmitting"
@@ -121,7 +117,6 @@
                         />
                       </div>
                     </div>
-                    <p v-if="errorMessage" class="text-error text-xs font-bold text-center bg-error/10 py-2 rounded">{{ errorMessage }}</p>
                     <button type="submit" :disabled="isSubmitting" class="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 group">
                       <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                       <span>{{ isSubmitting ? 'Đang xác thực...' : 'Xác thực mã' }}</span>
@@ -152,7 +147,6 @@
                         <input v-model="form.confirmPassword" type="password" required placeholder="••••••••" class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-4 pl-12 pr-4 text-on-surface transition-all input-focus-glow" />
                       </div>
                     </div>
-                    <p v-if="errorMessage" class="text-error text-xs font-bold text-center bg-error/10 py-2 rounded">{{ errorMessage }}</p>
                     <button type="submit" :disabled="isSubmitting" class="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                       <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                       <span>{{ isSubmitting ? 'Đang cập nhật...' : 'Đổi mật khẩu' }}</span>
@@ -184,12 +178,13 @@
 <script setup>
   import { ref, reactive } from 'vue';
   import { useRouter } from 'vue-router';
+  import { useToastStore } from '../../stores/toast.js';
 
   const router = useRouter();
+  const toastStore = useToastStore();
   // Khởi tạo luồng các bước: 1: Email, 2: OTP, 3: Pass mới, 4: Thành công
   const step = ref(1);
   const isSubmitting = ref(false);
-  const errorMessage = ref('');
   const showPassword = ref(false);
   
   const form = reactive({
@@ -199,59 +194,67 @@
     confirmPassword: ''
   });
   const API_BASE_URL = 'http://localhost:3000/api/auth';
-  // Xử lý Bước 1
+
+  // Xử lý Bước 1: Yêu cầu gửi OTP
   const handleRequestOTP = async () => {
     isSubmitting.value = true;
-    errorMessage.value = '';
     try {
       const response = await fetch(`${API_BASE_URL}/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email })
-        });
+      });
     
-       const data = await response.json();
-       if (!response.ok) throw new Error(data.message || 'Lỗi hệ thống');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Lỗi hệ thống');
+       
+      toastStore.showToast('Mã xác thực đã được gửi đến email của bạn!', 'success', 4000, 'top-right');
       step.value = 2; 
-    } catch (error) {
-      errorMessage.value = error.message;
-    } finally {
+    } 
+    catch (error) {
+      toastStore.showToast(error.message || 'Không thể gửi yêu cầu, vui lòng thử lại.', 'error', 4000, 'top-right');
+    } 
+    finally {
       isSubmitting.value = false;
     }
   };
   
-  // Xử lý Bước 2
+  // Xử lý Bước 2: Xác thực OTP
   const handleVerifyOTP = async () => {
     isSubmitting.value = true;
-    errorMessage.value = '';
     try {
       if (form.otp.length < 6) throw new Error("Mã OTP phải đủ 6 chữ số");
-        const response = await fetch(`${API_BASE_URL}/verify-otp`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: form.email, otp: form.otp })
-        });
+      const response = await fetch(`${API_BASE_URL}/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email, otp: form.otp })
+      });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'OTP không hợp lệ');
-      step.value = 3; // Chuyển sang Bước 3
-    } catch (error) {
-      errorMessage.value = error.message;
-    } finally {
+      
+      toastStore.showToast('Xác thực thành công! Vui lòng tạo mật khẩu mới.', 'success', 3000, 'top-right');
+      step.value = 3; 
+    } 
+    catch (error) {
+      toastStore.showToast(error.message || 'Xác thực thất bại!', 'error', 4000, 'top-right');
+    } 
+    finally {
       isSubmitting.value = false;
     }
   };
   
-  // Xử lý Bước 3
+  // Xử lý Bước 3: Đổi mật khẩu
   const handleResetPassword = async () => {
     isSubmitting.value = true;
-    errorMessage.value = '';
     try {
       if (form.newPassword !== form.confirmPassword) {
-        throw new Error("Mật khẩu nhập lại không khớp!");
+        toastStore.showToast("Mật khẩu nhập lại không khớp!", 'warning', 3500, 'top-right');
+        return; 
       }
       if (form.newPassword.length < 6) {
-        throw new Error("Mật khẩu phải dài ít nhất 6 ký tự!");
+        toastStore.showToast("Mật khẩu phải dài ít nhất 6 ký tự!", 'warning', 3500, 'top-right');
+        return;
       }
       const response = await fetch(`${API_BASE_URL}/reset-password`, {
         method: 'POST',
@@ -265,34 +268,34 @@
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Không thể đổi mật khẩu');
-      step.value = 4; // Hoàn thành
+      
+      step.value = 4; 
       setTimeout(() => {
         router.push('/login');
       }, 5000);
-    } catch (error) {
-      errorMessage.value = error.message;
-    } finally {
+    } 
+    catch (error) {
+      toastStore.showToast(error.message || 'Lỗi khi cập nhật mật khẩu.', 'error', 4000, 'top-right');
+    } 
+    finally {
       isSubmitting.value = false;
     }
   };
 </script>
 
-<style scoped>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-  
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      vertical-align: middle;
-    }
-  
-    .input-focus-glow:focus {
-      box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
-    }
+<style scoped>  
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+
+  .input-focus-glow:focus {
+    box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
+  }
 </style>

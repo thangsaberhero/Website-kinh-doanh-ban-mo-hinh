@@ -137,144 +137,91 @@
                 Đăng nhập ngay
               </router-link>
             </p>
-            
           </div>
         </div>
       </div>
     </main>
-
-    <Transition name="slide-fade">
-      <div 
-        v-if="toastMessage" 
-        :class="[
-          'fixed bottom-8 right-8 flex items-center gap-3 px-5 py-4 border rounded-xl shadow-2xl z-50 max-w-sm',
-          toastType === 'error' ? 'bg-surface-container-highest border-error/50 text-error-dim' : 'bg-surface-container-highest border-green-500/50 text-green-400'
-        ]"
-      >
-        <span class="material-symbols-outlined" :class="toastType === 'error' ? 'text-error' : 'text-green-500'">
-          {{ toastType === 'error' ? 'error' : 'check_circle' }}
-        </span>
-        <span class="text-sm font-medium">{{ toastMessage }}</span>
-        <button @click="toastMessage = ''" class="ml-auto text-on-surface-variant hover:text-white transition-colors">
-          <span class="material-symbols-outlined text-sm">close</span>
-        </button>
-      </div>
-    </Transition>
-
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+  import { ref, reactive } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useToastStore } from '../../stores/toast.js';
 
-const router = useRouter();
+  const router = useRouter();
+  const toastStore = useToastStore();
 
-// Dữ liệu Form
-const form = reactive({
-  username: '',
-  email: '',
-  password: '',
-  confirmPassword: ''
-});
+  // Dữ liệu Form
+  const form = reactive({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
 
-const showPassword = ref(false);
-const isLoading = ref(false);
+  const showPassword = ref(false);
+  const isLoading = ref(false);
 
-// Xử lý Toast thông báo
-const toastMessage = ref('');
-const toastType = ref('error');
-let toastTimeout = null;
-
-const showToast = (message, type = 'error') => {
-  toastMessage.value = message;
-  toastType.value = type;
-  if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => {
-    toastMessage.value = '';
-  }, 3500); 
-};
-
-// Hàm xử lý Đăng ký chính
-const handleRegister = async () => {
-  // 1. Kiểm tra mật khẩu khớp nhau
-  if (form.password !== form.confirmPassword) {
-    showToast('Mật khẩu xác nhận không khớp!', 'error');
-    return;
-  }
-
-  isLoading.value = true;
-  toastMessage.value = '';
-
-  try {
-    // 2. Đóng gói dữ liệu ĐÚNG VỚI BACKEND (Chỉ gồm TenDN và MatKhau)
-    const payload = {
-      TenDN: form.username,
-      email: form.email,
-      MatKhau: form.password
-    };
-
-    // 3. Gọi API bằng fetch (Chuẩn hóa với phần còn lại của dự án)
-    const response = await fetch('http://localhost:3000/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-    // 4. Xử lý kết quả trả về
-    if (!response.ok) {
-      // Bắt lỗi từ Server (Ví dụ: Tên đăng nhập đã tồn tại)
-      throw new Error(data.message || 'Lỗi đăng ký từ Server!');
+  // Hàm xử lý Đăng ký chính
+  const handleRegister = async () => {
+    if (form.password !== form.confirmPassword) {
+      toastStore.showToast('Mật khẩu xác nhận không khớp!', 'warning', 3500, 'top-right');
+      return;
     }
+    isLoading.value = true;
 
-    // 5. Nếu đăng ký thành công
-    showToast('Đăng ký thành công! Đang chuyển hướng...', 'success');
-    
-    // Tự động đá khách sang trang Đăng nhập sau 2 giây
-    setTimeout(() => {
-      router.push('/login');
-    }, 2000);
+    try {
+      const payload = {
+        TenDN: form.username,
+        email: form.email,
+        MatKhau: form.password
+      };
 
-  } catch (error) {
-    console.error("Lỗi đăng ký:", error);
-    showToast(error.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.', 'error');
-  } finally {
-    isLoading.value = false;
-  }
-};
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi đăng ký từ Server!');
+      }
+      toastStore.showToast('Đăng ký thành công! Đang chuyển hướng...', 'success', 2000, 'top-right');
+      
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
+
+    } 
+    catch (error) {
+      console.error("Lỗi đăng ký:", error);
+      toastStore.showToast(error.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.', 'error', 4000, 'top-right');
+    } 
+    finally {
+      isLoading.value = false;
+    }
+  };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  vertical-align: middle;
-}
-
-.input-focus-glow:focus {
-  box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
-}
-
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(50px);
-  opacity: 0;
-}
+  .input-focus-glow:focus {
+    box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
+  }
 </style>
