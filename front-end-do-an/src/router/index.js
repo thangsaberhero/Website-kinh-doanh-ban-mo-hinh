@@ -36,6 +36,7 @@ import AdminCustomerSupport from '../views/Admin_view/AdminCustomerSupport.vue';
 import AdminPromotionDetail from '../views/Admin_view/AdminPromotionDetail.vue';
 import AdminProfile from '../views/Admin_view/AdminProfile.vue';
 import AdminChangePassword from '../views/Admin_view/AdminChangePassword.vue';
+import AdminReport from '../views/Admin_view/AdminReport.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -209,6 +210,11 @@ const router = createRouter({
       name: 'AdminChangePassword',
       component: AdminChangePassword
     },
+    {
+      path: '/admin/report',
+      name: 'AdminReport',
+      component: AdminReport
+    }
   ]
 });
 

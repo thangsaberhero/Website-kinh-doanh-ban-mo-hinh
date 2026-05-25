@@ -185,37 +185,37 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
-            const {MaDH} = req.body;
+            const { MaDH, LyDoHuy } = req.body;
 
             const sql_kiemtra_tt = `Select cttt.MaTrangThai from ChiTietTrangThai cttt where MaDH = ? Order by Thoigian DESC Limit 1`;
             const [trang_thai] = await connection.query(sql_kiemtra_tt,[MaDH]);
 
             if(trang_thai.length === 0) {
-            await connection.rollback();
-            return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
+                await connection.rollback();
+                return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
             }
             const currentStatus = trang_thai[0].MaTrangThai;
 
-            if(currentStatus === 4 || urrentStatus === 5){
+            if(currentStatus >= 4){
                 await connection.rollback();
-                return res.status(400).json({
-                    message: "Không thể huỷ! Đơn hàng đã được giao hoặc đã bị hủy trước đó."
-                });
+                return res.status(400).json({ message: "Không thể huỷ! Đơn hàng đã được giao hoặc đã bị hủy trước đó." });
             }
 
-            const sql_them_trang_thai_huy = `Insert into ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) Values (?,5,Now())`;
+            const sql_them_trang_thai_huy = `Insert into ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) Values (?, 5, NOW())`;
             await connection.query(sql_them_trang_thai_huy,[MaDH]);
 
-            const sql_cap_nhat_ton_kho = `UPDATE Phanloai pl
-                                        inner join ChiTietDonHang ctdh on ctdh.MaPhanLoai = pl.MaPhanLoai
-                                        SET pl.SoLuong = pl.SoLuong + ctdh.SoLuong WHERE ctdh.MaDH = ?`;
-            
+            const sql_cap_nhat_ton_kho = `UPDATE Phanloai pl inner join ChiTietDonHang ctdh on ctdh.MaPhanLoai = pl.MaPhanLoai SET pl.SoLuong = pl.SoLuong + ctdh.SoLuong WHERE ctdh.MaDH = ?`;
             await connection.query(sql_cap_nhat_ton_kho,[MaDH]);
 
+            if (LyDoHuy) {
+                const sql_update_note = `UPDATE DonHang SET Note = CONCAT(IFNULL(Note, ''), '\n[HỆ THỐNG - ĐÃ HỦY]: ', ?) WHERE MaDH = ?`;
+                await connection.query(sql_update_note, [LyDoHuy, MaDH]);
+            }
+
             await connection.commit();
-            res.status(200).json({
-                message: "Huỷ đơn hàng thành công!",
-                success: true
+            res.status(200).json({ 
+                message: "Huỷ đơn hàng thành công!", 
+                success: true 
             });
         }
         catch (error) {
@@ -321,8 +321,8 @@ const donhang_admin = {
             if (sapxep === 'total_asc') filter = ("ORDER BY dh.TongTien ASC");
 
             const sql_core = `
-                SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKh, nv.TenNV,
-                dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan,
+                SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
+                dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan,
                 dh.ThanhTien, dh.TrangThaiThanhToan,
                 (
                     SELECT cttt.MaTrangThai
@@ -332,16 +332,16 @@ const donhang_admin = {
                     LIMIT 1
                 ) AS MaTT,
                 (
-                    Select tt.TenTrangThai
+                    SELECT tt.TenTrangThai
                     FROM TrangThai tt
-                    inner join ChiTietTrangThai cttt on tt.MaTrangThai = cttt.MaTrangThai
+                    INNER JOIN ChiTietTrangThai cttt ON tt.MaTrangThai = cttt.MaTrangThai
                     WHERE cttt.MaDH = dh.MaDH 
                     ORDER BY cttt.MaTrangThai DESC 
                     LIMIT 1
-                ) As TrangThai
+                ) AS TrangThai
                 FROM DonHang dh
-                left join NhanVien nv on dh.MaNV = nv.MaNV
-                left join KhachHang kh on kh.MaKH = dh.MaKH
+                LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
+                LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
                 ${condition_clause}
                 ${having_clause}
             `;
@@ -473,47 +473,40 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try{
             await connection.beginTransaction();
-            const {MaDH} = req.body;
-            const sql_lay_trang_thai = `
-                Select
-                    MaTrangThai
-                    from ChiTietTrangThai
-                    where MaDH = ?
-                    order by MaTrangThai DESC
-                    limit 1
-            `;
-            const [trangthai] = await connection.query(sql_lay_trang_thai, [MaDH]);
+            const { MaDH, TrangThai } = req.body; 
+            const trangThaiMoi = Number(TrangThai);
+            
+            const sql_lay_trang_thai = `SELECT MaTrangThai FROM ChiTietTrangThai WHERE MaDH = ? ORDER BY MaTrangThai DESC LIMIT 1`;
+            const [trangthai_cu] = await connection.query(sql_lay_trang_thai, [MaDH]);
 
-            if (trangthai.length === 0) {
+            if (trangthai_cu.length === 0) {
                 await connection.rollback();
                 return res.status(404).json({ message: "Không tìm thấy đơn hàng!"});
             }
-            const matrangthai = trangthai[0].MaTrangThai;
-            const update_trang_thai = `Insert into ChiTietTrangThai (MaDH, MaTrangThai) values (?,?)`;
-            if(matrangthai <= 3){
-                await connection.query(update_trang_thai, [MaDH, matrangthai + 1]);
-            }
-            else{
+            const matrangthaicu = trangthai_cu[0].MaTrangThai;
+
+            if(matrangthaicu >= 4){
                 await connection.rollback();
-                return res.status(200).json({
-                    success: false,
-                    message: "Không thể cập nhật trạng thái cho đơn hàng đã thành công!"
-                });
+                return res.status(400).json({ success: false, message: "Không thể cập nhật. Đơn hàng đã chốt luồng xử lý!" });
             }
-            await connection.commit()
-            res.status(200).json({
-                message: "Cập nhật trạng thái cho đơn hàng thành công!",
-                success: true,
-                MaDH: MaDH
-            });
+
+            if (trangThaiMoi <= matrangthaicu) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi Logic: Chỉ được phép cập nhật tiến trình đi tới, không được đi lùi!" });
+            }
+
+            const update_trang_thai = `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, ?, NOW())`;
+            await connection.query(update_trang_thai, [MaDH, trangThaiMoi]);
+            
+            await connection.commit();
+            res.status(200).json({ message: "Cập nhật tiến trình thành công!", success: true });
         }
         catch (error){
             await connection.rollback();
-            console.error("Lỗi khi sửa thông tin đơn hàng: ", error);
-            res.status(500).json({ message: "Lỗi server khi sửa thông tin đơn hàng!"});
+            res.status(500).json({ message: "Lỗi server khi cập nhật trạng thái!"});
         }
         finally{
-            connection.release();
+            if (connection) connection.release();
         }
     },
 

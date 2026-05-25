@@ -5,11 +5,8 @@ const authMiddleware = require('../../middlewares/auth.middleware.js');
 
 router.get('/search/products', authMiddleware.verifyToken, khuyenmaiController.tim_kiem_san_pham);
 router.get('/dashboard/stats', authMiddleware.verifyToken, khuyenmaiController.thong_ke_khuyen_mai);
-<<<<<<< HEAD
-=======
 router.get('/logs/recent', authMiddleware.verifyToken, khuyenmaiController.lay_nhat_ky_hoat_dong);
 router.get('/logs/all', authMiddleware.verifyToken, khuyenmaiController.lay_tat_ca_log_phan_trang);
->>>>>>> 0357e8a0ffb7db9ed27159a53c38692594db0671
 
 router.get('/', khuyenmaiController.liet_ke_chuong_trinh_khuyen_mai);
 router.get('/:MaKM', authMiddleware.verifyToken, khuyenmaiController.xem_chi_tiet_khuyen_mai);
@@ -25,16 +22,10 @@ router.delete('/vouchers/delete/:id', authMiddleware.verifyToken, khuyenmaiContr
 
 router.post('/:id/products', authMiddleware.verifyToken, khuyenmaiController.them_sp_km);
 router.delete('/:id/products/:maPhanLoai', authMiddleware.verifyToken, khuyenmaiController.xoa_sp_km);
-<<<<<<< HEAD
-
-router.post('/vouchers/:id/products', authMiddleware.verifyToken, khuyenmaiController.them_sp_voucher);
-router.delete('/vouchers/:id/products/:maPhanLoai', authMiddleware.verifyToken, khuyenmaiController.xoa_sp_voucher);
-=======
 router.get('/export/:id', authMiddleware.verifyToken, khuyenmaiController.xuat_bao_cao_khuyen_mai);
 
 router.post('/vouchers/:id/products', authMiddleware.verifyToken, khuyenmaiController.them_sp_voucher);
 router.delete('/vouchers/:id/products/:maPhanLoai', authMiddleware.verifyToken, khuyenmaiController.xoa_sp_voucher);
 router.get('/vouchers/export/:id', authMiddleware.verifyToken, khuyenmaiController.xuat_bao_cao_voucher);
->>>>>>> 0357e8a0ffb7db9ed27159a53c38692594db0671
 
 module.exports = router;

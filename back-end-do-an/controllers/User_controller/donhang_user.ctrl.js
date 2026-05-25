@@ -751,7 +751,7 @@ const donhang_user = {
                 from KhachHang
                 where MaTK = ?
             `;
-            const [result_kh] = await db.query(sql_laymagiohang, [MaTK]);
+            const [result_kh] = await db.query(sql_laymakhachhang, [MaTK]);
 
             if(result_kh.length === 0) {
                 await db.rollback();
