@@ -74,11 +74,13 @@
                   @click="selectModel(item)"
                 >
                   <td class="p-4 text-slate-400">{{ index + 1 }}</td>
-                  <td class="p-4 font-mono font-bold text-orange-600">{{ item.MaVach_Serial }}</td>
+                  <td class="p-4 font-mono font-bold text-orange-600">
+                    {{ item.MaVach_Serial || '---' }}
+                  </td>
                   <td class="p-4 max-w-[300px] truncate text-slate-700">{{ item.TenMH }}</td>
                   <td class="p-4 font-medium text-slate-900">{{ formatPrice(item.DonGia) }}</td>
                   <td class="p-4 text-center">
-                    <span v-if="item.Is_Minted" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                    <span v-if="Number(item.Is_Minted) === 1" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">
                       Đã Mint
                     </span>
                     <span v-else class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">
@@ -103,17 +105,31 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-5">
             <h3 class="text-sm font-bold text-slate-900 mb-1">1. Khởi tạo mô hình (Mint NFT)</h3>
-            <p class="text-xs text-slate-400 mb-4">Đăng ký thông tin độc bản của sản phẩm này lên Blockchain.</p>
+            <p class="text-xs text-slate-400 mb-4">Đăng ký thông tin định danh của sản phẩm này lên Blockchain.</p>
             <div class="space-y-4">
               <div>
                 <label class="text-xs font-semibold text-slate-500 block mb-1">Mã Serial Mô Hình</label>
                 <input v-model="mintForm.serialNumber" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:border-orange-500" placeholder="Mã định danh...">
               </div>
               <div>
-                <label class="text-xs font-semibold text-slate-500 block mb-1">Nhà sản xuất / Đối tác</label>
-                <input v-model="mintForm.manufacturer" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:border-orange-500" placeholder="Tên hãng...">
+                <label class="text-xs font-semibold text-slate-500 block mb-1">Nhà sản xuất / Đối tác (Thông tin định danh)</label>
+                <input v-model="mintForm.manufacturer" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:border-orange-500" placeholder="Ví dụ: Good Smile Company, Hot Toys...">
               </div>
-              <button @click="handleMint" class="w-full font-bold py-2.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-sm text-sm">
+
+              <div v-if="isCurrentSerialMinted" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2 font-medium animate-fadeIn">
+                <span>⚠️ Mã serial này đã được khởi tạo (Mint) vĩnh viễn trên Blockchain rồi!</span>
+              </div>
+
+              <button 
+                @click="handleMint" 
+                :disabled="isCurrentSerialMinted"
+                :class="[
+                  'w-full font-bold py-2.5 rounded-xl text-sm transition-colors shadow-sm',
+                  isCurrentSerialMinted 
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70 shadow-none border border-slate-200' 
+                    : 'text-white bg-emerald-600 hover:bg-emerald-500'
+                ]"
+              >
                 KÍCH HOẠT MINT BLOCKCHAIN
               </button>
             </div>
@@ -121,7 +137,7 @@
 
           <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-5">
             <h3 class="text-sm font-bold text-slate-900 mb-1">2. Cập nhật vị trí & Hành trình</h3>
-            <p class="text-xs text-slate-400 mb-4">Cập nhật tọa độ lưu kho hoặc các điểm trung chuyển của mô hình.</p>
+            <p class="text-xs text-slate-400 mb-4">Cập nhật tọa độ lưu kho hoặc các điểm trung chuyển thực tế của mô hình.</p>
             <div class="space-y-4">
               <div>
                 <label class="text-xs font-semibold text-slate-500 block mb-1">Mã Serial Đối Tượng</label>
@@ -208,8 +224,14 @@
               <div v-else class="text-slate-400 text-xs text-center py-4">Chưa có dữ liệu lịch sử hành trình</div>
             </div>
 
-            <div class="bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden min-h-[260px] h-full">
-              <div id="admin-map" class="w-full h-full absolute inset-0 z-0"></div>
+            <div class="bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden min-h-[260px] h-full flex flex-col items-center justify-center">
+              <div v-show="mapInstance" id="admin-map" class="w-full h-full absolute inset-0 z-0"></div>
+              
+              <div v-if="!mapInstance" class="text-slate-400 text-xs text-center p-4 z-10 space-y-2">
+                <p class="text-2xl mb-1">📦</p>
+                <p class="font-medium text-slate-500 text-sm">Sản phẩm đã khởi tạo định danh thành công</p>
+                <p class="text-[11px] text-slate-400">Vui lòng cập nhật "Trạng thái & Hành trình" để kích hoạt bản đồ Live Tracking.</p>
+              </div>
             </div>
           </div>
         </section>
@@ -269,7 +291,6 @@ export default {
       mapInstance: null,
       toasts: [],
 
-      // 🌟 KHỞI TẠO STATE CHO DROPCOMBOBOX ĐỊA ĐIỂM
       locationSearchQuery: "",
       locationSuggestions: [],
       isSearchingLocation: false,
@@ -279,14 +300,30 @@ export default {
   },
   computed: {
     filteredMohinhList() {
-      if (!this.searchQuery) {
-        return this.mohinhList;
+      let list = [...this.mohinhList];
+
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase().trim();
+        list = list.filter((item) => {
+          const matchName = item.TenMH ? item.TenMH.toLowerCase().includes(query) : false;
+          const matchSerial = item.MaVach_Serial ? item.MaVach_Serial.toLowerCase().includes(query) : false;
+          return matchName || matchSerial;
+        });
       }
-      const query = this.searchQuery.toLowerCase().trim();
-      return this.mohinhList.filter((item) => {
-        const matchName = item.TenMH ? item.TenMH.toLowerCase().includes(query) : false;
-        const matchSerial = item.MaVach_Serial ? item.MaVach_Serial.toLowerCase().includes(query) : false;
-        return matchName || matchSerial;
+
+      // Sắp xếp tự động: Đã mint lên trước (Serial tăng dần), Chưa kích hoạt theo tên (A-Z)
+      return list.sort((a, b) => {
+        if (Number(a.Is_Minted) !== Number(b.Is_Minted)) {
+          return Number(b.Is_Minted) - Number(a.Is_Minted);
+        }
+        if (Number(a.Is_Minted) === 1) {
+          const serialA = a.MaVach_Serial || "";
+          const serialB = b.MaVach_Serial || "";
+          return serialA.localeCompare(serialB, undefined, { numeric: true, sensitivity: 'base' });
+        }
+        const nameA = a.TenMH || "";
+        const nameB = b.TenMH || "";
+        return nameA.localeCompare(nameB, 'vi', { numeric: true, sensitivity: 'base' });
       });
     },
     totalModels() {
@@ -297,6 +334,13 @@ export default {
     },
     pendingCount() {
       return this.mohinhList.filter(item => !item.Is_Minted || Number(item.Is_Minted) === 0).length;
+    },
+    isCurrentSerialMinted() {
+      if (!this.mintForm.serialNumber) return false;
+      const model = this.mohinhList.find(
+        item => item.MaVach_Serial && item.MaVach_Serial.trim() === this.mintForm.serialNumber.trim()
+      );
+      return model ? (Number(model.Is_Minted) === 1) : false;
     }
   },
   mounted() {
@@ -314,7 +358,6 @@ export default {
       this.toasts = this.toasts.filter(t => t.id !== id);
     },
 
-    // 🌟 XỬ LÝ NHẬP LIỆU CÓ CHỐNG SPAM API (DEBOUNCE 500MS)
     onLocationInput() {
       clearTimeout(this.debounceTimer);
       if (!this.locationSearchQuery.trim()) {
@@ -328,7 +371,6 @@ export default {
       }, 500);
     },
 
-    // 🌟 LẤY DỮ LIỆU ĐỊA ĐIỂM THẬT TỪ OPENSTREETMAP NOMINATIM
     async fetchLocationSuggestions() {
       try {
         const query = encodeURIComponent(this.locationSearchQuery);
@@ -339,13 +381,10 @@ export default {
 
         this.locationSuggestions = data.map(item => {
           const addr = item.address || {};
-
-          // Trích xuất các lớp dữ liệu thật: Address (Đường/Phường), City (Tỉnh thành), Country (Quốc gia)
           const addressPart = addr.road || addr.suburb || addr.quarter || addr.amenity || addr.industrial || "";
           const cityPart = addr.city || addr.town || addr.village || addr.state || "";
           const countryPart = addr.country || "";
 
-          // Ghép nối cấu trúc chuỗi sạch đẹp theo đúng yêu cầu của bạn: Address, City, Country
           const formattedArray = [addressPart, cityPart, countryPart].filter(str => str.trim() !== "");
           const concatenatedString = formattedArray.join(", ") || item.display_name;
 
@@ -361,16 +400,14 @@ export default {
       }
     },
 
-    // 🌟 KHI USER CLICK CHỌN ĐỊA ĐIỂM TỪ KHAY COMBOBOX
     selectLocation(suggestion) {
       this.locationSearchQuery = suggestion.secondaryText;
-      this.updateForm.location = suggestion.secondaryText; // Chuỗi ghép hoàn chỉnh được nạp vào form Blockchain
+      this.updateForm.location = suggestion.secondaryText; 
       this.locationSuggestions = [];
       this.showSuggestions = false;
       this.showToast("Đã xác thực và ghép địa chỉ thành công!", "info");
     },
 
-    // Đóng danh sách gợi ý khi click ra ngoài (có độ trễ để kịp ăn sự kiện click)
     hideSuggestionsWithDelay() {
       setTimeout(() => {
         this.showSuggestions = false;
@@ -440,43 +477,77 @@ export default {
         this.renderMap(this.productData.history);
       } else {
         if (this.mapInstance) {
+          this.mapInstance.off();
           this.mapInstance.remove();
           this.mapInstance = null;
         }
       }
     },
 
-    getCoordinates(address) {
-      if (!address) return Promise.resolve(null);
-
-      const MAPBOX_TOKEN = "pk.eyJ1IjoidG9hbjI0IiwiYSI6ImNtcGpsMjk3ZjFubHUycHExZzB1bzl1NmgifQ.Mly4KRU649MW2dy0tDwHgA";
-
-      return fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&limit=1`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-            return [lat, lng];
-          }
-          return null;
-        })
-        .catch(err => {
-          console.error("Lỗi Geocoding Admin:", err);
-          return null;
+    async getCoordinates(address) {
+      if (!address) return null;
+      try {
+        // Sử dụng OpenStreetMap Nominatim API đồng bộ với gợi ý tìm kiếm địa điểm công cộng
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`;
+        const response = await fetch(url, {
+          headers: { 'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8' }
         });
+        const data = await response.json();
+        if (data && data.length > 0) {
+          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+        return null;
+      } catch (err) {
+        console.error("Lỗi Geocoding OpenStreetMap:", err);
+        return null;
+      }
     },
 
     async renderMap(history) {
-      if (!history || history.length === 0) return;
+      // 🌟 FIX CHÍNH: Bộ lọc thông minh loại bỏ hoàn toàn các chặng mang tính chất khởi tạo/metadata kĩ thuật
+      const validHistory = history.filter(record => {
+        if (!record.location || record.location.trim() === "") return false;
 
-      // Xóa thực thể map cũ trước khi vẽ hành trình mới tránh trùng lặp bộ nhớ
+        const locText = record.location.toLowerCase();
+        const statusText = record.status ? record.status.toLowerCase() : "";
+
+        // Kiểm tra từ khóa rác kĩ thuật và loại bỏ chúng
+        if (
+          locText.includes("metadata") || 
+          locText.includes("không rõ") || 
+          locText.includes("bắt đầu sản xuất") || 
+          locText.includes("bat dau san xuat")
+        ) {
+          return false;
+        }
+
+        if (
+          statusText.includes("khoi tao") || 
+          statusText.includes("khởi tạo") || 
+          statusText.includes("mint")
+        ) {
+          return false;
+        }
+
+        return true;
+      });
+
+      // Nếu không có chặng logistics vật lý nào, dọn bản đồ để đưa giao diện về trạng thái "Chờ hành trình"
+      if (!validHistory || validHistory.length === 0) {
+        if (this.mapInstance) {
+          this.mapInstance.off();
+          this.mapInstance.remove();
+          this.mapInstance = null;
+        }
+        return;
+      }
+
       if (this.mapInstance) {
         this.mapInstance.off();
         this.mapInstance.remove();
         this.mapInstance = null;
       }
 
-      // Đảm bảo DOM đã dựng xong khung chứa map-container
       await this.$nextTick();
 
       this.mapInstance = L.map('admin-map', {
@@ -485,7 +556,6 @@ export default {
         touchZoom: true
       }).setView([16.0470, 108.2062], 5);
 
-      // 🌟 ĐỔI SANG NỀN TRẮNG: Sử dụng bản đồ sáng màu CartoDB Positron thanh lịch, rõ nét
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; CARTO',
         subdomains: 'abcd',
@@ -493,24 +563,19 @@ export default {
       }).addTo(this.mapInstance);
 
       const latLngs = [];
-
-      // Hàm tạo độ trễ tránh bị OpenStreetMap block IP khi quét nhiều chặng
       const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-      for (const [index, record] of history.entries()) {
-        if (index > 0) await sleep(600);
+      for (const [index, record] of validHistory.entries()) {
+        if (index > 0) await sleep(600); // Tránh spam API của OpenStreetMap công cộng
 
         let coords = await this.getCoordinates(record.location);
-
-        // Cơ chế dự phòng tịnh tiến tọa độ nếu API định vị lỗi, không để các điểm đè lên nhau
         if (!coords) {
           coords = [21.0285 + (index * 0.15), 105.8542 + (index * 0.15)];
         }
 
         latLngs.push(coords);
-        const isLatest = index === history.length - 1;
+        const isLatest = index === validHistory.length - 1;
 
-        // 🌟 THAY ĐỔI: Đánh số thứ tự bắt đầu từ số 1 (index + 1) cho tất cả các chặng
         const markerHtml = isLatest
           ? `<div class="map-marker-live">
               <div class="pulse-ring"></div>
@@ -525,7 +590,6 @@ export default {
           iconAnchor: isLatest ? [13, 13] : [11, 11]
         });
 
-        // 🌟 THAY ĐỔI: Đồng bộ tiêu đề Popup bắt đầu hiển thị từ Chặng 1 công khai
         const popupContent = `
           <div class="custom-map-popup" style="color: #1e293b; font-family: sans-serif; padding: 2px;">
             <b style="color: #f97316; font-size: 13px;">Chặng ${index + 1}: ${record.status}</b><br/>
@@ -545,23 +609,20 @@ export default {
         }
       }
 
-      // Vẽ đường lộ trình kết nối các chặng liên mạch
       if (latLngs.length > 1) {
         const polyline = L.polyline(latLngs, {
-          color: '#f97316',    // Đường vẽ màu cam rực rỡ, tương phản xuất sắc trên nền trắng
+          color: '#f97316',
           weight: 4,
           opacity: 0.9,
           lineJoin: 'round',
           lineCap: 'round'
         }).addTo(this.mapInstance);
 
-        // Tự động căn chỉnh màn hình vừa vặn với toàn bộ chuỗi lộ trình di chuyển
         this.mapInstance.fitBounds(polyline.getBounds(), { padding: [50, 50] });
       } else if (latLngs.length === 1) {
         this.mapInstance.setView(latLngs[0], 13);
       }
 
-      // Khắc phục triệt để lỗi tính toán size vùng chứa của Leaflet trong Vue
       setTimeout(() => {
         if (this.mapInstance) {
           this.mapInstance.invalidateSize();
@@ -571,8 +632,9 @@ export default {
 
     quickFill(model) {
       this.mintForm.serialNumber = model.MaVach_Serial;
-      this.mintForm.manufacturer = model.TenHSX || "Hãng phân phối";
+      this.mintForm.manufacturer = model.TenHSX || "Good Smile Company";
       this.updateForm.serialNumber = model.MaVach_Serial;
+      this.selectModel(model);
       this.showToast(`Đã nạp nhanh mã ${model.MaVach_Serial} vào các form xử lý!`, "info");
     },
     formatPrice(value) {
@@ -613,7 +675,7 @@ export default {
           this.showToast(`Cập nhật vị trí lên Smart Contract thành công!\nHash: ${response.data.hash}`, "success", 5000);
 
           this.updateForm = { serialNumber: '', newStatus: '', location: '' };
-          this.locationSearchQuery = ""; // Reset thanh tìm kiếm địa điểm về rỗng
+          this.locationSearchQuery = ""; 
 
           const currentProduct = this.mohinhList.find(p => p.MaVach_Serial === this.selectedSerial);
           if (currentProduct) this.selectModel(currentProduct);
@@ -627,7 +689,6 @@ export default {
 </script>
 
 <style scoped>
-/* Hoạt họa hiệu ứng Toast thông báo */
 .toast-enter-from {
   opacity: 0;
   transform: translateX(60px) scale(0.9);
@@ -641,13 +702,11 @@ export default {
   transform: translateX(60px) scale(0.9);
 }
 
-/* 🌟 ĐỒNG BỘ CSS ĐIỂM NÚT SỐ THỨ TỰ TRÊN NỀN BẢN ĐỒ TRẮNG */
 :deep(.custom-div-icon) {
   background: transparent !important;
   border: none !important;
 }
 
-/* Các chặng lịch sử (Màu xanh Slate sẫm cực kỳ rõ và cao cấp trên nền trắng) */
 :deep(.map-marker-history) {
   width: 22px;
   height: 22px;
@@ -663,7 +722,6 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
-/* Chặng cuối cùng / Vị trí Live hiện tại (Màu Cam Neon nổi bật kèm vòng sóng lan tỏa) */
 :deep(.map-marker-live) {
   position: relative;
   width: 26px;
@@ -675,7 +733,7 @@ export default {
 :deep(.live-number-inner) {
   width: 22px;
   height: 22px;
-  background-color: #ef4444; /* Màu đỏ cam nổi bật */
+  background-color: #ef4444; 
   border: 2px solid #ffffff;
   color: white;
   font-size: 11px;

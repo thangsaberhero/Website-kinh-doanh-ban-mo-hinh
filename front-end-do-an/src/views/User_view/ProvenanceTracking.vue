@@ -224,7 +224,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const authStore = useAuthStore();
-const route = useRoute(); // Định nghĩa route để lắng nghe URL
+const route = useRoute();
 const isAdmin = computed(() => authStore.user !== null && authStore.user.Role === 'Quản lý');
 
 const searchQuery = ref('');
@@ -261,17 +261,17 @@ const handleSearch = async () => {
         verifiedManufacturer = historyData[0].location;
       }
 
+      // Giữ nguyên toàn bộ dữ liệu ở đây để đổ ra HTML hiển thị danh sách Text Hành Trình
       productData.value = {
         name: product?.TenMH || 'Sản phẩm Blockchain',
         image: product?.AnhDaiDien,
         manufacturer: verifiedManufacturer,
         serialNumber: product?.MaVach_Serial || searchQuery.value,
         history: historyData.map(record => ({
-          status: record.status,
-          location: record.location,
-          timestamp: record.timestamp,
-          updater: record.updatedBy,
-          // Ưu tiên truyền tọa độ thực tế từ DB để map vẽ chuẩn tuyệt đối
+          status: record.status || record.trangThai || record.description || "Cập nhật hành trình",
+          location: record.location || record.diaDiem || record.locationName || "Không rõ vị trí",
+          timestamp: record.timestamp || record.thoiGian || record.time || "Vừa xong",
+          updater: record.updatedBy || record.updater || record.txWallet || record.walletAddress || "Hệ thống",
           latitude: record.latitude || record.lat || null,
           longitude: record.longitude || record.lng || record.lon || null
         }))
@@ -288,29 +288,18 @@ const handleSearch = async () => {
   }
 };
 
-// =========================================================================
-// 🛡️ HÀM TỰ ĐỘNG TRÍCH XUẤT MÃ SERIAL TỪ URL & KÍCH HOẠT TRA CỨU
-// =========================================================================
 const extractAndSearch = () => {
   let serial = '';
-
-  // 1. Kiểm tra Route Params (Ví dụ định dạng router: /blockchain/:serial)
   if (route.params) {
     serial = route.params.serial || route.params.serialNumber || route.params.id;
   }
-
-  // 2. Kiểm tra Route Query (Ví dụ định dạng URL: /blockchain?serial=MÃ_SỐ)
   if (!serial && route.query) {
     serial = route.query.serial || route.query.serialNumber || route.query.search;
   }
-
-  // 3. Dự phòng bằng JavaScript thuần (Đề phòng router của Vue chưa kịp đồng bộ)
   if (!serial) {
     const urlParams = new URLSearchParams(window.location.search);
     serial = urlParams.get('serial') || urlParams.get('serialNumber') || urlParams.get('search');
   }
-
-  // 4. Dự phòng quét phân đoạn cuối cùng của đường dẫn (Ví dụ: localhost:5173/blockchain/SN-001)
   if (!serial) {
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
     if (pathSegments.length > 0) {
@@ -320,8 +309,6 @@ const extractAndSearch = () => {
       }
     }
   }
-
-  // 5. Dự phòng cho chế độ Hash Routing nếu bạn dùng (Ví dụ: #/blockchain?serial=XYZ hoặc #/blockchain/XYZ)
   if (!serial && window.location.hash) {
     const hashPath = window.location.hash.replace('#', '');
     if (hashPath.includes('?')) {
@@ -339,25 +326,63 @@ const extractAndSearch = () => {
     }
   }
 
-  // Tiến hành điền ô tìm kiếm và kích hoạt hàm tra cứu tự động nếu tìm thấy mã
   if (serial && typeof serial === 'string' && serial.trim()) {
     searchQuery.value = decodeURIComponent(serial.trim());
     handleSearch();
   }
 };
 
-// Chạy ngay khi giao diện vừa tải xong
 onMounted(() => {
   extractAndSearch();
 });
 
-// Lắng nghe liên tục sự thay đổi của URL (Xử lý triệt để lỗi đổi sản phẩm liên tục bị kẹt giao diện)
 watch(() => route.params, () => { extractAndSearch(); }, { deep: true });
 watch(() => route.query, () => { extractAndSearch(); }, { deep: true });
-// =========================================================================
 
+// =========================================================================
+// 🌟 HÀM RENDER MAP: LỌC TRÊN BẢN ĐỒ GIỐNG HỆT ADMIN
+// =========================================================================
 const renderMap = async (history) => {
   if (!history || history.length === 0) return;
+
+  // 🌟 BỘ LỌC ĐỒNG BỘ 100% VỚI ADMIN TRÁNH HIỂN THỊ ĐIỂM KHỞI TẠO LÊN MAP
+  const validHistory = history.filter(record => {
+    if (!record.location || record.location.trim() === "") return false;
+
+    const locText = record.location.toLowerCase();
+    const statusText = record.status ? record.status.toLowerCase() : "";
+
+    // Loại bỏ các địa điểm ảo mang tính hệ thống
+    if (
+      locText.includes("metadata") || 
+      locText.includes("không rõ") || 
+      locText.includes("bắt đầu sản xuất") || 
+      locText.includes("bat dau san xuat") ||
+      locText.includes("chưa rõ")
+    ) {
+      return false;
+    }
+
+    // Kiên quyết loại bỏ trạng thái chứa các keyword khởi tạo/mint kỹ thuật
+    if (
+      statusText.includes("khoi tao") || 
+      statusText.includes("khởi tạo") || 
+      statusText.includes("mint")
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  if (!validHistory || validHistory.length === 0) {
+    if (mapInstance) {
+      mapInstance.off();
+      mapInstance.remove();
+      mapInstance = null;
+    }
+    return;
+  }
 
   if (mapInstance) {
     mapInstance.off();
@@ -382,7 +407,8 @@ const renderMap = async (history) => {
   const latLngs = [];
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  for (const [index, record] of history.entries()) {
+  // Vẽ các marker trên Map sử dụng validHistory
+  for (const [index, record] of validHistory.entries()) {
     let coords;
 
     if (record.latitude && record.longitude) {
@@ -393,25 +419,25 @@ const renderMap = async (history) => {
     }
 
     if (!coords) {
-      console.warn(`Không tìm thấy tọa độ cho: ${record.location}. Dùng vị trí dự phòng.`);
+      console.warn(`Không tìm thấy tọa độ cho: ${record.location}.`);
       coords = [21.0285 + (index * 0.15), 105.8542 + (index * 0.15)];
     }
 
     latLngs.push(coords);
-    const isLatest = index === history.length - 1;
+    const isLatest = index === validHistory.length - 1;
 
     const markerHtml = isLatest
-      ? `<div class="relative flex items-center justify-center w-6 h-6">
-          <span class="absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-50 animate-ping"></span>
-          <div class="relative w-3.5 h-3.5 bg-orange-500 border-2 border-white rounded-full shadow-lg z-10"></div>
+      ? `<div class="map-marker-live">
+          <div class="pulse-ring"></div>
+          <div class="live-number-inner">${index + 1}</div>
          </div>`
-      : `<div class="map-marker-history"></div>`;
+      : `<div class="map-marker-history">${index + 1}</div>`;
 
     const customIcon = L.divIcon({
       className: 'custom-clear-icon',
       html: markerHtml,
-      iconSize: isLatest ? [24, 24] : [12, 12],
-      iconAnchor: isLatest ? [12, 12] : [6, 6]
+      iconSize: isLatest ? [26, 26] : [22, 22],
+      iconAnchor: isLatest ? [13, 13] : [11, 11]
     });
 
     const popupContent = `
@@ -456,15 +482,12 @@ const renderMap = async (history) => {
 
 const getCoordinates = async (address) => {
   if (!address) return null;
-
   const MAPBOX_TOKEN = "pk.eyJ1IjoidG9hbjI0IiwiYSI6ImNtcGpsMjk3ZjFubHUycHExZzB1bzl1NmgifQ.Mly4KRU649MW2dy0tDwHgA";
-
   try {
     const response = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&limit=1`
     );
     const data = await response.json();
-
     if (data && data.features && data.features.length > 0) {
       const [lng, lat] = data.features[0].center;
       return [lat, lng];
@@ -509,7 +532,7 @@ const handleUpdate = async () => {
   try {
     const response = await axios.post('http://localhost:3000/api/blockchain/update', {
       serialNumber: updateForm.value.serialNumber,
-      status: updateForm.value.newStatus,
+      newStatus: updateForm.value.newStatus,
       location: updateForm.value.location
     });
     if (response.data.success) {
@@ -532,31 +555,78 @@ const handleUpdate = async () => {
 
 const formatDate = (ts) => (ts && ts != 0) ? new Date(Number(ts) * 1000).toLocaleString('vi-VN') : '---';
 const formatAddress = (addr) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
-</script>>
+</script>
 
 <style scoped>
-/* Xóa nền mặc định của Leaflet */
 :deep(.custom-clear-icon) {
   background: transparent !important;
   border: none !important;
 }
 
-/* Chấm tròn lịch sử cũ (Màu xám đá tối, kích thước 12px, hover to lên) */
 :deep(.map-marker-history) {
-  width: 12px;
-  height: 12px;
-  background-color: #475569;
+  width: 22px;
+  height: 22px;
+  background-color: #1e293b;
   border: 2px solid #ffffff;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
 }
 :deep(.map-marker-history:hover) {
-  transform: scale(1.4);
+  transform: scale(1.2);
   background-color: #f97316;
 }
 
-/* Popup nền trắng chữ tối */
+:deep(.map-marker-live) {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.live-number-inner) {
+  width: 22px;
+  height: 22px;
+  background-color: #ef4444; 
+  border: 2px solid #ffffff;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+:deep(.pulse-ring) {
+  border: 3px solid #ef4444;
+  border-radius: 50%;
+  height: 32px;
+  width: 32px;
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  animation: mapMarkerPulse-data 1.6s ease-out infinite;
+  opacity: 0;
+  z-index: 1;
+}
+
+@keyframes mapMarkerPulse-data {
+  0% { transform: scale(0.4); opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
 :deep(.leaflet-popup-content-wrapper) {
   background: #ffffff !important;
   color: #1e293b !important;
