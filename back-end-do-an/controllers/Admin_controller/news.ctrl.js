@@ -187,6 +187,17 @@ const newsController = {
             const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags } = req.body;
             const file = req.file;
             const MaTK = req.user.id;
+            const [truyvan] = await connection.query(`Select MaNV from NhanVien where MaTK = ?`,[MaTK]);
+            if (truyvan.length === 0) {
+                await connection.rollback();
+                return res.status(403).json({
+                    success: false,
+                    message: "Lỗi phân quyền: Tài khoản của bạn chưa được liên kết với hồ sơ Nhân viên để đăng bài!"
+                });
+            }
+
+            // 3. TRÍCH XUẤT AN TOÀN
+            const MaNV = truyvan[0].MaNV;
             const [check] = await connection.query(`Select MaTT from TinTuc where TieuDe = ?`, [TieuDe]);
             if(check.length > 0){
                 await connection.rollback();
@@ -239,47 +250,62 @@ const newsController = {
             const MaTK = req.user.id;
             const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags } = req.body;
             const file = req.file;
-            const [check] = await connection.query(`Select TieuDe from TinTuc where MaTT = ?`, [newsId]);
-            if(check.length > 0){
+
+            // 1. KIỂM TRA BÀI VIẾT CÓ TỒN TẠI HAY KHÔNG
+            const [check] = await connection.query(`SELECT TieuDe FROM TinTuc WHERE MaTT = ?`, [newsId]);
+            if(check.length === 0) { // FIX LỖI 1: Sửa > 0 thành === 0
                 await connection.rollback();
                 return res.status(404).json({
                     success: false,
                     message: "Không tìm thấy tin tức cần sửa!"
-                })
+                });
             }
-            if(check[0].TieuDe === TieuDe)
-                {
+
+            // 2. KIỂM TRA TRÙNG TIÊU ĐỀ VỚI BÀI VIẾT *KHÁC*
+            // Chỉ tìm những bài có cùng TieuDe nhưng khác MaTT hiện tại
+            const [checkDuplicate] = await connection.query(`SELECT MaTT FROM TinTuc WHERE TieuDe = ? AND MaTT != ?`, [TieuDe, newsId]);
+            if(checkDuplicate.length > 0) { // FIX LỖI 2: Dùng câu truy vấn mới
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
-                    message: "Đã có tin tức trùng tiêu đề!"
-                })
+                    message: "Tiêu đề này đã được sử dụng ở bài viết khác, vui lòng chọn tiêu đề khác!"
+                });
             }
 
-            const sqlUpdateNews = `UPDATE TinTuc
-                                    SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?, Tags = ?
-                                    WHERE MaTT = ?`;
+            // 3. CẬP NHẬT THÔNG TIN CHÍNH
+            const sqlUpdateNews = `
+                UPDATE TinTuc
+                SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?, Tags = ?
+                WHERE MaTT = ?
+            `;
             await connection.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags, newsId]);
 
+            // 4. CẬP NHẬT ẢNH (NẾU CÓ)
             if(file){
-                const imageUrl = `http://localhost:3000/Images_news/${file.filename}`;
+                // Lời khuyên: Chỉ nên lưu file.filename (VD: 16298371.jpg), không nên lưu cả cụm localhost:3000
+                // Để sau này Deploy lên Server thật (vd: figurecollect.com), ảnh sẽ không bị lỗi hỏng link.
+                const imageUrl = file.filename; 
+                
                 const [checkImage] = await connection.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
-
                 if(checkImage.length > 0){
                     await connection.query(`UPDATE AnhTinTuc SET LinkAnh = ? WHERE MaTT = ?`, [imageUrl, newsId]);
                 }
-                else{
+                else {
                     await connection.query(`INSERT INTO AnhTinTuc(MaTT, LinkAnh) VALUES (?, ?)`, [newsId, imageUrl]);
                 }
             }
+
+            // 5. GHI LOG HỆ THỐNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
-            const noiDungLog = `Sửa tin tức #${newsId} tiêu đề: ${TieuDe}"`;
+            
+            const noiDungLog = `Sửa tin tức #${newsId} tiêu đề: "${TieuDe}"`;
             await connection.query(`
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'NEWS_UPDATE', ?, ?, NOW())
             `, [MaTK, noiDungLog, userIp]);
-            await connection.commit()
+
+            await connection.commit();
             res.status(200).json({
                 success: true,
                 message: "Cập nhật tin tức thành công"
@@ -292,10 +318,10 @@ const newsController = {
                 success: false,
                 message: "Lỗi máy chủ khi cập nhật bài viết",
                 error: error.message
-            })
+            });
         }
         finally{
-            connection.release();
+            if (connection) connection.release();
         }
     },
     deleteNews: async(req, res) => {

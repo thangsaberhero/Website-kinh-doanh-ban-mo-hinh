@@ -143,79 +143,176 @@ const router = createRouter({
     {
       path: '/admin',
       name: 'AdminDashboard',
-      component: AdminDashboard
+      component: AdminDashboard,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/inventory',
       name: 'Inventory',
-      component: AdminInventory
+      component: AdminInventory,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/users',
       name: 'UserManagement',
-      component: AdminUserManagement
+      component: AdminUserManagement,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/orders',
       name: 'OrderManagement',
-      component: AdminOrderManagement
+      component: AdminOrderManagement,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/promotion',
       name: 'PromotionsManagement',
-      component: AdminPromotionsManagement
+      component: AdminPromotionsManagement,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/news',
       name: 'NewsManagement',
-      component: AdminNewsManagement
+      component: AdminNewsManagement,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/news/create',
       name: 'NewsCreate',
-      component: AdminNewsCreate
+      component: AdminNewsCreate,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/news/edit/:id',
       name: 'NewsEdit',
-      component: AdminNewsEdit
+      component: AdminNewsEdit,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/manufacturers',
       name: 'Manufacturer',
-      component: AdminManufacturer
+      component: AdminManufacturer,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/categories',
       name: 'Category',
-      component: AdminCategory
+      component: AdminCategory,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/support',
       name: 'CustomerSupport',
-      component: AdminCustomerSupport
+      component: AdminCustomerSupport,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/promotion/:type/:id',
       name: 'AdminPromotionDetail',
-      component: AdminPromotionDetail
+      component: AdminPromotionDetail,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/profile',
       name: 'AdminProfile',
-      component: AdminProfile
+      component: AdminProfile,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/change-password',
       name: 'AdminChangePassword',
-      component: AdminChangePassword
+      component: AdminChangePassword,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     },
     {
       path: '/admin/report',
       name: 'AdminReport',
-      component: AdminReport
+      component: AdminReport,
+      meta: {
+        requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
     }
   ]
+});
+
+router.beforeEach((to, from, next) => {
+  // 1. Kiểm tra xem người dùng có đang cố vào khu vực Admin không
+  const isAdminRoute = to.path.startsWith('/admin');
+  
+  // 2. Lấy thông tin xác thực
+  const token = localStorage.getItem('token');
+  const userRole = parseInt(localStorage.getItem('role'));
+
+  // KỊCH BẢN 1: Đang cố vào trang Admin
+  if (isAdminRoute) {
+    if (!token) {
+      // Chưa đăng nhập -> Đuổi về trang login
+      next({ name: 'login' }); // Chú ý chữ 'login' viết thường cho khớp với khai báo
+    } 
+    else if (userRole !== 1 && userRole !== 2) {
+      // Có đăng nhập nhưng là Khách hàng (Role 3) -> Đuổi về trang chủ
+      next({ path: '/' });
+    } 
+    else {
+      // Là Admin hoặc Staff -> Cho phép vào
+      next();
+    }
+  } 
+  // KỊCH BẢN 2: Các trang thông thường của khách (Profile, Cart, Checkout...)
+  else if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!token) {
+      next({ name: 'login' });
+    } else {
+      next();
+    }
+  } 
+  // KỊCH BẢN 3: Các trang Public (Home, Product, Category...)
+  else {
+    next();
+  }
 });
 
 export default router;

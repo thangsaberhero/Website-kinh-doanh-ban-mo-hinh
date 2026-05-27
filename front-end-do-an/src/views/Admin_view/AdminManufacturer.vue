@@ -307,7 +307,10 @@
   // HÀM GỌI API THỐNG KÊ
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/product_admin/thong_ke_hsx');
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/product_admin/thong_ke_hsx',{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const result = await response.json();
       if (result.success) {
         tongSoHang.value = result.data.tongSoHang;
@@ -327,8 +330,10 @@
       if (searchQuery.value) {
         url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
       }
-
-      const response = await fetch(url);
+      const token = localStorage.getItem('token');
+      const response = await fetch(url,{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -421,8 +426,10 @@
         method = 'PUT';
       }
 
+      const token = localStorage.getItem('token');
       const response = await fetch(url, {
         method: method,
+        headers: {'Authorization': `Bearer ${token}`},
         body: formData
       });
 
@@ -453,16 +460,17 @@
     if (!itemToDelete.value) return;
     
     try {
+      const token = localStorage.getItem('token');
       // 👉 Sửa URL Xóa ở đây
       const response = await fetch(`http://localhost:3000/api/product_admin/delete_brand/${itemToDelete.value.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {'Authorization': `Bearer ${token}`}
       });
       
       const result = await response.json();
 
-      if (response.ok || result.success) {
+      if (result.success) {
         toastStore.showToast(result.message || "Đã xóa thành công!", "success");
-        isDeleteModalOpen.value = false;
         fetchManufacturers(); // Tải lại danh sách từ DB
       } else {
         // Thông báo lỗi nếu hãng đang có sản phẩm
@@ -472,6 +480,7 @@
       console.error("Lỗi khi xóa:", error);
       toastStore.showToast("Lỗi máy chủ!", "error");
     } finally {
+      isDeleteModalOpen.value = false;
       itemToDelete.value = null;
     }
   };

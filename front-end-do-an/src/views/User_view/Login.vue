@@ -204,10 +204,11 @@ const handleLogin = async () => {
 
     const data = await response.json();
 
-    if (response.ok) {
+    if (data.success) {
       // Đăng nhập thành công -> Lưu dữ liệu vào Kho (LocalStorage)
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('role', data.user.role);
       authStore.user = data.user;
       toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
 

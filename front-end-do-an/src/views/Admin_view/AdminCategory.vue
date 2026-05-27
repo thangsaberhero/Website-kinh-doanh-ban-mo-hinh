@@ -298,9 +298,12 @@
   // --- 2. HÀM GỌI API LẤY DANH SÁCH ---
   const fetchCategories = async () => {
     try {
+      const token = localStorage.getItem('token');
       let url = `http://localhost:3000/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
-      const response = await fetch(url);
+      const response = await fetch(url,
+        {headers: {'Authorization': `Bearer ${token}`}}
+      );
       const result = await response.json();
 
       if (result.success) {
@@ -400,9 +403,12 @@
         method = 'PUT';
       }
 
+      const token = localStorage.getItem('token');
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(payload)
       });
 
@@ -433,8 +439,10 @@
     if (!itemToDelete.value) return;
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3000/api/product_admin/delete_detail/${itemToDelete.value.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {'Authorization': `Bearer ${token}`}
       });
       const result = await response.json();
 
@@ -479,9 +487,10 @@
     // Hiện thông báo xác nhận cẩn thận trước khi gọi API xóa
     if (confirm(`Bạn có chắc chắn muốn xóa phân loại "${detailItem.name}" không?`)) {
       try {
-        // 🚨 Sửa lại URL này cho đúng với Route Node.js của bạn
+        const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:3000/api/product_admin/delete_detail_variant/${detailItem.id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: {'Authorization': `Bearer ${token}`}
         });
         
         const result = await response.json();

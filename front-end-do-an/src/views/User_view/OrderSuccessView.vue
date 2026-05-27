@@ -161,7 +161,7 @@ const fetchOrderdata = async () => {
 
   try {
     // Gọi API quen thuộc mà bạn đã viết cực xịn ở trang Chi Tiết Đơn Hàng
-    const response = await fetch(`http://localhost:3000/api/don_hang/watch_detail_order/${maKH}/${maDH}`, {
+    const response = await fetch(`http://localhost:3000/api/don_hang/watch_detail_order/${maDH}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`

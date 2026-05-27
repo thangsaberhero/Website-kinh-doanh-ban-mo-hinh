@@ -376,8 +376,8 @@ const donhang_admin = {
             let page = parseInt(req.query.page) || 1;
             let limit = parseInt(req.query.limit) || 10;
             if (!page || isNaN(page) || page < 1) page = 1;
-            if (!limit || isNaN(limit) || limit < 1) limit = 5;
-            if (limit > 10) limit = 10;
+            if (!limit || isNaN(limit) || limit < 10) limit = 10;
+            if (limit > 20) limit = 20;
 
             const offset = (page - 1) * limit;
 
@@ -397,11 +397,11 @@ const donhang_admin = {
             }
             if (ngaybatdau) {
                 conditions.push("dh.NgayLapDon >= ?");
-                whereValues.push(ngaybatdau);
+                whereValues.push(`${ngaybatdau} 00:00:00`);
             }
             if (ngayketthuc) {
                 conditions.push("dh.NgayLapDon <= ?");
-                whereValues.push(ngayketthuc);
+                whereValues.push(`${ngayketthuc} 23:59:59`);
             }
             let condition_clause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
@@ -419,7 +419,7 @@ const donhang_admin = {
             const sql_core = `
                 SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan,
-                dh.ThanhTien, dh.TrangThaiThanhToan,
+                dh.ThanhTien, dh.TrangThaiThanhToan, tt.SoTienGiaoDich, tt.NgayThanhToan, pt.TenPhuongThuc,
                 (
                     SELECT cttt.MaTrangThai
                     FROM ChiTietTrangThai cttt 
@@ -438,6 +438,8 @@ const donhang_admin = {
                 FROM DonHang dh
                 LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
                 LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
+                INNER JOIN ThanhToan tt on tt.MaDH = dh.MaDH
+                INNER JOIN PhuongThucThanhToan pt on pt.MaPT = tt.MaPT
                 ${condition_clause}
                 ${having_clause}
             `;

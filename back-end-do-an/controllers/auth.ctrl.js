@@ -83,15 +83,25 @@ const authController = {
             const [users] = await db.query(sql_login, [TenDN]);
             
             if (users.length === 0) {
-                return res.status(404).json({ message: "Tài khoản không tồn tại!" });
+                return res.status(404).json({ 
+                    success: false,
+                    message: "Tài khoản không tồn tại!" });
             }
+
+            if (users.Bi_khoa === 1) {
+            return res.status(403).json({ 
+                success: false,
+                message: "Tài khoản của bạn đã bị khóa! Vui lòng liên hệ hỗ trợ." });
+        }
 
             const user = users[0];
 
             // So sánh mật khẩu khách nhập với mật khẩu đã mã hóa trong DB
             const validPass = await bcrypt.compare(MatKhau, user.MatKhau);
             if (!validPass) {
-                return res.status(401).json({ message: "Mật khẩu không chính xác!" });
+                return res.status(401).json({ 
+                    success: false,
+                    message: "Mật khẩu không chính xác!" });
             }
 
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -110,6 +120,7 @@ const authController = {
 
             // Gửi token và thông tin cơ bản về cho Frontend
             res.status(200).json({ 
+                success: true,
                 message: "Đăng nhập thành công!",
                 token: token,
                 user: {
@@ -119,7 +130,9 @@ const authController = {
             });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "Lỗi server khi đăng nhập" });
+            res.status(500).json({ 
+                success: false,
+                message: "Lỗi server khi đăng nhập" });
         }
     },
 

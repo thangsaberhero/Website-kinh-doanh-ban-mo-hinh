@@ -220,12 +220,12 @@ onMounted(async () => {
   }
 
   const userObj = JSON.parse(userString);
-  const maTK = userObj.MaTK || userObj.id;
-  const maKH = userObj.MaKH || userObj.id;
 
   try {
     // 1. GỌI API LẤY THÔNG TIN CÁ NHÂN (Để điền tự động vào Form)
-    const resInfo = await fetch(`http://localhost:3000/api/info_user/laythongtin/${maTK}`);
+    const resInfo = await fetch(`http://localhost:3000/api/info_user/laythongtin`,{
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const dataInfo = await resInfo.json();
     
     if (resInfo.ok && dataInfo.data) {
@@ -237,7 +237,7 @@ onMounted(async () => {
     }
 
     // 2. GỌI API LẤY GIỎ HÀNG (Dùng lại hàm watch cart ở trang Giỏ Hàng)
-    const resCart = await fetch(`http://localhost:3000/api/don_hang/watch/${maKH}`, {
+    const resCart = await fetch(`http://localhost:3000/api/don_hang/watch`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -347,7 +347,9 @@ const processCheckout = async () => {
             // Gọi API MoMo Mock
             const momoRes = await fetch('http://localhost:3000/api/don_hang/payment/momo/create', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' ,
+                  'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ 
                     MaDH: data.MaDonHang, // Lấy mã đơn hàng vừa tạo xong
                     HinhThuc: momoType.value 
@@ -378,10 +380,7 @@ const processCheckout = async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
 
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
 
 .neon-glow {
   box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);

@@ -843,19 +843,21 @@ const donhang_user = {
             }
         try {
             const MaTK = req.user.id;
+            const MaDH = req.params.MaDH;
             const sql_laymakhachhang = `
-                Select MaKH
-                from KhachHang
-                where MaTK = ?
+                Select DonHang.MaKH
+                from DonHang
+                inner join KhachHang on KhachHang.MaKH = DonHang.MaKH
+                where KhachHang.MaTK = ? and MaDH = ?
             `;
-            const [result_kh] = await connection.query(sql_laymakhachhang, [MaTK]);
+            const [result_kh] = await db.query(sql_laymakhachhang, [MaTK, MaDH]);
 
             if(result_kh.length === 0) {
-                await connection.rollback();
-                return res.status(404).json({ success: false, message: "Không tìm thấy mã khách hàng!" });
+                await db.rollback();
+                return res.status(404).json({ success: false, message: "Bạn không có quyền xem thông tin đơn hàng này!" });
             }
             const MaKH = result_kh[0].MaKH;
-            const MaDH = req.params.MaDH;
+            
             const sql_donhang = `
                 SELECT TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note,
                 COALESCE(SUM(tt.SoTienGiaoDich), 0) AS DaThanhToan

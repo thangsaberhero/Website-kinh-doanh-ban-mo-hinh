@@ -194,9 +194,10 @@
         try{
             const formData = new FormData();
             formData.append('image', blobInfo.blob(), blobInfo.filename());
-    
+            const token = localStorage.getItem('token');
             const response = await fetch('http://localhost:3000/api/upload', {
                 method: 'POST',
+                headers: {'Authorization': `Bearer ${token}`},
                 body: formData
             });
             const result = await response.json();
@@ -216,7 +217,10 @@
   
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/news');
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/news', {
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const data = await response.json();
       if (response.ok && data.latestList) {
         const allCategories = data.latestList.map(item => item.TheLoai);
@@ -272,7 +276,6 @@
     formData.append('TheLoai', postData.value.category);
     formData.append('TomTat', postData.value.summary);
     formData.append('TrangThai', status); 
-    formData.append('MaNV', 1); 
     formData.append('Tags', postData.value.tags);
 
     if (thumbnailFile.value) {
@@ -280,8 +283,10 @@
     }
 
     try {
+        const token = localStorage.getItem('token');
         const response = await fetch('http://localhost:3000/api/news', {
             method: 'POST',
+            headers: {'Authorization': `Bearer ${token}`},
             body: formData 
         });
 

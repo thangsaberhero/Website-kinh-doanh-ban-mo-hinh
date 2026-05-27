@@ -269,15 +269,13 @@ const subtotal = computed(() => {
 
 const fetchOrderdata = async () => {
   const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  if (!token || !userString) {
+  if (!token) {
     router.push('/login');
     return;
   }
-  const maKH = JSON.parse(userString).MaKH;
   const maDH = route.params.id;
   try {
-    const response = await fetch(`http://localhost:3000/api/don_hang/watch_detail_order/${maKH}/${maDH}`, {
+    const response = await fetch(`http://localhost:3000/api/don_hang/watch_detail_order/${maDH}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`

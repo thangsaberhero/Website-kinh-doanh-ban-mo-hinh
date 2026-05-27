@@ -12,8 +12,8 @@ router.post('/deleteAll', authMiddleware.verifyToken, donhang_userController.xoa
 router.post('/payment/momo/create', authMiddleware.verifyToken, donhang_userController.tao_link_momo_mock);
 router.post('/payment/momo/confirm', authMiddleware.verifyToken, donhang_userController.xac_nhan_momo_mock);
 
-router.get('/watch/:MaKH', authMiddleware.verifyToken,donhang_userController.xem_hang_trong_gio);
-router.get('/watch_order/:MaKH', authMiddleware.verifyToken, donhang_userController.xem_don_hang);
-router.get('/watch_detail_order/:MaKH/:MaDH', authMiddleware.verifyToken, donhang_userController.xem_hang_trong_don_hang);
+router.get('/watch', authMiddleware.verifyToken,donhang_userController.xem_hang_trong_gio);
+router.get('/watch_order', authMiddleware.verifyToken, donhang_userController.xem_don_hang);
+router.get('/watch_detail_order/:MaDH', authMiddleware.verifyToken, donhang_userController.xem_hang_trong_don_hang);
 
 module.exports = router;

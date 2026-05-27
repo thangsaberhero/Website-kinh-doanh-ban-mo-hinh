@@ -191,6 +191,10 @@ const product_admin = {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Tên hãng sản xuất không được để trống!" });
             }
+            let logoFileName = null;
+            if (req.file) {
+                logoFileName = req.file.filename;
+            }
             const sql_check = `Select * from HangSanXuat where TenHSX = ?`
             const [check] = await connection.query(sql_check, [TenHSX]);
             if(check.length > 0){
@@ -201,8 +205,8 @@ const product_admin = {
                 });
             }
             const sql = `Insert into HangSanXuat(TenHSX, MoTa, Logo) values (?,?,?)`;
-            const [sql_hsx] = await connection.query(sql,[TenHSX, MoTa || null, Logo]);
-            const MaHSX = sql_hsx.insertId();
+            const [sql_hsx] = await connection.query(sql,[TenHSX, MoTa || null, logoFileName]);
+            const MaHSX = sql_hsx.insertId;
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -888,7 +892,8 @@ const product_admin = {
             await connection.beginTransaction();
             
             // HienThi (0 là Ẩn, 1 là Hiện)
-            const { MaMH, HienThi } = req.body; 
+            const MaMH = req.params.id;
+            const { HienThi } = req.body; 
             const MaTK = req.user.id;
             
             // 1. KIỂM TRA TỒN TẠI VÀ LẤY TÊN ĐỂ GHI LOG
@@ -1055,7 +1060,7 @@ const product_admin = {
                 filter = "Order by mh.MaMoHinh desc";
 
             const sql_core = `SELECT mh.MaMoHinh, mh.TenMH, mh.MaHSX, mh.MaDM, TenDM, mh.MaChiTietDM,
-                 mh.ChatLieu, mh.KichThuoc, TenChiTietDM, mh.DonGia, mh.TrangThai, mh.LoaiHinhBan,
+                 mh.ChatLieu, mh.KichThuoc, TenChiTietDM, mh.GiaNhap, mh.DonGia, mh.TrangThai, mh.LoaiHinhBan,
                 mh.AnhDaiDien, mh.NgayPhatHanh, TenHSX, mh.HienThi, mh.TienCocToiThieu, 
                 mh.ThongTinChiTiet, mh.TenNhanVat, mh.Series, mh.MaVach_Serial,
                 (

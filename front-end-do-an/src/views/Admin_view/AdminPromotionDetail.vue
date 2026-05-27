@@ -95,9 +95,18 @@
                 <h3 class="text-xl font-black text-purple-700 mt-1">
                   {{ costToRevenueRatio }}%
                 </h3>
-                <p class="text-[11px] font-medium mt-0.5 animate-pulse" 
-                  :class="costToRevenueRatio > 15 ? 'text-amber-600' : 'text-emerald-600'">
-                  {{ costToRevenueRatio > 15 ? '⚠️ Chi phí Marketing cao' : '✅ Chiến dịch hiệu quả tốt' }}
+                
+                <p v-if="costToRevenueRatio === 0" class="text-[11px] font-medium mt-0.5 text-slate-400">
+                  Chưa có dữ liệu
+                </p>
+                <p v-else-if="costToRevenueRatio <= 15" class="text-[11px] font-medium mt-0.5 text-emerald-600">
+                  ✅ Rất hiệu quả (Chi phí thấp)
+                </p>
+                <p v-else-if="costToRevenueRatio <= 30" class="text-[11px] font-medium mt-0.5 text-amber-600">
+                  ⚠️ Chấp nhận được (Mục tiêu xả kho)
+                </p>
+                <p v-else class="text-[11px] font-medium mt-0.5 text-rose-600 animate-pulse">
+                  🚨 Đang đốt tiền (Cần xem xét lại)
                 </p>
               </div>
             </div>
@@ -123,34 +132,89 @@
               <table class="w-full text-left border-collapse whitespace-nowrap">
                 <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-bold tracking-wider uppercase">
                   <tr>
-                    <th class="py-4 px-6">Tên mô hình / Phân loại</th>
-                    <th class="py-4 px-6">Giá gốc</th>
-                    <th class="py-4 px-6">Chiết khấu giảm</th>
-                    <th class="py-4 px-6">Giá sau giảm</th>
+                    <th class="py-4 px-6">Sản phẩm áp dụng</th>
+                    <th class="py-4 px-6">Giá niêm yết</th>
+                    <th class="py-4 px-6">Cấu hình giảm giá</th>
+                    <th class="py-4 px-6">Hiệu suất sử dụng</th>
                     <th class="py-4 px-6 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr v-for="sp in productsList" :key="sp.MaPhanLoai" class="border-b border-slate-100 hover:bg-slate-50/50">
+                <tbody class="divide-y divide-slate-50">
+                  <tr v-for="sp in productsList" :key="sp.MaPhanLoai" class="transition-colors group hover:bg-slate-50/80">
+                    
                     <td class="py-4 px-6">
-                      <p class="font-bold text-slate-900 text-sm">{{ sp.TenMH }}</p>
-                      <p class="text-[11px] text-slate-400 font-medium mt-0.5">Phân loại: {{ sp.TenPhanLoai || sp.chiTietPhanLoai || 'Mặc định' }}</p>
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden shrink-0">
+                          <img v-if="sp.AnhDaiDien" :src="`http://localhost:3000/Images_product/${sp.AnhDaiDien}`" class="w-full h-full object-cover"/>
+                          <span v-else class="material-symbols-outlined text-slate-300 flex items-center justify-center h-full">image</span>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                          <p class="font-bold text-slate-900 text-sm truncate max-w-[200px]" :title="sp.TenMH">{{ sp.TenMH }}</p>
+                          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Phân loại: <span class="font-bold">{{ sp.ChiTietPhanLoai || 'Mặc định' }}</span></p>
+                        </div>
+                      </div>
                     </td>
-                    <td class="py-4 px-6 text-sm text-slate-600">{{ formatCurrency(sp.DonGia) }}</td>
+
                     <td class="py-4 px-6">
-                      <span class="font-bold text-rose-500 text-xs px-2 py-1 rounded bg-rose-50 border border-rose-100">
-                        {{ sp.LoaiGiamGia === 'TienMat' ? `-${formatCurrency(sp.ChietKhau || 0)}` : `-${sp.ChietKhau || 0}%` }}
-                      </span>
+                      <p class="text-sm font-bold text-slate-400 line-through">{{ formatCurrency(sp.DonGia) }}</p>
+                      <p class="text-xs font-black text-emerald-600 mt-0.5">{{ formatCurrency(sp.DonGiaKhuyenMai) }}</p>
                     </td>
-                    <td class="py-4 px-6 font-bold text-emerald-600 text-sm">{{ formatCurrency(sp.DonGiaKhuyenMai) }}</td>
+
+                    <td class="py-4 px-6">
+                      <div class="flex flex-col items-start gap-1">
+                        <span class="font-bold text-rose-500 text-xs px-2 py-1 rounded bg-rose-50 border border-rose-100">
+                          {{ sp.LoaiGiamGia === 'TienMat' ? `-${formatCurrency(sp.ChietKhau || 0)}` : `-${sp.ChietKhau || 0}%` }}
+                        </span>
+                        <span v-if="sp.LoaiGiamGia === 'ChietKhau' && sp.GiaTriGiamToiDa" class="text-[10px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                          Giảm tối đa: {{ formatCurrency(sp.GiaTriGiamToiDa) }}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td class="py-4 px-6">
+                      <div class="flex flex-col gap-1.5 w-32">
+                        <div class="flex items-center justify-between text-[11px] font-bold">
+                          <span :class="(sp.SoLuongKM && (sp.SoLuongDaDung >= sp.SoLuongKM)) ? 'text-rose-500' : 'text-emerald-600'">
+                            {{ sp.SoLuongDaDung || 0 }} đã bán
+                          </span>
+                          <span class="text-slate-400">/ {{ sp.SoLuongKM ? sp.SoLuongKM : 'Không giới hạn' }}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden" v-if="sp.SoLuongKM">
+                          <div class="h-full rounded-full transition-all duration-500" 
+                               :class="(sp.SoLuongDaDung / sp.SoLuongKM) > 0.8 ? 'bg-rose-500' : 'bg-emerald-500'"
+                               :style="`width: ${Math.min((sp.SoLuongDaDung / sp.SoLuongKM) * 100, 100)}%`">
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
                     <td class="py-4 px-6 text-right">
-                      <button @click="openDeleteProductModal(sp)" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all">
+                      <button @click="openDeleteProductModal(sp)" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all" title="Loại khỏi chiến dịch">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </td>
                   </tr>
+
                   <tr v-if="productsList.length === 0">
-                    <td colspan="5" class="py-12 text-center text-slate-400 text-sm font-medium">Chiến dịch này áp dụng cho toàn bộ cửa hàng hoặc chưa thiết lập sản phẩm.</td>
+                    <td colspan="5" class="py-16 border-none">
+                      <div class="flex flex-col items-center justify-center text-center w-full mx-auto">
+                        <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-3">
+                          <span class="material-symbols-outlined text-3xl">
+                            {{ promoType === 'voucher' ? 'all_inclusive' : 'category' }}
+                          </span>
+                        </div>
+                        
+                        <div v-if="promoType === 'voucher'">
+                          <p class="text-slate-600 text-sm font-bold">Áp dụng cho toàn bộ cửa hàng</p>
+                          <p class="text-slate-400 text-xs mt-1">Mã giảm giá này hiện đang được áp dụng cho mọi đơn hàng thỏa mãn giá trị tối thiểu.</p>
+                        </div>
+                        
+                        <div v-else>
+                          <p class="text-slate-600 text-sm font-bold">Chưa có sản phẩm nào tham gia.</p>
+                          <p class="text-slate-400 text-xs mt-1">Hãy nhấn nút thêm sản phẩm ở góc phải để bắt đầu chiến dịch.</p>
+                        </div>
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -262,8 +326,17 @@
                 <div class="flex-1 min-w-0">
                   <p class="font-bold text-slate-800 text-sm truncate" :title="prod.TenMH">{{ prod.TenMH }}</p>
                   <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-500">{{ prod.ChiTietPhanLoai || 'Mặc định' }}</span>
-                    <span class="text-[11px] font-bold text-[#ff8f73]">{{ formatCurrency(prod.DonGia) }}</span>
+                    <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-500">
+                      {{ prod.ChiTietPhanLoai || 'Mặc định' }}
+                    </span>
+                    <span class="text-[11px] font-bold text-[#ff8f73]">
+                      {{ formatCurrency(prod.DonGia) }}
+                    </span>
+                    
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded" 
+                          :class="prod.SoLuong > 0 ? 'bg-sky-50 text-sky-600 border border-sky-100' : 'bg-rose-50 text-rose-600 border border-rose-100'">
+                      Tồn kho: {{ prod.SoLuong || 0 }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -276,24 +349,59 @@
           </div>
 
           <div v-if="selectedProductIds.length > 0 && promoType === 'campaign'" class="p-4 bg-orange-50 rounded-xl border border-orange-100 animate-[fadeIn_0.2s_ease-out]">
-            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-3">Cấu hình mức giảm cho {{ selectedProductIds.length }} sản phẩm đã chọn</h4>
-            <div class="grid grid-cols-3 gap-4">
+            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-3">
+              Cấu hình áp dụng chung cho {{ selectedProductIds.length }} sản phẩm
+            </h4>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Loại giảm giá</label>
-                <select v-model="addProductForm.LoaiGiamGia" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm">
+                <select v-model="addProductForm.LoaiGiamGia" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm outline-none focus:border-orange-400">
                   <option value="ChietKhau">Phần trăm (%)</option>
-                  <option value="TienMat">Số tiền cố định (đ)</option>
+                  <option value="TienMat">Số tiền (đ)</option>
                 </select>
               </div>
+              
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">Mức giảm</label>
-                <input v-model="addProductForm.ChietKhau" type="number" min="0" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">Mức giảm (*)</label>
+                <input 
+                  v-model="addProductForm.ChietKhau" 
+                  type="number" 
+                  min="0" 
+                  :max="maxAllowedDiscount"
+                  @input="validateDiscountInput" 
+                  class="w-full border border-orange-200 rounded-lg p-2.5 text-sm outline-none focus:border-orange-400 font-bold text-rose-500"
+                >
+                <p class="text-[9px] font-medium text-slate-400 mt-1">
+                  Tối đa: <span class="font-bold text-slate-600">{{ addProductForm.LoaiGiamGia === 'ChietKhau' ? '100%' : formatCurrency(maxAllowedDiscount) }}</span>
+                </p>
               </div>
+              
               <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Giảm tối đa (đ)</label>
-                <input v-model="addProductForm.GiaTriGiamToiDa" :disabled="addProductForm.LoaiGiamGia === 'TienMat'" type="number" min="0" placeholder="Bỏ trống = Không giới hạn" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm disabled:bg-orange-50/50">
+                <input v-model="addProductForm.GiaTriGiamToiDa" :disabled="addProductForm.LoaiGiamGia === 'TienMat'" type="number" min="0" placeholder="Không giới hạn" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm disabled:bg-orange-50/50 outline-none focus:border-orange-400">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1" title="Số lượng tối đa được bán với giá KM cho MỖI loại">
+                  SL khuyến mãi / Loại
+                </label>
+                <input 
+                  v-model="addProductForm.SoLuongKM" 
+                  type="number" 
+                  min="1" 
+                  placeholder="Toàn bộ kho" 
+                  class="w-full border border-orange-200 rounded-lg p-2.5 text-sm outline-none focus:border-orange-400 font-bold text-orange-600 placeholder:font-normal"
+                >
+                <p class="text-[9px] font-medium text-slate-400 mt-1">
+                  Kho nhiều nhất: <span class="font-bold text-slate-600">{{ maxAvailableStock }} cái</span>
+                </p>
               </div>
             </div>
+            
+            <p class="text-[10px] text-orange-500 italic mt-3">
+              * Cấu hình này sẽ được áp dụng giống hệt nhau cho tất cả các phân loại bạn đã đánh dấu tick.
+            </p>
           </div>
         </div>
 
@@ -395,7 +503,13 @@
         search: searchProductQuery.value,
         maDM: filterCategory.value,
         maHSX: filterBrand.value
-      }).toString();
+      });
+
+      if (promoType.value === 'campaign') {
+        params.append('maKM', promoId);
+      } else {
+        params.append('maGG', promoId);
+      }
 
       const res = await fetch(`http://localhost:3000/api/khuyen_mai_admin/search/products?${params}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -556,6 +670,10 @@
     if (promoType.value === 'campaign') {
       const chietKhau = Number(addProductForm.value.ChietKhau);
       
+      if (chietKhau > maxAllowedDiscount.value) {
+         toastStore.showToast(`Mức giảm không được vượt quá ${formatCurrency(maxAllowedDiscount.value)} để tránh giá âm!`, 'error');
+         return;
+      }
       if (isNaN(chietKhau) || chietKhau <= 0) {
         toastStore.showToast('Vui lòng nhập mức giảm giá hợp lệ (>0)', 'error');
         return;
@@ -586,7 +704,7 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(payload)
       });
@@ -672,11 +790,58 @@
   };
 
   const costToRevenueRatio = computed(() => {
-    if (!detailData.value || !detailData.value.TongDoanhThuMangLai || detailData.value.TongDoanhThuMangLai === 0) {
+    if (!detailData.value) return 0;
+
+    // Ép kiểu về dạng Số (Number), nếu null/undefined thì mặc định là 0
+    const doanhThu = Number(detailData.value.TongDoanhThuMangLai) || 0;
+    const chiPhi = Number(detailData.value.TongTienDaGiam) || 0;
+
+    // Chặn đứng phép chia cho 0
+    if (doanhThu === 0) {
       return 0;
     }
-    const ratio = (detailData.value.TongTienDaGiam / detailData.value.TongDoanhThuMangLai) * 100;
+
+    const ratio = (chiPhi / doanhThu) * 100;
     return Math.round(ratio * 10) / 10; 
+  });
+
+  // 1. Tự động tính toán Mức giảm tối đa dựa trên các sản phẩm đã chọn
+  const maxAllowedDiscount = computed(() => {
+    // Nếu là % -> Tối đa 100
+    if (addProductForm.value.LoaiGiamGia === 'ChietKhau') return 100;
+    
+    // Nếu chưa chọn sản phẩm nào -> 0
+    if (selectedProductIds.value.length === 0) return 0;
+
+    // Lấy ra mảng các sản phẩm đang được tick chọn
+    const selectedProds = searchedProducts.value.filter(p => selectedProductIds.value.includes(p.MaPhanLoai));
+    
+    // Tìm Giá trị nhỏ nhất (Món rẻ nhất) trong mảng đó
+    const minPrice = Math.min(...selectedProds.map(p => p.DonGia));
+    return minPrice;
+  });
+
+  // 2. Hàm tự động ép số nếu Admin cố tình gõ lố
+  const validateDiscountInput = () => {
+    let val = Number(addProductForm.value.ChietKhau);
+    
+    if (val < 0) val = 0; // Không cho nhập số âm
+    
+    // Nếu nhập lố giới hạn -> Ép về bằng số Max luôn
+    if (val > maxAllowedDiscount.value) {
+      val = maxAllowedDiscount.value;
+      toastStore.showToast(`Mức giảm tối đa cho phép là ${addProductForm.value.LoaiGiamGia === 'ChietKhau' ? '100%' : formatCurrency(maxAllowedDiscount.value)}`, 'error');
+    }
+    
+    addProductForm.value.ChietKhau = val;
+  };
+
+  // 3. Tính toán Tồn kho lớn nhất để gợi ý cho Admin
+  const maxAvailableStock = computed(() => {
+    if (selectedProductIds.value.length === 0) return 0;
+    const selectedProds = searchedProducts.value.filter(p => selectedProductIds.value.includes(p.MaPhanLoai));
+    // Tìm số tồn kho lớn nhất trong các món được chọn
+    return Math.max(...selectedProds.map(p => p.SoLuong));
   });
 </script>
 

@@ -29,7 +29,7 @@ router.post('/add_product', upload.fields([
     { name: 'BoSuuTapAnh', maxCount: 10 }
 ]), authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_mat_hang_moi);
 
-router.post('/add_brand', uploadBrand.single('Logo'), authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_hang_san_xuat_moi);
+router.post('/add_brand', authMiddleware.verifyToken, authMiddleware.verifyAdmin, uploadBrand.single('Logo'), product_Controller.them_hang_san_xuat_moi);
 router.put('/fix_brand/:id', uploadBrand.single('Logo'), authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.sua_thong_tin_HSX);
 
 router.post('/add_variant', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_danh_muc_moi);
@@ -42,15 +42,13 @@ router.put('/fix_info/:id', upload.fields([
     { name: 'BoSuuTapAnhMoi', maxCount: 10 }
 ]), authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.sua_thong_tin_mat_hang);
 
-router.post('/fix_invisible', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.thay_doi_hien_thi_mat_hang);
+router.put('/toggle_visibility/:id', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.thay_doi_hien_thi_mat_hang);
 
 router.post('/an_phan_loai', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.An_phan_loai); 
 
 
 
-router.delete('/delete_brand', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_HSX);
-router.post('/add_brand', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_hang_san_xuat_moi);
-
+router.delete('/delete_brand/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_HSX);
 router.put('/fix_cate/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.sua_thong_tin_danh_muc);
 
 router.delete('/delete_detail/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_danh_muc);

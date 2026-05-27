@@ -264,7 +264,6 @@
       router.push('/login');
       return;
     }
-    const maKH = JSON.parse(userString).MaKH;
     const queryParams = new URLSearchParams({
       page: currentPage.value,
       limit: limit.value
@@ -273,7 +272,7 @@
       queryParams.append('trangthai', activeTab.value);
     }
     try {
-      const response = await fetch(`http://localhost:3000/api/don_hang/watch_order/${maKH}?${queryParams}`, {
+      const response = await fetch(`http://localhost:3000/api/don_hang/watch_order?${queryParams}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

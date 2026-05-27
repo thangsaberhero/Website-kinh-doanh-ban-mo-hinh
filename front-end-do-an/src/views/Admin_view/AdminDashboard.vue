@@ -621,7 +621,7 @@
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3000/api/invoice_admin/huy', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -731,6 +731,7 @@
 
   const fetchDashboardData = async (startDate = null, endDate = null) => {
     try {
+      const token = localStorage.getItem('token');
       let query = '';
       if (startDate && endDate) {
         const startFmt = startDate.replace(/\//g, '-');
@@ -759,7 +760,9 @@
       }
 
       // 2. DỮ LIỆU THẺ KPI TỔNG QUAN (DOANH THU & ĐƠN HÀNG & LỢI NHUẬN)
-      const resDoanhThu = await fetch(`http://localhost:3000/api/thongke/doanhthu${query}`);
+      const resDoanhThu = await fetch(`http://localhost:3000/api/thongke/doanhthu${query}`,{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const dataDoanhThu = await resDoanhThu.json();
       if (dataDoanhThu.success && dataDoanhThu.data) {
         // Doanh thu
@@ -782,7 +785,9 @@
       }
 
       // 3. KHÁCH HÀNG MỚI
-      const resKhachHang = await fetch(`http://localhost:3000/api/thongke/khachhang${query}`);
+      const resKhachHang = await fetch(`http://localhost:3000/api/thongke/khachhang${query}`,{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const dataKhachHang = await resKhachHang.json();
       if (dataKhachHang.success && dataKhachHang.data) {
         const tongKhach = dataKhachHang.data.reduce((sum, item) => sum + item.SoLuongKhach, 0);
@@ -790,7 +795,9 @@
       }
 
       // 4. TRẠNG THÁI ĐƠN HÀNG
-      const resDonHang = await fetch(`http://localhost:3000/api/thongke/donhang${query}`);
+      const resDonHang = await fetch(`http://localhost:3000/api/thongke/donhang${query}`,{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const dataDonHang = await resDonHang.json();
       if (dataDonHang.success && dataDonHang.data) {
         const dynamicColors = dataDonHang.data.map(item => {
@@ -811,7 +818,9 @@
       }
 
       // 5. BIỂU ĐỒ XU HƯỚNG DOANH THU (API ĐƯỜNG MỚI VIẾT)
-      const resBieuDo = await fetch(`http://localhost:3000/api/thongke/bieudo${query}`);
+      const resBieuDo = await fetch(`http://localhost:3000/api/thongke/bieudo${query}`,{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const dataBieuDo = await resBieuDo.json();
       if (dataBieuDo.success && dataBieuDo.data) {
         chartDoanhThuSeries.value = [{ name: 'Doanh thu', data: dataBieuDo.data.map(item => item.DoanhThuNgay) }];
@@ -819,7 +828,9 @@
       }
 
       // 6. DỮ LIỆU MÃ GIẢM GIÁ KHUYẾN MÃI
-      const resKhuyenMai = await fetch(`http://localhost:3000/api/thongke/khuyenmai${query}`);
+      const resKhuyenMai = await fetch(`http://localhost:3000/api/thongke/khuyenmai${query}`,{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const dataKhuyenMai = await resKhuyenMai.json();
       if (dataKhuyenMai.success && dataKhuyenMai.data) {
         promoStats.value = dataKhuyenMai.data.topmagg || [];

@@ -176,11 +176,10 @@
                 <thead>
                   <tr class="bg-slate-50/50 border-y border-slate-100">
                     <th class="px-6 py-5 w-12 text-center"></th>
-                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Mã vận đơn</th>
-                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Tên khách hàng</th>
-                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Tổng tiền</th>
-                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Ngày đặt</th>
-                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Thanh toán</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Mã đơn & Khách</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Trạng thái & Ngày</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Giá trị đơn</th>
+                    <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Giao dịch TT (Thực tế)</th>
                     <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Thao tác</th>
                   </tr>
                 </thead>
@@ -196,28 +195,42 @@
                     <td class="px-6 py-4">
                       <div class="flex flex-col">
                         <span class="font-bold text-slate-900 text-sm">{{ order.code }}</span>
-                        <span class="text-[10px] font-bold mt-0.5" :class="getCarrierColor(order.carrier)">{{ order.carrier }}</span>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-0.5">{{ order.customer }}</span>
                       </div>
                     </td>
                     
-                    <td class="px-6 py-4 text-sm font-semibold text-slate-700">{{ order.customer }}</td>
+                    <td class="px-6 py-4">
+                      <div class="flex flex-col items-start gap-1.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border shadow-sm" :class="getOrderStatusBadge(order.orderStatus).class">
+                          {{ getOrderStatusBadge(order.orderStatus).text }}
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-400">{{ order.time }} - {{ order.date }}</span>
+                      </div>
+                    </td>
                     
                     <td class="px-6 py-4">
-                      <div class="flex flex-col">
+                      <div class="flex flex-col items-start">
                         <span class="text-sm font-bold text-[#ff3d00]">{{ order.total?.toLocaleString('vi-VN') }} ₫</span>
-                        <span class="text-[11px] font-semibold text-slate-400 mt-1">Đã bao gồm thuế</span>
+                        <span class="text-[10px] font-semibold mt-1 px-1.5 py-0.5 rounded" 
+                              :class="order.paymentStatus?.includes('Đã thanh toán') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'">
+                          {{ order.paymentStatus }}
+                        </span>
                       </div>
                     </td>
                     
                     <td class="px-6 py-4">
-                      <p class="text-[13px] font-semibold text-slate-600">{{ order.time }}</p>
-                      <p class="text-[11px] font-medium text-slate-400">{{ order.date }}</p>
-                    </td>
-                    
-                    <td class="px-6 py-4">
-                      <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide border shadow-sm" :class="getPaymentStyle(order.paymentStatus)">
-                        {{ order.paymentStatus }}
-                      </span>
+                      <div class="flex flex-col gap-0.5">
+                        <p class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                          <span class="material-symbols-outlined text-[14px]" :class="order.paymentMethod?.includes('COD') ? 'text-sky-500' : 'text-purple-500'">
+                            {{ order.paymentMethod?.includes('COD') ? 'local_shipping' : 'account_balance' }}
+                          </span>
+                          {{ order.paymentMethod }} 
+                          <span class="text-slate-300 font-normal">|</span> 
+                          <span class="text-indigo-600 text-[11px]">{{ order.paymentType }}</span>
+                        </p>
+                        <p class="text-[11px] font-bold text-emerald-600 mt-1">GD: {{ order.transactionAmount?.toLocaleString('vi-VN') }} ₫</p>
+                        <p class="text-[10px] text-slate-400 font-medium">Lúc: {{ order.transactionDate }}</p>
+                      </div>
                     </td>
                     
                     <td class="px-6 py-4 relative">
@@ -226,34 +239,23 @@
                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                             
-                            <button @click="updateOrderStatus(order.id)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all" title="Xác nhận & Chuyển trạng thái">
+                            <button @click="updateOrderStatus(order.id)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all" title="Cập nhật trạng thái">
                                 <span class="material-symbols-outlined text-[18px]">check_circle</span>
                             </button>
                             
                             <button @click.stop="toggleOrderMenu(order.id)" class="w-8 h-8 flex items-center justify-center rounded-xl transition-all" :class="activeMenuId === order.id ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'">
                                 <span class="material-symbols-outlined text-[18px]">more_vert</span>
                             </button>
-                        </div>
 
-                        <div 
-                            v-show="activeMenuId === order.id"
-                            @click.stop
-                            class="absolute right-10 w-48 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-2 z-50 text-left overflow-hidden"
-                            :class="index >= orders.length - 2 ? 'bottom-8 top-auto' : 'top-10'"
-                        >
-                            <button class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-3 font-medium transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">receipt_long</span> Xuất hóa đơn
-                            </button>
-                            <button class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-3 font-medium transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">edit</span> Sửa đơn hàng
-                            </button>
-                            <a href="tel:0912345678" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-3 font-medium transition-colors block">
-                                <span class="material-symbols-outlined text-[18px]">call</span> Gọi khách hàng
-                            </a>
-                            <div class="border-t border-slate-100 my-1"></div>
-                            <button @click="cancelOrder(order.id)" class="w-full text-left px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 font-bold transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn hàng
-                            </button>
+                            <div v-show="activeMenuId === order.id" @click.stop class="absolute right-8 top-10 w-40 bg-white rounded-lg shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-1 z-50 text-left overflow-hidden">
+                                <button @click="handlePrintInvoice(order.id)" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-2">
+                                  <span class="material-symbols-outlined text-[16px]">print</span> In hóa đơn
+                                </button>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <button @click="cancelOrder(order.id)" class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2">
+                                  <span class="material-symbols-outlined text-[16px]">cancel</span> Hủy đơn
+                                </button>
+                            </div>
                         </div>
                     </td>
                   </tr>
@@ -524,10 +526,11 @@ const exportExcelReport = async () => {
   isExporting.value = true;
   try {
     // 1. Gọi API (Nhớ thêm Token nếu Route của bạn cần xác thực Admin)
+    const token = localStorage.getItem('token');
     const response = await fetch('http://localhost:3000/api/invoice_admin/export-excel', {
       method: 'GET',
       headers: {
-        // 'Authorization': `Bearer ${localStorage.getItem('token')}` // Bỏ comment nếu có check token
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -648,9 +651,21 @@ const exportExcelReport = async () => {
     { id: 'pending', name: 'Chờ xác nhận' },
     { id: 'packing', name: 'Đang đóng gói' },
     { id: 'shipping', name: 'Đang giao' },
-    { id: 'completed', name: 'Đã hoàn thành' }
+    { id: 'completed', name: 'Đã hoàn thành' },
+    { id: 'cancelled', name: 'Đã hủy' },
+    { id: 'returned', name: 'Hoàn hàng' }
   ];
   const activeTab = ref('all');
+
+  const getOrderStatusBadge = (status) => {
+    const s = status?.toUpperCase() || '';
+    if (s.includes('ĐÃ GIAO') || s.includes('HOÀN THÀNH')) return { class: 'bg-emerald-50 text-emerald-600 border-emerald-100', text: 'ĐÃ GIAO' };
+    if (s.includes('CHỜ DUYỆT') || s.includes('ĐÓNG GÓI')) return { class: 'bg-amber-50 text-amber-600 border-amber-100', text: 'ĐANG XỬ LÝ' };
+    if (s.includes('VẬN CHUYỂN') || s.includes('ĐANG GIAO')) return { class: 'bg-sky-50 text-sky-600 border-sky-100', text: 'ĐANG GIAO' };
+    if (s.includes('HỦY')) return { class: 'bg-rose-50 text-rose-600 border-rose-100', text: 'ĐÃ HỦY' };
+    if (s.includes('HOÀN')) return { class: 'bg-purple-50 text-purple-600 border-purple-100', text: 'ĐÃ HOÀN HÀNG' };
+    return { class: 'bg-slate-50 text-slate-600 border-slate-100', text: status || 'CHỜ XỬ LÝ' };
+  };
   
   
   // --- Logic Checkbox & Xử lý hàng loạt ---
@@ -705,6 +720,8 @@ const exportExcelReport = async () => {
       else if (activeTab.value === 'packing') statusParam = 2;
       else if (activeTab.value === 'shipping') statusParam = 3;
       else if (activeTab.value === 'completed') statusParam = 4;
+      else if (activeTab.value === 'cancelled') statusParam = 5;
+      else if (activeTab.value === 'returned') statusParam = 6; 
 
       // Xây dựng URL với các tham số Tối ưu
       let url = `http://localhost:3000/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
@@ -715,7 +732,11 @@ const exportExcelReport = async () => {
       if (filterDate.value.to) url += `&ngayketthuc=${filterDate.value.to}`;
       if (sortBy.value) url += `&sapxep=${sortBy.value}`; // Truyền thẳng biến: date_desc, total_asc...
 
-      const response = await fetch(url);
+      const token = localStorage.getItem('token');
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -736,7 +757,11 @@ const exportExcelReport = async () => {
             date: d.toLocaleDateString('vi-VN'),
             paymentStatus: item.TrangThaiThanhToan,
             total: Number(item.ThanhTien),
-            statusId: item.MaTT
+            statusId: item.MaTT,
+            paymentMethod: item.TenPhuongThuc || 'COD',
+            paymentType: item.LoaiGiaoDich || 'Thanh toán toàn bộ',
+            transactionAmount: Number(item.SoTienGiaoDich) || 0,
+            transactionDate: item.NgayThanhToan ? new Date(item.NgayThanhToan).toLocaleString('vi-VN') : 'Chưa thu tiền'
           };
         });
       }
@@ -779,8 +804,11 @@ const exportExcelReport = async () => {
   // 2. GỌI API XEM CHI TIẾT ĐƠN HÀNG
   const viewOrderDetails = async (order) => {
     try {
+      const token = localStorage.getItem('token');
       console.log("Đang gọi API lấy chi tiết mã đơn:", order.id); // Log ra để kiểm tra
-      const response = await fetch(`http://localhost:3000/api/invoice_admin/${order.id}`);
+      const response = await fetch(`http://localhost:3000/api/invoice_admin/${order.id}`,{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const result = await response.json();
       
       if (result.success) {
@@ -826,9 +854,13 @@ const exportExcelReport = async () => {
   // 3. GỌI API CẬP NHẬT TRẠNG THÁI (Duyệt/Đóng gói/Giao)
   const updateOrderStatus = async (orderId) => {
     try {
+      const token = localStorage.getItem('token'); 
       const res = await fetch(`http://localhost:3000/api/invoice_admin/update`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+         },
         body: JSON.stringify({ MaDH: orderId })
       });
       const result = await res.json();
@@ -844,9 +876,13 @@ const exportExcelReport = async () => {
   const cancelOrder = async (id) => {
     if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này và hoàn lại tồn kho không?")) {
       try {
+        const token = localStorage.getItem('token');
         const res = await fetch(`http://localhost:3000/api/invoice_admin/huy`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+           },
           body: JSON.stringify({ MaDH: id })
         });
         const result = await res.json();

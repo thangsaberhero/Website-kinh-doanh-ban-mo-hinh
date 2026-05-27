@@ -184,7 +184,11 @@
   const fetchUserData = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/admin_info/laythongtin/${currentUser.id}`);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3000/api/admin_info/laythongtin}`,{
+        headers: {'Authorization': `Bearer ${token}`}
+      }
+      );
       const dataJSON = await res.json();
       
       if (res.ok && dataJSON.data) {
@@ -247,7 +251,7 @@
     isSaving.value = true;
     try {
       const formData = new FormData();
-      formData.append('MaTK', currentUser.id);
+      //formData.append('MaTK', currentUser.id);
       formData.append('TenNV', form.name);
       formData.append('email', form.email);
       formData.append('SDT', form.phone);
@@ -257,7 +261,7 @@
       if (selectedFile.value) {
         formData.append('avatar', selectedFile.value); 
       }
-
+      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:3000/api/admin_info/change_info', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },

@@ -6,7 +6,7 @@ const authMiddleware = require('../../middlewares/auth.middleware.js');
 
 router.get('/admin/list', authMiddleware.verifyToken, authMiddleware.verifyStaff, newsController.getAdminNews);
 router.get('/admin/stats', authMiddleware.verifyToken, authMiddleware.verifyStaff, newsController.getAdminStats);
-router.post('/', uploadNews.single('thumbnail'), authMiddleware.verifyToken, authMiddleware.verifyStaff, newsController.createNews);
+router.post('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, uploadNews.single('thumbnail'), newsController.createNews);
 router.get('/', newsController.getAllNews);
 router.patch('/:id/view', newsController.incrementView);
 router.get('/:id/related', newsController.getRelatedNews);

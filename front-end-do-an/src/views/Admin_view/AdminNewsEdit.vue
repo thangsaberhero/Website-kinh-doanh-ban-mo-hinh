@@ -198,11 +198,13 @@
     images_upload_handler: async (blobInfo, progress) => {
       return new Promise(async(resolve, reject) => {
         try{
+            const token = localStorage.getItem('token');
             const formData = new FormData();
             formData.append('image', blobInfo.blob(), blobInfo.filename());
     
             const response = await fetch('http://localhost:3000/api/upload', {
                 method: 'POST',
+                headers: {'Authorization': `Bearer ${token}`},
                 body: formData
             });
             const result = await response.json();
@@ -222,7 +224,10 @@
   
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/news');
+      const token = localStorage.getItem('token'); 
+      const response = await fetch('http://localhost:3000/api/news',{
+        headers: {'Authorization': `Bearer ${token}`}
+      });
       const data = await response.json();
       if (response.ok && data.latestList) {
         const allCategories = data.latestList.map(item => item.TheLoai);
@@ -236,7 +241,10 @@
   const fetchPostDetail = async () =>{
     isLoading.value = true;
     try{
-        const response = await fetch(`http://localhost:3000/api/news/${postId}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:3000/api/news/${postId}`,{
+          headers: {'Authorization': `Bearer ${token}`}
+        });
         const result = await response.json();
 
         if(response.ok){
@@ -302,7 +310,6 @@
     formData.append('TheLoai', postData.value.category);
     formData.append('TomTat', postData.value.summary);
     formData.append('TrangThai', status); 
-    formData.append('MaNV', 1);
     formData.append('Tags', postData.value.tags); 
 
     if (thumbnailFile.value) {
@@ -310,8 +317,11 @@
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/api/news/${postId}`, {
+      const token = localStorage.getItem('token');
+        const response = await 
+        fetch(`http://localhost:3000/api/news/${postId}`, {
             method: 'PUT',
+            headers: {'Authorization': `Bearer ${token}`},
             body: formData
         });
 

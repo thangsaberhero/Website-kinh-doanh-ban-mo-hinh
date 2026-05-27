@@ -20,7 +20,7 @@ CREATE TABLE TaiKhoan (
     AnhDaiDien VARCHAR(100),
 	ResetOTP VARCHAR(10) NULL,
 	OTPExpires DATETIME NULL,
-	Bi_khoa TINYINT() default 0,
+	Bi_khoa TINYINT default 0,
 	NgayTao DATETIME DEFAULT CURRENT_TIMESTAMP,
 	DangNhapCuoi DATETIME NULL,
     IPDangNhap VARCHAR(45) DEFAULT NULL,
@@ -218,7 +218,7 @@ CREATE TABLE ChiTietDonHang (
     GiaNhapThucTe DECIMAL(12,2) CHECK (GiaNhapThucTe >= 0),
     DonGiaGoc Decimal(12,2) Check (DonGiaGoc >= 0), 
     DonGiaBan DECIMAL(12,2) CHECK (DonGiaBan >= 0),
-    PRIMARY KEY (MaDH, MaPhanLoai, KhuyenMai),
+    PRIMARY KEY (MaDH, MaPhanLoai, LaHangKhuyenMai),
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH),
     FOREIGN KEY (MaPhanLoai) REFERENCES PhanLoai(MaPhanLoai)
 );
@@ -347,7 +347,7 @@ CREATE TABLE TinTuc (
     TheLoai VARCHAR(100),
     NgayDang DATETIME DEFAULT CURRENT_TIMESTAMP,
     LuotXem INT DEFAULT 0,
-    Tags Varchar(255)
+    Tags Varchar(255),
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
 );
 
@@ -432,3 +432,29 @@ CREATE TABLE SanPhamVatLy (
     FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh),
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
 );
+
+-- Dữ liệu cơ bản--
+
+INSERT INTO Quyen (TenQuyen) VALUES ('Quản lý'), ('Nhân viên bán hàng'), ('Khách hàng');
+
+INSERT INTO HangSanXuat (TenHSX) VALUES
+('GoodSmileCompany'), ('Gift+'), ('Furyu'), ('SEGA'), ('BANDAI'), ('Max Factory'), ('Hobby stock');
+
+INSERT INTO DanhMuc (TenDM) VALUES
+('Mô hình'), ('Nendoroid'), ('Nhồi bông'), ('PRE-ORDER'), ('Phụ kiện khác');
+
+INSERT INTO ChiTietDanhMuc (MaDM, TenChiTietDM) VALUES
+(1, 'Gameprize'), (1, 'Mô hình scale'), (1, 'Mô hình Chibi'), (1, 'Mô hình lắp ráp'), (1, 'Action figure'),
+(2, 'Nedoroid Nam'), (2, 'Nendoroid nữ'), (4, 'Pre-order 2026'), (4, 'Pre-order 2027');
+
+INSERT INTO TrangThai (TenTrangThai) VALUES 
+('Chờ duyệt'),
+('Đang đóng gói'),
+('Đang vận chuyển'),
+('Đã giao'),
+('Đã hủy'),
+('Đang hoàn hàng');
+
+INSERT INTO PhuongThucThanhToan (TenPhuongThuc) VALUES
+('momo'),
+('COD');

@@ -1055,12 +1055,11 @@
         toastStore.showToast("Định dạng Email không hợp lệ!", "error");
         return;
       }
-      const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/; 
+      const phoneRegex = /^(0|\+84|84)[35789]\d{8}$/;
       if (viewingUser.value.phone && viewingUser.value.phone !== 'Chưa cập nhật' && !phoneRegex.test(viewingUser.value.phone)) {
-        toastStore.showToast("Số điện thoại không hợp lệ!", "error");
-        return;
+          toastStore.showToast("Số điện thoại không hợp lệ!", "error");
+          return;
       }
-
       const cleanEmail = viewingUser.value.email === 'Chưa cập nhật' ? '' : viewingUser.value.email;
       const cleanPhone = viewingUser.value.phone === 'Chưa cập nhật' ? '' : viewingUser.value.phone;
       const cleanAddress = viewingUser.value.address === 'Chưa cập nhật' ? '' : viewingUser.value.address;

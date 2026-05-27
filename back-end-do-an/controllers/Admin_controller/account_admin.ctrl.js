@@ -485,23 +485,14 @@ const account_admin = {
     xuat_bao_cao_tai_khoan: async(req, res) => {
         try {
             const {keyword_hoten, keyword_sdt, keyword_diachi, quyen_admin, quyen_nhanvien, quyen_khach, trang_thai, tu_ngay, den_ngay} = req.query;
-            const MaTK = req.user.id;
+            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
 
             let condition = [];
             let value = [];
             
-            if(keyword_hoten){
-                condition.push("Coalesce(nv.TenNV, kh.TenKH) like ?");
-                value.push(`%${keyword_hoten}%`);
-            }
-            if(keyword_sdt){
-                condition.push("Coalesce(nv.SDT, kh.SDT) LIKE ?");
-                value.push(`%${keyword_sdt}%`);
-            }
-            if(keyword_diachi){
-                condition.push("Coalesce(nv.DiaChi, kh.DiaChi) LIKE ?");
-                value.push(`%${keyword_diachi}%`);
-            }
+            if(keyword_hoten){ condition.push("Coalesce(nv.TenNV, kh.TenKH) like ?"); value.push(`%${keyword_hoten}%`); }
+            if(keyword_sdt){ condition.push("Coalesce(nv.SDT, kh.SDT) LIKE ?"); value.push(`%${keyword_sdt}%`); }
+            if(keyword_diachi){ condition.push("Coalesce(nv.DiaChi, kh.DiaChi) LIKE ?"); value.push(`%${keyword_diachi}%`); }
 
             let roles = [];
             if (quyen_admin === 'true') roles.push(1);
@@ -516,14 +507,8 @@ const account_admin = {
             if (trang_thai === 'active') condition.push("tk.Bi_khoa = 0");
             else if (trang_thai === 'locked') condition.push("tk.Bi_khoa = 1");
 
-            if (tu_ngay) {
-                condition.push("DATE(tk.NgayTao) >= ?");
-                value.push(tu_ngay);
-            }
-            if (den_ngay) {
-                condition.push("DATE(tk.NgayTao) <= ?");
-                value.push(den_ngay);
-            }
+            if (tu_ngay) { condition.push("DATE(tk.NgayTao) >= ?"); value.push(tu_ngay); }
+            if (den_ngay) { condition.push("DATE(tk.NgayTao) <= ?"); value.push(den_ngay); }
 
             let whereClause = condition.length > 0 ? "Where " + condition.join(" and ") : "";
 
@@ -540,22 +525,76 @@ const account_admin = {
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Danh sách Người dùng');
 
+            worksheet.views = [{ showGridLines: false }];
+
             worksheet.columns = [
-                { header: 'Mã TK', key: 'MaTK', width: 10 },
-                { header: 'Họ và Tên', key: 'HoTen', width: 25 },
-                { header: 'Tên Đăng Nhập', key: 'TenDN', width: 20 },
-                { header: 'Email liên hệ', key: 'Email', width: 30 },
-                { header: 'Số Điện Thoại', key: 'SDT', width: 15 },
-                { header: 'Vai Trò', key: 'TenQuyen', width: 15 },
-                { header: 'Trạng Thái', key: 'TrangThai', width: 15 },
-                { header: 'Ngày Đăng Ký', key: 'NgayTao', width: 20 },
+                { key: 'MaTK', width: 12 },
+                { key: 'HoTen', width: 28 },
+                { key: 'TenDN', width: 20 },
+                { key: 'Email', width: 30 },
+                { key: 'SDT', width: 18 },
+                { key: 'TenQuyen', width: 18 },
+                { key: 'TrangThai', width: 18 },
+                { key: 'NgayTao', width: 22 },
             ];
 
-            worksheet.getRow(1).font = { bold: true };
-            worksheet.getRow(1).fill = { type: 'pattern', pattern:'solid', fgColor:{ argb:'FFF8FAFC' } };
+            // Nền trắng Header
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 8; j++) {
+                    worksheet.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                }
+            }
 
-            users.forEach(user => {
-                worksheet.addRow({
+            try {
+                const path = require('path');
+                const logoPath = path.join(__dirname, '../../public/logo.png'); 
+                const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
+                worksheet.addImage(logoId, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+            } catch (err) {}
+
+            worksheet.mergeCells('B1:H1');
+            worksheet.getCell('B1').value = 'FIGURECOLLECT';
+            worksheet.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' }, name: 'Space Grotesk' };
+            worksheet.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
+
+            worksheet.mergeCells('B2:H2');
+            worksheet.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            worksheet.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' }; 
+            worksheet.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
+
+            worksheet.mergeCells('A4:H4');
+            worksheet.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
+
+            worksheet.mergeCells('A5:H5');
+            worksheet.getCell('A5').value = 'BÁO CÁO DANH SÁCH TÀI KHOẢN HỆ THỐNG';
+            worksheet.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+            worksheet.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            const filterText = (tu_ngay && den_ngay) ? `Từ ${tu_ngay} đến ${den_ngay}` : 'Toàn thời gian';
+            worksheet.mergeCells('A6:H6');
+            worksheet.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')} | Kỳ dữ liệu: ${filterText}`;
+            worksheet.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' }, name: 'Manrope' };
+            worksheet.getCell('A6').alignment = { horizontal: 'center' };
+
+            const headerRow = worksheet.getRow(9);
+            headerRow.values = ['Mã TK', 'Họ và Tên', 'Tên Đăng Nhập', 'Email liên hệ', 'Số Điện Thoại', 'Vai Trò', 'Trạng Thái', 'Ngày Đăng Ký'];
+            headerRow.height = 25;
+            
+            headerRow.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } };
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FFFFFFFF' } }, left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+                    bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } }, right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
+                };
+            });
+
+            worksheet.autoFilter = 'A9:H9';
+
+            let currentRow = 10;
+            users.forEach((user, index) => {
+                const row = worksheet.addRow({
                     MaTK: user.MaTK,
                     HoTen: user.HoTen || 'Chưa cập nhật',
                     TenDN: user.TenDN,
@@ -565,16 +604,22 @@ const account_admin = {
                     TrangThai: user.Bi_khoa === 1 ? 'Bị khóa' : 'Hoạt động',
                     NgayTao: user.NgayTao ? new Date(user.NgayTao).toLocaleString('vi-VN') : ''
                 });
+
+                const isEven = index % 2 === 0;
+                row.eachCell((cell, colNum) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isEven ? 'FFFFFFFF' : 'FFF8F9FA' } };
+                    cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
+                    cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+                    
+                    if([1, 6, 7, 8].includes(colNum)) cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    else cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                    
+                    if (colNum === 7 && user.Bi_khoa === 1) cell.font = { size: 10, name: 'Manrope', color: { argb: 'FFEF4444' }, bold: true }; // Màu đỏ nếu bị khóa
+                });
+                currentRow++;
             });
 
-            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
-            const noiDungLog = `Xuất báo cáo tài khoản."`;
-            
-            await db.query(`
-                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
-                VALUES (?, 'ACCOUNT_STATUS_TOGGLE', ?, ?, NOW())
-            `, [MaTK, noiDungLog, userIp]);
+            await db.query(`INSERT INTO LogHoatDongTaiKhoan (NoiDung) VALUES (?)`, [`${nguoiThucHien} đã xuất dữ liệu danh sách ${users.length} tài khoản ra file Excel`]);
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + 'Bao_Cao_Nguoi_Dung.xlsx');

@@ -295,7 +295,9 @@
       const itemIds = cartItems.value.map(item => item.MaMoHinh);
       const response = await fetch('http://localhost:3000/api/products/cart-suggestions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+         },
         body: JSON.stringify({ cartItemIds: itemIds })
       });
       
@@ -336,7 +338,11 @@
     }
 
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${productInfo.MaMoHinh}`);
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${productInfo.MaMoHinh}`,
+        {
+          headers: {'Authorization': `Bearer ${token}`}
+        }
+      );
       const varJSON = await resVar.json();
       
       let maPhanLoai = null;

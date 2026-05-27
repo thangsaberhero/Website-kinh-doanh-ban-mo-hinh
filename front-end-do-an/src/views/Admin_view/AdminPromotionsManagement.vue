@@ -402,7 +402,7 @@
             <input v-model="voucherForm.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
           </div>
           <div class="col-span-1">
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Đơn tối thiểu</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Đơn tối thiểu (đ)</label>
             <input v-model="voucherForm.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
           </div>
           <div class="col-span-1" v-show="voucherForm.LoaiGiamGia === 'PhanTram'">

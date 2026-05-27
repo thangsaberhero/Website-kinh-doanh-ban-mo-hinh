@@ -147,8 +147,8 @@ const khuyenmai = {
 
             let whereClause_sp = condition_sp.length > 0 ? "where " + condition_sp.join(" and ") : "";
             const sql_chi_tiet = `
-                SELECT ctkm.MaPhanLoai, ctkm.LoaiGiamGia, ctkm.ChietKhau, ctkm.GiaTriGiamToiDa, ctkm.SoLuongKM,
-                       pl.ChiTietPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia,
+                SELECT ctkm.MaPhanLoai, ctkm.LoaiGiamGia, ctkm.ChietKhau, ctkm.GiaTriGiamToiDa, ctkm.SoLuongKM, ctkm.SoLuongDaDung,
+                       pl.ChiTietPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia, mh.AnhDaiDien,
                        (pl.DonGia - CASE
                            WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
                            WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl.DonGia))
@@ -521,8 +521,9 @@ const khuyenmai = {
             }
             let whereClause_sp = condition_sp.length > 0 ? "where " + condition_sp.join(" and ") : "";
             const sql_chi_tiet = `
-                SELECT gg.MaGG, ctgg.MaPhanLoai,
-                       pl.ChiTietPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia,
+                SELECT gg.MaGG, ctgg.MaPhanLoai, gg.SoLuongDungToiDa, gg.SoLuongDaDung,
+                       pl.ChiTietPhanLoai, mh.MaMoHinh, mh.TenMH, pl.DonGia, mh.AnhDaiDien,
+                       gg.LoaiGiamGia, gg.ChietKhau, gg.GiaTriGiamToiDa,
                        (pl.DonGia - CASE
                            WHEN gg.LoaiGiamGia = 'TienMat' THEN gg.ChietKhau
                            WHEN gg.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl.DonGia * gg.ChietKhau / 100), COALESCE(gg.GiaTriGiamToiDa, pl.DonGia))
@@ -555,7 +556,7 @@ const khuyenmai = {
             if (isNaN(page_log) || page_log < 1) page_log = 1;
             if (isNaN(limit_log) || limit_log < 1) limit_log = 10;
             const offset_log = (page_log - 1) * limit_log;
-            let condition_log = ["ctgg.MaGG = ? "];
+            let condition_log = ["log.MaGG = ? "];
             let value_log = [MaGG];
 
             if(keyword_kh){
@@ -592,6 +593,7 @@ const khuyenmai = {
                 FROM LogSuDungMaGiamGia log
                 left join KhachHang kh on kh.MaKH= log.MaKH
                 inner join DonHang dh on dh.MaDH =log.MaDH
+                ${whereClause_log}
             `;
             
             const sql_count_log = `SELECT COUNT(*) AS total FROM (${sql_log_core}) as temptable`;
@@ -985,7 +987,7 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: 'Vui lòng chọn ít nhất 1 sản phẩm' });
             }
 
-            // KIỂM TRA TỒN TẠI VÀ CHỐT CHẶN BẮT ĐẦU
+            // 1. KIỂM TRA TỒN TẠI VÀ CHỐT CHẶN BẮT ĐẦU
             const [currentKM] = await connection.query('SELECT TenKM, ThoiGianBD, ThoiGianKT FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
             if (currentKM.length === 0) {
                 await connection.rollback();
@@ -998,7 +1000,7 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: 'Không thể thêm sản phẩm! Chiến dịch này đã hoặc đang diễn ra.' });
             }
 
-            // KIỂM TRA TRÙNG LẶP KHUNG GIỜ KHUYẾN MÃI (Giữ nguyên logic cực hay của bạn)
+            // 2. KIỂM TRA TRÙNG LẶP KHUNG GIỜ KHUYẾN MÃI
             const placeholders = DanhSachMaPhanLoai.map(() => '?').join(',');
             const sqlCheckOverlap = `
                 SELECT ct.MaPhanLoai, km.TenKM 
@@ -1022,14 +1024,82 @@ const khuyenmai = {
                 });
             }
 
-            // XỬ LÝ INSERT HÀNG LOẠT
-            const maxDiscount = LoaiGiamGia === 'TienMat' ? null : GiaTriGiamToiDa;
-            const soLuongKM = (SoLuongKM === undefined || SoLuongKM === null) ? 1 : SoLuongKM;
-            
-            const values = DanhSachMaPhanLoai.map(MaPhanLoai => [
-                MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, maxDiscount, soLuongKM
-            ]);
+            // ==========================================
+            // 3. LẤY GIÁ BÁN & TỒN KHO CỦA TẤT CẢ SẢN PHẨM ĐƯỢC CHỌN
+            // ==========================================
+            const sqlCheckStockAndPrice = `
+                SELECT pl.MaPhanLoai, pl.SoLuong, pl.DonGia, mh.TenMH, pl.ChiTietPhanLoai, mh.GiaNhap
+                FROM PhanLoai pl
+                JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                WHERE pl.MaPhanLoai IN (${placeholders})
+            `;
+            const [stockPriceData] = await connection.query(sqlCheckStockAndPrice, [...DanhSachMaPhanLoai]);
 
+            // ==========================================
+            // 4. KIỂM TRA LỖI GIÁ ÂM (Giá bán sau KM < 0)
+            // ==========================================
+            if (LoaiGiamGia === 'ChietKhau' && ChietKhau > 100) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: 'Mức giảm phần trăm không được vượt quá 100%!' });
+            }
+
+            for (const item of stockPriceData) {
+                let giaSauGiam = item.DonGia;
+
+                // Tính toán chính xác số tiền sau khi áp dụng khuyến mãi
+                if (LoaiGiamGia === 'TienMat') {
+                    giaSauGiam = item.DonGia - ChietKhau;
+                } else if (LoaiGiamGia === 'ChietKhau') {
+                    let tienGiam = (item.DonGia * ChietKhau) / 100;
+                    if (GiaTriGiamToiDa) {
+                        tienGiam = Math.min(tienGiam, GiaTriGiamToiDa);
+                    }
+                    giaSauGiam = item.DonGia - tienGiam;
+                }
+
+                const tenSpLoi = `${item.TenMH} - ${item.ChiTietPhanLoai || 'Mặc định'}`;
+
+                // CHỐT CHẶN 1: Tuyệt đối không cho phép giá bán âm hoặc bằng 0
+                if (giaSauGiam <= 0) {
+                    await connection.rollback();
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Lỗi nghiêm trọng: Cấu hình giảm giá khiến sản phẩm "${tenSpLoi}" bị âm tiền hoặc bằng 0đ!` 
+                    });
+                }
+
+                // CHỐT CHẶN 2: Cảnh báo bán lỗ (Giá sau giảm < Giá nhập)
+                // Lưu ý: Nếu muốn cho phép xả kho, bạn có thể truyền thêm 1 biến cờ (flag) từ req.body như 'ChoPhepBanLo' để bỏ qua vòng if này.
+                if (giaSauGiam < item.GiaNhap) {
+                    await connection.rollback();
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Cảnh báo bán lỗ: Giá sau giảm của "${tenSpLoi}" (${giaSauGiam.toLocaleString('vi-VN')}đ) đang thấp hơn giá nhập kho (${item.GiaNhap.toLocaleString('vi-VN')}đ)!` 
+                    });
+                }
+            }
+
+            // ==========================================
+            // 5. TỰ ĐỘNG CẮT GỌT TỒN KHO VÀ CHUẨN BỊ DATA INSERT
+            // ==========================================
+            const maxDiscount = LoaiGiamGia === 'TienMat' ? null : GiaTriGiamToiDa;
+            
+            const values = DanhSachMaPhanLoai.map(MaPhanLoai => {
+                // Lấy thông tin Tồn kho của phân loại hiện tại
+                const item = stockPriceData.find(sp => sp.MaPhanLoai === MaPhanLoai);
+                const tonKhoHienTai = item ? item.SoLuong : 0;
+
+                // Tự động cắt gọt (Auto-cap)
+                let finalSoLuongKM = tonKhoHienTai; // Mặc định cho bán KM bằng sạch kho
+                if (SoLuongKM !== undefined && SoLuongKM !== null && SoLuongKM > 0) {
+                    // Nếu admin thiết lập Giới hạn, lấy con số NHỎ HƠN giữa giới hạn và tồn kho
+                    finalSoLuongKM = Math.min(SoLuongKM, tonKhoHienTai);
+                }
+
+                return [MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, maxDiscount, finalSoLuongKM];
+            });
+
+            // 6. XỬ LÝ INSERT HÀNG LOẠT
             const sqlInsert = `INSERT IGNORE INTO ChiTietKhuyenMai (MaKM, MaPhanLoai, LoaiGiamGia, ChietKhau, GiaTriGiamToiDa, SoLuongKM) VALUES ?`;
             const [result] = await connection.query(sqlInsert, [values]);
 
@@ -1171,7 +1241,10 @@ const khuyenmai = {
             const maDM = req.query.maDM || '';
             const maHSX = req.query.maHSX || '';
 
-            let condition = ["(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?)"];
+            const maKM = req.query.maKM || ''; 
+            const maGG = req.query.maGG || '';
+
+            let condition = ["(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?) AND pl.HienThi = 1"];
             let value = [`%${keyword}%`, `%${keyword}%`];
 
             if (maDM) {
@@ -1184,9 +1257,20 @@ const khuyenmai = {
                 value.push(maHSX);
             }
 
+            if (maKM) {
+                condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietKhuyenMai WHERE MaKM = ?)`);
+                value.push(maKM);
+            }
+
+            // Loại trừ sản phẩm ĐÃ CÓ trong Voucher (Nếu bạn dùng chung API)
+            if (maGG) {
+                condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?)`);
+                value.push(maGG);
+            }
+
             let whereClause = "WHERE " + condition.join(" AND ");
 
-            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, mh.MaDM, mh.MaHSX
+            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, pl.SoLuong, pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, mh.MaDM, mh.MaHSX
                         FROM MoHinh mh
                         INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
                         ${whereClause}
@@ -1222,7 +1306,7 @@ const khuyenmai = {
             const sql_gg = `
                 SELECT 
                     (SELECT COUNT(*) FROM MaGiamGia) as Total,
-                    (SELECT COUNT(*) FROM MaGiamGia WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThai = 1 AND SoLuongDaDung < SoLuongDungToiDa) as Active,
+                    (SELECT COUNT(*) FROM MaGiamGia WHERE ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1 AND SoLuongDaDung < SoLuongDungToiDa) as Active,
                     (SELECT COUNT(*) FROM LogSuDungMaGiamGia) as TotalUsage,
                     (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'PhanTram') as AvgPercent,
                     (SELECT IFNULL(AVG(ChietKhau), 0) FROM MaGiamGia WHERE LoaiGiamGia = 'TienMat') as AvgCash
@@ -1257,142 +1341,232 @@ const khuyenmai = {
     xuat_bao_cao_khuyen_mai: async (req, res) => {
         try {
             const MaKM = req.params.id;
-            const MaTK = req.user.id;
             const sql_tt = `SELECT TenKM FROM KhuyenMai WHERE MaKM = ?`;
             const [result_tt] = await db.query(sql_tt, [MaKM]);
             
-            if(result_tt.length === 0) {
-                return res.status(404).json({ 
-                    success: false, 
-                    message: "Không tìm thấy chương trình!" 
-                });
-            }
+            if(result_tt.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy chương trình!" });
+            
             const tenChienDich = result_tt[0].TenKM;
-            const sql_log = `SELECT 
-                                log.MaLichSu, dh.MaDonHangHienThi, 
-                                COALESCE(kh.TenKH, dh.TenNguoiNhan) AS TenKhachHang, 
-                                log.SoTienDaGiam, log.ThoiGianSuDung
+            const sql_log = `SELECT log.MaLichSu, log.MaDH, kh.TenKH, log.SoTienDaGiam, log.ThoiGianSuDung
                             FROM LogSuDungKhuyenMai log
-                            INNER JOIN DonHang dh ON dh.MaDH = log.MaDH
                             LEFT JOIN KhachHang kh ON kh.MaKH = log.MaKH
-                            WHERE log.MaKM = ?
-                            ORDER BY log.ThoiGianSuDung DESC`;
+                            WHERE log.MaKM = ? ORDER BY log.ThoiGianSuDung DESC`;
             const [logs] = await db.query(sql_log, [MaKM]);
+            
             const workbook = new excel.Workbook();
             workbook.creator = 'Admin System';
             const worksheet = workbook.addWorksheet('Lịch sử áp dụng');
 
+            worksheet.views = [{ showGridLines: false }];
             worksheet.columns = [
-                { header: 'Mã Lịch Sử', key: 'maLS', width: 15 },
-                { header: 'Tên Khách Hàng', key: 'tenKH', width: 30 },
-                { header: 'Mã Đơn Hàng', key: 'maDH', width: 20 },
-                { header: 'Số Tiền Đã Giảm (VNĐ)', key: 'soTien', width: 25 },
-                { header: 'Thời Gian Sử Dụng', key: 'thoiGian', width: 25 }
+                { key: 'maLS', width: 18 }, { key: 'tenKH', width: 30 },
+                { key: 'maDH', width: 18 }, { key: 'soTien', width: 22 }, { key: 'thoiGian', width: 25 }
             ];
 
-            worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF475569' } };
-            worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 5; j++) {
+                    worksheet.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                }
+            }
 
-            logs.forEach(log => {
+            try {
+                const path = require('path');
+                const logoPath = path.join(__dirname, '../../public/logo.png'); 
+                const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
+                worksheet.addImage(logoId, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+            } catch (err) {}
+
+            worksheet.mergeCells('B1:E1');
+            worksheet.getCell('B1').value = 'FIGURECOLLECT';
+            worksheet.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' }, name: 'Space Grotesk' };
+            worksheet.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
+
+            worksheet.mergeCells('B2:E2');
+            worksheet.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            worksheet.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' }; 
+            worksheet.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
+
+            worksheet.mergeCells('A4:E4');
+            worksheet.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
+
+            worksheet.mergeCells('A5:E5');
+            worksheet.getCell('A5').value = 'BÁO CÁO ÁP DỤNG CHƯƠNG TRÌNH KHUYẾN MÃI';
+            worksheet.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+            worksheet.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            worksheet.mergeCells('A6:E6');
+            worksheet.getCell('A6').value = `Chiến dịch: ${tenChienDich}`;
+            worksheet.getCell('A6').font = { italic: true, bold: true, size: 11, color: { argb: 'FF10B981' }, name: 'Manrope' };
+            worksheet.getCell('A6').alignment = { horizontal: 'center' };
+
+            worksheet.mergeCells('A7:E7');
+            worksheet.getCell('A7').value = `Ngày xuất bản: ${new Date().toLocaleString('vi-VN')}`;
+            worksheet.getCell('A7').font = { italic: true, size: 10, color: { argb: 'FF737580' }, name: 'Manrope' };
+            worksheet.getCell('A7').alignment = { horizontal: 'center' };
+
+            const headerRow = worksheet.getRow(9);
+            headerRow.values = ['Mã Lịch Sử', 'Tên Khách Hàng', 'Mã Đơn Hàng', 'Số Tiền Đã Giảm (VNĐ)', 'Thời Gian Sử Dụng'];
+            headerRow.height = 25;
+            headerRow.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } };
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FFFFFFFF' } }, left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+                    bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } }, right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
+                };
+            });
+            worksheet.autoFilter = 'A9:E9';
+
+            logs.forEach((log, index) => {
                 const date = new Date(log.ThoiGianSuDung);
-                const formattedDate = `${date.getHours()}:${date.getMinutes()} ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                const formattedDate = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
 
-                worksheet.addRow({
+                const row = worksheet.addRow({
                     maLS: `#${log.MaLichSu}`,
-                    tenKH: log.TenKhachHang,
-                    maDH: `#${log.MaDonHangHienThi}`,
+                    tenKH: log.TenKH || 'Khách ẩn danh',
+                    maDH: `#${log.MaDH}`,
                     soTien: Number(log.SoTienDaGiam), 
                     thoiGian: formattedDate
+                });
+
+                const isEven = index % 2 === 0;
+                row.eachCell((cell, colNum) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isEven ? 'FFFFFFFF' : 'FFF8F9FA' } };
+                    cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
+                    cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+                    
+                    if (colNum === 1 || colNum === 3 || colNum === 5) cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    else if (colNum === 4) { cell.alignment = { horizontal: 'right', vertical: 'middle' }; cell.font = { size: 10, name: 'Manrope', color: { argb: 'FFFF8F73' }, bold: true }; }
+                    else cell.alignment = { horizontal: 'left', vertical: 'middle' };
                 });
             });
 
             worksheet.getColumn('soTien').numFmt = '#,##0';
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            
             const safeFileName = tenChienDich.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
             res.setHeader('Content-Disposition', `attachment; filename=Bao_Cao_${safeFileName}.xlsx`);
 
-            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
-            const TenKM = result_tt[0].TenKM;
-            await db.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'PROMOTION_REPORT', ?, ?, NOW())`, 
-                [MaTK, `Xuất báo cáo chương trình khuyến mãi #${MaKM}: "${TenKM}"`, userIp]);
-
             await workbook.xlsx.write(res);
             res.status(200).end();
-
         } 
         catch (error) {
             console.error("Lỗi khi xuất file Excel: ", error);
             res.status(500).json({ success: false, message: "Lỗi máy chủ khi tạo báo cáo!" });
         }
     },
+
     xuat_bao_cao_voucher: async (req, res) => {
         try {
             const MaGG = req.params.id;
-            const MaTK = req.user.id;
             const sql_tt = `SELECT TenMaGiamGia, MaVoucher FROM MaGiamGia WHERE MaGG = ?`;
             const [result_tt] = await db.query(sql_tt, [MaGG]);
             
-            if(result_tt.length === 0) {
-                return res.status(404).json({ success: false, message: "Không tìm thấy mã giảm giá!" });
-            }
+            if(result_tt.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy mã giảm giá!" });
+            
             const tenChienDich = `${result_tt[0].MaVoucher}_${result_tt[0].TenMaGiamGia}`;
-            const sql_log = `SELECT 
-                                log.MaLichSu, dh.MaDonHangHienThi, 
-                                COALESCE(kh.TenKH, dh.TenNguoiNhan) AS TenKhachHang, 
-                                log.SoTienDaGiam, log.ThoiGianSuDung
+            const sql_log = `SELECT log.MaLichSu, log.MaDH, kh.TenKH, log.SoTienDaGiam, log.ThoiGianSuDung
                             FROM LogSuDungMaGiamGia log
-                            INNER JOIN DonHang dh ON dh.MaDH = log.MaDH
                             LEFT JOIN KhachHang kh ON kh.MaKH = log.MaKH
-                            WHERE log.MaGG = ?
-                            ORDER BY log.ThoiGianSuDung DESC`;
+                            WHERE log.MaGG = ? ORDER BY log.ThoiGianSuDung DESC`;
             const [logs] = await db.query(sql_log, [MaGG]);
+            
             const workbook = new excel.Workbook();
             workbook.creator = 'Admin System';
             const worksheet = workbook.addWorksheet('Lịch sử Voucher');
 
+            worksheet.views = [{ showGridLines: false }];
             worksheet.columns = [
-                { header: 'Mã Lịch Sử', key: 'maLS', width: 15 },
-                { header: 'Tên Khách Hàng', key: 'tenKH', width: 30 },
-                { header: 'Mã Đơn Hàng', key: 'maDH', width: 20 },
-                { header: 'Số Tiền Đã Giảm (VNĐ)', key: 'soTien', width: 25 },
-                { header: 'Thời Gian Sử Dụng', key: 'thoiGian', width: 25 }
+                { key: 'maLS', width: 18 }, { key: 'tenKH', width: 30 },
+                { key: 'maDH', width: 18 }, { key: 'soTien', width: 22 }, { key: 'thoiGian', width: 25 }
             ];
 
-            worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF8B5CF6' } }; // Nền tím phân biệt với Khuyến mãi
-            worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 5; j++) {
+                    worksheet.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                }
+            }
 
-            logs.forEach(log => {
+            try {
+                const path = require('path');
+                const logoPath = path.join(__dirname, '../../public/logo.png'); 
+                const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
+                worksheet.addImage(logoId, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+            } catch (err) {}
+
+            worksheet.mergeCells('B1:E1');
+            worksheet.getCell('B1').value = 'FIGURECOLLECT';
+            worksheet.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' }, name: 'Space Grotesk' };
+            worksheet.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
+
+            worksheet.mergeCells('B2:E2');
+            worksheet.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            worksheet.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' }; 
+            worksheet.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
+
+            worksheet.mergeCells('A4:E4');
+            worksheet.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
+
+            worksheet.mergeCells('A5:E5');
+            worksheet.getCell('A5').value = 'BÁO CÁO LỊCH SỬ SỬ DỤNG MÃ GIẢM GIÁ (VOUCHER)';
+            worksheet.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+            worksheet.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            worksheet.mergeCells('A6:E6');
+            worksheet.getCell('A6').value = `Voucher: ${result_tt[0].TenMaGiamGia} [Mã: ${result_tt[0].MaVoucher}]`;
+            worksheet.getCell('A6').font = { italic: true, bold: true, size: 11, color: { argb: 'FF8B5CF6' }, name: 'Manrope' }; // Dùng màu tím riêng cho Voucher
+            worksheet.getCell('A6').alignment = { horizontal: 'center' };
+
+            worksheet.mergeCells('A7:E7');
+            worksheet.getCell('A7').value = `Ngày xuất bản: ${new Date().toLocaleString('vi-VN')}`;
+            worksheet.getCell('A7').font = { italic: true, size: 10, color: { argb: 'FF737580' }, name: 'Manrope' };
+            worksheet.getCell('A7').alignment = { horizontal: 'center' };
+
+            const headerRow = worksheet.getRow(9);
+            headerRow.values = ['Mã Lịch Sử', 'Tên Khách Hàng', 'Mã Đơn Hàng', 'Số Tiền Đã Giảm (VNĐ)', 'Thời Gian Sử Dụng'];
+            headerRow.height = 25;
+            headerRow.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF8B5CF6' } }; // Header nền tím
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FFFFFFFF' } }, left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+                    bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } }, right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
+                };
+            });
+            worksheet.autoFilter = 'A9:E9';
+
+            logs.forEach((log, index) => {
                 const date = new Date(log.ThoiGianSuDung);
                 const formattedDate = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
 
-                worksheet.addRow({
+                const row = worksheet.addRow({
                     maLS: `#${log.MaLichSu}`,
-                    tenKH: log.TenKhachHang,
-                    maDH: `#${log.MaDonHangHienThi}`,
+                    tenKH: log.TenKH || 'Khách ẩn danh',
+                    maDH: `#${log.MaDH}`,
                     soTien: Number(log.SoTienDaGiam), 
                     thoiGian: formattedDate
+                });
+
+                const isEven = index % 2 === 0;
+                row.eachCell((cell, colNum) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isEven ? 'FFFFFFFF' : 'FFF8F9FA' } };
+                    cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
+                    cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+                    
+                    if (colNum === 1 || colNum === 3 || colNum === 5) cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    else if (colNum === 4) { cell.alignment = { horizontal: 'right', vertical: 'middle' }; cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF8B5CF6' }, bold: true }; }
+                    else cell.alignment = { horizontal: 'left', vertical: 'middle' };
                 });
             });
 
             worksheet.getColumn('soTien').numFmt = '#,##0';
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            
             const safeFileName = tenChienDich.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
             res.setHeader('Content-Disposition', `attachment; filename=Bao_Cao_Voucher_${safeFileName}.xlsx`);
 
-            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
-            const TenGG = result_tt[0].TenMaGiamGia;
-            await db.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'VOUCHER_REPORT', ?, ?, NOW())`, 
-                [MaTK, `Xuất báo cáo chương trình mã giảm giá #${MaGG}: "${TenGG}"`, userIp]);
-
             await workbook.xlsx.write(res);
             res.status(200).end();
-
         } 
         catch (error) {
             console.error("Lỗi khi xuất file Excel Voucher: ", error);

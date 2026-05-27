@@ -282,7 +282,10 @@
 // Hàm gọi API Thống kê
   const fetchStats = async () => {
     try {
-        const response = await fetch('http://localhost:3000/api/news/admin/stats');
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3000/api/news/admin/stats',{
+          headers: {'Authorization': `Bearer ${token}`}
+        });
         if (response.ok) {
             const data = await response.json();
             stats.value = data;
@@ -317,8 +320,10 @@
         
         if (searchQuery.value) url += `&search=${encodeURIComponent(searchQuery.value)}`;
         if (activeTab.value) url += `&status=${encodeURIComponent(activeTab.value)}`;
-
-        const response = await fetch(url);
+        const token = localStorage.getItem('token');
+        const response = await fetch(url, {
+          headers: {'Authorization': `Bearer ${token}`}
+        });
         const result = await response.json();
 
         if (response.ok) {
@@ -431,8 +436,10 @@
 
     try {
         isLoading.value = true;
+        const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:3000/api/news/${postToDelete.value.id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {'Authorization': `Bearer ${token}`}
         });
         if (!response.ok) throw new Error('Lỗi khi xóa bài viết');
 

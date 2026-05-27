@@ -273,10 +273,17 @@
                         <button @click="openEditModal(product)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-[#ff8f73] hover:bg-[#ff8f73]/10 rounded-xl transition-all border border-transparent hover:border-[#ff8f73]/20" title="Sửa thông tin">
                           <span class="material-symbols-outlined text-[20px]">edit</span>
                         </button>
-                        <button @click="openDeleteConfirm(product)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100" title="Xóa sản phẩm">
-                          <span class="material-symbols-outlined text-[20px]">delete</span>
+                        <button @click="toggleVisibility(product)" 
+                                class="w-9 h-9 flex items-center justify-center rounded-xl transition-all border border-transparent"
+                                :class="product.isVisible === 1 
+                                  ? 'text-sky-500 hover:bg-sky-50 hover:border-sky-100' 
+                                  : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100'"
+                                :title="product.isVisible === 1 ? 'Sản phẩm đang hiện - Nhấn để ẩn' : 'Sản phẩm đang ẩn - Nhấn để hiện'">
+                          <span class="material-symbols-outlined text-[20px]">
+                            {{ product.isVisible === 1 ? 'visibility' : 'visibility_off' }} 
+                          </span>
                         </button>
-                      </div>
+                      </div>  
                     </td>
                   </tr>
                 </tbody>
@@ -332,6 +339,19 @@
             <div class="md:col-span-2">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên mô hình (*)</label>
               <input v-model="newProduct.name" type="text" placeholder="VD: Gundam Aerial Rebuild" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+            </div>
+            <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tên nhân vật</label>
+              <input v-model="newProduct.characterName" type="text" placeholder="VD: Hatsune Miku" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white text-slate-700">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Series / Anime / Game</label>
+              <input v-model="newProduct.series" type="text" placeholder="VD: Vocaloid, Genshin Impact" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white text-slate-700">
+            </div>
+
+            <div class="md:col-span-2"> <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Mã vạch / Số Serial (Quét Scanner)</label>
+              <input v-model="newProduct.barcode" type="text" placeholder="Nhập mã vạch in trên hộp sản phẩm..." class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white font-mono text-slate-700">
             </div>
 
             <div>
@@ -395,6 +415,15 @@
           <div>
             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tiền cọc tối thiểu (VNĐ)</label>
             <input type="text" :value="formatCurrency(newProduct.minDeposit)" @input="handleCurrencyInput($event, newProduct, 'minDeposit')"  class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá nhập (VNĐ) (*)</label>
+            <input 
+              type="text" 
+              :value="formatCurrency(newProduct.costPrice)" 
+              @input="handleCurrencyInput($event, newProduct, 'costPrice')"
+              class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-emerald-600 bg-white"
+            >
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá bán mặc định (VNĐ) (*)</label>
@@ -570,6 +599,32 @@
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên mô hình (*)</label>
               <input v-model="editingProduct.name" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-800">
             </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tên nhân vật</label>
+              <input v-model="editingProduct.characterName" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white text-slate-800">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Series / Anime / Game</label>
+              <input v-model="editingProduct.series" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white text-slate-800">
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Mã vạch / Số Serial</label>
+              <input v-model="editingProduct.barcode" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-mono bg-white text-slate-800">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> 
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1.5">Giá nhập (VNĐ)</label>
+                <input 
+                  type="text" 
+                  :value="formatCurrency(editingProduct.costPrice)" 
+                  @input="handleCurrencyInput($event, editingProduct, 'costPrice')"
+                  class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-emerald-600 bg-white"
+                >
+              </div>
+              </div>
 
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Thương hiệu</label>
@@ -772,36 +827,6 @@
           <button @click="saveProductChanges" class="px-6 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-black shadow-lg shadow-slate-900/20 rounded-xl transition-all flex items-center gap-2">
             <span class="material-symbols-outlined text-[18px]">save</span> 
             Lưu thay đổi
-          </button>
-        </div>
-      </div>
-    </div>
-    <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-[fadeIn_0.2s_ease-out]">
-        
-        <div class="bg-rose-50 p-6 flex flex-col items-center justify-center border-b border-rose-100">
-          <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
-            <span class="material-symbols-outlined text-4xl text-rose-500">warning</span>
-          </div>
-          <h3 class="text-lg font-bold text-slate-900">Xác nhận xóa sản phẩm</h3>
-        </div>
-
-        <div class="p-6 text-center">
-          <p class="text-sm text-slate-600 mb-2">Bạn có chắc chắn muốn xóa sản phẩm này khỏi hệ thống không?</p>
-          <p class="font-bold text-slate-900 bg-slate-50 py-2 px-4 rounded-lg border border-slate-100 line-clamp-2">
-            "{{ productToDelete?.name }}"
-          </p>
-          <p class="text-[11px] font-medium text-rose-500 mt-4 bg-rose-50 py-1.5 px-3 rounded-md inline-block">
-            Lưu ý: Hành động này sẽ xóa vĩnh viễn dữ liệu và không thể hoàn tác!
-          </p>
-        </div>
-
-        <div class="p-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-          <button @click="isDeleteModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 bg-white border border-slate-200 rounded-xl transition-colors shadow-sm">
-            Hủy bỏ
-          </button>
-          <button @click="executeDeleteProduct" class="px-5 py-2.5 text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/20 rounded-xl transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px]">delete_forever</span> Xóa vĩnh viễn
           </button>
         </div>
       </div>
@@ -1026,14 +1051,16 @@
 
   const newProduct = ref({
       name: '', brand: '', category: '', detailCategory: '',
-      material: '',
+      material: '', scale: '',
+      characterName: '', // THÊM MỚI: Tên nhân vật
+      series: '',        // THÊM MỚI: Series/Anime
+      barcode: '',       // THÊM MỚI: Mã vạch
       status: 'Chưa phát hành',
       selltype: 'Có sẵn',
       releaseDate: null,
-      minDeposit: 0,
       description: '',
       isVisible: 0,
-      basePrice: 0, baseStock: 0,
+      minDeposit: 0, costPrice: 0, basePrice: 0, baseStock: 0,
       thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
       // Mảng chứa các phân loại
       variants: []
@@ -1101,7 +1128,13 @@
     
     // 3. Gọi API lấy danh mục con dựa vào MaDM (Dùng chuẩn Params /:MaDM đã sửa trước đó)
     try {
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`,{
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}` 
+          },
+      });
       const result = await response.json();
       if (result.success) {
         modalDetailCategories.value = result.data;
@@ -1114,7 +1147,9 @@
 
   const openAddModal = () => {
     newProduct.value = {
-      name: '', brand: '', category: '', variant: '', material: '', scale: '', minDeposit: 0, sellPrice: 0, stock: 0, isVisible: 0,
+      name: '', brand: '', category: '', variant: '', material: '', scale: '',
+      characterName: '', series: '', barcode: '',
+      minDeposit: 0, costPrice: 0, sellPrice: 0, stock: 0, isVisible: 0,
       description: '', 
       thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
       variants: [
@@ -1144,13 +1179,17 @@
       formData.append('MaChiTietDM', newProduct.value.detailCategory);
       formData.append('KichThuoc', newProduct.value.scale);
       formData.append('ChatLieu', newProduct.value.material);
+      formData.append('TenNhanVat', newProduct.value.characterName);
+      formData.append('Series', newProduct.value.series);
+      formData.append('MaVach_Serial', newProduct.value.barcode);
       formData.append('NgayPhatHanh', newProduct.value.releaseDate);
       formData.append('LoaiHinhBan', newProduct.value.saleType);
       formData.append('TrangThai', newProduct.value.status);
-      formData.append('TienCocToiThieu', newProduct.value.minDeposit);
       formData.append('ThongTinChiTiet', newProduct.value.description);
       formData.append('HienThi', newProduct.value.isVisible);
 
+      formData.append('GiaNhap', newProduct.value.costPrice);
+      formData.append('TienCocToiThieu', newProduct.value.minDeposit);
       formData.append('DonGia', newProduct.value.basePrice);
       formData.append('SoLuong', newProduct.value.baseStock);
       
@@ -1170,8 +1209,12 @@
 
       // 3. Gửi xuống Backend
       try {
+        const token = localStorage.getItem('token');
         const response = await fetch('http://localhost:3000/api/product_admin/add_product', {
           method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          },
           body: formData // Fetch tự động set header multipart/form-data
         });
         
@@ -1201,8 +1244,6 @@
   const editGalleryInputRef = ref(null); 
 
   const openEditModal = async (product) => {
-    // 🚦 TRẠM 1: Kiểm tra xem ID sản phẩm có bị undefined không
-    console.log("👉 1. Dữ liệu dòng sản phẩm khi bấm Sửa:", product);
     
     if (!product.id) {
       toastStore.showToast("Lỗi: Không tìm thấy ID sản phẩm!", "error");
@@ -1214,7 +1255,13 @@
       id: product.id,
       idCode: product.id,
       name: product.name,
+      characterName: '', 
+      series: '',
+      barcode: '',
+      costPrice: 0,
       brand: product.brandId,
+      scale: product.scale,
+      basePrice: product.basePrice,
       category: product.categoryId,
       detailCategory: product.detailCategoryId,
       description: product.mota || '',
@@ -1224,7 +1271,7 @@
       status: product.status || 'Sẵn hàng',
       isVisible: Number(product.isVisible),
       thumbnailUrl: product.thumbnailUrl,
-      basePrice: product.rawSellPrice || 0,
+      basePrice: product.basePrice || 0,
       minDeposit: product.rawMinDeposit || 0,
       baseStock: product.stock || 0,
       releaseDate: product.releaseDate || '', // Đã thêm ngày tháng
@@ -1234,17 +1281,23 @@
     };
 
     try {
-      // 🚦 TRẠM 2: Kiểm tra đường dẫn API
-      console.log(`👉 2. Đang gọi API: http://localhost:3000/api/product_admin/watch/${product.id}`);
-      
-      const response = await fetch(`http://localhost:3000/api/product_admin/watch/${product.id}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/product_admin/watch/${product.id}`,
+        {
+          method: 'GET',
+          headers: {'Authorization': `Bearer ${token}`}
+        }
+      );
       const result = await response.json();
 
       // 🚦 TRẠM 3: Kiểm tra dữ liệu Backend trả về có Phân loại và Ảnh phụ không
       console.log("👉 3. Dữ liệu Chi tiết Backend trả về:", result);
 
       if (result.success) {
-        // Xử lý Phân loại
+        editingProduct.value.characterName = result.data.TenNhanVat || '';
+        editingProduct.value.series = result.data.Series || '';
+        editingProduct.value.barcode = result.data.MaVach_Serial || '';
+        editingProduct.value.costPrice = parseInt(result.data.GiaNhap, 10) || 0;
         const DanhSachPhanLoai = result.data.DS_PL;
         if (DanhSachPhanLoai && DanhSachPhanLoai.length > 0) {
           DanhSachPhanLoai.forEach(v => {
@@ -1287,7 +1340,13 @@
       return;
     }
     try {
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`,{
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}` 
+          },
+      });
       const result = await response.json();
       if (result.success) {
         modalDetailCategories.value = result.data;
@@ -1355,6 +1414,10 @@
 
     const formData = new FormData();
     formData.append('TenMH', editingProduct.value.name);
+    formData.append('TenNhanVat', editingProduct.value.characterName);
+    formData.append('Series', editingProduct.value.series);
+    formData.append('MaVach_Serial', editingProduct.value.barcode);
+    formData.append('GiaNhap', editingProduct.value.costPrice);
     formData.append('MaHSX', editingProduct.value.brand || '');
     formData.append('MaDM', editingProduct.value.category || '');
     formData.append('MaChiTietDM', editingProduct.value.detailCategory || '');
@@ -1391,9 +1454,10 @@
     }
 
     try {
-      // GỌI API PUT /fix_info/:id
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3000/api/product_admin/fix_info/${editingProduct.value.id}`, {
         method: 'PUT',
+        headers: {'Authorization': `Bearer ${token}`},
         body: formData
       });
       
@@ -1412,31 +1476,44 @@
     }
   };
 
-  // XÓA SẢN PHẨM (DELETE)
-  const isDeleteModalOpen = ref(false);
-  const productToDelete = ref(null);
-
-  // Mở modal xác nhận
-  const openDeleteConfirm = (product) => {
-    productToDelete.value = product; 
-    isDeleteModalOpen.value = true;
-  };
-
-  // Thực thi xóa
-  const executeDeleteProduct = async () => {
-    if (!productToDelete.value) return;
-
+  // --- HÀM ẨN/HIỆN NHANH SẢN PHẨM ---
+  const toggleVisibility = async (product) => {
     try {
-      products.value = products.value.filter(p => p.id !== productToDelete.value.id);
-
-      isDeleteModalOpen.value = false;
-      toastStore.showToast("Đã xóa sản phẩm thành công!", "success");
+      // Đảo ngược trạng thái hiện tại (Đang 1 thì thành 0, đang 0 thì thành 1)
+      const newStatus = product.isVisible === 1 ? 0 : 1; 
       
-      productToDelete.value = null; 
+      // Lấy vé thông hành
+      const token = localStorage.getItem('token');
 
+      // Gọi API cập nhật nhanh trạng thái
+      // (Lưu ý: Đảm bảo Backend của bạn có route PUT /toggle_visibility/:id)
+      const response = await fetch(`http://localhost:3000/api/product_admin/toggle_visibility/${product.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        // Chỉ gửi đúng 1 trường dữ liệu cần cập nhật để tối ưu băng thông
+        body: JSON.stringify({ HienThi: newStatus }) 
+      });
+
+      const result = await response.json();
+
+      if (result.success || response.ok) {
+        // Cập nhật lại object product trên giao diện ngay lập tức
+        product.isVisible = newStatus;
+        
+        // Thông báo bằng Toast màu xanh
+        toastStore.showToast(
+          newStatus === 1 ? "Đã bật hiển thị sản phẩm trên web!" : "Đã ẩn sản phẩm khỏi web!", 
+          "success"
+        );
+      } else {
+        toastStore.showToast(result.message || "Lỗi khi cập nhật trạng thái", "error");
+      }
     } catch (error) {
-      console.error("Lỗi xóa sản phẩm:", error);
-      toastStore.showToast("Xảy ra lỗi khi xóa sản phẩm!", "error");
+      console.error("Lỗi ẩn/hiện sản phẩm:", error);
+      toastStore.showToast("Lỗi máy chủ khi thao tác!", "error");
     }
   };
 
