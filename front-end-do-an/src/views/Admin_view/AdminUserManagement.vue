@@ -1,12 +1,12 @@
 <template>
-  <div @click="closeAllMenus" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
-      <div 
-      v-show="isMobileMenuOpen || isFilterPanelOpen || isViewUserDrawerOpen" 
-      @click="isMobileMenuOpen = false; isFilterPanelOpen = false; isViewUserDrawerOpen = false" 
-      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+    <div 
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
     ></div>
 
-    <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
+    <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
 
     <div 
       class="fixed top-0 right-0 h-screen w-full sm:w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col"
@@ -252,7 +252,7 @@
       </div>
     </div>
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full">
-      <AdminHeader @toggle-sidebar="handleToggleSidebar" />
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
@@ -629,14 +629,14 @@
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
+  import { useLayoutStore } from '../../stores/layout';
   import { onMounted, watch, computed } from 'vue';
   
   const router = useRouter();
   const toastStore = useToastStore();
+  const layoutStore = useLayoutStore();
 
   const isFilterPanelOpen = ref(false);
-  const isSidebarCollapsed = ref(false);
-  const isMobileMenuOpen = ref(false);
   const showPassword = ref(false);
   const isDownloading = ref(false);
 
@@ -714,14 +714,6 @@
       collector: Math.round((userStats.value.CollectorCount / total) * 100)
     };
   });
-
-  const handleToggleSidebar = () => {
-    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
-    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
-  };
-  const closeAllMenus = () => {
-    activeMenuId.value = null; 
-  };
   
   const getRoleStyle = (role) => {
     if (role === 'Admin') return 'bg-purple-50 text-purple-600 border-purple-200';

@@ -45,15 +45,16 @@ const fix_user_info = {
                 message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
             });
         }
+        
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
-            const {email, TenKH, DiaChi, SDT} = req.body;
+            const {email, TenKH, DiaChi, SDT, isAvatarRemoved} = req.body; 
             const MaTK = req.user.id; 
             const newFileName = req.file ? req.file.filename : null; 
 
-            const [check] = await connection(`Select Email from TaiKhoan where Email = ? and MaTK != ?`,[email, MaTK]);
-            if([check.length > 0]){
+            const [check] = await connection.query(`Select Email from TaiKhoan where Email = ? and MaTK != ?`,[email, MaTK]);
+            if(check.length > 0){
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
@@ -71,19 +72,32 @@ const fix_user_info = {
                       const oldFilePath = path.join(__dirname, '..', 'public', 'Images_user', oldFileName);
                       fs.unlink(oldFilePath, (err) => {
                           if (err) console.error("Lỗi khi gỡ ảnh cũ: ", err);
-                          else console.log(`Đã gỡ ảnh cũ thành công: ${oldFileName}`);
                       });
                     }
                 }
-                
                 await connection.query('UPDATE TaiKhoan SET AnhDaiDien = ?, email = ? WHERE MaTK = ?', [newFileName, email, MaTK]);
+                
+            } 
+            else if (isAvatarRemoved === 'true') {
+                const sql_lay_anh_cu = 'SELECT AnhDaiDien FROM TaiKhoan WHERE MaTK = ?';
+                const [result_anh_cu] = await connection.query(sql_lay_anh_cu, [MaTK]);
+                
+                if (result_anh_cu.length > 0 && result_anh_cu[0].AnhDaiDien) {
+                    const oldFileName = result_anh_cu[0].AnhDaiDien;
+                    const oldFilePath = path.join(__dirname, '..', 'public', 'Images_user', oldFileName);
+                    fs.unlink(oldFilePath, (err) => { 
+                        if (err) console.error("Lỗi khi gỡ ảnh cũ: ", err); 
+                    });
+                }
+                await connection.query('UPDATE TaiKhoan SET AnhDaiDien = NULL, Email = ? WHERE MaTK = ?', [email, MaTK]);
+                
             } else {
                 await connection.query('UPDATE TaiKhoan SET Email = ? WHERE MaTK = ?', [email, MaTK]);
             }
 
             await connection.query('UPDATE khachhang SET TenKH = ?, DiaChi = ?, SDT = ? WHERE MaTK = ?', [TenKH, DiaChi, SDT, MaTK]);
             await connection.commit();
-            // 3. ĐÃ BỔ SUNG TRẢ VỀ TÊN ẢNH MỚI CHO FRONTEND
+            
             res.status(200).json({ 
                 message: "Cập nhật thông tin thành công!", 
                 newAvatarName: isAvatarRemoved === 'true' ? null : (newFileName || undefined)

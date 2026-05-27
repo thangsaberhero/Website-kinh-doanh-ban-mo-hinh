@@ -263,7 +263,7 @@
       }).toString();
 
     try {
-      const response = await fetch(`http://localhost:3000/api/don_hang/watch/${maKH}?${queryParams}`, {
+      const response = await fetch(`http://localhost:3000/api/don_hang/watch?${queryParams}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

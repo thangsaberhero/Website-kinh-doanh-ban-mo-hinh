@@ -1,13 +1,14 @@
 <template>
-  <div @click="closeAllMenus" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">     
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
     <div 
-      v-show="isMobileMenuOpen" 
-      @click="isMobileMenuOpen = false" 
-      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
-    ></div> 
-    <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+    ></div>
+
+    <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
-      <AdminHeader @toggle-sidebar="handleToggleSidebar" />
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       <main class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar pb-24">
         
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4 mb-2">
@@ -577,11 +578,11 @@
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
+  import { useLayoutStore } from '../../stores/layout';
   
   const router = useRouter();
   const toastStore = useToastStore();
-  const isSidebarCollapsed = ref(false);
-  const isMobileMenuOpen = ref(false);
+  const layoutStore = useLayoutStore();
   const isLoading = ref(true);
 
   const currentTypeTab = ref('promotion'); 
@@ -1150,10 +1151,6 @@
       toastStore.showToast("Lỗi kết nối máy chủ", "error");
     }
   };
-  const handleToggleSidebar = () => {
-    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
-    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
-  };
     
   const isFilterMenuOpen = ref(false);
   const filters = ref({
@@ -1171,10 +1168,6 @@
   const resetFilters = () => {
     filters.value.type = 'all';
     filters.value.limit = 'all';
-  };
-
-  const closeAllMenus = () => {
-    isFilterMenuOpen.value = false;
   };
 
   const filteredData = computed(() => {

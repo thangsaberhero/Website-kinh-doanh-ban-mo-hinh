@@ -11,5 +11,6 @@ router.get('/bieudo', thongkeController.thongkebieudo);
 router.get('/bosung', thongkeController.thongkebosung);
 router.get('/top-san-pham', thongkeController.topsanpham);
 router.get('/xuatExcelDoanhThu', thongkeController.xuatExcelDoanhThu);
+router.get('/xuatExcelDashboard', thongkeController.xuatExcelDashboard);
 
 module.exports = router;

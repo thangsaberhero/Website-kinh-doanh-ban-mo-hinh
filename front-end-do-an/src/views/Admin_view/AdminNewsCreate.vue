@@ -1,147 +1,146 @@
 <template>
-    <div @click="closeAllMenus" class="bg-slate-50 min-h-screen font-body flex w-full text-slate-800 relative">
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+    <div 
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+    ></div>
+
+    <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
+
+    <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       
-      <div 
-        v-show="isMobileMenuOpen" 
-        @click="isMobileMenuOpen = false" 
-        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
-      ></div>
-  
-      <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
-  
-      <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
-        <AdminHeader @toggle-sidebar="handleToggleSidebar" />
-        
-        <div class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
-          <div class="flex items-center gap-4">
-            <button @click="router.push('/admin/news')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-all" title="Quay lại">
-              <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            </button>
-            <div>
-              <h1 class="text-lg font-bold text-slate-900 uppercase">Viết bài mới</h1>
-              <p class="text-xs text-slate-500 font-medium">Sáng tạo nội dung cộng đồng</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <button @click="submitPost('Bản nháp')" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">save</span> Lưu nháp
-            </button>
-            <button @click="submitPost('Đã duyệt')" class="px-6 py-2.5 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">publish</span> Xuất bản ngay
-            </button>
+      <div class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-4">
+          <button @click="router.push('/admin/news')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900 transition-all" title="Quay lại">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+          </button>
+          <div>
+            <h1 class="text-lg font-bold text-slate-900 uppercase">Viết bài mới</h1>
+            <p class="text-xs text-slate-500 font-medium">Sáng tạo nội dung cộng đồng</p>
           </div>
         </div>
-  
-        <main class="flex-1 overflow-y-auto p-8 custom-scrollbar pb-24">        
-          <div class="flex flex-col xl:flex-row gap-8 max-w-7xl mx-auto">          
-            <div class="flex-1 flex flex-col gap-6">          
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-1 transition-all focus-within:border-[#ff8f73] focus-within:ring-4 focus-within:ring-[#ff8f73]/10">
-                <input 
-                  v-model="postData.title" 
-                  type="text" 
-                  placeholder="Nhập tiêu đề bài viết ở đây ..." 
-                  class="w-full bg-transparent px-6 py-4 text-2xl font-bold text-slate-900 placeholder:text-slate-300 outline-none"
-                >
-              </div>
-  
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col flex-1 min-h-[500px]">
-                <Editor
-                  api-key="m7ecn07md9z34y1l3o6ekspbur4e52910tsvii43ieymhdx1"
-                  v-model="postData.content"
-                  :init="editorConfig"
-                />     
-              </div>
+        <div class="flex items-center gap-3">
+          <button @click="submitPost('Bản nháp')" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">save</span> Lưu nháp
+          </button>
+          <button @click="submitPost('Đã duyệt')" class="px-6 py-2.5 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">publish</span> Xuất bản ngay
+          </button>
+        </div>
+      </div>
+
+      <main class="flex-1 overflow-y-auto p-8 custom-scrollbar pb-24">        
+        <div class="flex flex-col xl:flex-row gap-8 max-w-7xl mx-auto">          
+          <div class="flex-1 flex flex-col gap-6">          
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-1 transition-all focus-within:border-[#ff8f73] focus-within:ring-4 focus-within:ring-[#ff8f73]/10">
+              <input 
+                v-model="postData.title" 
+                type="text" 
+                placeholder="Nhập tiêu đề bài viết ở đây ..." 
+                class="w-full bg-transparent px-6 py-4 text-2xl font-bold text-slate-900 placeholder:text-slate-300 outline-none"
+              >
             </div>
-  
-            <div class="w-full xl:w-80 flex flex-col gap-6 shrink-0">
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">category</span> Chuyên mục
-                </h3>
-                
-                <div class="relative">
-                  <input 
-                    v-model="postData.category" 
-                    @focus="showCategoryDropdown = true"
-                    @blur="showCategoryDropdown = false"
-                    placeholder="Chọn hoặc nhập chuyên mục mới..."
-                    class="w-full border border-slate-200 rounded-xl px-4 py-3 pr-10 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50"
-                  >
-                  <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none transition-transform" :class="{ 'rotate-180': showCategoryDropdown }">
-                    expand_more
-                  </span>
 
-                  <Transition name="fade-slide">
-                    <ul v-if="showCategoryDropdown" class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar overflow-hidden py-1">
-                      <li 
-                        v-for="cat in filteredCategories" 
-                        :key="cat"
-                        @mousedown.prevent="selectCategory(cat)"
-                        class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] cursor-pointer transition-colors flex items-center justify-between"
-                      >
-                        {{ cat }}
-                        <span v-if="postData.category === cat" class="material-symbols-outlined text-[16px] text-[#ff8f73]">check</span>
-                      </li>
-                      <li v-if="filteredCategories.length === 0" class="px-4 py-2.5 text-sm text-slate-400 italic">
-                        Chưa có chuyên mục nào
-                      </li>
-                    </ul>
-                  </Transition>
-                </div>
-              </div>
-  
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
-                <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">image</span> Ảnh đại diện (Thumbnail)
-                </h3>
-                
-                <input type="file" ref="fileInputRef" class="hidden" accept="image/*" @change="handleFileUpload">
-                
-                <div @click="triggerFileInput" class="border-2 border-dashed rounded-xl h-44 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group relative overflow-hidden" :class="postData.thumbnail ? 'border-transparent p-0' : 'border-slate-300 hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 bg-slate-50'">
-                  <template v-if="!postData.thumbnail">
-                    <span class="material-symbols-outlined text-4xl text-slate-300 group-hover:text-[#ff8f73] mb-1 transition-colors">add_photo_alternate</span>
-                    <span class="text-xs font-bold text-slate-500 group-hover:text-[#ff8f73]">Click để tải ảnh lên</span>
-                    <span class="text-[10px] text-slate-400">Tỷ lệ 16:9 (1280x720px)</span>
-                  </template>
-                  <template v-else>
-                    <img :src="postData.thumbnail" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <button @click.stop="removeThumbnail" class="p-2 bg-white rounded-lg text-slate-700 hover:text-rose-500 shadow-lg"><span class="material-symbols-outlined text-[18px]">delete</span></button>
-                    </div>
-                  </template>
-                </div>
-              </div>
-  
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
-                <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">manage_search</span> Tóm tắt bài viết 
-                </h3>
-                <textarea 
-                  v-model="postData.summary"
-                  maxlength="180"
-                  placeholder="Nhập đoạn tóm tắt ngắn để hiển thị ngoài trang chủ..." 
-                  class="w-full h-40 border border-slate-200 rounded-xl p-3 text-sm text-slate-700 outline-none focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 transition-all resize-none bg-slate-50 focus:bg-white"
-                ></textarea>
-                <p class="text-[10px] font-bold mt-2 text-right transition-colors" :class="postData.summary.length >= 150 ? 'text-rose-500' : 'text-slate-400'">
-                  {{ postData.summary.length }}/180 ký tự
-                </p>
-              </div>
-
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
-                <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">tag</span> Tags bài viết
-                </h3>
-                <input 
-                  v-model="postData.tags" 
-                  placeholder="VD: Bandai, GoodSmile, Gundam (Cách nhau bằng dấu phẩy)" 
-                  class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all bg-slate-50"
-                >
-              </div>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col flex-1 min-h-[500px]">
+              <Editor
+                api-key="m7ecn07md9z34y1l3o6ekspbur4e52910tsvii43ieymhdx1"
+                v-model="postData.content"
+                :init="editorConfig"
+              />     
             </div>
           </div>
-        </main>
-      </div>
+
+          <div class="w-full xl:w-80 flex flex-col gap-6 shrink-0">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">category</span> Chuyên mục
+              </h3>
+              
+              <div class="relative">
+                <input 
+                  v-model="postData.category" 
+                  @focus="showCategoryDropdown = true"
+                  @blur="showCategoryDropdown = false"
+                  placeholder="Chọn hoặc nhập chuyên mục mới..."
+                  class="w-full border border-slate-200 rounded-xl px-4 py-3 pr-10 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50"
+                >
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 pointer-events-none transition-transform" :class="{ 'rotate-180': showCategoryDropdown }">
+                  expand_more
+                </span>
+
+                <Transition name="fade-slide">
+                  <ul v-if="showCategoryDropdown" class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar overflow-hidden py-1">
+                    <li 
+                      v-for="cat in filteredCategories" 
+                      :key="cat"
+                      @mousedown.prevent="selectCategory(cat)"
+                      class="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] cursor-pointer transition-colors flex items-center justify-between"
+                    >
+                      {{ cat }}
+                      <span v-if="postData.category === cat" class="material-symbols-outlined text-[16px] text-[#ff8f73]">check</span>
+                    </li>
+                    <li v-if="filteredCategories.length === 0" class="px-4 py-2.5 text-sm text-slate-400 italic">
+                      Chưa có chuyên mục nào
+                    </li>
+                  </ul>
+                </Transition>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+              <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">image</span> Ảnh đại diện (Thumbnail)
+              </h3>
+              
+              <input type="file" ref="fileInputRef" class="hidden" accept="image/*" @change="handleFileUpload">
+              
+              <div @click="triggerFileInput" class="border-2 border-dashed rounded-xl h-44 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer group relative overflow-hidden" :class="postData.thumbnail ? 'border-transparent p-0' : 'border-slate-300 hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 bg-slate-50'">
+                <template v-if="!postData.thumbnail">
+                  <span class="material-symbols-outlined text-4xl text-slate-300 group-hover:text-[#ff8f73] mb-1 transition-colors">add_photo_alternate</span>
+                  <span class="text-xs font-bold text-slate-500 group-hover:text-[#ff8f73]">Click để tải ảnh lên</span>
+                  <span class="text-[10px] text-slate-400">Tỷ lệ 16:9 (1280x720px)</span>
+                </template>
+                <template v-else>
+                  <img :src="postData.thumbnail" class="w-full h-full object-cover">
+                  <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button @click.stop="removeThumbnail" class="p-2 bg-white rounded-lg text-slate-700 hover:text-rose-500 shadow-lg"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+              <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">manage_search</span> Tóm tắt bài viết 
+              </h3>
+              <textarea 
+                v-model="postData.summary"
+                maxlength="180"
+                placeholder="Nhập đoạn tóm tắt ngắn để hiển thị ngoài trang chủ..." 
+                class="w-full h-40 border border-slate-200 rounded-xl p-3 text-sm text-slate-700 outline-none focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 transition-all resize-none bg-slate-50 focus:bg-white"
+              ></textarea>
+              <p class="text-[10px] font-bold mt-2 text-right transition-colors" :class="postData.summary.length >= 150 ? 'text-rose-500' : 'text-slate-400'">
+                {{ postData.summary.length }}/180 ký tự
+              </p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6">
+              <h3 class="font-bold text-slate-900 mb-4 uppercase tracking-widest text-[11px] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73] text-[18px]">tag</span> Tags bài viết
+              </h3>
+              <input 
+                v-model="postData.tags" 
+                placeholder="VD: Bandai, GoodSmile, Gundam (Cách nhau bằng dấu phẩy)" 
+                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all bg-slate-50"
+              >
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
+  </div>
 </template>
   
 <script setup>
@@ -150,21 +149,16 @@
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from "../../stores/toast";
+  import { useLayoutStore } from '../../stores/layout';
   import Editor from '@tinymce/tinymce-vue';
   
   const router = useRouter();
   const toastStore = useToastStore();
+  const layoutStore = useLayoutStore();
+
   const thumbnailFile = ref(null);
   const existingCategories = ref(['Review', 'Tin tức', 'Mẹo vặt']);
   const showCategoryDropdown = ref(false);
-
-  const isSidebarCollapsed = ref(false);
-  const isMobileMenuOpen = ref(false);
-  const handleToggleSidebar = () => {
-    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
-    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
-  };
-  const closeAllMenus = () => {};
   
   const postData = ref({
     title: '',
