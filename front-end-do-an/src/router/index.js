@@ -21,6 +21,7 @@ import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
 //Phần thanh toán có thể thay thế bằng payos sau này
 import checkout from '../views/User_view/MoMoMockView.vue';
 import ProvenanceTracking from '../views/User_view/ProvenanceTracking.vue';
+import SupportView from '../views/User_view/SupportView.vue';
 
 import AdminDashboard from '../views/Admin_view/AdminDashboard.vue';
 import AdminInventory from '../views/Admin_view/AdminInventory.vue';
@@ -139,6 +140,12 @@ const router = createRouter({
       path: '/truy-xuat',
       name: 'TruyXuat',
       component: ProvenanceTracking
+    },
+    {
+      path: '/support',
+      name: 'Support',
+      component: SupportView,
+      meta: { title: 'Hỗ trợ khách hàng - FigureCollect' }
     },
     {
       path: '/admin',
