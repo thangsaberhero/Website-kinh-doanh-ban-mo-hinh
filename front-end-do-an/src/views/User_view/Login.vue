@@ -137,11 +137,11 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-              <button type="button" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
+              <button @click="handleGoogleLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.21-3.21C17.54 1.84 14.99 1 12 1 7.37 1 3.4 3.65 1.5 7.5l3.86 3c.91-2.72 3.47-4.46 6.64-4.46z" fill="#EA4335"></path><path d="M23.49 12.27c0-.81-.07-1.59-.21-2.34H12v4.42h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.88 3.39-8.47z" fill="#4285F4"></path><path d="M5.36 14.5c-.23-.68-.36-1.41-.36-2.17s.13-1.49.36-2.17l-3.86-3C.68 8.65 0 10.25 0 12s.68 3.35 1.5 4.84l3.86-2.34z" fill="#FBBC05"></path><path d="M12 23c3.12 0 5.73-1.03 7.64-2.8l-3.66-2.84c-1.06.71-2.42 1.14-3.98 1.14-3.17 0-5.84-2.14-6.8-5.04l-3.86 3C3.51 20.35 7.42 23 12 23z" fill="#34A853"></path></svg>
                 <span class="text-sm font-semibold text-white">Google</span>
               </button>
-              <button type="button" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
+              <button @click="handleFacebookLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
                 <svg class="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
                 <span class="text-sm font-semibold text-white">Facebook</span>
               </button>
@@ -171,6 +171,7 @@ import { ref, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { useToastStore } from '../../stores/toast.js';
+import { googleTokenLogin } from 'vue3-google-login';
 
 const router = useRouter();
 const route = useRoute();
@@ -214,6 +215,67 @@ const handleLogin = async () => {
   finally {
     isLoading.value = false; 
   }
+};
+
+const handleGoogleLogin = () => {
+  googleTokenLogin().then(async (response) => {
+    isLoading.value = true;
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: response.access_token })
+      });
+      const data = await res.json();
+      if (res.ok) handleSuccessfulLogin(data);
+      else toastStore.showToast(data.message, 'error', 4000, 'top-right');
+    } 
+    catch (error) {
+      toastStore.showToast("Lỗi máy chủ!", 'error', 4000, 'top-right');
+    } 
+    finally {
+      isLoading.value = false;
+    }
+  }).catch((err) => console.log("Google Login Failed", err));
+};
+
+const handleFacebookLogin = () => {
+  window.FB.login(async (response) => {
+    if (response.authResponse) {
+      isLoading.value = true;
+      try {
+        const res = await fetch('http://localhost:3000/api/auth/facebook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken: response.authResponse.accessToken })
+        });
+        const data = await res.json();
+        if (res.ok) handleSuccessfulLogin(data);
+        else toastStore.showToast(data.message, 'error', 4000, 'top-right');
+      } 
+      catch (error) {
+        toastStore.showToast("Lỗi máy chủ!", 'error', 4000, 'top-right');
+      } 
+      finally {
+        isLoading.value = false;
+      }
+    } 
+    else {
+      console.log('User cancelled login or did not fully authorize.');
+    }
+  }, { scope: 'public_profile,email' });
+};
+
+const handleSuccessfulLogin = (data) => {
+  localStorage.setItem('token', data.token);
+  localStorage.setItem('user', JSON.stringify(data.user));
+  authStore.user = data.user;
+  toastStore.showToast('Đăng nhập thành công!', 'success', 2500, 'top-right');
+  
+  setTimeout(() => {
+    const redirectPath = (data.user.role === 1 || data.user.role === 2) ? '/admin' : (route.query.redirect || '/');
+    router.push(redirectPath);
+  }, 500);
 };
 </script>
 
