@@ -38,6 +38,7 @@ import AdminPromotionDetail from '../views/Admin_view/AdminPromotionDetail.vue';
 import AdminProfile from '../views/Admin_view/AdminProfile.vue';
 import AdminChangePassword from '../views/Admin_view/AdminChangePassword.vue';
 import AdminReport from '../views/Admin_view/AdminReport.vue';
+import AdminNotifications from '../views/Admin_view/AdminNotifications.vue';
 import AdminBlockchain from '../views/Admin_view/AdminBlockchain.vue';
 
 const router = createRouter({
@@ -280,6 +281,15 @@ const router = createRouter({
       component: AdminReport,
       meta: {
         requiresAuth: true, // Bắt buộc phải đăng nhập
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/notifications',
+      name: 'AdminNotifications',
+      component: AdminNotifications, 
+      meta: {
+        requiresAuth: true, 
         requiresAdmin: true
       }
     },

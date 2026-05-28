@@ -4,7 +4,7 @@ const reviewController = {
     getReviewsByProduct: async(req, res) => {
         try{
             const { id } = req.params;
-            const parsedId = Number(id); // Đã fix tên biến maDM
+            const parsedId = Number(id);
             if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
                 return res.status(400).json({
                     success: false,
@@ -58,6 +58,18 @@ const reviewController = {
             const imageJson = JSON.stringify(HinhAnh || []);
             const sql = `INSERT INTO DanhGia(MaKH, MaMH, MaPhanLoai, NoiDung, SoSao, HinhAnh, TrangThai, ThoiGianDG) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`;
             await connection.query(sql, [MaKH, MaMoHinh, MaPhanLoai, NoiDung, SoSao, imageJson]);
+
+            let tittleReview = SoSao <= 3 ? `Đánh giá thấp (${SoSao} sao)` : `Đánh giá mới (${SoSao} sao)`;
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                tittleReview, 
+                `Sản phẩm (Mã MH: ${MaMoHinh}) vừa nhận được một đánh giá từ khách hàng.`, 
+                "HeThong", 
+                `/admin/support`
+            ]);
+
             await connection.commit();
             res.status(200).json({
                 success: true,

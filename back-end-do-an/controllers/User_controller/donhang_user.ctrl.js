@@ -683,6 +683,19 @@ const donhang_user = {
                     return res.status(400).json({ success: false,
                         message: "Sản phẩm bạn chọn vừa có người mua hết hoặc vượt tồn kho! Vui lòng làm mới giỏ hàng." });
                 }
+
+                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
+                if (checkStock.length > 0 && checkStock[0].SoLuong <= 5) {
+                    await connection.query(`
+                        INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                        VALUES (?, ?, ?, ?)
+                    `, [
+                        "Cảnh báo sắp hết hàng", 
+                        `Phân loại "${checkStock[0].ChiTietPhanLoai}" chỉ còn lại ${checkStock[0].SoLuong} sản phẩm trong kho.`, 
+                        "KhoHang", 
+                        "/admin/products"
+                    ]);
+                }
             }
 
             // Cập nhật số lượng đã dùng của Flash Sale
@@ -720,6 +733,16 @@ const donhang_user = {
             }
 
             await connection.query(`DELETE FROM ChiTietGioHang WHERE MaGH = ?`, [MaGH]);
+            const formatTien = tongTienThanhToan.toLocaleString('vi-VN');
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                `Đơn hàng mới #${maDH_moi}`, 
+                `Khách hàng ${TenNguoiNhan} vừa đặt một đơn hàng trị giá ${formatTien}đ.`, 
+                "DonHang", 
+                `/admin/orders`
+            ]);
             await connection.commit();
             res.status(200).json({ 
                 success: true,
@@ -1019,6 +1042,16 @@ const donhang_user = {
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'ORDER_CANCEL', ?, ?, NOW())
             `, [MaTK, noiDungLog, userIp]);
+
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                `Đơn hàng bị hủy #${MaDH}`, 
+                `Khách hàng vừa tự hủy đơn hàng mang mã ${maHienThi}.`, 
+                "DonHang", 
+                `/admin/orders`
+            ]);
 
             await connection.commit();
             res.status(200).json({
