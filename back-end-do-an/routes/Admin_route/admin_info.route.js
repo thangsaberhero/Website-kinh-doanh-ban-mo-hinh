@@ -22,7 +22,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } 
 });
 
-router.get('/laythongtin/:MaTK', authMiddleware.verifyToken, authMiddleware.verifyStaff, adminInfoController.laythongtin);
+router.get('/laythongtin', authMiddleware.verifyToken, authMiddleware.verifyStaff, adminInfoController.laythongtin);
 router.post('/change_info', authMiddleware.verifyToken, authMiddleware.verifyStaff, upload.single('avatar'), adminInfoController.capnhatthongtin);
 router.post('/change_password', authMiddleware.verifyToken, authMiddleware.verifyStaff, adminInfoController.doi_mat_khau);
 

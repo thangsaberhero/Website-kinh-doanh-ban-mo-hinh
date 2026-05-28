@@ -208,25 +208,49 @@
   const showMiniCart = ref(false);
   const cartItems = ref([]);
   const cartTotal = ref(0);
-  const defaultAvatar = 'default_avatar.jpg';
 
   const userAvatar = computed(() => {
     if (authStore.user && authStore.user.AnhDaiDien) {
       return `http://localhost:3000/Images_user/${authStore.user.AnhDaiDien}`;
     }
-    return defaultAvatar;
+    const name = authStore.user?.TenKH || authStore.user?.username || authStore.user?.TenDN || 'Collector';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff8f73&color=fff&bold=true&size=150`;
   });
 
   const fetchCartData = async () => {
-    if (authStore.user && authStore.user.MaKH) {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+
+    if (!token || !userString) {
+      cartItems.value = [];
+      cartCount.value = 0;
+      cartTotal.value = 0;
+      return;
+    }
+
+    const userObj = JSON.parse(userString);
+    
+    if (userObj && userObj.MaKH) {
       try {
-        const response = await fetch(`http://localhost:3000/api/don_hang/watch/${authStore.user.MaKH}`);
+        const response = await fetch(`http://localhost:3000/api/don_hang/watch?t=${new Date().getTime()}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache'
+          }
+        });
+
         const result = await response.json();
 
         if (response.ok && result.data) {
           cartItems.value = result.data;
           cartCount.value = result.data.reduce((total, item) => total + Number(item.SoLuong || 0), 0);
           cartTotal.value = result.data.reduce((total, item) => total + Number(item.ThanhTien || 0), 0);
+        } 
+        else {
+          cartItems.value = [];
+          cartCount.value = 0;
+          cartTotal.value = 0;
         }
       } 
       catch (error) {
@@ -236,11 +260,6 @@
         cartTotal.value = 0;
       }
     } 
-    else {
-      cartItems.value = [];
-      cartCount.value = 0;
-      cartTotal.value = 0;
-    }
   };
 
   const removeFromCart = async (maPhanLoai) => {

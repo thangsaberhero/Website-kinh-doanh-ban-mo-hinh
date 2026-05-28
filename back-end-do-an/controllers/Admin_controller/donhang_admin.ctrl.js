@@ -1,4 +1,6 @@
 const db = require('../../config/db.js');
+const ExcelJS = require('exceljs');
+const path = require('path');
 
 const donhang_admin = {
     tao_don_hang_ngoai: async(req, res) => {
@@ -946,6 +948,225 @@ const donhang_admin = {
         } catch (error) {
             console.error("Lỗi khi xuất hóa đơn in ấn:", error);
             res.status(500).send("Lỗi máy chủ không thể kết xuất hóa đơn!");
+        }
+    },
+
+    xuatExcelDonHang: async (req, res) => {
+        try {
+            const { NgayBatDau, NgayKetThuc, timkiem } = req.query;
+            
+            let conditions = [];
+            let values = [];
+            
+            if (NgayBatDau) {
+                conditions.push("dh.NgayLapDon >= ?");
+                values.push(`${NgayBatDau} 00:00:00`);
+            }
+            if (NgayKetThuc) {
+                conditions.push("dh.NgayLapDon <= ?");
+                values.push(`${NgayKetThuc} 23:59:59`);
+            }
+            if (timkiem) {
+                conditions.push("(dh.MaDH LIKE ? OR dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ?)");
+                values.push(`%${timkiem}%`, `%${timkiem}%`);
+            }
+            
+            let whereClause = conditions.length > 0 ? " WHERE " + conditions.join(" AND ") : "";
+
+            // ==========================================
+            // 1. TRUY VẤN SONG SONG 2 LUỒNG DỮ LIỆU
+            // ==========================================
+            const sql_doanhthu = `
+                SELECT dh.MaDH, COALESCE(kh.TenKH, dh.TenNguoiNhan) AS KhachHang, 
+                       dh.NgayLapDon, GROUP_CONCAT(mh.TenMH SEPARATOR ', ') AS ChiTietSanPham, dh.ThanhTien
+                FROM DonHang dh
+                LEFT JOIN KhachHang kh ON dh.MaKH = kh.MaKH
+                LEFT JOIN ChiTietDonHang ctdh ON dh.MaDH = ctdh.MaDH
+                LEFT JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai
+                LEFT JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                ${whereClause}
+                GROUP BY dh.MaDH
+                ORDER BY dh.NgayLapDon DESC
+            `;
+
+            const sql_nhatky = `
+                SELECT cttt.MaDH, tt.TenTrangThai, cttt.Thoigian
+                FROM ChiTietTrangThai cttt
+                INNER JOIN TrangThai tt ON cttt.MaTrangThai = tt.MaTrangThai
+                INNER JOIN DonHang dh ON cttt.MaDH = dh.MaDH
+                ${whereClause}
+                ORDER BY cttt.Thoigian DESC
+            `;
+
+            const [[donHangs], [nhatKys]] = await Promise.all([
+                db.query(sql_doanhthu, values),
+                db.query(sql_nhatky, values)
+            ]);
+
+            const workbook = new ExcelJS.Workbook();
+            
+            // Định dạng viền đen (Black Border) tiêu chuẩn cho toàn bộ các cell
+            const blackBorder = {
+                top: { style: 'thin', color: { argb: 'FF000000' } },
+                left: { style: 'thin', color: { argb: 'FF000000' } },
+                bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                right: { style: 'thin', color: { argb: 'FF000000' } }
+            };
+
+            // ==============================================
+            // SHEET 1: BÁO CÁO DOANH THU ĐƠN HÀNG
+            // ==============================================
+            const ws1 = workbook.addWorksheet('Báo cáo doanh thu');
+            ws1.views = [{ showGridLines: false }];
+            ws1.columns = [
+                { key: 'MaDH', width: 15 },
+                { key: 'KhachHang', width: 30 },
+                { key: 'NgayLapDon', width: 25 },
+                { key: 'ChiTietSanPham', width: 50 },
+                { key: 'ThanhTien', width: 20 },
+            ];
+
+            // 1. Chèn Logo
+            try {
+                const path = require('path');
+                // Sửa lại đường dẫn logo cho đúng với thư mục public của bạn
+                const logoPath = path.join(__dirname, '../../public/logo.png'); 
+                const logoId1 = workbook.addImage({ filename: logoPath, extension: 'png' });
+                ws1.addImage(logoId1, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+            } catch (err) { console.log("Lỗi chèn ảnh Logo:", err.message); }
+
+            // 2. Header Thông tin
+            ws1.getCell('B1').value = 'FIGURECOLLECT';
+            ws1.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' } };
+            ws1.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            ws1.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' } };
+
+            ws1.mergeCells('A5:E5');
+            ws1.getCell('A5').value = 'BÁO CÁO DOANH THU BÁN HÀNG';
+            ws1.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' } };
+            ws1.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${NgayBatDau} đến ${NgayKetThuc}` : 'Tất cả thời gian';
+            ws1.mergeCells('A6:E6');
+            ws1.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')} | Dữ liệu: ${filterText}`;
+            ws1.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' } };
+            ws1.getCell('A6').alignment = { horizontal: 'center' };
+
+            // 3. Header Bảng Dữ Liệu
+            const headerRow1 = ws1.getRow(9);
+            headerRow1.values = ['Mã đơn hàng', 'Khách hàng', 'Ngày mua', 'Chi tiết sản phẩm', 'Tổng tiền (VNĐ)'];
+            headerRow1.height = 25;
+            
+            headerRow1.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } }; // Nền cam
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; // Chữ trắng
+                cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                cell.border = blackBorder; // Bôi viền đen
+            });
+
+            // 4. Đổ Dữ Liệu
+            donHangs.forEach((item) => {
+                const row = ws1.addRow({
+                    MaDH: `#FC-${item.MaDH}`,
+                    KhachHang: item.KhachHang,
+                    NgayLapDon: new Date(item.NgayLapDon).toLocaleString('vi-VN'),
+                    ChiTietSanPham: item.ChiTietSanPham,
+                    ThanhTien: item.ThanhTien
+                });
+
+                row.eachCell((cell, colNum) => {
+                    cell.font = { size: 11, color: { argb: 'FF000000' } };
+                    cell.border = blackBorder; // Bôi viền đen từng ô
+                    
+                    if (colNum === 5) { // Cột Tiền
+                        cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                        cell.numFmt = '#,##0';
+                    } else if (colNum === 1 || colNum === 3) { // Cột Mã & Ngày
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    } else {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+                    }
+                });
+            });
+
+            // ==============================================
+            // SHEET 2: BÁO CÁO NHẬT KÝ HOẠT ĐỘNG
+            // ==============================================
+            const ws2 = workbook.addWorksheet('Nhật ký hoạt động');
+            ws2.views = [{ showGridLines: false }];
+            ws2.columns = [
+                { key: 'MaDH', width: 20 },
+                { key: 'TrangThai', width: 40 },
+                { key: 'ThoiGian', width: 30 }
+            ];
+
+            // 1. Chèn Logo
+            try {
+                const path = require('path');
+                const logoPath = path.join(__dirname, '../../public/logo.png'); 
+                const logoId2 = workbook.addImage({ filename: logoPath, extension: 'png' });
+                ws2.addImage(logoId2, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+            } catch (err) {}
+
+            // 2. Header Thông tin
+            ws2.getCell('B1').value = 'FIGURECOLLECT';
+            ws2.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' } };
+            ws2.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            ws2.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' } };
+
+            ws2.mergeCells('A5:C5');
+            ws2.getCell('A5').value = 'BÁO CÁO NHẬT KÝ CHUYỂN TRẠNG THÁI ĐƠN HÀNG';
+            ws2.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' } };
+            ws2.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            ws2.mergeCells('A6:C6');
+            ws2.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')} | Dữ liệu: ${filterText}`;
+            ws2.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' } };
+            ws2.getCell('A6').alignment = { horizontal: 'center' };
+
+            // 3. Header Bảng
+            const headerRow2 = ws2.getRow(9);
+            headerRow2.values = ['Mã đơn hàng', 'Trạng thái cập nhật', 'Thời gian ghi nhận'];
+            headerRow2.height = 25;
+            
+            headerRow2.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF222532' } }; // Nền đen cho Sheet 2 (Dễ phân biệt)
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                cell.border = blackBorder; // Bôi viền đen
+            });
+
+            // 4. Đổ Dữ Liệu
+            nhatKys.forEach((item) => {
+                const row = ws2.addRow({
+                    MaDH: `#FC-${item.MaDH}`,
+                    TrangThai: item.TenTrangThai,
+                    ThoiGian: new Date(item.Thoigian).toLocaleString('vi-VN')
+                });
+
+                row.eachCell((cell, colNum) => {
+                    cell.font = { size: 11, color: { argb: 'FF000000' } };
+                    cell.border = blackBorder; // Bôi viền đen
+                    if (colNum === 2) {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                    } else {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    }
+                });
+            });
+
+            // ==============================================
+            // TRẢ FILE VỀ CHO TRÌNH DUYỆT (FRONTEND)
+            // ==============================================
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=' + `Bao_Cao_Don_Hang_FigureCollect_${Date.now()}.xlsx`);
+
+            await workbook.xlsx.write(res);
+            res.end();
+
+        } catch (error) {
+            console.error("Lỗi xuất Excel quản lý đơn hàng:", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi tạo file Excel" });
         }
     }
 }

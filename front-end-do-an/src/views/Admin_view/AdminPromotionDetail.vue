@@ -1,11 +1,15 @@
 <template>
-  <div class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800">
-    <div v-show="isMobileMenuOpen" @click="isMobileMenuOpen = false" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"></div>
-    <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+    <div 
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+    ></div>
+
+    <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
-      <AdminHeader @toggle-sidebar="handleToggleSidebar" />
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       <main class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar pb-24">
-        <!-- Loading -->
         <div v-if="isLoading" class="flex justify-center items-center h-64">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff8f73]"></div>
         </div>
@@ -436,13 +440,13 @@
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from '../../stores/toast';
+  import { useLayoutStore } from '../../stores/layout';
 
   const route = useRoute();
   const router = useRouter();
   const toastStore = useToastStore();
+  const layoutStore = useLayoutStore();
 
-  const isSidebarCollapsed = ref(false);
-  const isMobileMenuOpen = ref(false);
   const activeSubTab = ref('products');
   const isLoading = ref(true);
   const isDeleteProductModalOpen = ref(false);
@@ -733,11 +737,6 @@
       console.error('❌ Lỗi khi gọi API:', error);
       toastStore.showToast('Lỗi kết nối máy chủ', 'error');
     }
-  };
-
-  const handleToggleSidebar = () => {
-    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
-    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
   };
 
   onMounted(() => {

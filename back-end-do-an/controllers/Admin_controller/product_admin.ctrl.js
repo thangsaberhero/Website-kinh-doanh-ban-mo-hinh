@@ -1,4 +1,7 @@
 const db = require('../../config/db');
+const ExcelJS = require('exceljs');
+const fs = require('fs');
+const path = require('path');
 
 const product_admin = {
     them_danh_muc_moi: async(req, res) => {
@@ -803,6 +806,39 @@ const product_admin = {
                         [variantsToInsert]
                     );
                 }
+
+
+                }
+
+            const phanLoaiCanXoa = (req.body.PhanLoaiCanXoa && req.body.PhanLoaiCanXoa !== 'undefined') 
+                ? JSON.parse(req.body.PhanLoaiCanXoa) 
+                : [];
+
+            if (phanLoaiCanXoa && phanLoaiCanXoa.length > 0) {
+                for (const id of phanLoaiCanXoa) {
+                    try {
+                        // Bước 1: Thử xóa cứng (Dành cho phân loại gõ nhầm, tạo thừa, chưa ai mua)
+                        const [resultDelete] = await connection.query('DELETE FROM PhanLoai WHERE MaPhanLoai = ?', [id]);
+                        
+                        // Nếu dòng ID này đã bị xóa từ trước hoặc không tồn tại, cứ để vòng lặp chạy tiếp, không rollback đơn lẻ
+                        if (resultDelete.affectedRows > 0) {
+                            console.log(`[Hard Delete] Đã xóa vĩnh viễn phân loại ID: ${id}`);
+                        }
+
+                    } catch (error) {
+                        // Bắt chính xác mã lỗi 1451: Ràng buộc khóa ngoại (Đã có trong ChiTietDonHang hoặc ChiTietKhuyenMai)
+                        if (error.errno === 1451) {
+                            
+                            // Bước 2: Tự động chuyển sang xóa mềm để bảo vệ dữ liệu thống kê
+                            await connection.query('UPDATE PhanLoai SET HienThi = 0 WHERE MaPhanLoai = ?', [id]);
+                            console.log(`[Soft Delete] Sản phẩm đã từng giao dịch. Đã ẩn vĩnh viễn phân loại ID: ${id}`);
+                            
+                        } else {
+                            // Nếu dính các lỗi SQL nghiêm trọng khác (sập database, mất kết nối...) thì mới quăng lỗi ra ngoài để Rollback toàn bộ đơn
+                            throw error;
+                        }
+                    }
+                }
             }
 
             // 9. GHI LOG HOẠT ĐỘNG
@@ -865,24 +901,33 @@ const product_admin = {
     },
 
     An_phan_loai: async(req, res) =>{
+        const connection = await db.getConnection();
         try{
+            await connection.beginTransaction();
             const {MaPL} = req.body;
             const sql_xoa_mem = `
                                 Update PhanLoai
                                 Set HienThi = 0
                                 Where MaPhanLoai = ?`;
-            const [ket_qua] = await db.query(sql_xoa_mem, [MaPL]);
+            const [ket_qua] = await connection.query(sql_xoa_mem, [MaPL]);
             if(ket_qua.affectedRows === 0){
-                return res.status(404).json({ message: "Không thấy phân loại cần ẩn!"});
+                await connection.rollback();
+                return res.status(404).json({ success: false,
+                    message: "Không thấy phân loại cần ẩn!"});
             }
+            await connection.commit();
             res.status(200).json({
                 success: true,
                 message: "Đã chuyển phân loại vào trạng thái ẩn!"
             });
         }
         catch (error){
+            await connection.rollback();
             console.error("Lỗi khi ẩn sản phẩm: ", error);
             res.status(500).json({ message: "Lỗi server khi thao tác ẩn!" });
+        }
+        finally{
+            connection.release();
         }
     },
 
@@ -1100,10 +1145,28 @@ const product_admin = {
             const sql_params = [...value, limit, offset]
             const [products] = await db.query(sql_ds, sql_params);
 
+            const sql_summary = `
+                SELECT 
+                    COUNT(MaMoHinh) AS TongSanPham,
+                    SUM(CASE WHEN SoLuongTon <= 3 AND SoLuongTon > 0 THEN 1 ELSE 0 END) AS SapHetHang,
+                    SUM(CASE WHEN SoLuongTon = 0 THEN 1 ELSE 0 END) AS HetHang,
+                    SUM(CASE WHEN SoLuongTon > 3 THEN 1 ELSE 0 END) AS DangCoSan
+                FROM (
+                    SELECT mh.MaMoHinh, COALESCE(SUM(pl.SoLuong), 0) AS SoLuongTon
+                    FROM MoHinh mh
+                    LEFT JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
+                    GROUP BY mh.MaMoHinh
+                ) AS TmpKho
+            `;
+            
+            const [summaryResult] = await db.query(sql_summary);
+            const summaryData = summaryResult[0];
+
             res.status(200).json({
                 success: true,
                 message: "Lấy thông tin danh sách sản phẩm thành công!",
                 data: products,
+                summary: summaryData,
                 pagination: {
                     currentPage: page,
                     limit: limit,
@@ -1369,5 +1432,187 @@ const product_admin = {
             });
         }
     },
+
+    xuatExcelKhoHang: async (req, res) => {
+        try {
+            // 1. TRUY VẤN SONG SONG 2 LUỒNG DỮ LIỆU
+            const sql_tonkho = `
+                SELECT mh.MaMoHinh, mh.TenMH, pl.ChiTietPhanLoai, hsx.TenHSX, dm.TenDM, 
+                       pl.SoLuong, mh.GiaNhap, pl.DonGia AS GiaBan, mh.TrangThai
+                FROM MoHinh mh
+                INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
+                LEFT JOIN HangSanXuat hsx ON mh.MaHSX = hsx.MaHSX
+                LEFT JOIN DanhMuc dm ON mh.MaDM = dm.MaDM
+                ORDER BY mh.MaMoHinh DESC, pl.MaPhanLoai ASC
+            `;
+
+            const sql_nhatky = `
+                SELECT log.ThoiGian, tk.TenDN, log.NoiDung, log.IPAddress
+                FROM LogHoatDongTaiKhoan log
+                LEFT JOIN TaiKhoan tk ON log.MaTK = tk.MaTK
+                WHERE log.LoaiLog LIKE '%PRODUCT%'
+                ORDER BY log.ThoiGian DESC
+                LIMIT 1000
+            `;
+
+            const [[tonKhos], [nhatKys]] = await Promise.all([
+                db.query(sql_tonkho),
+                db.query(sql_nhatky)
+            ]);
+
+            const workbook = new ExcelJS.Workbook();
+            const blackBorder = {
+                top: { style: 'thin', color: { argb: 'FF000000' } },
+                left: { style: 'thin', color: { argb: 'FF000000' } },
+                bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                right: { style: 'thin', color: { argb: 'FF000000' } }
+            };
+
+            // ==============================================
+            // SHEET 1: BÁO CÁO TỒN KHO
+            // ==============================================
+            const ws1 = workbook.addWorksheet('Tồn kho chi tiết');
+            ws1.views = [{ showGridLines: false }];
+            ws1.columns = [
+                { key: 'MaMH', width: 12 }, { key: 'TenMH', width: 45 },
+                { key: 'PhanLoai', width: 20 }, { key: 'ThuongHieu', width: 20 },
+                { key: 'TonKho', width: 12 }, { key: 'GiaNhap', width: 18 },
+                { key: 'GiaBan', width: 18 }, { key: 'TrangThai', width: 20 }
+            ];
+
+            // Chèn Logo
+            try {
+                const logoPath = path.join(__dirname, '../../public/logo.png'); // Sửa đường dẫn nếu cần
+                const logoId1 = workbook.addImage({ filename: logoPath, extension: 'png' });
+                ws1.addImage(logoId1, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+            } catch (err) {}
+
+            ws1.getCell('B1').value = 'FIGURECOLLECT';
+            ws1.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' } };
+            ws1.getCell('B2').value = 'Hệ thống Quản trị Kho hàng & Sản phẩm';
+            ws1.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' } };
+
+            ws1.mergeCells('A5:H5');
+            ws1.getCell('A5').value = 'BÁO CÁO TỒN KHO CHI TIẾT';
+            ws1.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' } };
+            ws1.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            ws1.mergeCells('A6:H6');
+            ws1.getCell('A6').value = `Ngày trích xuất: ${new Date().toLocaleString('vi-VN')} | Tổng số mã PL: ${tonKhos.length}`;
+            ws1.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' } };
+            ws1.getCell('A6').alignment = { horizontal: 'center' };
+
+            // Header Bảng
+            const headerRow1 = ws1.getRow(9);
+            headerRow1.values = ['Mã MH', 'Tên Sản phẩm', 'Phân loại', 'Hãng / Danh mục', 'Tồn kho', 'Giá nhập (VNĐ)', 'Giá bán (VNĐ)', 'Tình trạng'];
+            headerRow1.height = 25;
+            
+            headerRow1.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } }; 
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                cell.border = blackBorder;
+            });
+
+            // Đổ Dữ Liệu Tồn Kho
+            tonKhos.forEach((item) => {
+                const row = ws1.addRow({
+                    MaMH: `#${item.MaMoHinh}`,
+                    TenMH: item.TenMH,
+                    PhanLoai: item.ChiTietPhanLoai,
+                    ThuongHieu: `${item.TenHSX || 'N/A'}\n(${item.TenDM || 'N/A'})`,
+                    TonKho: item.SoLuong,
+                    GiaNhap: item.GiaNhap,
+                    GiaBan: item.GiaBan,
+                    TrangThai: item.TrangThai
+                });
+
+                row.eachCell((cell, colNum) => {
+                    cell.font = { size: 11, color: { argb: 'FF000000' } };
+                    cell.border = blackBorder;
+                    
+                    if (colNum === 5) { // Tồn kho
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                        cell.font = { size: 11, bold: true, color: { argb: item.SoLuong <= 3 ? 'FFFF0000' : 'FF000000' } }; // Đỏ nếu sắp hết
+                    } else if (colNum === 6 || colNum === 7) { // Giá
+                        cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                        cell.numFmt = '#,##0';
+                    } else if (colNum === 1 || colNum === 8) {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    } else {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+                    }
+                });
+            });
+
+            // ==============================================
+            // SHEET 2: BÁO CÁO NHẬT KÝ SẢN PHẨM
+            // ==============================================
+            const ws2 = workbook.addWorksheet('Nhật ký hoạt động');
+            ws2.views = [{ showGridLines: false }];
+            ws2.columns = [
+                { key: 'ThoiGian', width: 25 },
+                { key: 'NguoiThucHien', width: 25 },
+                { key: 'NoiDung', width: 60 },
+                { key: 'IP', width: 20 }
+            ];
+
+            try {
+                const logoPath = path.join(__dirname, '../../public/logo.png'); 
+                const logoId2 = workbook.addImage({ filename: logoPath, extension: 'png' });
+                ws2.addImage(logoId2, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+            } catch (err) {}
+
+            ws2.getCell('B1').value = 'FIGURECOLLECT';
+            ws2.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' } };
+            ws2.getCell('B2').value = 'Hệ thống Quản trị Kho hàng & Sản phẩm';
+            ws2.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' } };
+
+            ws2.mergeCells('A5:D5');
+            ws2.getCell('A5').value = 'NHẬT KÝ THAO TÁC KHO HÀNG';
+            ws2.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' } };
+            ws2.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            const headerRow2 = ws2.getRow(8);
+            headerRow2.values = ['Thời gian', 'Tài khoản thực hiện', 'Nội dung thao tác', 'IP Address'];
+            headerRow2.height = 25;
+            
+            headerRow2.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF222532' } }; // Nền đen cho Sheet 2
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                cell.border = blackBorder; 
+            });
+
+            nhatKys.forEach((item) => {
+                const row = ws2.addRow({
+                    ThoiGian: new Date(item.ThoiGian).toLocaleString('vi-VN'),
+                    NguoiThucHien: item.TenDangNhap || 'System',
+                    NoiDung: item.NoiDung,
+                    IP: item.IPAddress || 'N/A'
+                });
+
+                row.eachCell((cell, colNum) => {
+                    cell.font = { size: 11, color: { argb: 'FF000000' } };
+                    cell.border = blackBorder; 
+                    if (colNum === 3) cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+                    else cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                });
+            });
+
+            // ==============================================
+            // TRẢ FILE VỀ CHO FRONTEND
+            // ==============================================
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=' + `KhoHang_FigureCollect_${Date.now()}.xlsx`);
+
+            await workbook.xlsx.write(res);
+            res.end();
+
+        } catch (error) {
+            console.error("Lỗi xuất Excel Kho hàng:", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi tạo file Excel" });
+        }
+    }
 }
 module.exports = product_admin;

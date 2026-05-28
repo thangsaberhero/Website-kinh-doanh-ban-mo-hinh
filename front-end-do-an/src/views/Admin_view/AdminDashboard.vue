@@ -1,8 +1,13 @@
 <template>
-  <div @click="activeMenuId = null; isDropdownOpen = false" class="print:hidden bg-slate-100 min-h-screen font-body flex w-full text-slate-800">
-    <AdminSideBar :is-collapsed="isSidebarCollapsed" />
+  <div @click="layoutStore.closeMobileMenu; activeMenuId = null; isDropdownOpen = false" class="print:hidden bg-slate-100 min-h-screen font-body flex w-full text-slate-800">
+    <div 
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+    ></div>
+    <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden">
-      <AdminHeader @toggle-sidebar="isSidebarCollapsed = !isSidebarCollapsed" />
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
         
         <section class="flex flex-col md:flex-row justify-between items-end gap-4 relative z-20">
@@ -500,14 +505,15 @@
   import { ref, onMounted, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToastStore } from "../../stores/toast";
+  import { useLayoutStore } from '../../stores/layout';
   import VueApexCharts from 'vue3-apexcharts';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue"; 
 
   const router = useRouter();
   const toastStore = useToastStore();
+  const layoutStore = useLayoutStore();
 
-  const isSidebarCollapsed = ref(false);
   const isCustomModalOpen = ref(false);
   const customStartDate = ref('');
   const customEndDate = ref('');

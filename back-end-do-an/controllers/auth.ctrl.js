@@ -118,15 +118,16 @@ const authController = {
                 { expiresIn: '1d' }
             );
 
+            delete user.MatKhau;
+            delete user.ResetOTP;
+            delete user.OTPExpires;
+
             // Gửi token và thông tin cơ bản về cho Frontend
             res.status(200).json({ 
                 success: true,
                 message: "Đăng nhập thành công!",
                 token: token,
-                user: {
-                    id: user.MaTK,
-                    role: user.MaQuyen
-                }
+                user: user
             });
         } catch (error) {
             console.error(error);

@@ -67,5 +67,6 @@ router.get('/getdetailvariant/:MaDM', authMiddleware.verifyToken, authMiddleware
 router.get('/watch/:MaMH', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.xem_thong_tin_san_pham);
 
 router.get('/thong_ke_hsx', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.thong_ke_hang_san_xuat);
+router.get('/export-excel', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xuatExcelKhoHang);
 
 module.exports = router;

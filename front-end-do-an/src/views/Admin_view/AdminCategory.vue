@@ -1,15 +1,15 @@
 <template>
-    <div @click="closeAllMenus" class="bg-slate-50 min-h-screen font-body flex w-full text-slate-800 relative">     
+    <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
       <div 
-        v-show="isMobileMenuOpen" 
-        @click="isMobileMenuOpen = false" 
-        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
+        v-show="layoutStore.isMobileMenuOpen" 
+        @click="layoutStore.isMobileMenuOpen = false" 
+        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
       ></div>
   
-      <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
+      <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
   
       <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
-        <AdminHeader @toggle-sidebar="handleToggleSidebar" />
+        <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
         <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
           <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
             <div>
@@ -269,19 +269,11 @@
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from "../../stores/toast";
+  import { useLayoutStore } from '../../stores/layout';
   
   const toastStore = useToastStore();
-  const isSidebarCollapsed = ref(false);
-  const isMobileMenuOpen = ref(false);
+  const layoutStore = useLayoutStore();
   
-  const handleToggleSidebar = () => {
-    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
-    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
-  };
-  const closeAllMenus = () => {};
-  
-  // DỮ LIỆU GỐC
-  // --- 1. KHAI BÁO BIẾN DỮ LIỆU THẬT ---
   const categories = ref([]);
   
   // Các biến thống kê & phân trang
@@ -292,7 +284,7 @@
   const searchQuery = ref('');
   const statusFilter = ref('all');
   const currentPage = ref(1);
-  const itemsPerPage = ref(10); // Đổi thành 10 cho chuẩn API
+  const itemsPerPage = ref(10); 
   const totalPages = ref(1);
 
   // --- 2. HÀM GỌI API LẤY DANH SÁCH ---

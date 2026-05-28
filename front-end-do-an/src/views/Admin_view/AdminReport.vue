@@ -1,16 +1,15 @@
 <template>
-  <div @click="closeAllMenus" class="bg-slate-50 min-h-screen font-body flex w-full text-slate-800 relative">
-    
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
     <div 
-      v-show="isMobileMenuOpen" 
-      @click="isMobileMenuOpen = false" 
-      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
     ></div>
 
-    <AdminSideBar :is-collapsed="isSidebarCollapsed" :is-mobile-open="isMobileMenuOpen" />
+    <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
     
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
-      <AdminHeader @toggle-sidebar="handleToggleSidebar" />
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       
       <main class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar pb-24">
         
@@ -405,19 +404,12 @@
   import { ref, computed, watch, onMounted } from 'vue';
   import VueApexCharts from 'vue3-apexcharts';
   import { useToastStore } from "../../stores/toast";
+  import { useLayoutStore } from '../../stores/layout';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
 
   const toastStore = useToastStore();
-
-  const isSidebarCollapsed = ref(false);
-  const isMobileMenuOpen = ref(false);
-  
-  const handleToggleSidebar = () => {
-    isMobileMenuOpen.value = window.innerWidth < 768 ? !isMobileMenuOpen.value : false; 
-    isSidebarCollapsed.value = window.innerWidth >= 768 ? !isSidebarCollapsed.value : isSidebarCollapsed.value; 
-  };
-  const closeAllMenus = () => {};
+  const layoutStore = useLayoutStore();
 
   const topProducts = ref([]);
   const inventoryWarnings = ref([]); 

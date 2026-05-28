@@ -7,7 +7,7 @@ const admin_info_ctrl = {
     laythongtin: async(req, res) => {
         try {
             const MaTK = req.user.id; 
-            const sql = 'SELECT tk.*, nv.TenNV, nv.DiaChi, nv.SDT FROM TaiKhoan tk INNER JOIN NhanVien nv ON tk.MaTK = nv.MaTK WHERE tk.MaTK = ?';
+            const sql = 'SELECT tk.*, nv.TenNV, nv.DiaChi, nv.SDT FROM TaiKhoan tk LEFT JOIN NhanVien nv ON tk.MaTK = nv.MaTK WHERE tk.MaTK = ?';
             const [info] = await db.query(sql, [MaTK]);
 
             if (info.length === 0) {
@@ -33,8 +33,8 @@ const admin_info_ctrl = {
             const MaTK = req.user.id; 
             const newFileName = req.file ? req.file.filename : null; 
 
-            const [check] = await connection(`Select Email from TaiKhoan where Email = ? and MaTK != ?`,[email, MaTK]);
-            if([check.length > 0]){
+            const [check] = await connection.query(`Select Email from TaiKhoan where Email = ? and MaTK != ?`,[email, MaTK]);
+            if(check.length > 0){
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,

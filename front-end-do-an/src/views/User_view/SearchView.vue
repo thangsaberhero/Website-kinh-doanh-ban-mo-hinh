@@ -117,56 +117,12 @@
         </div>
 
         <div v-if="productList.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-          <div 
-            v-for="sp in productList" :key="sp.MaMoHinh"
-            @click="router.push(`/product/${sp.MaMoHinh}`)"
-            class="group relative bg-surface-container p-5 rounded-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,143,115,0.15)] border border-outline-variant/40 hover:border-primary cursor-pointer flex flex-col h-full overflow-hidden"
-          >
-            <div v-if="sp.SoLuong === 0" class="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-2xl">
-              <span class="border-2 border-outline text-outline px-6 py-2 text-sm font-bold tracking-widest uppercase rounded">HẾT HÀNG</span>
-            </div>
-
-            <div class="absolute top-7 left-7 z-10 flex flex-col gap-2">
-              <span v-if="sp.TrangThai" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-primary text-on-primary-fixed shadow-md">
-                {{ sp.TrangThai }}
-              </span>
-              <span v-if="sp.LoaiHinhBan" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-tertiary text-on-tertiary-fixed shadow-md">
-                {{ sp.LoaiHinhBan }}
-              </span>
-            </div>
-            
-            <div class="relative h-72 w-full mb-6 overflow-hidden rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40"></div>
-              <img :src="'http://localhost:3000/Images_product/' + sp.AnhDaiDien" 
-                   :alt="sp.TenMH"
-                   :class="['h-full w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110', sp.SoLuong === 0 ? 'grayscale opacity-50' : '']"
-              />
-            </div>
-            
-            <div class="space-y-3 flex-1 flex flex-col justify-end">
-              <div>
-                <p class="text-[10px] text-outline font-bold uppercase tracking-[0.2em] mb-2">
-                  {{ sp.TenHSX || 'UNKNOWN' }} • {{ sp.KichThuoc || 'N/A' }}
-                </p>
-                <h3 class="text-xl font-headline font-bold leading-snug group-hover:text-primary transition-colors text-white line-clamp-2">
-                  {{ sp.TenMH }}
-                </h3>
-              </div>
-              
-              <div class="pt-4 mt-auto border-t border-outline-variant/30 flex justify-between items-center relative z-10">
-                <span :class="['text-2xl font-headline font-bold tracking-tight', sp.SoLuong === 0 ? 'text-outline' : 'text-white']">
-                  {{ formatPrice(sp.DonGia) }}
-                </span>
-                <button 
-                  :disabled="sp.SoLuong === 0"
-                  @click.stop="sp.SoLuong > 0 ? addToCart() : null" 
-                  :class="['w-12 h-12 rounded-xl flex items-center justify-center transition-all', sp.SoLuong === 0 ? 'bg-surface-container text-outline cursor-not-allowed' : 'bg-primary text-on-primary-fixed hover:bg-white hover:text-primary shadow-lg shadow-primary/30']"
-                >
-                  <span class="material-symbols-outlined font-bold">add_shopping_cart</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <ProductCard 
+            v-for="sp in productList" 
+            :key="sp.MaMoHinh" 
+            :product="sp"
+            @add-to-cart="addToCart"
+          />
         </div>
         <div v-if="totalPages > 0" class="mt-12 flex justify-center items-center gap-2 flex-wrap pb-12">
           <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 border border-outline-variant/30">
@@ -221,197 +177,243 @@
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+  import TheHeader from '../../components/TheHeader.vue';
+  import ProductCard from '../../components/ProductCard.vue';
+  import { ref, computed, onMounted, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth.js'; 
+  import { useToastStore } from '../../stores/toast';
 
-const router = useRouter();
-const route = useRoute();
+  const router = useRouter();
+  const route = useRoute();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore(); 
 
-// --- 1. BIẾN QUẢN LÝ DỮ LIỆU ---
-// --- 1. BIẾN QUẢN LÝ DỮ LIỆU & PHÂN TRANG ---
-const searchQuery = ref(route.query.q || '');
-const productList = ref([]); // Thay thế hoàn toàn rawProducts và finalProducts
-const categories = ref([]);
-const isSearching = ref(false);
+  // --- 1. BIẾN QUẢN LÝ DỮ LIỆU & PHÂN TRANG ---
+  const searchQuery = ref(route.query.q || '');
+  const productList = ref([]);
+  const categories = ref([]);
+  const isSearching = ref(false);
 
-const currentPage = ref(1);
-const limit = ref(9);
-const totalPages = ref(1);
-const totalItems = ref(0);
+  const currentPage = ref(1);
+  const limit = ref(9);
+  const totalPages = ref(1);
+  const totalItems = ref(0);
 
-// --- 2. BIẾN BỘ LỌC ---
-const selectedCategories = ref([]);
-const selectedSubCategories = ref([]);
-const selectedBrands = ref([]);
-const sortBy = ref('newest');
-const maxPrice = ref(10000000); 
+  // --- 2. BIẾN BỘ LỌC ---
+  const selectedCategories = ref([]);
+  const selectedSubCategories = ref([]);
+  const selectedBrands = ref([]);
+  const sortBy = ref('newest');
+  const maxPrice = ref(10000000); 
 
-// (MỚI) Khai báo danh sách Thương hiệu cứng vì ta không tải toàn bộ SP nữa
-// Hoặc bạn có thể viết thêm API get_all_brands ở backend sau này
-const availableBrands = ref([]);
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  const availableBrands = ref([]);
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-// --- 3. HÀM TẢI DỮ LIỆU TỪ API ---
-const fetchCategories = async () => {
-  try {
-    const res = await fetch('http://localhost:3000/api/products/danhmuc');
-    const dataJSON = await res.json();
-    if (res.ok) {
-      const mainCats = dataJSON.data || dataJSON;
-      
-      // Vòng lặp lấy danh mục con cho từng thằng cha
-      for (let cat of mainCats) {
-        try {
-          const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
-          const subJSON = await subRes.json();
-          if (subRes.ok) {
-            cat.subCategories = subJSON.data || subJSON;
+  // --- 3. HÀM TẢI DỮ LIỆU TỪ API ---
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/products/danhmuc');
+      const dataJSON = await res.json();
+      if (res.ok) {
+        const mainCats = dataJSON.data || dataJSON;
+        
+        for (let cat of mainCats) {
+          try {
+            const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
+            const subJSON = await subRes.json();
+            if (subRes.ok) {
+              cat.subCategories = subJSON.data || subJSON;
+            }
+          } catch (err) {
+            cat.subCategories = []; 
           }
-        } catch (err) {
-          cat.subCategories = []; 
         }
+        categories.value = mainCats;
       }
-      categories.value = mainCats;
+    } catch (error) {
+      console.error("Lỗi lấy danh mục:", error);
     }
-  } catch (error) {
-    console.error("Lỗi lấy danh mục:", error);
-  }
-};
+  };
 
-const fetchBrand = async () => {
-  try{
-    const res = await fetch('http://localhost:3000/api/products/hsx');
-    const dataJSON = await res.json();
-    if(res.ok){
-      availableBrands.value = dataJSON.data || dataJSON;
+  const fetchBrand = async () => {
+    try{
+      const res = await fetch('http://localhost:3000/api/products/hsx');
+      const dataJSON = await res.json();
+      if(res.ok){
+        availableBrands.value = dataJSON.data || dataJSON;
+      }
+    }
+    catch(error){
+      console.error("Lỗi lấy hsx:", error);
     }
   }
-  catch(error){
-    console.error("Lỗi lấy hsx:", error);
-  }
-}
 
-const fetchProducts = async () => {
-  isSearching.value = true;
-  try {
-    // 🚨 Chú ý: Đổi lại link này cho khớp với file Controller Backend của bạn
-    let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
+  const fetchProducts = async () => {
+    isSearching.value = true;
+    try {
+      let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
 
-    if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
-    if (selectedCategories.value.length > 0) url += `&danhmuc=${selectedCategories.value.join(',')}`;
-    if (selectedSubCategories.value.length > 0) url += `&chitietdanhmuc=${selectedSubCategories.value.join(',')}`;
-    if (selectedBrands.value.length > 0) url += `&thuonghieu=${selectedBrands.value.join(',')}`;
-    if (sortBy.value) url += `&sapxep=${sortBy.value}`;
-    if (maxPrice.value < 20000000) url += `&gia=${maxPrice.value}`;
+      if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
+      if (selectedCategories.value.length > 0) url += `&danhmuc=${selectedCategories.value.join(',')}`;
+      if (selectedSubCategories.value.length > 0) url += `&chitietdanhmuc=${selectedSubCategories.value.join(',')}`;
+      if (selectedBrands.value.length > 0) url += `&thuonghieu=${selectedBrands.value.join(',')}`;
+      if (sortBy.value) url += `&sapxep=${sortBy.value}`;
+      if (maxPrice.value < 20000000) url += `&gia=${maxPrice.value}`;
 
-    const response = await fetch(url);
-    const result = await response.json();
+      const response = await fetch(url);
+      const result = await response.json();
+      
+      if (result.success) {
+        productList.value = result.data;
+        totalPages.value = result.pagination.totalPage;
+        totalItems.value = result.pagination.totalItems;
+        currentPage.value = result.pagination.currentPage;
+      }
+    } 
+    catch (error) {
+      console.error("Lỗi tải sản phẩm:", error);
+    } 
+    finally {
+      isSearching.value = false;
+    }
+  };
+
+  // --- 4. LOGIC THANH PHÂN TRANG RÚT GỌN (Giống CategoryView) ---
+  const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    const delta = 1; 
     
-    if (result.success) {
-      productList.value = result.data;
-      totalPages.value = result.pagination.totalPage;
-      totalItems.value = result.pagination.totalItems;
-      currentPage.value = result.pagination.currentPage;
+    if (total <= 5) {
+      let pages = [];
+      for (let i = 1; i <= total; i++) pages.push(i);
+      return pages;
     }
-  } catch (error) {
-    console.error("Lỗi tải sản phẩm:", error);
-  } finally {
-    isSearching.value = false;
-  }
-};
 
-// --- 4. LOGIC THANH PHÂN TRANG RÚT GỌN (Giống CategoryView) ---
-const visiblePages = computed(() => {
-  const current = currentPage.value;
-  const total = totalPages.value;
-  const delta = 1; 
-  
-  if (total <= 5) {
-    let pages = [];
-    for (let i = 1; i <= total; i++) pages.push(i);
+    let pages = [1];
+    if (current - delta > 2) pages.push('...');
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+      pages.push(i);
+    }
+    if (current + delta < total - 1) pages.push('...');
+    pages.push(total);
     return pages;
-  }
+  });
 
-  let pages = [1];
-  if (current - delta > 2) pages.push('...');
-  for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
-    pages.push(i);
-  }
-  if (current + delta < total - 1) pages.push('...');
-  pages.push(total);
-  return pages;
-});
+  const jumpToPage = (event) => {
+    const pageNum = parseInt(event.target.value);
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages.value) {
+      currentPage.value = pageNum;
+      event.target.value = ''; 
+    }
+  };
 
-const jumpToPage = (event) => {
-  const pageNum = parseInt(event.target.value);
-  if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages.value) {
-    currentPage.value = pageNum;
-    event.target.value = ''; 
-  }
-};
+  // --- 5. LẮNG NGHE & XÓA BỘ LỌC ---
+  const hasActiveFilters = computed(() => {
+    return selectedCategories.value.length > 0 || 
+          selectedBrands.value.length > 0 || 
+          maxPrice.value < 20000000 ||
+          searchQuery.value !== '';
+  });
 
-// --- 5. LẮNG NGHE & XÓA BỘ LỌC ---
-const hasActiveFilters = computed(() => {
-  return selectedCategories.value.length > 0 || 
-         selectedBrands.value.length > 0 || 
-         maxPrice.value < 20000000 ||
-         searchQuery.value !== '';
-});
+  const addToCart = async (product) => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    let maKH = null;
+    
+    if (userString) {
+      const userObj = JSON.parse(userString);
+      maKH = userObj.MaKH;
+    }
 
-const resetFilters = () => {
-  selectedCategories.value = [];
-  selectedSubCategories.value = [];
-  selectedBrands.value = [];
-  maxPrice.value = 20000000;
-  sortBy.value = 'newest';
-  searchQuery.value = '';
-  router.replace('/search');
-};
+    if (!token || !maKH) {
+      toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error");
+      router.push({ path: '/login', query: { redirect: route.fullPath } });
+      return;
+    }
 
-const clearSearchAndFilters = () => {
-  resetFilters();
-};
+    try {
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${product.MaMoHinh}`);
+      const varJSON = await resVar.json();
+      
+      let maPhanLoai = null;
+      if (resVar.ok && varJSON.data.length > 0) {
+        maPhanLoai = varJSON.data[0].MaPhanLoai; 
+      } else {
+        toastStore.showToast("⚠️ Sản phẩm này đang bị lỗi phân loại!", "error");
+        return;
+      }
 
-watch([selectedCategories, selectedSubCategories, selectedBrands, sortBy, limit], () => {
-  currentPage.value = 1;
-  fetchProducts();
-});
+      const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
+      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload) 
+      });
 
-let searchTimeout;
-watch([searchQuery, maxPrice], () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
+      const data = await response.json();
+      if (response.ok) {
+        toastStore.showToast(`🛒 Đã thêm ${product.TenMH} vào giỏ!`, "success"); 
+        window.dispatchEvent(new Event('cart-updated'));
+      } 
+      else {
+        toastStore.showToast("⚠️ Lỗi: " + data.message, "error"); 
+      }
+    } 
+    catch (error) {
+      console.error("Lỗi thêm giỏ hàng:", error);
+    }
+  };
+
+  const resetFilters = () => {
+    selectedCategories.value = [];
+    selectedSubCategories.value = [];
+    selectedBrands.value = [];
+    maxPrice.value = 20000000;
+    sortBy.value = 'newest';
+    searchQuery.value = '';
+    router.replace('/search');
+  };
+
+  const clearSearchAndFilters = () => {
+    resetFilters();
+  };
+
+  watch([selectedCategories, selectedSubCategories, selectedBrands, sortBy, limit], () => {
     currentPage.value = 1;
     fetchProducts();
-  }, 500); 
-});
+  });
 
-watch(currentPage, () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  fetchProducts();
-});
+  let searchTimeout;
+  watch([searchQuery, maxPrice], () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentPage.value = 1;
+      fetchProducts();
+    }, 500); 
+  });
 
-// Bắt URL param
-watch(() => route.query.q, (newQuery) => {
-  if(newQuery !== searchQuery.value) {
-    searchQuery.value = newQuery || '';
-  }
-});
-onMounted(() => {
-  fetchCategories();
-  fetchProducts(); 
-  fetchBrand();
-});
+  watch(currentPage, () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchProducts();
+  });
+
+  // Bắt URL param
+  watch(() => route.query.q, (newQuery) => {
+    if(newQuery !== searchQuery.value) {
+      searchQuery.value = newQuery || '';
+    }
+  });
+  onMounted(() => {
+    fetchCategories();
+    fetchProducts(); 
+    fetchBrand();
+  });
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
 </style>

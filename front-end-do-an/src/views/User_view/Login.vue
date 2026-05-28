@@ -191,29 +191,11 @@ const isLoading = ref(false);
 const handleLogin = async () => {
   isLoading.value = true;  
   try {
-    const response = await fetch('http://localhost:3000/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        TenDN: form.identity,  
-        MatKhau: form.password 
-      })
-    });
+    const isSuccess = await authStore.login(form.identity, form.password);
 
-    const data = await response.json();
-
-    if (data.success) {
-      // Đăng nhập thành công -> Lưu dữ liệu vào Kho (LocalStorage)
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('role', data.user.role);
-      authStore.user = data.user;
+    if (isSuccess) {
       toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
-
-      // RẼ NHÁNH PHÂN QUYỀN
-      const userRole = data.user.role;
+      const userRole = authStore.user?.role || authStore.user?.MaQuyen;
       
       setTimeout(() => {
         if (userRole === 1 || userRole === 2) {
@@ -224,13 +206,10 @@ const handleLogin = async () => {
         }
       }, 500);
     } 
-    else {
-      toastStore.showToast(data.message || 'Sai tên đăng nhập hoặc mật khẩu!', 'error', 4000, 'top-right');
-    }
   } 
   catch (error) {
     console.error("Lỗi khi kết nối API login:", error);
-    toastStore.showToast("Lỗi kết nối máy chủ! Vui lòng thử lại sau.", 'error', 4000, 'top-right');
+    toastStore.showToast(error.message || "Sai tên đăng nhập hoặc mật khẩu!", 'error', 4000, 'top-right');
   } 
   finally {
     isLoading.value = false; 
