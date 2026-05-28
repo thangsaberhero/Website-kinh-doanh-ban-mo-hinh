@@ -9,14 +9,7 @@ const cron = require('node-cron');
 const db = require('./config/db');
 
 // Middlewares
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5174",
-      "https://figure-collect-shop.vercel.app",
-    ].filter(Boolean)
-  }),
-);
+app.use(cors({ origin: 'https://figurecollectshop.vercel.app' }));
 app.use(express.json()); // Giúp server đọc được dữ liệu JSON gửi lên
 
 // Khởi động Server
