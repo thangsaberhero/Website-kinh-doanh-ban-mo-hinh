@@ -78,7 +78,7 @@ const authController = {
                     kh.MaKH, kh.TenKH,
                     nv.MaNV, nv.TenNV
                 FROM TaiKhoan tk
-                LEFT JOIN khachhang kh ON tk.MaTK = kh.MaTK
+                LEFT JOIN KhachHang kh ON tk.MaTK = kh.MaTK
                 LEFT JOIN NhanVien nv ON tk.MaTK = nv.MaTK
                 WHERE tk.TenDN = ?
             `;
