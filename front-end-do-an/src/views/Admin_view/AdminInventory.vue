@@ -887,11 +887,12 @@
   const minprice = ref(null); // Giá từ
   const maxprice = ref(null); // Giá đến
   const sortBy = ref('newest'); // Sắp xếp mặc định
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const fetchBrands = async () => {
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch('http://localhost:3000/api/product_admin/get_brand',{
+      const response = await fetch('${API_BASE_URL}/api/product_admin/get_brand',{
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -946,7 +947,7 @@
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch('http://localhost:3000/api/product_admin/getvariant',
+      const response = await fetch('${API_BASE_URL}/api/product_admin/getvariant',
         {
           headers: {'Authorization': `Bearer ${token}`}
         }
@@ -965,7 +966,7 @@
     }
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${MaDM}`,
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${MaDM}`,
         {
           headers: {'Authorization': `Bearer ${token}`}
         }
@@ -986,7 +987,7 @@
     isLoading.value = true;
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      let url = `http://localhost:3000/api/product_admin?page=${currentPage.value}&limit=${limit}`;
+      let url = `${API_BASE_URL}/api/product_admin?page=${currentPage.value}&limit=${limit}`;
       if (activeFilter.value !== 'all') url += `&hsx=${activeFilter.value}`;
       if (stockFilter.value !== 'all') url += `&TinhTrangTonKho=${stockFilter.value}`;
       if (saleTypeFilter.value !== 'all') url += `&LoaiHinhBan=${saleTypeFilter.value}`;
@@ -1155,7 +1156,7 @@
     // 3. Gọi API lấy danh mục con dựa vào MaDM (Dùng chuẩn Params /:MaDM đã sửa trước đó)
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`,{
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${newMaDM}`,{
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}` 
@@ -1236,7 +1237,7 @@
       // 3. Gửi xuống Backend
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/product_admin/add_product', {
+        const response = await fetch('${API_BASE_URL}/api/product_admin/add_product', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}` 
@@ -1310,7 +1311,7 @@
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/watch/${product.id}`,
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/watch/${product.id}`,
         {
           method: 'GET',
           headers: {'Authorization': `Bearer ${token}`}
@@ -1381,7 +1382,7 @@
     }
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`,{
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${newMaDM}`,{
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}` 
@@ -1500,7 +1501,7 @@
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/fix_info/${editingProduct.value.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/fix_info/${editingProduct.value.id}`, {
         method: 'PUT',
         headers: {'Authorization': `Bearer ${token}`},
         body: formData
@@ -1532,7 +1533,7 @@
 
       // Gọi API cập nhật nhanh trạng thái
       // (Lưu ý: Đảm bảo Backend của bạn có route PUT /toggle_visibility/:id)
-      const response = await fetch(`http://localhost:3000/api/product_admin/toggle_visibility/${product.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/toggle_visibility/${product.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1592,7 +1593,7 @@
       const token = localStorage.getItem('token');
       
       // Chú ý: Đảm bảo đường dẫn này khớp với route Backend của bạn
-      const url = 'http://localhost:3000/api/product_admin/export-excel';
+      const url = '${API_BASE_URL}/api/product_admin/export-excel';
 
       const response = await fetch(url, {
         method: 'GET',

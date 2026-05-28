@@ -30,7 +30,7 @@
             class="group rounded-2xl overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col h-[550px] bg-surface-container-low"
           >
             <div class="relative flex-1 overflow-hidden bg-surface-container-lowest cursor-pointer" @click="router.push(`/product/${item.MaMoHinh}`)">
-              <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
+              <img :src="'${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
               
               <div class="absolute top-6 left-6">
                 <span :class="`px-4 py-1.5 backdrop-blur-md text-[10px] font-bold rounded-full border uppercase tracking-widest ${getTagClass(item.LoaiHinhBan)}`">
@@ -104,6 +104,7 @@
   const router = useRouter();
   const authStore = useAuthStore();
   const toastStore = useToastStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -125,7 +126,7 @@
 
       try {
         isLoading.value = true;
-        const response = await fetch(`http://localhost:3000/api/products/list_favorite/${userObj.MaKH}`, {
+        const response = await fetch(`${API_BASE_URL}/api/products/list_favorite/${userObj.MaKH}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -159,7 +160,7 @@
           MaMoHinh: maMoHinh
       };
 
-      const response = await fetch('http://localhost:3000/api/products/add_remove_favorite', {
+      const response = await fetch('${API_BASE_URL}/api/products/add_remove_favorite', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',

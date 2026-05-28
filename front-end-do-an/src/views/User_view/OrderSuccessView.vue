@@ -119,6 +119,7 @@ import { useAuthStore } from '../../stores/auth';
 
 const router = useRouter();
 const route = useRoute(); // Lấy biến từ URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const orderInfo = ref({});
 const orderItems = ref([]);
@@ -161,7 +162,7 @@ const fetchOrderdata = async () => {
 
   try {
     // Gọi API quen thuộc mà bạn đã viết cực xịn ở trang Chi Tiết Đơn Hàng
-    const response = await fetch(`http://localhost:3000/api/don_hang/watch_detail_order/${maDH}`, {
+    const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`

@@ -41,7 +41,7 @@
                   </div>
                   <img 
                       v-if="order.Thumbnail" 
-                      :src="'http://localhost:3000/Images_product/' + order.Thumbnail" 
+                      :src="'${API_BASE_URL}/Images_product/' + order.Thumbnail" 
                       alt="Product" 
                       class="w-full h-full object-contain"
                   />
@@ -178,6 +178,7 @@
   const router = useRouter();
   const authStore = useAuthStore();
   const toastStore = useToastStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const activeTab = ref('Tất cả');
 
@@ -205,7 +206,7 @@
     if (!selectedOrder.value) return;
 
     try {
-      const response = await fetch('http://localhost:3000/api/payment/momo/create', {
+      const response = await fetch('${API_BASE_URL}/api/payment/momo/create', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -272,7 +273,7 @@
       queryParams.append('trangthai', activeTab.value);
     }
     try {
-      const response = await fetch(`http://localhost:3000/api/don_hang/watch_order?${queryParams}`, {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_order?${queryParams}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -167,6 +167,7 @@
 
   const route = useRoute();
   const router = useRouter();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const heroNews = ref({});         // Khu vực 1: Bài to nhất trên cùng
   const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
@@ -207,7 +208,7 @@
   const fetchNewsData = async () => {
     isLoading.value = true;
     try {
-      const response = await fetch('http://localhost:3000/api/news');
+      const response = await fetch('${API_BASE_URL}/api/news');
       const data = await response.json();
       
       if (response.ok) {

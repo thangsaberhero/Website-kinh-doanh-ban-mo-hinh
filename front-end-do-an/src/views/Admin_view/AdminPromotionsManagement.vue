@@ -584,6 +584,7 @@
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
   const isLoading = ref(true);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const currentTypeTab = ref('promotion'); 
   const activeStatusFilter = ref('all'); 
@@ -679,7 +680,7 @@
       else if (activeStatusFilter.value === 'expired') trangthaiParam = 'HetHan';
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/khuyen_mai_admin?page=${currentPage.value}&limit=10&trangthai=${trangthaiParam}&keyword=${searchQuery.value}`, {
+      const response = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin?page=${currentPage.value}&limit=10&trangthai=${trangthaiParam}&keyword=${searchQuery.value}`, {
         headers: { 
           'Authorization': `Bearer ${token}` 
         }
@@ -736,7 +737,7 @@
       else if (activeStatusFilter.value === 'expired') trangthaiParam = 'HetHan';
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/khuyen_mai_admin/vouchers/list?page=${currentPage.value}&limit=10&trangthai=${trangthaiParam}&keyword=${searchQuery.value}`, {
+      const response = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/vouchers/list?page=${currentPage.value}&limit=10&trangthai=${trangthaiParam}&keyword=${searchQuery.value}`, {
         headers: { 
           'Authorization': `Bearer ${token}` 
         }
@@ -790,7 +791,7 @@
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/khuyen_mai_admin/dashboard/stats', {
+      const res = await fetch('${API_BASE_URL}/api/khuyen_mai_admin/dashboard/stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -834,7 +835,7 @@
 
   const fetchSecurityLogs = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/khuyen_mai_admin/logs/recent', {
+      const res = await fetch('${API_BASE_URL}/api/khuyen_mai_admin/logs/recent', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const result = await res.json();
@@ -847,7 +848,7 @@
 
   const fetchAllLogs = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/khuyen_mai_admin/logs/all?page=${allLogsPagination.value.currentPage}`, {
+      const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/logs/all?page=${allLogsPagination.value.currentPage}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const result = await res.json();
@@ -953,7 +954,7 @@
               return;
           }
 
-          url = 'http://localhost:3000/api/khuyen_mai_admin/vouchers/create';
+          url = '${API_BASE_URL}/api/khuyen_mai_admin/vouchers/create';
           payload = {
             TenMaGiamGia: voucherForm.value.TenMaGiamGia,
             MaVoucher: voucherForm.value.MaVoucher.toUpperCase(),
@@ -1062,7 +1063,7 @@
           if (!editingPromo.value.TenMaGiamGia || !editingPromo.value.ThoiGianBD || !editingPromo.value.ThoiGianKT) {
             toastStore.showToast("Vui lòng điền đủ thông tin (*)", "error"); return;
           }
-          url = `http://localhost:3000/api/khuyen_mai_admin/vouchers/update/${editingPromo.value.id}`;
+          url = `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/update/${editingPromo.value.id}`;
           payload = {
             TenMaGiamGia: editingPromo.value.TenMaGiamGia,
             MaVoucher: editingPromo.value.MaVoucher, 
@@ -1123,8 +1124,8 @@
     if (!itemToDelete.value) return;
     const token = localStorage.getItem('token');
     const url = currentTypeTab.value === 'promotion' 
-                ? `http://localhost:3000/api/khuyen_mai_admin/${itemToDelete.value.id}` 
-                : `http://localhost:3000/api/khuyen_mai_admin/vouchers/delete/${itemToDelete.value.id}`;
+                ? `${API_BASE_URL}/api/khuyen_mai_admin/${itemToDelete.value.id}` 
+                : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/delete/${itemToDelete.value.id}`;
 
     try {
       const res = await fetch(url, {

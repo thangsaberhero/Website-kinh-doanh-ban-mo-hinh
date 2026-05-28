@@ -162,6 +162,7 @@
   const isLoading = ref(false);
   const existingCategories = ref(['Review', 'Tin tức', 'Mẹo vặt']);
   const showCategoryDropdown = ref(false);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   const postData = ref({
     title: '',
@@ -194,7 +195,7 @@
             const formData = new FormData();
             formData.append('image', blobInfo.blob(), blobInfo.filename());
     
-            const response = await fetch('http://localhost:3000/api/upload', {
+            const response = await fetch('${API_BASE_URL}/api/upload', {
                 method: 'POST',
                 headers: {'Authorization': `Bearer ${token}`},
                 body: formData
@@ -217,7 +218,7 @@
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token'); 
-      const response = await fetch('http://localhost:3000/api/news',{
+      const response = await fetch('${API_BASE_URL}/api/news',{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const data = await response.json();
@@ -234,7 +235,7 @@
     isLoading.value = true;
     try{
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/news/${postId}`,{
+        const response = await fetch(`${API_BASE_URL}/api/news/${postId}`,{
           headers: {'Authorization': `Bearer ${token}`}
         });
         const result = await response.json();

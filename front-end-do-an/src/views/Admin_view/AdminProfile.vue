@@ -144,6 +144,7 @@
   
   const isSaving = ref(false);
   const isAvatarRemoved = ref(false);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   // Lấy thông tin từ Storage
   const userString = localStorage.getItem('user');
@@ -156,6 +157,7 @@
   const defaultAvatar = `https://ui-avatars.com/api/?name=${displayName}&background=ff8f73&color=fff&bold=true&size=150`;
   const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
   const ngayTaoFromDB = ref(null);
+
   
   // Khởi tạo Form
   const form = reactive({
@@ -178,7 +180,7 @@
     if (!currentUser) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/admin_info/laythongtin`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin_info/laythongtin`, {
         headers: {'Authorization': `Bearer ${token}`}
       });
       const dataJSON = await res.json();
@@ -254,7 +256,7 @@
         formData.append('avatar', selectedFile.value); 
       }
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/admin_info/change_info', {
+      const response = await fetch('${API_BASE_URL}/api/admin_info/change_info', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData 

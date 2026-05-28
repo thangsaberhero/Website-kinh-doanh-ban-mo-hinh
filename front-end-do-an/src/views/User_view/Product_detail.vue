@@ -21,7 +21,7 @@
               </span>
             </div>
 
-            <img :src="`http://localhost:3000/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-cover transform transition-transform duration-700 drop-shadow-2xl"/>
+            <img :src="`${API_BASE_URL}/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-cover transform transition-transform duration-700 drop-shadow-2xl"/>
 
             <div v-show="isZooming"
               class="absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
@@ -31,7 +31,7 @@
                 left: `${zoomPosition.x}%`, /* Chạy theo tọa độ X của chuột */
                 top: `${zoomPosition.y}%`,  /* Chạy theo tọa độ Y của chuột */
                 transform: 'translate(-50%, -50%)', /* Căn giữa khung lúp vào con chuột */
-                backgroundImage: `url(http://localhost:3000/Images_product/${mainImage})`,
+                backgroundImage: `url(${API_BASE_URL}/Images_product/${mainImage})`,
                 backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                 backgroundSize: '400%'
               }"
@@ -58,7 +58,7 @@
               :class="mainImage === anh ? 'border-2 border-primary shadow-[0_0_15px_rgba(255,61,0,0.4)] scale-100' : 'border border-outline-variant/30 hover:border-primary/50 opacity-60 hover:opacity-100 scale-95'"
               style="width: calc((100% - 4rem) / 5);"
             >
-              <img :src="`http://localhost:3000/Images_product/${anh}`" class="w-full h-full object-cover"/>
+              <img :src="`${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-cover"/>
             </button>
           </transition-group>
         </div>
@@ -321,7 +321,7 @@
               <div class="flex justify-between items-start mb-4">
                 <div class="flex gap-4">
                   <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-white/10 flex items-center justify-center font-headline font-bold text-white">
-                    <img v-if="review.AnhDaiDien" :src="'http://localhost:3000/Images_user/' + review.AnhDaiDien" class="w-full h-full object-cover">
+                    <img v-if="review.AnhDaiDien" :src="'${API_BASE_URL}/Images_user/' + review.AnhDaiDien" class="w-full h-full object-cover">
                     <span v-else class="material-symbols-outlined text-primary text-xl">person</span>
                   </div>
                   <div>
@@ -346,7 +346,7 @@
 
               <div v-if="review.HinhAnh && review.HinhAnh.length > 0" class="flex flex-wrap gap-3 pl-16 mb-5">
                 <div v-for="(img, idx) in review.HinhAnh" :key="idx" class="w-24 h-24 rounded-xl overflow-hidden border border-white/10 hover:border-primary transition-all cursor-zoom-in group/img relative">
-                  <img :src="'http://localhost:3000/Images_review/' + img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
+                  <img :src="'${API_BASE_URL}/Images_review/' + img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
                 </div>
               </div>
 
@@ -390,7 +390,7 @@
         <button class="absolute top-6 right-6 text-white/50 hover:text-primary transition-colors">
           <span class="material-symbols-outlined text-4xl">close</span>
         </button>
-        <img :src="'http://localhost:3000/Images_review/' + zoomedImage"
+        <img :src="'${API_BASE_URL}/Images_review/' + zoomedImage"
             class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] transform scale-100 animate-[zoomIn_0.2s_ease-out]"
             @click.stop />
       </div>
@@ -442,7 +442,7 @@
     <div class="relative w-[90vw] h-[80vh] overflow-hidden">
       <Transition :name="slideDirection">
         <img :key="currentIndex"
-            :src="`http://localhost:3000/Images_product/${allImages[currentIndex]}`"
+            :src="`${API_BASE_URL}/Images_product/${allImages[currentIndex]}`"
             class="absolute inset-0 m-auto max-w-full max-h-[80vh] object-contain shadow-2xl" />
       </Transition>
     </div>
@@ -457,7 +457,7 @@
           @click="currentIndex = idx"
           :class="['w-16 h-16 rounded-lg overflow-hidden cursor-pointer transition-all border-2 shrink-0',
                     currentIndex === idx ? 'border-primary scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100']">
-        <img :src="`http://localhost:3000/Images_product/${anh}`" class="w-full h-full object-cover" />
+        <img :src="`${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-cover" />
       </div>
     </div>
   </div>
@@ -473,6 +473,7 @@
   const route = useRoute();
   const router = useRouter();
   const toastStore = useToastStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const product = ref(null);
   const allImages = ref([]);
@@ -613,7 +614,7 @@
   const fetchProductDetails = async (id) => {
     try {
       // Gọi 1 API duy nhất
-      const res = await fetch(`http://localhost:3000/api/products/${id}`);
+      const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
       const dataJSON = await res.json();
       if (res.ok) {
         product.value = dataJSON.data; // Không cần [0] nữa vì Backend đã lấy ra object chuẩn
@@ -647,7 +648,7 @@
 
     if (token) {
         try {
-            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${id}`, {
+            const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const favData = await resFav.json();
@@ -662,7 +663,7 @@
 
   const fetchRelatedProducts = async (spId) => {
     try{
-      const res = await fetch(`http://localhost:3000/api/products/related/${spId}`);
+      const res = await fetch(`${API_BASE_URL}/api/products/related/${spId}`);
       const data = await res.json();
       if(res.ok){
         relatedProducts.value = data.data;
@@ -698,7 +699,7 @@
 
   const fetchReviews = async (maMH) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/reviews/product/${maMH}`);
+      const res = await fetch(`${API_BASE_URL}/api/reviews/product/${maMH}`);
       const data = await res.json();
       if (res.ok) {
         reviews.value = data.data;
@@ -715,7 +716,7 @@
 
     const userObj = JSON.parse(userString);
     try {
-      const res = await fetch(`http://localhost:3000/api/reviews/check-purchase-status?&MaMoHinh=${maMH}`, {
+      const res = await fetch(`${API_BASE_URL}/api/reviews/check-purchase-status?&MaMoHinh=${maMH}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -762,7 +763,7 @@
           formData.append('images', file);
         });
 
-        const uploadRes = await fetch('http://localhost:3000/api/reviews/upload', {
+        const uploadRes = await fetch('${API_BASE_URL}/api/reviews/upload', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -784,7 +785,7 @@
         HinhAnh: uploadedImageNames
       };
 
-      const res = await fetch(`http://localhost:3000/api/reviews/create`, {
+      const res = await fetch(`${API_BASE_URL}/api/reviews/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -877,7 +878,7 @@
               MaMoHinh: product.value.MaMoHinh
           };
 
-          const response = await fetch('http://localhost:3000/api/products/add_remove_favorite', {
+          const response = await fetch('${API_BASE_URL}/api/products/add_remove_favorite', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -924,7 +925,7 @@
         soluong: buyQuantity.value
       };
 
-      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -956,7 +957,7 @@
 
     // 1. Tải thông tin sản phẩm và ảnh
     try {
-      const res = await fetch(`http://localhost:3000/api/products/${spId}`);
+      const res = await fetch(`${API_BASE_URL}/api/products/${spId}`);
       const dataJSON = await res.json();
 
       if (res.ok) {
@@ -980,7 +981,7 @@
 
     // 2. Tải danh sách phân loại (Variant)
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${spId}`);
+      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${spId}`);
       const varJSON = await resVar.json();
 
       if (resVar.ok) {
@@ -1001,7 +1002,7 @@
         try {
             const userObj = JSON.parse(userString);
             // Giả sử Backend có API GET /api/favorite/check/:maKH/:maMH để kiểm tra
-            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${userObj.MaKH}/${spId}`, {
+            const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${userObj.MaKH}/${spId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const favData = await resFav.json();
@@ -1028,7 +1029,7 @@
       console.log("Đang gọi API cho Serial:", serial); // Kiểm tra log ở F12
       try {
           // Hãy chắc chắn port 3000 là port Backend của bạn
-          const res = await axios.get(`http://localhost:3000/api/blockchain/generate-qr/${serial}`);
+          const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${serial}`);
 
           if (res.data.success) {
               qrCodeImg.value = res.data.qrCodeData;
@@ -1046,7 +1047,7 @@
       if (!serial) return; // Nếu không có serial thì bỏ qua
 
       try {
-          const res = await axios.get(`http://localhost:3000/api/blockchain/generate-qr/${serial}`);
+          const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${serial}`);
           if (res.data.success) {
               qrCodeImg.value = res.data.qrCodeData;
           }
@@ -1078,7 +1079,7 @@ const handleShowQR = async () => {
   // Nếu chưa có ảnh QR trong bộ nhớ thì mới gọi API
   if (!qrCodeImg.value && product.value?.MaVach_Serial) {
     try {
-      const res = await axios.get(`http://localhost:3000/api/blockchain/generate-qr/${product.value.MaVach_Serial}`);
+      const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${product.value.MaVach_Serial}`);
       if (res.data.success) {
         qrCodeImg.value = res.data.qrCodeData;
       }
@@ -1099,7 +1100,7 @@ const handleShowQR = async () => {
 
     // 1. Tải thông tin sản phẩm và ảnh
     try {
-      const res = await fetch(`http://localhost:3000/api/products/${spId}`);
+      const res = await fetch(`${API_BASE_URL}/api/products/${spId}`);
       const dataJSON = await res.json();
 
       if (res.ok) {
@@ -1137,7 +1138,7 @@ const handleShowQR = async () => {
 
     // 2. Tải danh sách phân loại (Variant)
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${spId}`);
+      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${spId}`);
       const varJSON = await resVar.json();
 
       if (resVar.ok) {
@@ -1160,7 +1161,7 @@ const handleShowQR = async () => {
 
     if (token) {
         try {
-            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${spId}`, {
+            const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${spId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (resFav.ok) {

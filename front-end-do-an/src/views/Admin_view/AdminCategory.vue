@@ -286,12 +286,13 @@
   const currentPage = ref(1);
   const itemsPerPage = ref(10); 
   const totalPages = ref(1);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   // --- 2. HÀM GỌI API LẤY DANH SÁCH ---
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      let url = `http://localhost:3000/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      let url = `${API_BASE_URL}/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
       const response = await fetch(url,
         {headers: {'Authorization': `Bearer ${token}`}}
@@ -387,11 +388,11 @@
     };
 
     try {
-      let url = 'http://localhost:3000/api/product_admin/add_variant'; 
+      let url = '${API_BASE_URL}/api/product_admin/add_variant'; 
       let method = 'POST';
 
       if (isEditMode.value) {
-        url = `http://localhost:3000/api/product_admin/fix_cate/${editingId.value}`;
+        url = `${API_BASE_URL}/api/product_admin/fix_cate/${editingId.value}`;
         method = 'PUT';
       }
 
@@ -432,7 +433,7 @@
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/delete_detail/${itemToDelete.value.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_detail/${itemToDelete.value.id}`, {
         method: 'DELETE',
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -480,7 +481,7 @@
     if (confirm(`Bạn có chắc chắn muốn xóa phân loại "${detailItem.name}" không?`)) {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/product_admin/delete_detail_variant/${detailItem.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_detail_variant/${detailItem.id}`, {
           method: 'DELETE',
           headers: {'Authorization': `Bearer ${token}`}
         });

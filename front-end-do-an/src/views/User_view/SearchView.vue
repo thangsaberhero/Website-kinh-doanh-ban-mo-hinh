@@ -188,6 +188,7 @@
   const route = useRoute();
   const authStore = useAuthStore();
   const toastStore = useToastStore(); 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   // --- 1. BIẾN QUẢN LÝ DỮ LIỆU & PHÂN TRANG ---
   const searchQuery = ref(route.query.q || '');
@@ -213,14 +214,14 @@
   // --- 3. HÀM TẢI DỮ LIỆU TỪ API ---
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/products/danhmuc');
+      const res = await fetch('${API_BASE_URL}/api/products/danhmuc');
       const dataJSON = await res.json();
       if (res.ok) {
         const mainCats = dataJSON.data || dataJSON;
         
         for (let cat of mainCats) {
           try {
-            const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
+            const subRes = await fetch(`${API_BASE_URL}/api/products/danhmuc/${cat.MaDM}/chitiet`);
             const subJSON = await subRes.json();
             if (subRes.ok) {
               cat.subCategories = subJSON.data || subJSON;
@@ -238,7 +239,7 @@
 
   const fetchBrand = async () => {
     try{
-      const res = await fetch('http://localhost:3000/api/products/hsx');
+      const res = await fetch('${API_BASE_URL}/api/products/hsx');
       const dataJSON = await res.json();
       if(res.ok){
         availableBrands.value = dataJSON.data || dataJSON;
@@ -252,7 +253,7 @@
   const fetchProducts = async () => {
     isSearching.value = true;
     try {
-      let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
+      let url = `${API_BASE_URL}/api/products?page=${currentPage.value}&limit=${limit.value}`;
 
       if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
       if (selectedCategories.value.length > 0) url += `&danhmuc=${selectedCategories.value.join(',')}`;
@@ -334,7 +335,7 @@
     }
 
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${product.MaMoHinh}`);
+      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${product.MaMoHinh}`);
       const varJSON = await resVar.json();
       
       let maPhanLoai = null;
@@ -346,7 +347,7 @@
       }
 
       const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
-      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload) 

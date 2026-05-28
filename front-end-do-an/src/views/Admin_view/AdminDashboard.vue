@@ -540,6 +540,7 @@
   const selectedOrder = ref(null); 
   const updateStatusValue = ref(''); 
   const cancelReasonValue = ref(''); 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const formatPrice = (value) => {
     if (!value) return '0 đ';
@@ -549,7 +550,7 @@
   const fetchOrderDetail = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/invoice_admin/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
@@ -591,7 +592,7 @@
   const submitUpdateStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/invoice_admin/update', {
+      const response = await fetch('${API_BASE_URL}/api/invoice_admin/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -626,7 +627,7 @@
     }
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/invoice_admin/huy', {
+      const response = await fetch('${API_BASE_URL}/api/invoice_admin/huy', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -746,7 +747,7 @@
       }
 
       // 1. DỮ LIỆU SẢN PHẨM, THƯƠNG HIỆU & DANH MỤC
-      const resSanPham = await fetch(`http://localhost:3000/api/thongke/sanpham${query}`);
+      const resSanPham = await fetch(`${API_BASE_URL}/api/thongke/sanpham${query}`);
       const dataSanPham = await resSanPham.json();
       if (dataSanPham.success && dataSanPham.data) {
         // Cập nhật Top Mô hình
@@ -766,7 +767,7 @@
       }
 
       // 2. DỮ LIỆU THẺ KPI TỔNG QUAN (DOANH THU & ĐƠN HÀNG & LỢI NHUẬN)
-      const resDoanhThu = await fetch(`http://localhost:3000/api/thongke/doanhthu${query}`,{
+      const resDoanhThu = await fetch(`${API_BASE_URL}/api/thongke/doanhthu${query}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const dataDoanhThu = await resDoanhThu.json();
@@ -791,7 +792,7 @@
       }
 
       // 3. KHÁCH HÀNG MỚI
-      const resKhachHang = await fetch(`http://localhost:3000/api/thongke/khachhang${query}`,{
+      const resKhachHang = await fetch(`${API_BASE_URL}/api/thongke/khachhang${query}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const dataKhachHang = await resKhachHang.json();
@@ -801,7 +802,7 @@
       }
 
       // 4. TRẠNG THÁI ĐƠN HÀNG
-      const resDonHang = await fetch(`http://localhost:3000/api/thongke/donhang${query}`,{
+      const resDonHang = await fetch(`${API_BASE_URL}/api/thongke/donhang${query}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const dataDonHang = await resDonHang.json();
@@ -824,7 +825,7 @@
       }
 
       // 5. BIỂU ĐỒ XU HƯỚNG DOANH THU (API ĐƯỜNG MỚI VIẾT)
-      const resBieuDo = await fetch(`http://localhost:3000/api/thongke/bieudo${query}`,{
+      const resBieuDo = await fetch(`${API_BASE_URL}/api/thongke/bieudo${query}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const dataBieuDo = await resBieuDo.json();
@@ -834,7 +835,7 @@
       }
 
       // 6. DỮ LIỆU MÃ GIẢM GIÁ KHUYẾN MÃI
-      const resKhuyenMai = await fetch(`http://localhost:3000/api/thongke/khuyenmai${query}`,{
+      const resKhuyenMai = await fetch(`${API_BASE_URL}/api/thongke/khuyenmai${query}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const dataKhuyenMai = await resKhuyenMai.json();
@@ -855,7 +856,7 @@
   const fetchRecentOrders = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/invoice_admin/?page=1&limit=10', {
+      const response = await fetch('${API_BASE_URL}/api/invoice_admin/?page=1&limit=10', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 401 || response.status === 403) {
@@ -932,7 +933,7 @@
         query = `?NgayBatDau=${start}&NgayKetThuc=${end}`;
       }
 
-      const response = await fetch(`http://localhost:3000/api/thongke/xuatExcelDoanhThu${query}`, {
+      const response = await fetch(`${API_BASE_URL}/api/thongke/xuatExcelDoanhThu${query}`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1037,7 +1038,7 @@
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/invoice_admin/huy', {
+      const response = await fetch('${API_BASE_URL}/api/invoice_admin/huy', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

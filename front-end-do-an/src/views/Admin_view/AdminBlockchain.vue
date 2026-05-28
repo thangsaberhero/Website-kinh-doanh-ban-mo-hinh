@@ -274,6 +274,7 @@ import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 export default {
   name: "AdminBlockchain",
   components: {
@@ -416,7 +417,7 @@ export default {
 
     async fetchMohinhFromDB() {
       try {
-        const response = await axios.get("http://localhost:3000/api/blockchain/get-serials");
+        const response = await axios.get(`${API_BASE_URL}/api/blockchain/get-serials`);
         if (response.data && response.data.success) {
           this.mohinhList = response.data.data || response.data;
 
@@ -444,7 +445,7 @@ export default {
       let verifiedManufacturer = "Đang cập nhật...";
 
       try {
-        const response = await axios.get(`http://localhost:3000/api/blockchain/history/${product.MaVach_Serial}`);
+        const response = await axios.get(`${API_BASE_URL}/api/blockchain/history/${product.MaVach_Serial}`);
         if (response.data && response.data.success) {
           const chainData = response.data.data || response.data;
           verifiedManufacturer = chainData.manufacturer || chainData.nhaSanXuat || product.TenHSX || "Good Smile Company";
@@ -647,7 +648,7 @@ export default {
         return;
       }
       try {
-        const response = await axios.post('http://localhost:3000/api/blockchain/mint', {
+        const response = await axios.post(`${API_BASE_URL}/api/blockchain/mint`, {
           serialNumber: this.mintForm.serialNumber,
           manufacturer: this.mintForm.manufacturer
         });
@@ -666,7 +667,7 @@ export default {
         return;
       }
       try {
-        const response = await axios.post('http://localhost:3000/api/blockchain/update', {
+        const response = await axios.post('${API_BASE_URL}/api/blockchain/update', {
           serialNumber: this.updateForm.serialNumber,
           newStatus: this.updateForm.newStatus,
           location: this.updateForm.location

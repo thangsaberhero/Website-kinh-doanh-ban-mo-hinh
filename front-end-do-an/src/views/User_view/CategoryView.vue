@@ -223,6 +223,7 @@
   const limit = ref(9);
   const totalPages = ref(1);
   const totalItems = ref(0);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -313,7 +314,7 @@
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/products/danhmuc');
+      const res = await fetch('${API_BASE_URL}/api/products/danhmuc');
       const dataJSON = await res.json();
       
       if (res.ok) {
@@ -321,7 +322,7 @@
         
         for (let cat of mainCats) {
           try {
-            const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
+            const subRes = await fetch(`${API_BASE_URL}/api/products/danhmuc/${cat.MaDM}/chitiet`);
             const subJSON = await subRes.json();
             if (subRes.ok) {
               cat.subCategories = subJSON.data || subJSON; // Gắn đàn con vào mảng cha
@@ -339,7 +340,7 @@
 
   const fetchBrand = async () => {
     try{
-      const res = await fetch('http://localhost:3000/api/products/hsx');
+      const res = await fetch('${API_BASE_URL}/api/products/hsx');
       const dataJSON = await res.json();
       if(res.ok){
         availableBrands.value = dataJSON.data || dataJSON;
@@ -359,7 +360,7 @@
   // Có thể lấy theo Cha hoặc theo Con
   const fetchProducts = async () => {
     try {
-      let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
+      let url = `${API_BASE_URL}/api/products?page=${currentPage.value}&limit=${limit.value}`;
       if(categoryId.value)
         url += `&danhmuc=${categoryId.value}`;
       if(subCategoryId.value)
@@ -372,14 +373,14 @@
         url += `&gia=${maxPrice.value}`
       }
       
-      // let apiUrl = 'http://localhost:3000/api/products'; // Mặc định lấy tất cả
+      // let apiUrl = '${API_BASE_URL}/api/products'; // Mặc định lấy tất cả
 
       // if (maCTDM) {
       //   // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
-      //   apiUrl = `http://localhost:3000/api/products/chitietdm/${maCTDM}/products`;
+      //   apiUrl = `${API_BASE_URL}/api/products/chitietdm/${maCTDM}/products`;
       // } else if (maDM) {
       //   // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
-      //   apiUrl = `http://localhost:3000/api/products/danhmuc/${maDM}/products`;
+      //   apiUrl = `${API_BASE_URL}/api/products/danhmuc/${maDM}/products`;
       // }
         
       const response = await fetch(url);
@@ -434,7 +435,7 @@
     }
 
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${product.MaMoHinh}`);
+      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${product.MaMoHinh}`);
       const varJSON = await resVar.json();
       
       let maPhanLoai = null;
@@ -446,7 +447,7 @@
       }
 
       const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
-      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload) 

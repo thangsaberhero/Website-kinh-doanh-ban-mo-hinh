@@ -572,6 +572,7 @@
   const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalOrders.value));
 
   const isExporting = ref(false);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const exportExcelReport = async () => {
     isExporting.value = true;
@@ -579,7 +580,7 @@ const exportExcelReport = async () => {
       const token = localStorage.getItem('token');
       
       // Khởi tạo URL cơ bản
-      let url = 'http://localhost:3000/api/invoice_admin/export-excel';
+      let url = '${API_BASE_URL}/api/invoice_admin/export-excel';
 
       // Gắn thêm bộ lọc ngày tháng và tìm kiếm nếu Admin đang thao tác trên màn hình
       const params = new URLSearchParams();
@@ -777,7 +778,7 @@ const exportExcelReport = async () => {
       else if (activeTab.value === 'returned') statusParam = 6; 
 
       // Xây dựng URL với các tham số Tối ưu
-      let url = `http://localhost:3000/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      let url = `${API_BASE_URL}/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       
       if (statusParam) url += `&trangthai=${statusParam}`;
       if (searchQuery.value) url += `&timkiem=${encodeURIComponent(searchQuery.value)}`; 
@@ -859,7 +860,7 @@ const exportExcelReport = async () => {
     try {
       const token = localStorage.getItem('token');
       console.log("Đang gọi API lấy chi tiết mã đơn:", order.id); // Log ra để kiểm tra
-      const response = await fetch(`http://localhost:3000/api/invoice_admin/${order.id}`,{
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/${order.id}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const result = await response.json();
@@ -908,7 +909,7 @@ const exportExcelReport = async () => {
   const updateOrderStatus = async (orderId) => {
     try {
       const token = localStorage.getItem('token'); 
-      const res = await fetch(`http://localhost:3000/api/invoice_admin/update`, {
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
@@ -930,7 +931,7 @@ const exportExcelReport = async () => {
     if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này và hoàn lại tồn kho không?")) {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3000/api/invoice_admin/huy`, {
+        const res = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -991,7 +992,7 @@ const exportExcelReport = async () => {
     try {
       const token = localStorage.getItem('token');
       // CHÚ Ý: Đổi đường dẫn API này theo đúng route Backend của bạn
-      const res = await fetch('http://localhost:3000/api/invoice_admin/create-external', {
+      const res = await fetch('${API_BASE_URL}/api/invoice_admin/create-external', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

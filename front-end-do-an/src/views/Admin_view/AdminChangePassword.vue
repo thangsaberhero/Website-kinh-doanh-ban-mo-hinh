@@ -136,6 +136,7 @@
   
   const isSaving = ref(false);
   const errorText = ref('');
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   const form = reactive({
     oldPassword: '',
@@ -177,7 +178,7 @@
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/admin_info/change_password', {
+      const response = await fetch('${API_BASE_URL/api/admin_info/change_password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -241,6 +241,7 @@
   const itemToDelete = ref(null);
 
   const sortBy = ref('default');
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const cartSummary = ref({
     subtotal: 0,
@@ -261,7 +262,7 @@
       }).toString();
 
     try {
-      const response = await fetch(`http://localhost:3000/api/don_hang/watch/?${queryParams}`, {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/watch/?${queryParams}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -291,7 +292,7 @@
   const fetchSuggestions = async () => {
     try {
       const itemIds = cartItems.value.map(item => item.MaMoHinh);
-      const response = await fetch('http://localhost:3000/api/products/cart-suggestions', {
+      const response = await fetch('${API_BASE_URL}/api/products/cart-suggestions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -336,7 +337,7 @@
     }
 
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${productInfo.MaMoHinh}`,
+      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${productInfo.MaMoHinh}`,
         {
           headers: {'Authorization': `Bearer ${token}`}
         }
@@ -352,7 +353,7 @@
       }
 
       const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
-      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload) 
@@ -391,7 +392,7 @@
 
     try {
       const payload = { MaKH: parseInt(maKH) };
-      const response = await fetch('http://localhost:3000/api/don_hang/deleteAll', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/deleteAll', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -457,7 +458,7 @@
         soluong: item.SoLuong        // Gửi con số MỚI NHẤT xuống Database
       };
 
-      const response = await fetch('http://localhost:3000/api/don_hang/update', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/update', {
         method: 'POST', // Chú ý kiểm tra lại xem Backend của bạn dùng POST hay PUT cho link này nhé
         headers: {
           'Content-Type': 'application/json',
@@ -515,7 +516,7 @@
         soluong: item.SoLuong        
       };
 
-      const response = await fetch('http://localhost:3000/api/don_hang/update', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/update', {
         method: 'POST', 
         headers: {
           'Content-Type': 'application/json',
@@ -555,7 +556,7 @@
         MaPhanLoai: maPL, 
       };
 
-      const response = await fetch('http://localhost:3000/api/don_hang/delete', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/delete', {
         method: 'POST', // Đảm bảo Backend của bạn dùng app.post('/delete', ...)
         headers: {
           'Content-Type': 'application/json',

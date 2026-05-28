@@ -446,6 +446,7 @@
   const router = useRouter();
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const activeSubTab = ref('products');
   const isLoading = ref(true);
@@ -515,7 +516,7 @@
         params.append('maGG', promoId);
       }
 
-      const res = await fetch(`http://localhost:3000/api/khuyen_mai_admin/search/products?${params}`, {
+      const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/search/products?${params}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const result = await res.json();
@@ -583,8 +584,8 @@
     isLoading.value = true;
     try {
       const endpoint = promoType.value === 'campaign'
-        ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`
-        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`;
+        ? `${API_BASE_URL}/api/khuyen_mai_admin/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`
+        : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`;
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
@@ -633,8 +634,8 @@
     const product = productToDelete.value;
     try {
       const endpoint = promoType.value === 'campaign'
-        ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}/products/${product.MaPhanLoai}`
-        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}/products/${product.MaPhanLoai}`;
+        ? `${API_BASE_URL}/api/khuyen_mai_admin/${promoId}/products/${product.MaPhanLoai}`
+        : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/${promoId}/products/${product.MaPhanLoai}`;
       const res = await fetch(endpoint, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -701,8 +702,8 @@
     }
     try {
       const endpoint = promoType.value === 'campaign'
-        ? `http://localhost:3000/api/khuyen_mai_admin/${promoId}/products`
-        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/${promoId}/products`;
+        ? `${API_BASE_URL}/api/khuyen_mai_admin/${promoId}/products`
+        : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/${promoId}/products`;
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -750,8 +751,8 @@
     isExporting.value = true;
     try {
       const endpoint = promoType.value === 'campaign'
-        ? `http://localhost:3000/api/khuyen_mai_admin/export/${promoId}`
-        : `http://localhost:3000/api/khuyen_mai_admin/vouchers/export/${promoId}`;
+        ? `${API_BASE_URL}/api/khuyen_mai_admin/export/${promoId}`
+        : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/export/${promoId}`;
 
       const res = await fetch(endpoint, {
         method: 'GET',

@@ -96,6 +96,7 @@ const orderId = ref('');
 const amount = ref(0);
 const type = ref('');
 const isProcessing = ref(false);
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -119,7 +120,7 @@ const confirmPayment = async () => {
   try {
     const token = localStorage.getItem('token');
     // Gọi API báo cho Backend biết là khách đã bấm Xác nhận
-    const response = await fetch('http://localhost:3000/api/don_hang/payment/momo/confirm', {
+    const response = await fetch('${API_BASE_URL}/api/don_hang/payment/momo/confirm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' ,
         'Authorization': `Bearer ${token}`

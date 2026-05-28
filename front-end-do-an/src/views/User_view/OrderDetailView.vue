@@ -75,7 +75,7 @@
             
             <div v-for="item in orderItems" :key="item.MaPhanLoai + '-' + item.LaHangKhuyenMai" @click="router.push(`/product/${item.MaMoHinh}`)" class="glass-panel group cursor-pointer overflow-hidden flex flex-col md:flex-row items-center border border-outline-variant/10 rounded-xl transition-all hover:bg-surface-container-high/60 hover:border-primary/30">
               <div class="w-full md:w-48 h-48 bg-surface-container-lowest overflow-hidden flex items-center justify-center p-4">
-                <img :src="'http://localhost:3000/Images_product/'+item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"/>
+                <img :src="'${API_BASE_URL}/Images_product/'+item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"/>
               </div>
               <div class="flex-1 p-6 flex flex-col md:flex-row justify-between w-full">
                 <div class="space-y-2">
@@ -196,6 +196,7 @@ const authStore = useAuthStore();
 
 const router = useRouter();
 const route = useRoute();
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -275,7 +276,7 @@ const fetchOrderdata = async () => {
   }
   const maDH = route.params.id;
   try {
-    const response = await fetch(`http://localhost:3000/api/don_hang/watch_detail_order/${maDH}`, {
+    const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`

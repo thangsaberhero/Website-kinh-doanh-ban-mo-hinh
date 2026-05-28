@@ -231,6 +231,7 @@ const searchQuery = ref('');
 const productData = ref(null);
 const isLoadingSearch = ref(false);
 const errorMsg = ref('');
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const mintForm = ref({ serialNumber: '', manufacturer: '' });
 const updateForm = ref({ serialNumber: '', newStatus: '', location: '' });
@@ -250,7 +251,7 @@ const handleSearch = async () => {
   productData.value = null;
 
   try {
-    const response = await axios.get(`http://localhost:3000/api/blockchain/history/${searchQuery.value}`);
+    const response = await axios.get(`${API_BASE_URL}/api/blockchain/history/${searchQuery.value}`);
 
     if (response.data.success) {
       const historyData = response.data.history || [];
@@ -505,7 +506,7 @@ const handleMint = async () => {
   }
   isLoadingMint.value = true;
   try {
-    const response = await axios.post('http://localhost:3000/api/blockchain/mint', {
+    const response = await axios.post('${API_BASE_URL}/api/blockchain/mint', {
       serialNumber: mintForm.value.serialNumber,
       manufacturer: mintForm.value.manufacturer
     });
@@ -530,7 +531,7 @@ const handleUpdate = async () => {
   }
   isLoadingUpdate.value = true;
   try {
-    const response = await axios.post('http://localhost:3000/api/blockchain/update', {
+    const response = await axios.post('${API_BASE_URL}/api/blockchain/update', {
       serialNumber: updateForm.value.serialNumber,
       newStatus: updateForm.value.newStatus,
       location: updateForm.value.location

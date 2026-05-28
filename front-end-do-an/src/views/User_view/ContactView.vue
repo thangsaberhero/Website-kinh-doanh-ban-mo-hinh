@@ -164,12 +164,13 @@
 
     const isSubmitting = ref(false);
     const submitSuccess = ref(false);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
     const submitForm = async () => {
         isSubmitting.value = true;
 
         try {
-            const res = await fetch('http://localhost:3000/api/contact/submit', {
+            const res = await fetch('${API_BASE_URL}/api/contact/submit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
