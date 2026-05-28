@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Connection } = require('mysql2');
 const nodemailer = require('nodemailer');
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com', 
@@ -273,6 +275,133 @@ const authController = {
         } catch (error) {
             console.error("Lỗi đổi mật khẩu:", error);
             res.status(500).json({ success: false, message: "Lỗi server khi thao tác!" });
+        }
+    },
+    googleLogin: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            const { token } = req.body;
+            
+            // 1. Xác thực token với Google
+            const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
+            const payload = await response.json();
+
+            if (!response.ok) {
+                return res.status(400).json({ message: "Token Google không hợp lệ!" });
+            }
+
+            const { email, name } = payload;
+
+            // 2. Kiểm tra xem user đã tồn tại chưa
+            await connection.beginTransaction();
+            const [users] = await connection.query('SELECT * FROM TaiKhoan WHERE Email = ?', [email]);
+            
+            let user;
+            if (users.length > 0) {
+                user = users[0]; // Đã có tài khoản
+            } else {
+                // 3. Nếu chưa có, tự động đăng ký
+                const TenDN = email.split('@')[0] + Math.floor(Math.random() * 1000); // Tạo tên ngẫu nhiên từ email
+                const randomPass = Math.random().toString(36).slice(-10); // Mật khẩu ngẫu nhiên
+                const salt = await bcrypt.genSalt(10);
+                const hashedPass = await bcrypt.hash(randomPass, salt);
+
+                const sqltk = 'INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES (?, ?, ?, 3)';
+                const [resultTK] = await connection.query(sqltk, [TenDN, hashedPass, email]);
+                const maTK = resultTK.insertId;
+
+                const sqlkh = 'INSERT INTO KhachHang (TenKH, MaTK) VALUES(?,?)';
+                const [resultKH] = await connection.query(sqlkh, [name, maTK]);
+                const maKH = resultKH.insertId;
+
+                await connection.query('INSERT INTO GioHang (MaKH) VALUES (?)', [maKH]);
+                await connection.query('Insert into DanhMucYeuThich (MaKH) Values (?)', [maKH]);
+
+                user = { MaTK: maTK, MaQuyen: 3 };
+            }
+            await connection.commit();
+
+            // 4. Tạo JWT của hệ thống
+            const appToken = jwt.sign(
+                { id: user.MaTK, role: user.MaQuyen },
+                process.env.JWT_SECRET,
+                { expiresIn: '1d' }
+            );
+
+            res.status(200).json({
+                message: "Đăng nhập Google thành công!",
+                token: appToken,
+                user: { id: user.MaTK, role: user.MaQuyen }
+            });
+
+        } 
+        catch (error) {
+            await connection.rollback();
+            console.error("Lỗi Google Login:", error);
+            res.status(500).json({ message: "Lỗi xác thực Google" });
+        } 
+        finally {
+            connection.release();
+        }
+    },
+
+    facebookLogin: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            const { accessToken } = req.body;
+
+            // 1. Gọi API của Facebook để lấy thông tin từ Access Token
+            const response = await fetch(`https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`);
+            const data = await response.json(); 
+            const { email, name, id } = data;
+
+            if (!response.ok) {
+                return res.status(400).json({ message: "Token Facebook không hợp lệ!" });
+            }
+
+            if (!email) {
+                return res.status(400).json({ message: "Tài khoản Facebook chưa liên kết Email!" });
+            }
+
+            // 2. Logic hoàn toàn tương tự Google Login ở trên
+            await connection.beginTransaction();
+            const [users] = await connection.query('SELECT * FROM TaiKhoan WHERE Email = ?', [email]);
+            
+            let user;
+            if (users.length > 0) {
+                user = users[0];
+            } 
+            else {
+                const TenDN = email.split('@')[0] + Math.floor(Math.random() * 1000);
+                const randomPass = Math.random().toString(36).slice(-10);
+                const salt = await bcrypt.genSalt(10);
+                const hashedPass = await bcrypt.hash(randomPass, salt);
+
+                const [resultTK] = await connection.query('INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES (?, ?, ?, 3)', [TenDN, hashedPass, email]);
+                const maTK = resultTK.insertId;
+
+                const [resultKH] = await connection.query('INSERT INTO KhachHang (TenKH, MaTK) VALUES(?,?)', [name, maTK]);
+                const maKH = resultKH.insertId;
+
+                await connection.query('INSERT INTO GioHang (MaKH) VALUES (?)', [maKH]);
+                await connection.query('Insert into DanhMucYeuThich (MaKH) Values (?)', [maKH]);
+
+                user = { MaTK: maTK, MaQuyen: 3 };
+            }
+            await connection.commit();
+
+            const appToken = jwt.sign({ id: user.MaTK, role: user.MaQuyen }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+            res.status(200).json({ message: "Đăng nhập Facebook thành công!", token: appToken, user: { id: user.MaTK, role: user.MaQuyen } });
+
+        } 
+        catch (error) {
+            await connection.rollback();
+            console.error("Lỗi Facebook Login:", error);
+            res.status(500).json({ message: "Lỗi xác thực Facebook" });
+        } 
+        finally {
+            connection.release();
         }
     }
 };

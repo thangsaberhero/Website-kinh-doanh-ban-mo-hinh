@@ -9,4 +9,6 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/verify-otp', authController.verifyOTP);
 router.post('/reset-password', authController.resetPassword);
 router.post('/change-password', authMiddleware.verifyToken, authController.change_password);
+router.post('/google', authController.googleLogin);
+router.post('/facebook', authController.facebookLogin);
 module.exports = router;
