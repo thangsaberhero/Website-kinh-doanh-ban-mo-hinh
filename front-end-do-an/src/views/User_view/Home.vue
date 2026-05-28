@@ -270,7 +270,7 @@
 
   const fetchBrands = async () => {
     try {
-      const res = await fetch('${API_BASE_URL}/api/products/hsx');
+      const res = await fetch(`${API_BASE_URL}/api/products/hsx`);
       const dataJSON = await res.json();
       if (res.ok) {
         brands.value = dataJSON.data; 
@@ -332,7 +332,7 @@
         soluong: 1      
       };
 
-      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -358,7 +358,7 @@
 
   onMounted(async () => {
     try {
-      const response = await fetch('${API_BASE_URL}/api/products?limit=12');
+      const response = await fetch(`${API_BASE_URL}/api/products?limit=12`);
       const dataJSON = await response.json(); 
       
       if (response.ok) {

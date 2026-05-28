@@ -791,7 +791,7 @@
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('${API_BASE_URL}/api/khuyen_mai_admin/dashboard/stats', {
+      const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/dashboard/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -835,7 +835,7 @@
 
   const fetchSecurityLogs = async () => {
     try {
-      const res = await fetch('${API_BASE_URL}/api/khuyen_mai_admin/logs/recent', {
+      const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/logs/recent`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const result = await res.json();
@@ -954,7 +954,7 @@
               return;
           }
 
-          url = '${API_BASE_URL}/api/khuyen_mai_admin/vouchers/create';
+          url = `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/create`;
           payload = {
             TenMaGiamGia: voucherForm.value.TenMaGiamGia,
             MaVoucher: voucherForm.value.MaVoucher.toUpperCase(),

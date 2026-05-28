@@ -178,7 +178,7 @@
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL/api/admin_info/change_password', {
+      const response = await fetch(`${API_BASE_URL}/api/admin_info/change_password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

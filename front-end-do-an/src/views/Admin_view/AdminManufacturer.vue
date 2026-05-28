@@ -301,7 +301,7 @@
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL}/api/product_admin/thong_ke_hsx',{
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/thong_ke_hsx`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const result = await response.json();
@@ -410,7 +410,7 @@
     }
 
     try {
-      let url = '${API_BASE_URL}/api/product_admin/add_brand'; 
+      let url = `${API_BASE_URL}/api/product_admin/add_brand`; 
       let method = 'POST';
       if (isEditMode.value) {
         url = `${API_BASE_URL}/api/product_admin/fix_brand/${formManufacturer.value.id}`;

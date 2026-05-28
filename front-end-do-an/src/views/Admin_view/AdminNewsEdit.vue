@@ -195,7 +195,7 @@
             const formData = new FormData();
             formData.append('image', blobInfo.blob(), blobInfo.filename());
     
-            const response = await fetch('${API_BASE_URL}/api/upload', {
+            const response = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 headers: {'Authorization': `Bearer ${token}`},
                 body: formData

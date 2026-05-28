@@ -41,7 +41,7 @@
                   </div>
                   <img 
                       v-if="order.Thumbnail" 
-                      :src="'${API_BASE_URL}/Images_product/' + order.Thumbnail" 
+                      :src="`${API_BASE_URL}/Images_product/` + order.Thumbnail" 
                       alt="Product" 
                       class="w-full h-full object-contain"
                   />
@@ -206,7 +206,7 @@
     if (!selectedOrder.value) return;
 
     try {
-      const response = await fetch('${API_BASE_URL}/api/payment/momo/create', {
+      const response = await fetch(`${API_BASE_URL}/api/payment/momo/create`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

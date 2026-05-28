@@ -245,7 +245,7 @@
         formData.append('avatar', selectedFile.value); 
       }
 
-      const response = await fetch('${API_BASE_URL}/api/info_user/change_info', {
+      const response = await fetch(`${API_BASE_URL}/api/info_user/change_info`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData 

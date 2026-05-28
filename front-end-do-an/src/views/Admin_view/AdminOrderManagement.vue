@@ -580,7 +580,7 @@ const exportExcelReport = async () => {
       const token = localStorage.getItem('token');
       
       // Khởi tạo URL cơ bản
-      let url = '${API_BASE_URL}/api/invoice_admin/export-excel';
+      let url = `${API_BASE_URL}/api/invoice_admin/export-excel`;
 
       // Gắn thêm bộ lọc ngày tháng và tìm kiếm nếu Admin đang thao tác trên màn hình
       const params = new URLSearchParams();

@@ -667,7 +667,7 @@ export default {
         return;
       }
       try {
-        const response = await axios.post('${API_BASE_URL}/api/blockchain/update', {
+        const response = await axios.post(`${API_BASE_URL}/api/blockchain/update`, {
           serialNumber: this.updateForm.serialNumber,
           newStatus: this.updateForm.newStatus,
           location: this.updateForm.location

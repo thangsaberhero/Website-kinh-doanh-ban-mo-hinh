@@ -256,7 +256,7 @@
         formData.append('avatar', selectedFile.value); 
       }
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL}/api/admin_info/change_info', {
+      const response = await fetch(`${API_BASE_URL}/api/admin_info/change_info`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData 

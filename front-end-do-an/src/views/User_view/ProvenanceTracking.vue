@@ -506,7 +506,7 @@ const handleMint = async () => {
   }
   isLoadingMint.value = true;
   try {
-    const response = await axios.post('${API_BASE_URL}/api/blockchain/mint', {
+    const response = await axios.post(`${API_BASE_URL}/api/blockchain/mint`, {
       serialNumber: mintForm.value.serialNumber,
       manufacturer: mintForm.value.manufacturer
     });

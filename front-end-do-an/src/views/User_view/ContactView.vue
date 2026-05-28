@@ -170,7 +170,7 @@
         isSubmitting.value = true;
 
         try {
-            const res = await fetch('${API_BASE_URL}/api/contact/submit', {
+            const res = await fetch(`${API_BASE_URL}/api/contact/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

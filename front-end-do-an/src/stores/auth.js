@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (username, password) => {
     try {
       // 1. Gõ cửa nhà Backend (Đường link chuẩn của bạn)
-      const response = await fetch('${API_BASE_URL}/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

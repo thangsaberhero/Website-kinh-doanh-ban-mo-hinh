@@ -737,7 +737,7 @@
   const fetchUserStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('${API_BASE_URL}/api/account_admin/stats', {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/stats`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -806,7 +806,7 @@
   const fetchSecurityLogs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('${API_BASE_URL}/api/account_admin/logs/recent', {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/logs/recent`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -902,7 +902,7 @@
     else if (newUser.value.role === 'Staff') maQuyen = 2;
 
     try {
-      const res = await fetch('${API_BASE_URL}/api/account_admin/add', {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/add`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -936,7 +936,7 @@
 
   const toggleLockStatus = async (id) => {
     try {
-      const res = await fetch('${API_BASE_URL}/api/account_admin/lock', {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/lock`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

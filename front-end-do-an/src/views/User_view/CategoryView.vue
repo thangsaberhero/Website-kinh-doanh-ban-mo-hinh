@@ -314,7 +314,7 @@
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('${API_BASE_URL}/api/products/danhmuc');
+      const res = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
       const dataJSON = await res.json();
       
       if (res.ok) {
@@ -340,7 +340,7 @@
 
   const fetchBrand = async () => {
     try{
-      const res = await fetch('${API_BASE_URL}/api/products/hsx');
+      const res = await fetch(`${API_BASE_URL}/api/products/hsx`);
       const dataJSON = await res.json();
       if(res.ok){
         availableBrands.value = dataJSON.data || dataJSON;
@@ -373,7 +373,7 @@
         url += `&gia=${maxPrice.value}`
       }
       
-      // let apiUrl = '${API_BASE_URL}/api/products'; // Mặc định lấy tất cả
+      // let apiUrl = `${API_BASE_URL}/api/products`; // Mặc định lấy tất cả
 
       // if (maCTDM) {
       //   // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
@@ -447,7 +447,7 @@
       }
 
       const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
-      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload) 

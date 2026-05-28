@@ -276,7 +276,7 @@
   const fetchStats = async () => {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('${API_BASE_URL}/api/news/admin/stats',{
+        const response = await fetch(`${API_BASE_URL}/api/news/admin/stats`,{
           headers: {'Authorization': `Bearer ${token}`}
         });
         if (response.ok) {

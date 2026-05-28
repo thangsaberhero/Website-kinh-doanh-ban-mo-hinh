@@ -892,7 +892,7 @@
   const fetchBrands = async () => {
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch('${API_BASE_URL}/api/product_admin/get_brand',{
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/get_brand`,{
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -947,7 +947,7 @@
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch('${API_BASE_URL}/api/product_admin/getvariant',
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/getvariant`,
         {
           headers: {'Authorization': `Bearer ${token}`}
         }
@@ -1237,7 +1237,7 @@
       // 3. Gửi xuống Backend
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('${API_BASE_URL}/api/product_admin/add_product', {
+        const response = await fetch(`${API_BASE_URL}/api/product_admin/add_product`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}` 
@@ -1593,7 +1593,7 @@
       const token = localStorage.getItem('token');
       
       // Chú ý: Đảm bảo đường dẫn này khớp với route Backend của bạn
-      const url = '${API_BASE_URL}/api/product_admin/export-excel';
+      const url = `${API_BASE_URL}/api/product_admin/export-excel`;
 
       const response = await fetch(url, {
         method: 'GET',

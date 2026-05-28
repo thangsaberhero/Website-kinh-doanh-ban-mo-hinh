@@ -388,7 +388,7 @@
     };
 
     try {
-      let url = '${API_BASE_URL}/api/product_admin/add_variant'; 
+      let url = `${API_BASE_URL}/api/product_admin/add_variant`; 
       let method = 'POST';
 
       if (isEditMode.value) {

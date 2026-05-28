@@ -193,7 +193,7 @@
     newPassword: '',
     confirmPassword: ''
   });
-  const API_BASE_URL = '${API_BASE_URL}/api/auth';
+  const API_BASE_URL = `${API_BASE_URL}/api/auth`;
 
   // Xử lý Bước 1: Yêu cầu gửi OTP
   const handleRequestOTP = async () => {

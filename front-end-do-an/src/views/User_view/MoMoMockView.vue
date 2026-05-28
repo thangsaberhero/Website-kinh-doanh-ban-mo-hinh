@@ -120,7 +120,7 @@ const confirmPayment = async () => {
   try {
     const token = localStorage.getItem('token');
     // Gọi API báo cho Backend biết là khách đã bấm Xác nhận
-    const response = await fetch('${API_BASE_URL}/api/don_hang/payment/momo/confirm', {
+    const response = await fetch(`${API_BASE_URL}/api/don_hang/payment/momo/confirm`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' ,
         'Authorization': `Bearer ${token}`

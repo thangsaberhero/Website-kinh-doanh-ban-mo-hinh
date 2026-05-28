@@ -321,7 +321,7 @@
               <div class="flex justify-between items-start mb-4">
                 <div class="flex gap-4">
                   <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-white/10 flex items-center justify-center font-headline font-bold text-white">
-                    <img v-if="review.AnhDaiDien" :src="'${API_BASE_URL}/Images_user/' + review.AnhDaiDien" class="w-full h-full object-cover">
+                    <img v-if="review.AnhDaiDien" :src="`${API_BASE_URL}/Images_user/` + review.AnhDaiDien" class="w-full h-full object-cover">
                     <span v-else class="material-symbols-outlined text-primary text-xl">person</span>
                   </div>
                   <div>
@@ -346,7 +346,7 @@
 
               <div v-if="review.HinhAnh && review.HinhAnh.length > 0" class="flex flex-wrap gap-3 pl-16 mb-5">
                 <div v-for="(img, idx) in review.HinhAnh" :key="idx" class="w-24 h-24 rounded-xl overflow-hidden border border-white/10 hover:border-primary transition-all cursor-zoom-in group/img relative">
-                  <img :src="'${API_BASE_URL}/Images_review/' + img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
+                  <img :src="`${API_BASE_URL}/Images_review/` + img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
                 </div>
               </div>
 
@@ -390,7 +390,7 @@
         <button class="absolute top-6 right-6 text-white/50 hover:text-primary transition-colors">
           <span class="material-symbols-outlined text-4xl">close</span>
         </button>
-        <img :src="'${API_BASE_URL}/Images_review/' + zoomedImage"
+        <img :src="`${API_BASE_URL}/Images_review/` + zoomedImage"
             class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] transform scale-100 animate-[zoomIn_0.2s_ease-out]"
             @click.stop />
       </div>
@@ -763,7 +763,7 @@
           formData.append('images', file);
         });
 
-        const uploadRes = await fetch('${API_BASE_URL}/api/reviews/upload', {
+        const uploadRes = await fetch(`${API_BASE_URL}/api/reviews/upload`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -878,7 +878,7 @@
               MaMoHinh: product.value.MaMoHinh
           };
 
-          const response = await fetch('${API_BASE_URL}/api/products/add_remove_favorite', {
+          const response = await fetch(`${API_BASE_URL}/api/products/add_remove_favorite`, {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -925,7 +925,7 @@
         soluong: buyQuantity.value
       };
 
-      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

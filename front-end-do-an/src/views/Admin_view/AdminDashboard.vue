@@ -592,7 +592,7 @@
   const submitUpdateStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL}/api/invoice_admin/update', {
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -627,7 +627,7 @@
     }
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL}/api/invoice_admin/huy', {
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -856,7 +856,7 @@
   const fetchRecentOrders = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL}/api/invoice_admin/?page=1&limit=10', {
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/?page=1&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 401 || response.status === 403) {
@@ -1038,7 +1038,7 @@
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL}/api/invoice_admin/huy', {
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

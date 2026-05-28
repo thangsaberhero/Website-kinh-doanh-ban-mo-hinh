@@ -140,7 +140,7 @@ const sendMessage = async () => {
   scrollToBottom(); // Cuộn ngay khi user vừa gửi tin nhắn
 
   try {
-    const response = await axios.post('${API_BASE_URL}/api/chatbot', { message: text });
+    const response = await axios.post(`${API_BASE_URL}/api/chatbot`, { message: text });
     
     messages.value.push({ 
       sender: 'bot', 

@@ -222,7 +222,7 @@ const handleGoogleLogin = () => {
   googleTokenLogin().then(async (response) => {
     isLoading.value = true;
     try {
-      const res = await fetch('${API_BASE_URL}/api/auth/google', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: response.access_token })
@@ -245,7 +245,7 @@ const handleFacebookLogin = () => {
     if (response.authResponse) {
       isLoading.value = true;
       try {
-        const res = await fetch('${API_BASE_URL}/api/auth/facebook', {
+        const res = await fetch(`${API_BASE_URL}/api/auth/facebook`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ accessToken: response.authResponse.accessToken })

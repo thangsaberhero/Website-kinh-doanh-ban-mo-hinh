@@ -120,7 +120,7 @@
               <p class="text-[10px] text-[#ff8f73] uppercase font-bold tracking-wider">{{ roleName }}</p>
             </div>
             <div class="w-9 h-9 rounded-full bg-[#ff8f73]/10 border border-[#ff8f73]/30 flex items-center justify-center text-[#ff8f73] font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-[#ff8f73]/30 transition-all">
-              <img :src="user?.AnhDaiDien ? `http://localhost:3000/Images_user/${user.AnhDaiDien}` : `https://ui-avatars.com/api/?name=${user?.TenNV || user?.username || user?.TenDN || 'Admin'}&background=ff8f73&color=fff&bold=true`" alt="Avatar" class="w-full h-full object-cover">
+              <img :src="user?.AnhDaiDien ? `${API_BASE_URL}/Images_user/${user.AnhDaiDien}` : `https://ui-avatars.com/api/?name=${user?.TenNV || user?.username || user?.TenDN || 'Admin'}&background=ff8f73&color=fff&bold=true`" alt="Avatar" class="w-full h-full object-cover">
             </div>
           </div>
   
@@ -156,6 +156,7 @@
 
   const authStore = useAuthStore();
   const router = useRouter();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   defineEmits(['toggle-sidebar', 'search']);
 

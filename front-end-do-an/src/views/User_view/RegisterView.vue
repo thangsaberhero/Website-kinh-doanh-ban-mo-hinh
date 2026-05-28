@@ -179,7 +179,7 @@
         MatKhau: form.password
       };
 
-      const response = await fetch('${API_BASE_URL}/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

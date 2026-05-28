@@ -208,7 +208,7 @@
   const fetchNewsData = async () => {
     isLoading.value = true;
     try {
-      const response = await fetch('${API_BASE_URL}/api/news');
+      const response = await fetch(`${API_BASE_URL}/api/news`);
       const data = await response.json();
       
       if (response.ok) {

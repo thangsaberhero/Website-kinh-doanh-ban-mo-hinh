@@ -214,7 +214,7 @@
   // --- 3. HÀM TẢI DỮ LIỆU TỪ API ---
   const fetchCategories = async () => {
     try {
-      const res = await fetch('${API_BASE_URL}/api/products/danhmuc');
+      const res = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
       const dataJSON = await res.json();
       if (res.ok) {
         const mainCats = dataJSON.data || dataJSON;

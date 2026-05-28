@@ -266,7 +266,7 @@
   const removeFromCart = async (maPhanLoai) => {
     if (!authStore.user || !authStore.user.MaKH) return;
     try {
-      const response = await fetch('${API_BASE_URL}/api/don_hang/delete', {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/delete`, {
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
