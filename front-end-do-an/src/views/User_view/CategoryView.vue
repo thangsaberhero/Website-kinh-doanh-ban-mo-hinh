@@ -283,20 +283,19 @@
   };
 
   const goToCategory = (id) => {
+    // LUÔN LUÔN xóa danh mục con trước khi chuyển đổi danh mục cha
+    subCategoryId.value = ''; 
+
     if (id) {
-      // Nếu bấm vào đúng Danh mục cha đang hiển thị, VÀ đang có Danh mục con được chọn
-      if (categoryId.value == id && subCategoryId.value !== '') {
-        // 1. Reset thằng con về rỗng (tắt dấu check của con, bật dấu check của cha)
-        subCategoryId.value = '';
-        
-        // 2. Gọi lại API lấy tất cả sản phẩm của thằng cha
-        fetchProducts(id);
+      if (categoryId.value == id) {
+        // Nếu bấm lại vào chính danh mục đang xem
+        // Do subCategoryId vừa bị xóa ở trên -> Watcher mảng của bạn sẽ tự động gọi lại API!
       } else {
-        // Nếu bấm sang một Danh mục cha KHÁC, thì cứ chuyển link như bình thường
+        // Chuyển sang danh mục cha KHÁC
         router.push(`/category/${id}`);
       }
     } else {
-      // Nếu bấm "Tất cả sản phẩm"
+      // Bấm "Tất cả sản phẩm"
       router.push(`/category`);
     }
   };
@@ -474,8 +473,12 @@
 
   watch(() => route.params.id, (newId) => {
     categoryId.value = newId || '';
-    fetchProducts(newId);
+    subCategoryId.value = ''; // <-- THÊM: Dọn dẹp bộ lọc khi khách bấm nút Back/Forward trên trình duyệt
     searchQuery.value = ''; 
+
+    // Bạn HÃY XÓA dòng `fetchProducts(newId);` cũ ở đây đi nhé!
+    // Vì bạn đã có `watch([categoryId, subCategoryId...])` ở bên trên rồi, 
+    // giữ lại dòng này sẽ khiến web gọi API 2 lần liên tiếp gây tốn tài nguyên.
   });
 
   watch(() => route.query.brand, (newBrand) => {

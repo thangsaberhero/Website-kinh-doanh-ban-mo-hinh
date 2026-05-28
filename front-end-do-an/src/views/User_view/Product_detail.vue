@@ -1,12 +1,12 @@
 <template>
   <div class="bg-background text-on-surface selection:bg-primary selection:text-on-primary min-h-screen flex flex-col font-body">
     <TheHeader />
-    
+
     <main v-if="product" class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
+
         <div class="lg:col-span-7 space-y-6">
-          <div ref="imageContainer" class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20" 
+          <div ref="imageContainer" class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20"
               @mousemove="handleMouseMove"
               @mouseenter="isZooming = true"
               @mouseleave="isZooming = false"
@@ -20,9 +20,9 @@
                 {{ product.TrangThai }}
               </span>
             </div>
-            
+
             <img :src="`http://localhost:3000/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-cover transform transition-transform duration-700 drop-shadow-2xl"/>
-            
+
             <div v-show="isZooming"
               class="absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
               :style="{
@@ -33,7 +33,7 @@
                 transform: 'translate(-50%, -50%)', /* Căn giữa khung lúp vào con chuột */
                 backgroundImage: `url(http://localhost:3000/Images_product/${mainImage})`,
                 backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                backgroundSize: '400%'   
+                backgroundSize: '400%'
               }"
             ></div>
 
@@ -44,19 +44,19 @@
             </div>
             <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </div>
-          
-          <transition-group 
+
+          <transition-group
             name="thumbnail"
-            tag="div" 
+            tag="div"
             class="flex gap-4 overflow-hidden mt-4 p-1 w-full"
           >
-            <button 
-              v-for="anh in displayImages" 
+            <button
+              v-for="anh in displayImages"
               :key="anh"
               @click="selectImage(anh)"
               class="flex-shrink-0 aspect-square bg-surface-container-high rounded-lg overflow-hidden transition-all duration-300 transform"
               :class="mainImage === anh ? 'border-2 border-primary shadow-[0_0_15px_rgba(255,61,0,0.4)] scale-100' : 'border border-outline-variant/30 hover:border-primary/50 opacity-60 hover:opacity-100 scale-95'"
-              style="width: calc((100% - 4rem) / 5);" 
+              style="width: calc((100% - 4rem) / 5);"
             >
               <img :src="`http://localhost:3000/Images_product/${anh}`" class="w-full h-full object-cover"/>
             </button>
@@ -135,30 +135,28 @@
                   <span class="w-10 text-center font-bold text-xl text-white">{{ buyQuantity }}</span>
                   <button @click="buyQuantity < (selectedVariant ? selectedVariant.SoLuong : 0) && buyQuantity++" class="px-5 hover:text-primary transition-colors text-outline"><span class="material-symbols-outlined">add</span></button>
                 </div>
-                
-                <button 
-                  @click="addToCart" 
+
+                <button
+                  @click="addToCart"
                   :disabled="!selectedVariant || selectedVariant.SoLuong === 0"
-                  :class="['flex-1 h-14 font-headline font-bold uppercase tracking-widest rounded transition-all text-sm px-4', 
-                    (!selectedVariant || selectedVariant.SoLuong === 0) 
-                      ? 'bg-surface-container-high text-outline cursor-not-allowed' 
+                  :class="['flex-1 h-14 font-headline font-bold uppercase tracking-widest rounded transition-all text-sm px-4',
+                    (!selectedVariant || selectedVariant.SoLuong === 0)
+                      ? 'bg-surface-container-high text-outline cursor-not-allowed'
                       : 'bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-[0_0_20px_rgba(255,143,115,0.3)] hover:brightness-110 active:scale-95'
                   ]"
                 >
                   {{ (!selectedVariant || selectedVariant.SoLuong === 0) ? 'HẾT HÀNG' : 'THÊM VÀO GIỎ HÀNG' }}
                 </button>
 
-                <button 
+                <button
                     @click="toggleFavorite"
                     title="Thêm/Bỏ yêu thích"
                     :class="['w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
-                             isFavorite 
-                             ? 'bg-red-950/50 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:bg-red-950' 
+                             isFavorite
+                             ? 'bg-red-950/50 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:bg-red-950'
                              : 'bg-surface-container-low border-outline-variant/30 text-outline hover:border-primary/50 hover:text-primary']">
-                    
-                    <span class="material-symbols-outlined font-bold text-3xl transition-all" 
-                          :class="{ 'is-favorite-icon': isFavorite }">
-                        favorite
+                    <span class="material-symbols-outlined font-bold text-3xl">
+                        {{ isFavorite ? 'favorite' : 'favorite_border' }}
                     </span>
                 </button>
               </div>
@@ -175,10 +173,52 @@
                 <span class="font-semibold text-on-surface">Miễn phí nội thành Hải Phòng</span>
               </div>
             </div>
+
+            <button
+            @click="handleShowQR"
+            class="mt-4 flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl border border-orange-500/40 text-orange-500 hover:bg-orange-500 hover:text-white transition-all duration-300 font-bold uppercase text-xs tracking-[0.2em]"
+          >
+            <span>{{ isQRVisible ? '✖ Đóng xác thực' : '🛡️ Truy xuất Blockchain' }}</span>
+          </button>
+
+          <transition name="fade">
+            <div v-if="isQRVisible && qrCodeImg" class="mt-4 p-5 bg-white/5 border border-orange-500/20 rounded-2xl backdrop-blur-md shadow-2xl">
+              <div class="flex flex-col sm:flex-row items-center gap-6">
+                <div class="relative group">
+                  <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-lg overflow-hidden relative">
+                    <img :src="qrCodeImg" alt="Blockchain QR" class="w-full h-full object-contain" />
+                    <div class="scan-line absolute left-0 w-full h-0.5 bg-orange-500 shadow-[0_0_10px_#ff6b4a]"></div>
+                  </div>
+
+                </div>
+
+                <div class="flex-1 text-center sm:text-left">
+                  <h4 class="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Genuine Product</h4>
+                  <p class="text-white font-bold text-sm mb-2 font-mono">{{ product.MaVach_Serial }}</p>
+                  <p class="text-gray-400 text-[11px] leading-relaxed mb-3">
+                    Mã QR chứa chữ ký số định danh sản phẩm trên mạng lưới Blockchain.
+                  </p>
+                  <button @click="downloadQR" class="text-[10px] text-gray-400 hover:text-white underline">
+                    Tải ảnh QR về máy
+                  </button>
+                </div>
+              </div>
+            </div>
+          </transition>
+          <router-link
+            v-if="product && product.MaVach_Serial"
+            :to="`/truy-xuat/${product.MaVach_Serial}`"
+            class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-primary text-on-primary rounded-xl text-xs font-bold tracking-wider uppercase hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm group"
+          >
+            <span>Truy xuất nguồn gốc</span>
+            <span class="material-symbols-outlined text-base group-hover:translate-x-0.5 transition-transform duration-200">
+              arrow_right_alt
+            </span>
+          </router-link>
           </div>
         </div>
       </div>
-      
+
       <section class="max-w-7xl mx-auto px-6 pb-24 w-full border-t border-white/5 pt-16">
         <h3 class="font-headline text-3xl font-bold text-white mb-10 text-center uppercase tracking-widest">Đánh giá từ cộng đồng</h3>
         <div class="bg-surface-container-low rounded-2xl p-8 lg:p-12 border border-white/5 shadow-2xl mb-12 flex flex-col md:flex-row items-center justify-between gap-12">
@@ -201,16 +241,16 @@
         </div>
 
         <div class="flex flex-col lg:flex-row gap-12">
-          
+
           <div class="lg:w-1/3">
             <div v-if="canReview" class="sticky top-24 ...">
               <h4 class="font-headline text-lg font-bold text-white mb-2">Bạn đã trải nghiệm siêu phẩm này?</h4>
-              
+
               <form @submit.prevent="submitReview" class="space-y-4">
                 <div>
                   <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Đánh giá của bạn</label>
                   <div class="flex gap-2 text-outline-variant cursor-pointer hover:text-primary transition-colors">
-                    <span v-for="i in 5" :key="i" 
+                    <span v-for="i in 5" :key="i"
                       @click="reviewForm.SoSao = i"
                       @mouseover="hoverStar = i"
                       @mouseleave="hoverStar = 0"
@@ -219,16 +259,16 @@
                         /* Nếu đang hover thì so với hoverStar, không thì so với SoSao đã chọn */
                         (hoverStar ? i <= hoverStar : i <= reviewForm.SoSao) ? 'text-primary' : 'text-outline-variant'
                       ]"
-                      :style="{ 
-                        fontVariationSettings: (hoverStar ? i <= hoverStar : i <= reviewForm.SoSao) ? `'FILL' 1` : `'FILL' 0` 
+                      :style="{
+                        fontVariationSettings: (hoverStar ? i <= hoverStar : i <= reviewForm.SoSao) ? `'FILL' 1` : `'FILL' 0`
                       }"> star
                     </span>
                   </div>
                 </div>
-                
+
                 <div>
                   <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Nhận xét chi tiết</label>
-                  <textarea v-model="reviewForm.NoiDung" required rows="4" placeholder="Chất lượng sơn, độ linh hoạt..." 
+                  <textarea v-model="reviewForm.NoiDung" required rows="4" placeholder="Chất lượng sơn, độ linh hoạt..."
                             class="w-full bg-background border border-white/10 focus:border-primary focus:ring-0 rounded-xl p-4 text-sm text-white resize-none transition-all max-h-32 overflow-y-auto"></textarea>
                 </div>
                 <div v-if="previewUrls.length > 0" class="flex flex-wrap gap-3 mb-4">
@@ -254,24 +294,24 @@
             </div>
           </div>
 
-          <div class="lg:w-2/3 space-y-8">  
+          <div class="lg:w-2/3 space-y-8">
             <div class="flex flex-wrap gap-3 pb-4 border-b border-white/5">
-              <button @click="currentFilter = 'all'" 
-                      :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all', 
+              <button @click="currentFilter = 'all'"
+                      :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
                               currentFilter === 'all' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
                 Tất cả ({{ reviews.length }})
               </button>
-              
+
               <button @click="currentFilter = 'withImage'"
-                      :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all', 
+                      :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
                               currentFilter === 'withImage' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
                 Có hình ảnh ({{ reviewsWithImageCount }})
               </button>
-              
+
               <button v-for="star in [5, 4, 3, 2, 1]" :key="star"
                       @click="currentFilter = star.toString()"
-                      v-show="reviewStats.stars[star] > 0" 
-                      :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-1', 
+                      v-show="reviewStats.stars[star] > 0"
+                      :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-1',
                               currentFilter === star.toString() ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
                 {{ star }} <span class="material-symbols-outlined text-[13px]">star</span> ({{ reviewStats.stars[star] }})
               </button>
@@ -299,7 +339,7 @@
                 </div>
                 <span class="text-[10px] text-outline font-bold uppercase bg-surface-container px-2 py-1 rounded">{{ formatDate(review.ThoiGianDG) }}</span>
               </div>
-              
+
               <p class="text-on-surface-variant text-sm leading-relaxed mb-5 pl-16">
                 {{ review.NoiDung }}
               </p>
@@ -330,8 +370,8 @@
             </div>
             <div class="pt-8 border-t border-white/5 flex justify-center items-center gap-2">
               <div v-if="visibleCount < filteredReviews.length" class="pt-8 flex justify-center items-center">
-                <button 
-                  @click="loadMoreReviews" 
+                <button
+                  @click="loadMoreReviews"
                   class="px-8 py-3.5 border border-white/10 rounded-xl font-headline font-bold text-xs text-outline hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all uppercase tracking-[0.2em] shadow-lg flex items-center gap-2"
                 >
                   <span class="material-symbols-outlined text-lg">expand_more</span>
@@ -350,8 +390,8 @@
         <button class="absolute top-6 right-6 text-white/50 hover:text-primary transition-colors">
           <span class="material-symbols-outlined text-4xl">close</span>
         </button>
-        <img :src="'http://localhost:3000/Images_review/' + zoomedImage" 
-            class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] transform scale-100 animate-[zoomIn_0.2s_ease-out]" 
+        <img :src="'http://localhost:3000/Images_review/' + zoomedImage"
+            class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] transform scale-100 animate-[zoomIn_0.2s_ease-out]"
             @click.stop />
       </div>
 
@@ -362,9 +402,9 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <ProductCard 
-            v-for="item in relatedProducts" 
-            :key="item.MaMoHinh" 
+          <ProductCard
+            v-for="item in relatedProducts"
+            :key="item.MaMoHinh"
             :product="item"
             :hide-cart="true"
           />
@@ -379,10 +419,10 @@
       </div>
     </div>
   </div>
-  <div v-if="isLightboxOpen" 
+  <div v-if="isLightboxOpen"
     class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center animate-[fadeIn_0.2s_ease-out]"
     @click.self="closeLightbox">
-  
+
     <div class="absolute top-0 left-0 right-0 p-6 flex justify-between items-center text-white/70">
       <div class="font-headline font-bold tracking-widest text-sm">
         {{ currentIndex + 1 }} / {{ allImages.length }}
@@ -394,7 +434,7 @@
       </div>
     </div>
 
-    <button @click="prevImage" 
+    <button @click="prevImage"
             class="absolute left-4 md:left-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
       <span class="material-symbols-outlined text-5xl">chevron_left</span>
     </button>
@@ -402,12 +442,12 @@
     <div class="relative w-[90vw] h-[80vh] overflow-hidden">
       <Transition :name="slideDirection">
         <img :key="currentIndex"
-            :src="`http://localhost:3000/Images_product/${allImages[currentIndex]}`" 
+            :src="`http://localhost:3000/Images_product/${allImages[currentIndex]}`"
             class="absolute inset-0 m-auto max-w-full max-h-[80vh] object-contain shadow-2xl" />
       </Transition>
     </div>
-    
-    <button @click="nextImage" 
+
+    <button @click="nextImage"
             class="absolute right-4 md:right-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
       <span class="material-symbols-outlined text-5xl">chevron_right</span>
     </button>
@@ -429,13 +469,13 @@
   import { useToastStore } from '../../stores/toast';
   import TheHeader from '../../components/TheHeader.vue';
   import ProductCard from '../../components/ProductCard.vue';
-
+  import axios from 'axios';
   const route = useRoute();
   const router = useRouter();
   const toastStore = useToastStore();
 
   const product = ref(null);
-  const allImages = ref([]); 
+  const allImages = ref([]);
   const mainImage = ref('');
   const buyQuantity = ref(1);
   const relatedProducts = ref([]);
@@ -450,14 +490,14 @@
   const zoomedImage = ref(null);
 
   const reviews = ref([]);
-  const canReview = ref(false); 
+  const canReview = ref(false);
   const isSubmittingReview = ref(false);
   const hoverStar = ref(0);
   // Biến lưu trạng thái bộ lọc: 'all', 'withImage', '5', '4', '3', '2', '1'
   const currentFilter = ref('all');
   const visibleCount = ref(5);
-  
-  const displayImages = ref([]); 
+
+  const displayImages = ref([]);
   // Biến quản lý Lightbox
   const isLightboxOpen = ref(false);
   const currentIndex = ref(0);
@@ -475,7 +515,7 @@
   };
 
   const nextImage = () => {
-    slideDirection.value = 'slide-right'; 
+    slideDirection.value = 'slide-right';
     currentIndex.value = (currentIndex.value + 1) % allImages.value.length;
   };
 
@@ -501,38 +541,38 @@
 
   const isZooming = ref(false);
   const zoomPosition = ref({ x: 50, y: 50 });
-  const imageContainer = ref(null); 
+  const imageContainer = ref(null);
 
   const handleMouseMove = (event) => {
     if (!imageContainer.value) return;
     const { left, top, width, height } = imageContainer.value.getBoundingClientRect();
     const mouseX = ((event.clientX - left) / width) * 100;
     const mouseY = ((event.clientY - top) / height) * 100;
-    
+
     const radiusX = (120 / width) * 100;
     const radiusY = (120 / height) * 100;
 
-    zoomPosition.value = { 
-      x: Math.max(radiusX, Math.min(100 - radiusX, mouseX)), 
-      y: Math.max(radiusY, Math.min(100 - radiusY, mouseY)) 
+    zoomPosition.value = {
+      x: Math.max(radiusX, Math.min(100 - radiusX, mouseX)),
+      y: Math.max(radiusY, Math.min(100 - radiusY, mouseY))
     };
   };
 
   const selectImage = (anh) => {
     mainImage.value = anh;
     const total = displayImages.value.length;
-    if (total < 5) return; 
+    if (total < 5) return;
 
     const currentIndex = displayImages.value.indexOf(anh);
-    const targetCenterIndex = 2; 
+    const targetCenterIndex = 2;
     let shiftAmount = currentIndex - targetCenterIndex;
 
     if (shiftAmount > 0) {
       const itemsToMove = displayImages.value.splice(0, shiftAmount);
       displayImages.value.push(...itemsToMove);
-    } 
+    }
     else if (shiftAmount < 0) {
-      const itemsToMove = displayImages.value.splice(shiftAmount); 
+      const itemsToMove = displayImages.value.splice(shiftAmount);
       displayImages.value.unshift(...itemsToMove);
     }
   };
@@ -541,11 +581,11 @@
     if (currentFilter.value === 'all') {
       return reviews.value;
     }
-    
+
     if (currentFilter.value === 'withImage') {
       return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0);
     }
-    
+
     const starLevel = parseInt(currentFilter.value);
     if (!isNaN(starLevel)) {
       return reviews.value.filter(r => r.SoSao === starLevel);
@@ -563,7 +603,7 @@
   });
 
   const loadMoreReviews = () => {
-    visibleCount.value += 5; 
+    visibleCount.value += 5;
   };
 
   watch(currentFilter, () => {
@@ -577,23 +617,23 @@
       const dataJSON = await res.json();
       if (res.ok) {
         product.value = dataJSON.data; // Không cần [0] nữa vì Backend đã lấy ra object chuẩn
-        
+
         // 1. Xử lý danh sách ảnh
         let images = [product.value.AnhDaiDien];
         // Vì Backend đã split(',') sẵn thành mảng, ta chỉ cần nối vào
         if (product.value.DanhSachAnh && product.value.DanhSachAnh.length > 0) {
           images = [...images, ...product.value.DanhSachAnh];
-        } 
+        }
         allImages.value = [...new Set(images.filter(Boolean))];
         displayImages.value = [...allImages.value];
-        mainImage.value = allImages.value[0]; 
+        mainImage.value = allImages.value[0];
 
         // 2. Tự động lấy danh sách phân loại từ Object trả về
         variants.value = product.value.DanhSachPhanLoai || [];
         if (variants.value.length > 0) {
           selectedVariant.value = variants.value[0];
         } else {
-          selectedVariant.value = null; 
+          selectedVariant.value = null;
         }
       }
     } catch (error) {
@@ -603,17 +643,16 @@
 
   const checkFavoriteStatus = async (id) => {
     const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
-    isFavorite.value = false; 
+    isFavorite.value = false;
 
-    if (token && userString) {
+    if (token) {
         try {
             const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const favData = await resFav.json();
             if (resFav.ok && favData.isFavorite) {
-                isFavorite.value = true; 
+                isFavorite.value = true;
             }
         } catch (error) {
             console.error("Lỗi kiểm tra trạng thái yêu thích:", error);
@@ -636,15 +675,15 @@
   const reviewForm = ref({
     SoSao: 5,
     NoiDung: '',
-    HinhAnh: [] 
+    HinhAnh: []
   });
 
   const reviewStats = computed(() => {
     if (reviews.value.length === 0) return { avg: 0, count: 0, stars: { 5:0, 4:0, 3:0, 2:0, 1:0 } };
-    
+
     let totalStars = 0;
     const starsCount = { 5:0, 4:0, 3:0, 2:0, 1:0 };
-    
+
     reviews.value.forEach(r => {
       totalStars += r.SoSao;
       starsCount[r.SoSao] = (starsCount[r.SoSao] || 0) + 1;
@@ -668,7 +707,7 @@
       console.error("Lỗi lấy danh sách đánh giá:", error);
     }
   };
-  
+
   const checkEligibility = async (maMH) => {
     const token = localStorage.getItem('token');
     const userString = localStorage.getItem('user');
@@ -676,7 +715,7 @@
 
     const userObj = JSON.parse(userString);
     try {
-      const res = await fetch(`http://localhost:3000/api/reviews/check-purchase-status?MaKH=${userObj.MaKH}&MaMoHinh=${maMH}`, {
+      const res = await fetch(`http://localhost:3000/api/reviews/check-purchase-status?&MaMoHinh=${maMH}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -687,21 +726,21 @@
       console.error("Lỗi kiểm tra quyền đánh giá:", error);
     }
   };
-  
+
   const loadAllData = async (id) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     product.value = null;
-    
+
     await fetchProductDetails(id);
     await checkFavoriteStatus(id);
     await fetchReviews(id);
     await checkEligibility(id);
     await fetchRelatedProducts(id);
   };
-  
+
   watch(() => route.params.id, async (newId) => {
     if (newId) {
-      window.scrollTo({ top: 0, behavior: 'smooth' }); 
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       await loadAllData(newId);
     }
   });
@@ -720,21 +759,21 @@
       if (selectedFiles.value.length > 0) {
         const formData = new FormData();
         selectedFiles.value.forEach(file => {
-          formData.append('images', file); 
+          formData.append('images', file);
         });
 
         const uploadRes = await fetch('http://localhost:3000/api/reviews/upload', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}` 
+            'Authorization': `Bearer ${token}`
           },
-          body: formData 
+          body: formData
         });
 
         const uploadData = await uploadRes.json();
         if (!uploadRes.ok) throw new Error(uploadData.message || "Lỗi upload ảnh");
-        
-        uploadedImageNames = uploadData.images; 
+
+        uploadedImageNames = uploadData.images;
       }
 
       const payload = {
@@ -742,7 +781,7 @@
         MaPhanLoai: selectedVariant.value ? selectedVariant.value.MaPhanLoai : null,
         NoiDung: reviewForm.value.NoiDung,
         SoSao: reviewForm.value.SoSao,
-        HinhAnh: uploadedImageNames 
+        HinhAnh: uploadedImageNames
       };
 
       const res = await fetch(`http://localhost:3000/api/reviews/create`, {
@@ -757,14 +796,14 @@
       const data = await res.json();
       if (res.ok) {
         toastStore.showToast("🎉 " + data.message, "success");
-        
-        reviewForm.value.NoiDung = ''; 
+
+        reviewForm.value.NoiDung = '';
         reviewForm.value.SoSao = 5;
         selectedFiles.value = [];
         previewUrls.value = [];
-        canReview.value = false; 
-        
-        await fetchReviews(product.value.MaMoHinh); 
+        canReview.value = false;
+
+        await fetchReviews(product.value.MaMoHinh);
       } else {
         toastStore.showToast("⚠️ Lỗi: " + data.message, "error");
       }
@@ -788,7 +827,7 @@
   // Hàm kích hoạt khi khách hàng chọn ảnh
   const onFileChange = (event) => {
     const files = Array.from(event.target.files);
-    
+
     // Kiểm tra giới hạn 5 ảnh
     if (selectedFiles.value.length + files.length > 5) {
       toastStore.showToast("⚠️ Chỉ được tải lên tối đa 5 ảnh!", "error");
@@ -799,9 +838,9 @@
       selectedFiles.value.push(file);
       previewUrls.value.push(URL.createObjectURL(file)); // Tạo link ảo để hiện ảnh
     });
-    
+
     // Reset input để có thể chọn lại file cùng tên nếu muốn
-    event.target.value = ''; 
+    event.target.value = '';
   };
 
   // Hàm xóa ảnh khỏi danh sách chọn
@@ -811,7 +850,7 @@
   };
 
   onMounted(async () => {
-    const spId = route.params.id; 
+    const spId = route.params.id;
     await loadAllData(spId);
   });
 
@@ -819,19 +858,22 @@
   const toggleFavorite = async () => {
       // 1. Bóc tách thông tin đăng nhập
       const token = localStorage.getItem('token');
-      
+      const userString = localStorage.getItem('user');
+
       // 2. Kiểm tra nếu chưa đăng nhập -> đá sang trang Login
-      if (!token) {
+      if (!token || !userString) {
           toastStore.showToast("💖 Bạn cần đăng nhập để thả tim mô hình nhé!", "error");
           // Ghi nhớ trang hiện tại để login xong thì quay lại đây
           router.push({ path: '/login', query: { redirect: route.fullPath } });
           return;
       }
 
+      const userObj = JSON.parse(userString);
 
       try {
           // 3. Gửi payload lên API "Toggle" ở Backend
           const payload = {
+              MaKH: userObj.MaKH,
               MaMoHinh: product.value.MaMoHinh
           };
 
@@ -839,9 +881,9 @@
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}` 
+                  'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify(payload) 
+              body: JSON.stringify(payload)
           });
 
           const data = await response.json();
@@ -867,51 +909,279 @@
 
   const addToCart = async () => {
     const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
 
-    // 1. CHẶN NẾU CHƯA ĐĂNG NHẬP (Chỉ cần kiểm tra có Token hay chưa)
-    if (!token || !userString) {
-      toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error");
-      router.push({ path: '/login', query: { redirect: route.fullPath } });
+    if (!token) {
+      toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error",
+        {headers: {'Authorization': `Bearer ${token}`}}
+      );
+      router.push({ path: '/login', query: { redirect: route.fullPath } })
       return;
     }
 
-    const userObj = JSON.parse(userString);
-    if (userObj.role === 1 || userObj.role === 2) {
-      toastStore.showToast("⚠️ Tài khoản nội bộ (Admin/Nhân viên) không được phép đặt hàng online!", "error");
-      return;
-    }
-
-    // 3. NẾU LÀ KHÁCH HÀNG HỢP LỆ -> ĐI TIẾP LUỒNG GỌI API
     try {
       const payload = {
-        MaPhanLoai: selectedVariant.value.MaPhanLoai, 
-        soluong: buyQuantity.value          
+        MaPhanLoai: selectedVariant.value.MaPhanLoai,
+        soluong: buyQuantity.value
       };
 
       const response = await fetch('http://localhost:3000/api/don_hang/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(payload) 
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toastStore.showToast("🛒 🎉 " + data.message, "success"); 
-        window.dispatchEvent(new Event('cart-updated')); 
+        toastStore.showToast("🛒 🎉 " + data.message, "success");
+        window.dispatchEvent(new Event('cart-updated'));
       } else {
-        toastStore.showToast("⚠️ Lỗi: " + data.message, "error"); 
+        toastStore.showToast("⚠️ Lỗi: " + data.message, "error");
       }
 
     } catch (error) {
       console.error("Lỗi khi kết nối API thêm giỏ hàng:", error);
-      toastStore.showToast("⚠️ Có lỗi mạng xảy ra khi thêm vào giỏ!", "error");
+      alert("Có lỗi mạng xảy ra khi thêm vào giỏ!");
     }
   };
+
+  // Truy xuất Blockchain bằng QR
+  /*
+  onMounted(async () => {
+    window.scrollTo(0, 0);
+    const spId = route.params.id;
+
+    // 1. Tải thông tin sản phẩm và ảnh
+    try {
+      const res = await fetch(`http://localhost:3000/api/products/${spId}`);
+      const dataJSON = await res.json();
+
+      if (res.ok) {
+        product.value = dataJSON.data[0];
+
+        if (product.value && product.value.MaVach_Serial) {
+            await fetchProductQR(product.value.MaVach_Serial);
+        }
+
+        let images = [product.value.AnhDaiDien];
+        if (product.value.DanhSachAnh) {
+          const gallery = product.value.DanhSachAnh.split(',');
+          images = [...images,...gallery];
+        }
+        allImages.value = [...new Set(images.filter(Boolean))];
+        mainImage.value = allImages.value[0];
+      }
+    } catch (error) {
+      console.error("Lỗi tải sản phẩm:", error);
+    }
+
+    // 2. Tải danh sách phân loại (Variant)
+    try {
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${spId}`);
+      const varJSON = await resVar.json();
+
+      if (resVar.ok) {
+        variants.value = varJSON.data;
+        if (variants.value.length > 0) {
+          selectedVariant.value = variants.value[0];
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi tải phân loại:", error);
+    }
+
+    // ================= 3. [MỚI]: KIỂM TRA TRẠNG THÁI YÊU THÍCH KHI LOAD WEB =================
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+
+    if (token && userString) {
+        try {
+            const userObj = JSON.parse(userString);
+            // Giả sử Backend có API GET /api/favorite/check/:maKH/:maMH để kiểm tra
+            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${userObj.MaKH}/${spId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const favData = await resFav.json();
+
+            if (resFav.ok && favData.isFavorite) {
+                isFavorite.value = true; // Nếu Backend bảo đã thích -> tô đỏ trái tim
+            }
+        } catch (err) {
+            console.error("Lỗi kiểm tra trạng thái yêu thích:", err);
+        }
+    }
+    await fetchReviews(spId);
+    await checkEligibility(spId);
+  });
+  */
+  const qrCodeImg = ref('');
+  /*
+  const showQR = async (serial) => {
+      if (!serial) {
+          alert("Sản phẩm này không có mã Serial!");
+          return;
+      }
+
+      console.log("Đang gọi API cho Serial:", serial); // Kiểm tra log ở F12
+      try {
+          // Hãy chắc chắn port 3000 là port Backend của bạn
+          const res = await axios.get(`http://localhost:3000/api/blockchain/generate-qr/${serial}`);
+
+          if (res.data.success) {
+              qrCodeImg.value = res.data.qrCodeData;
+              console.log("Đã nhận dữ liệu QR thành công");
+          } else {
+              alert("Backend trả về lỗi: " + res.data.message);
+          }
+      } catch (err) {
+          console.error("Lỗi kết nối API:", err);
+          alert("Không thể kết nối đến máy chủ Backend!");
+      }
+  };
+  */
+  const fetchProductQR = async (serial) => {
+      if (!serial) return; // Nếu không có serial thì bỏ qua
+
+      try {
+          const res = await axios.get(`http://localhost:3000/api/blockchain/generate-qr/${serial}`);
+          if (res.data.success) {
+              qrCodeImg.value = res.data.qrCodeData;
+          }
+      } catch (err) {
+          console.error("Lỗi tự động tạo QR:", err);
+          // Không dùng alert ở đây để tránh làm phiền người dùng nếu lỗi mạng nhẹ
+      }
+  };
+
+  // Thêm hàm tải ảnh QR (để dùng cho nút bấm nếu cần)
+  const downloadQR = () => {
+    if (!qrCodeImg.value) return;
+    const link = document.createElement('a');
+    link.href = qrCodeImg.value;
+    link.download = `QR_${product.value.MaVach_Serial}.png`;
+    link.click();
+  };
+
+const isQRVisible = ref(false);
+
+// 2. Hàm xử lý khi bấm nút "Kiểm tra Blockchain"
+const handleShowQR = async () => {
+  // Nếu đang mở thì đóng lại
+  if (isQRVisible.value) {
+    isQRVisible.value = false;
+    return;
+  }
+
+  // Nếu chưa có ảnh QR trong bộ nhớ thì mới gọi API
+  if (!qrCodeImg.value && product.value?.MaVach_Serial) {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/blockchain/generate-qr/${product.value.MaVach_Serial}`);
+      if (res.data.success) {
+        qrCodeImg.value = res.data.qrCodeData;
+      }
+    } catch (err) {
+      console.error("Lỗi lấy mã QR:", err);
+      toastStore.showToast("⚠️ Không thể lấy mã QR lúc này", "error");
+      return;
+    }
+  }
+
+  // Hiện khung QR sau khi đã có dữ liệu
+  isQRVisible.value = true;
+};
+// Truy xuất Blockchain bằng QR và Tải dữ liệu trang
+  onMounted(async () => {
+    window.scrollTo(0, 0);
+    const spId = route.params.id;
+
+    // 1. Tải thông tin sản phẩm và ảnh
+    try {
+      const res = await fetch(`http://localhost:3000/api/products/${spId}`);
+      const dataJSON = await res.json();
+
+      if (res.ok) {
+        // ✨ SỬA LỖI 1: Tự động nhận diện Object hoặc Array từ Backend một cách an toàn
+        const targetData = Array.isArray(dataJSON.data) ? dataJSON.data[0] : dataJSON.data;
+
+        if (targetData) {
+          product.value = targetData;
+
+          // Gọi hàm sinh QR Blockchain nếu có mã vạch
+          if (product.value.MaVach_Serial && typeof fetchProductQR === 'function') {
+              try {
+                await fetchProductQR(product.value.MaVach_Serial);
+              } catch (qrErr) {
+                console.error("Lỗi chạy hàm QR:", qrErr);
+              }
+          }
+
+          // ✨ SỬA LỖI 2: Xử lý ảnh thông minh (Mảng thì gộp luôn, Chuỗi thì mới split)
+          let images = [product.value.AnhDaiDien];
+          if (product.value.DanhSachAnh) {
+            if (Array.isArray(product.value.DanhSachAnh)) {
+              images = [...images, ...product.value.DanhSachAnh];
+            } else if (typeof product.value.DanhSachAnh === 'string') {
+              images = [...images, ...product.value.DanhSachAnh.split(',')];
+            }
+          }
+          allImages.value = [...new Set(images.filter(Boolean))];
+          mainImage.value = allImages.value[0] || '';
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi tải sản phẩm:", error);
+    }
+
+    // 2. Tải danh sách phân loại (Variant)
+    try {
+      const resVar = await fetch(`http://localhost:3000/api/products/variants/${spId}`);
+      const varJSON = await resVar.json();
+
+      if (resVar.ok) {
+        variants.value = varJSON.data;
+        if (variants.value.length > 0) {
+          selectedVariant.value = variants.value[0];
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi tải phân loại:", error);
+    }
+
+    // 3. Tải sản phẩm liên quan (Đồng bộ hàm fetchRelatedProducts của bạn)
+    if (product.value && product.value.MaLoaiMH) {
+      await fetchRelatedProducts(product.value.MaLoaiMH);
+    }
+
+    // 4. KIỂM TRA TRẠNG THÁI YÊU THÍCH KHI LOAD WEB
+    const token = localStorage.getItem('token');
+
+    if (token) {
+        try {
+            const resFav = await fetch(`http://localhost:3000/api/products/check_favorite/${spId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (resFav.ok) {
+              const favData = await resFav.json();
+              if (favData && favData.isFavorite) {
+                  isFavorite.value = true;
+              }
+            }
+        } catch (err) {
+            console.error("Lỗi kiểm tra trạng thái yêu thích:", err);
+        }
+    }
+
+    // 5. Tải các thành phần bổ sung (Bọc try-catch phòng hờ hàm chưa khai báo)
+    try {
+      if (typeof fetchReviews === 'function') await fetchReviews(spId);
+      if (typeof checkEligibility === 'function') await checkEligibility(spId);
+    } catch (e) {
+      console.error("Lỗi tải bổ sung:", e);
+    }
+  });
 </script>
 
 <style scoped>
@@ -927,11 +1197,11 @@
     font-variation-settings: 'FILL' 1, 'wght' 600;
 }
 .hide-scrollbar::-webkit-scrollbar {
-  display: none; 
+  display: none;
 }
 .hide-scrollbar {
-  -ms-overflow-style: none;  
-  scrollbar-width: none;  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .thumbnail-move {
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -951,7 +1221,7 @@
 .slide-left-enter-active,
 .slide-left-leave-active {
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute; 
+  position: absolute;
 }
 
 .slide-right-enter-from {
@@ -971,4 +1241,22 @@
   transform: translateX(100%);
   opacity: 0;
 }
+
+/* Hiệu ứng quét QR Code */
+.scan-line {
+  animation: scanning 2.5s infinite linear;
+}
+
+@keyframes scanning {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Hiệu ứng hover nhẹ cho khung QR */
+.group:hover .scan-line {
+  animation-duration: 1.5s; /* Quét nhanh hơn khi di chuột vào */
+}
+
 </style>

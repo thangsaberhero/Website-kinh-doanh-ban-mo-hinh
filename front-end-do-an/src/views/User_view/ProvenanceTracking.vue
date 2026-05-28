@@ -1,83 +1,93 @@
 <template>
-  <div class="provenance-page">
+  <div class="min-h-screen bg-[#0d0e12] text-white pb-24">
     <TheHeader />
 
-    <div class="hero-section">
-      <div class="overlay"></div>
-      <div class="hero-content">
-        <h1 class="hero-title">TRUY XUẤT BLOCKCHAIN</h1>
-        <p class="hero-subtitle">XÁC THỰC NGUỒN GỐC - BẢO VỆ GIÁ TRỊ SƯU TẦM</p>
-        
-        <div class="hero-stats">
-          <div class="stat-item"><span>Nodes:</span> 1,204</div>
-          <div class="stat-item"><span>Status:</span> Operational</div>
-          <div class="stat-item"><span>Network:</span> FigureChain Mainnet</div>
+    <div class="relative h-[450px] bg-[url('https://images8.alphacoders.com/102/1029194.jpg')] bg-cover bg-center flex items-center justify-center text-center">
+      <div class="absolute inset-0 bg-gradient-to-b from-[#0d0e12]/40 to-[#0d0e12]"></div>
+      <div class="relative z-10 px-4">
+        <h1 class="text-4xl md:text-6xl font-black tracking-wider text-white my-2.5 drop-shadow-[0_0_20px_rgba(255,107,74,0.5)] uppercase">
+          Truy xuất Blockchain
+        </h1>
+        <p class="text-sm md:text-lg text-[#ff6b4a] tracking-[4px] font-medium uppercase">
+          Xác thực nguồn gốc - Bảo vệ giá trị sưu tầm
+        </p>
+
+        <div class="flex justify-center gap-7 mt-5 text-xs md:text-sm text-gray-400">
+          <div><span class="text-[#ff6b4a] font-bold">Nodes:</span> 1,204</div>
+          <div><span class="text-[#ff6b4a] font-bold">Status:</span> Operational</div>
+          <div><span class="text-[#ff6b4a] font-bold">Network:</span> FigureChain Mainnet</div>
         </div>
       </div>
     </div>
 
-    <div class="main-container">
-      <div class="glass-card search-wrapper">
-        <div class="search-box">
-          <div class="input-group">
-            <span class="search-icon">🔍</span>
-            <input 
-              v-model="searchQuery" 
+    <div class="max-w-[1300px] mx-auto -mt-20 px-5 relative z-20">
+
+      <div class="bg-[#1c1d21]/95 border border-[#ff6b4a]/15 rounded-[24px] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)] backdrop-blur-md mb-10 max-w-[900px] mx-auto">
+        <div class="border border-transparent rounded-full px-2 py-1 focus-within:border-[#ff6b4a] focus-within:shadow-[0_0_8px_rgba(255,107,74,0.3)] transition-all duration-300">
+          <div class="flex items-center">
+            <span class="text-xl ml-3">🔍</span>
+            <input
+              v-model="searchQuery"
               @keyup.enter="handleSearch"
-              type="text" 
+              type="text"
               placeholder="Nhập mã Serial (VD: SN-001-NEN-MELUSINE)..."
+              class="flex-1 bg-transparent border-none text-white text-base outline-none px-4 focus:outline-none focus:ring-0"
             >
-            <button @click="handleSearch" :disabled="isLoadingSearch" class="btn-search">
+            <button
+              @click="handleSearch"
+              :disabled="isLoadingSearch"
+              class="bg-[#ff6b4a] text-white border-none py-3.5 px-10 rounded-full font-extrabold cursor-pointer transition duration-300 hover:bg-[#ff8566] hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,74,0.4)] disabled:opacity-50"
+            >
               {{ isLoadingSearch ? 'Đang tìm...' : 'TRUY XUẤT' }}
             </button>
           </div>
         </div>
-        <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
+        <p v-if="errorMsg" class="text-red-500 mt-4 text-center font-medium">{{ errorMsg }}</p>
       </div>
 
-      <div v-if="!productData && !isLoadingSearch" class="instruction-wrapper">
-        <div class="instruction-section">
-          <div class="section-title">
-            <span>01</span>
-            <h3>Cách thức hoạt động</h3>
+      <div v-if="!productData && !isLoadingSearch" class="max-w-[1000px] mx-auto transition-all">
+        <div>
+          <div class="flex items-center gap-4 mb-8">
+            <span class="text-4xl font-black text-[#ff6b4a]/20 italic">01</span>
+            <h3 class="text-xl font-bold">Cách thức hoạt động</h3>
           </div>
-          <div class="step-grid">
-            <div class="step-card">
-              <div class="step-number">STEP 1</div>
-              <h4>Nhập mã Serial</h4>
-              <p>Mã được in trên thẻ chứng thực đi kèm hoặc dưới đế của mô hình Figure.</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="bg-white/[0.02] border border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
+              <div class="text-[#ff6b4a] text-xs font-black mb-2 tracking-widest">STEP 1</div>
+              <h4 class="text-lg font-bold mb-1">Nhập mã Serial</h4>
+              <p class="text-gray-400 text-sm leading-relaxed">Mã được in trên thẻ chứng thực đi kèm hoặc dưới đế của mô hình Figure.</p>
             </div>
-            <div class="step-card">
-              <div class="step-number">STEP 2</div>
-              <h4>Quét Blockchain</h4>
-              <p>Hệ thống sẽ đối chiếu mã định danh với sổ cái phi tập trung thời gian thực.</p>
+            <div class="bg-white/[0.02] border border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
+              <div class="text-[#ff6b4a] text-xs font-black mb-2 tracking-widest">STEP 2</div>
+              <h4 class="text-lg font-bold mb-1">Quét Blockchain</h4>
+              <p class="text-gray-400 text-sm leading-relaxed">Hệ thống sẽ đối chiếu mã định danh với sổ cái phi tập trung thời gian thực.</p>
             </div>
-            <div class="step-card">
-              <div class="step-number">STEP 3</div>
-              <h4>Xác minh kết quả</h4>
-              <p>Nhận đầy đủ thông tin về ngày sản xuất, chủ sở hữu và lịch sử vận chuyển.</p>
+            <div class="bg-white/[0.02] border border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
+              <div class="text-[#ff6b4a] text-xs font-black mb-2 tracking-widest">STEP 3</div>
+              <h4 class="text-lg font-bold mb-1">Xác minh kết quả</h4>
+              <p class="text-gray-400 text-sm leading-relaxed">Nhận đầy đủ thông tin về ngày sản xuất, chủ sở hữu và lịch sử vận chuyển.</p>
             </div>
           </div>
         </div>
 
-        <div class="security-info">
-          <div class="section-title">
-            <span>02</span>
-            <h3>Bảo mật & Cốt lõi công nghệ</h3>
+        <div class="mt-16">
+          <div class="flex items-center gap-4 mb-8">
+            <span class="text-4xl font-black text-[#ff6b4a]/20 italic">02</span>
+            <h3 class="text-xl font-bold">Bảo mật & Cốt lõi công nghệ</h3>
           </div>
-          <div class="security-grid">
-            <div class="security-card">
-              <div class="security-icon">🛡️</div>
-              <div class="security-text">
-                <h4>Dữ liệu Immutable (Không thể thay đổi)</h4>
-                <p>Mọi thông tin một khi đã được ghi vào mạng lưới Blockchain sẽ tồn tại vĩnh viễn. Không một cá nhân hay tổ chức nào có thể tự ý can thiệp hay sửa đổi.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20">
+              <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0">🛡️</div>
+              <div>
+                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg">Dữ liệu Immutable (Không thể thay đổi)</h4>
+                <p class="text-gray-400 text-sm leading-relaxed">Mọi thông tin một khi đã được ghi vào mạng lưới Blockchain sẽ tồn tại vĩnh viễn. Không một cá nhân hay tổ chức nào có thể tự ý can thiệp hay sửa đổi.</p>
               </div>
             </div>
-            <div class="security-card">
-              <div class="security-icon">💎</div>
-              <div class="security-text">
-                <h4>Định danh độc bản (Digital Twin)</h4>
-                <p>Mỗi mô hình vật lý được liên kết với một chữ ký số duy nhất trên Smart Contract, loại bỏ hoàn toàn rủi ro hàng giả trên thị trường sưu tầm.</p>
+            <div class="flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20">
+              <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0">💎</div>
+              <div>
+                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg">Định danh độc bản (Digital Twin)</h4>
+                <p class="text-gray-400 text-sm leading-relaxed">Mỗi mô hình vật lý được liên kết với một chữ ký số duy nhất trên Smart Contract, loại bỏ hoàn toàn rủi ro hàng giả trên thị trường sưu tầm.</p>
               </div>
             </div>
           </div>
@@ -85,105 +95,113 @@
       </div>
 
       <transition name="fade">
-        <div v-if="productData" class="dashboard-layout">
-          
-          <div class="dashboard-panel product-panel">
-            <div class="panel-header">
-              <h3>📦 Thông tin sản phẩm</h3>
+        <div v-if="productData" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1.5fr_1.5fr] gap-6 mt-5">
+
+          <div class="bg-[#15161a] border border-[#2a2b30] rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1">
+            <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
+              <h3 class="text-base font-bold text-white">📦 Thông tin sản phẩm</h3>
             </div>
-            <div class="product-card">
-              <div class="product-image-container">
+            <div class="flex flex-col gap-4 items-center text-center">
+              <div class="w-[180px] h-[180px] mb-3 flex items-center justify-center bg-[#1c1d21] rounded-2xl overflow-hidden border border-[#ff6b4a]/30">
                 <img
                     v-if="productData.image"
-                    :src="`/Images_product/`+productData.image"
+                    :src="`/Images_product/` + productData.image"
                     alt="Product Image"
-                    class="product-image"
+                    class="w-full h-full object-cover transition duration-300 hover:scale-110"
                 >
-                <div v-else class="product-image-placeholder">🤖</div>
+                <div v-else class="text-6xl">🤖</div>
               </div>
-              <h4 class="product-name">{{ productData.name }}</h4>
-              <p class="product-manufacturer">{{ productData.manufacturer }}</p>
-              
-              <div class="detail-group">
-                <label>Mã Serial (Định danh)</label>
-                <div class="hash-box serial-text">{{ productData.serialNumber }}</div>
+              <h4 class="text-xl font-bold text-white uppercase tracking-wide">{{ productData.name }}</h4>
+              <p class="text-gray-400 text-sm -mt-2">{{ productData.manufacturer }}</p>
+
+              <div class="w-full text-left mt-3">
+                <label class="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Mã Serial (Định danh)</label>
+                <div class="bg-[#0d0e12] p-2.5 px-4 rounded-lg border border-zinc-800 font-mono break-all text-[#ff6b4a] font-bold text-lg text-center">
+                  {{ productData.serialNumber }}
+                </div>
               </div>
-              
-              <div class="detail-group">
-                <label>Trạng thái hiện tại</label>
-                <div class="status-badge success">
-                  <span class="dot"></span> 
+
+              <div class="w-full text-left">
+                <label class="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Trạng thái hiện tại</label>
+                <div class="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-full font-bold text-sm w-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <span class="w-2 h-2 bg-current rounded-full animate-pulse"></span>
                   {{ productData.history?.length ? productData.history[productData.history.length-1].status : 'Đã xác thực' }}
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="dashboard-panel timeline-panel">
-            <div class="panel-header">
-              <h3>✈️ Hành Trình Blockchain</h3>
+          <div class="bg-[#15161a] border border-[#2a2b30] rounded-2xl p-6 flex flex-col">
+            <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
+              <h3 class="text-base font-bold text-white">✈️ Hành Trình Blockchain</h3>
             </div>
-            <div class="timeline-container">
-              <div v-if="productData.history && productData.history.length > 0" class="timeline">
-                <div v-for="(record, index) in productData.history" :key="index" class="timeline-item">
-                  <div class="timeline-dot" :class="{ 'latest': index === productData.history.length - 1 }"></div>
-                  <div class="timeline-content">
-                    <h4 class="timeline-status">{{ record.status }}</h4>
-                    <div class="timeline-meta">
-                      <span class="timeline-date">🕒 {{ formatDate(record.timestamp) }}</span>
-                      <span class="timeline-location">📍 {{ record.location }}</span>
+            <div class="flex-1 overflow-y-auto pr-1 max-h-[500px]">
+              <div v-if="productData.history && productData.history.length > 0" class="relative">
+                <div v-for="(record, index) in productData.history" :key="index" class="flex gap-4 mb-6 relative group last:mb-0">
+                  <div class="absolute left-[5px] top-5 bottom-[-24px] w-0.5 bg-zinc-800 z-0 group-last:hidden"></div>
+
+                  <div
+                    class="w-3 h-3 rounded-full mt-1.5 z-10 border-2 border-[#15161a] shrink-0 transition-all duration-300"
+                    :class="index === productData.history.length - 1 ? 'bg-[#ff6b4a] shadow-[0_0_10px_#ff6b4a]' : 'bg-zinc-600'"
+                  ></div>
+
+                  <div class="flex-1 bg-[#1c1d21] p-4 rounded-xl border border-[#2a2b30]">
+                    <h4 class="text-base font-bold text-white mb-1">{{ record.status }}</h4>
+                    <div class="flex flex-col gap-1 text-xs text-gray-400 mb-2.5">
+                      <span class="text-[#ff6b4a]">🕒 {{ formatDate(record.timestamp) }}</span>
+                      <span>📍 {{ record.location }}</span>
                     </div>
-                    <div class="timeline-hash">
+                    <div class="text-[11px] bg-[#0d0e12] py-1.5 px-2.5 rounded-md text-zinc-500 font-mono">
                       TX Wallet: <code>{{ formatAddress(record.updater) }}</code>
                     </div>
                   </div>
                 </div>
               </div>
-              <p v-else class="no-data">Sản phẩm chưa có lịch sử hành trình.</p>
+              <p v-else class="text-center text-gray-500 py-10">Sản phẩm chưa có lịch sử hành trình.</p>
             </div>
           </div>
 
-          <div class="dashboard-panel map-panel">
-            <div class="panel-header">
-              <h3>🗺️ Bản Đồ Vị Trí</h3>
+          <div class="bg-[#15161a] border border-[#2a2b30] rounded-2xl p-6 flex flex-col">
+            <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
+              <h3 class="text-base font-bold text-white">🗺️ Bản Đồ Vị Trí</h3>
             </div>
-            <div class="map-container">
-              <div class="map-ui-overlay">
-                <div class="live-badge">
-                  <span class="pulsing-dot"></span> LIVE TRACKING
+            <div class="relative w-full h-full flex-1 min-h-[350px]">
+              <div class="absolute top-4 right-4 z-20">
+                <div class="bg-[#ff6b4a]/15 border border-[#ff6b4a]/40 text-[#ff6b4a] py-1.5 px-3 rounded-full text-xs font-bold flex items-center gap-2 backdrop-blur-sm">
+                  <span class="w-2 h-2 bg-[#ff6b4a] rounded-full animate-ping"></span> LIVE TRACKING
                 </div>
               </div>
-              <div id="real-map" style="width: 100%; height: 100%; min-height: 350px; border-radius: 12px; z-index: 1;"></div>
+              <div id="real-map" class="w-full h-full min-h-[350px] rounded-xl z-10"></div>
             </div>
           </div>
 
         </div>
       </transition>
 
-      <div v-if="isAdmin" class="admin-section">
-        <div class="admin-header">
-          <span class="admin-icon">🛠️</span>
-          <h2>Bảng Điều Khiển Admin</h2>
+      <div v-if="isAdmin" class="mt-16 border-t border-zinc-800 pt-10 max-w-[1000px] mx-auto">
+        <div class="flex items-center gap-4 mb-8">
+          <span class="text-2xl">🛠️</span>
+          <h2 class="text-2xl font-bold">Bảng Điều Khiển Admin</h2>
         </div>
-        <div class="admin-grid">
-          <div class="admin-card">
-            <h3>1. Khởi tạo sản phẩm</h3>
-            <div class="form-group">
-              <input v-model="mintForm.serialNumber" type="text" placeholder="Mã Serial...">
-              <input v-model="mintForm.manufacturer" type="text" placeholder="Nhà sản xuất...">
-              <button @click="handleMint" :disabled="isLoadingMint" class="btn-mint">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="bg-[#1c1d21] p-6 rounded-2xl border border-dashed border-zinc-700">
+            <h3 class="text-base font-bold mb-4 text-gray-200">1. Khởi tạo sản phẩm (Mint NFT)</h3>
+            <div class="space-y-3">
+              <input v-model="mintForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="mintForm.manufacturer" type="text" placeholder="Nhà sản xuất..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <button @click="handleMint" :disabled="isLoadingMint" class="w-full p-3 rounded-lg font-bold cursor-pointer border-none bg-[#ff6b4a] text-white hover:bg-[#ff8566] transition-colors disabled:opacity-50">
                 {{ isLoadingMint ? 'Đang ghi Blockchain...' : 'KÍCH HOẠT (MINT)' }}
               </button>
             </div>
           </div>
 
-          <div class="admin-card">
-            <h3>2. Cập nhật hành trình</h3>
-            <div class="form-group">
-              <input v-model="updateForm.serialNumber" type="text" placeholder="Mã Serial...">
-              <input v-model="updateForm.newStatus" type="text" placeholder="Trạng thái (VD: Đang giao)...">
-              <input v-model="updateForm.location" type="text" placeholder="Vị trí (VD: Kho Hải Phòng)...">
-              <button @click="handleUpdate" :disabled="isLoadingUpdate" class="btn-update">
+          <div class="bg-[#1c1d21] p-6 rounded-2xl border border-dashed border-zinc-700">
+            <h3 class="text-base font-bold mb-4 text-gray-200">2. Cập nhật hành trình</h3>
+            <div class="space-y-3">
+              <input v-model="updateForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="updateForm.newStatus" type="text" placeholder="Trạng thái (VD: Đang giao)..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="updateForm.location" type="text" placeholder="Vị trí (VD: Kho Hải Phòng)..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <button @click="handleUpdate" :disabled="isLoadingUpdate" class="w-full p-3 rounded-lg font-bold cursor-pointer border-none bg-blue-600 text-white hover:bg-blue-500 transition-colors disabled:opacity-50">
                 {{ isLoadingUpdate ? 'Đang cập nhật...' : 'CẬP NHẬT TRẠNG THÁI' }}
               </button>
             </div>
@@ -196,14 +214,17 @@
 </template>
 
 <script setup>
-import { ref, computed,nextTick } from 'vue';
+import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
-import { useAuthStore } from '@/stores/auth'; 
+import { useAuthStore } from '@/stores/auth';
 import TheHeader from '@/components/TheHeader.vue';
 
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
 const authStore = useAuthStore();
+const route = useRoute();
 const isAdmin = computed(() => authStore.user !== null && authStore.user.Role === 'Quản lý');
 
 const searchQuery = ref('');
@@ -216,117 +237,213 @@ const updateForm = ref({ serialNumber: '', newStatus: '', location: '' });
 const isLoadingMint = ref(false);
 const isLoadingUpdate = ref(false);
 
-let mapInstance = null; // Biến lưu trữ bản đồ
+let mapInstance = null;
 
-// TỪ ĐIỂN TỌA ĐỘ (MOCK GEOLOCATION)
-// Vì Blockchain thường chỉ lưu text ("Kho Hải Phòng"), ta cần map text sang Tọa độ (Lat, Lng)
-const coordinateMap = {
-  "Kiến An": [20.8001, 106.6331],
-  "Hải Phòng": [20.8449, 106.6881],
-  "Hà Nội": [21.0285, 105.8542],
-  "Hồ Chí Minh": [10.8231, 106.6297],
-  "Đà Nẵng": [16.0470, 108.2062]
-};
 const handleSearch = async () => {
-  if (!searchQuery.value.trim()) { 
-    errorMsg.value = "Vui lòng nhập mã Serial!"; 
-    return; 
+  if (!searchQuery.value.trim()) {
+    errorMsg.value = "Vui lòng nhập mã Serial!";
+    return;
   }
-  
+
   isLoadingSearch.value = true;
   errorMsg.value = '';
   productData.value = null;
-  
+
   try {
     const response = await axios.get(`http://localhost:3000/api/blockchain/history/${searchQuery.value}`);
-    
+
     if (response.data.success) {
       const historyData = response.data.history || [];
       const product = response.data.product;
-      let verifiedManufacturer = response.data.product.TenHSX; 
-      
+      let verifiedManufacturer = response.data.product?.TenHSX || 'Chưa xác định';
+
       if (historyData.length > 0) {
-        verifiedManufacturer = historyData[0].location; 
+        verifiedManufacturer = historyData[0].location;
       }
-      // 1. HIỂN THỊ THÔNG TIN SẢN PHẨM: Dữ liệu này sẽ tự động map lên UI
+
+      // Giữ nguyên toàn bộ dữ liệu ở đây để đổ ra HTML hiển thị danh sách Text Hành Trình
       productData.value = {
-        name: product.TenMH,
-        image: product.AnhDaiDien,
+        name: product?.TenMH || 'Sản phẩm Blockchain',
+        image: product?.AnhDaiDien,
         manufacturer: verifiedManufacturer,
-        serialNumber: response.data.product.MaVach_Serial,
+        serialNumber: product?.MaVach_Serial || searchQuery.value,
         history: historyData.map(record => ({
-          status: record.status,
-          location: record.location,
-          timestamp: record.timestamp,
-          updater: record.updatedBy
+          status: record.status || record.trangThai || record.description || "Cập nhật hành trình",
+          location: record.location || record.diaDiem || record.locationName || "Không rõ vị trí",
+          timestamp: record.timestamp || record.thoiGian || record.time || "Vừa xong",
+          updater: record.updatedBy || record.updater || record.txWallet || record.walletAddress || "Hệ thống",
+          latitude: record.latitude || record.lat || null,
+          longitude: record.longitude || record.lng || record.lon || null
         }))
       };
 
-      // 2. VẼ BẢN ĐỒ: Chờ DOM cập nhật (hiển thị div #real-map) rồi mới vẽ
       await nextTick();
       renderMap(productData.value.history);
     }
   } catch (error) {
     errorMsg.value = error.response?.data?.message || "Không tìm thấy dữ liệu trên Blockchain";
-    console.error("Lỗi:", error);
-  } finally { 
-    isLoadingSearch.value = false; 
+    console.error("Lỗi tra cứu:", error);
+  } finally {
+    isLoadingSearch.value = false;
   }
 };
 
-// HÀM VẼ BẢN ĐỒ LEAFLET
+const extractAndSearch = () => {
+  let serial = '';
+  if (route.params) {
+    serial = route.params.serial || route.params.serialNumber || route.params.id;
+  }
+  if (!serial && route.query) {
+    serial = route.query.serial || route.query.serialNumber || route.query.search;
+  }
+  if (!serial) {
+    const urlParams = new URLSearchParams(window.location.search);
+    serial = urlParams.get('serial') || urlParams.get('serialNumber') || urlParams.get('search');
+  }
+  if (!serial) {
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    if (pathSegments.length > 0) {
+      const lastSeg = pathSegments[pathSegments.length - 1];
+      if (!['blockchain', 'provenance', 'history'].includes(lastSeg.toLowerCase())) {
+        serial = lastSeg;
+      }
+    }
+  }
+  if (!serial && window.location.hash) {
+    const hashPath = window.location.hash.replace('#', '');
+    if (hashPath.includes('?')) {
+      const hashParams = new URLSearchParams(hashPath.split('?')[1]);
+      serial = hashParams.get('serial') || hashParams.get('serialNumber');
+    }
+    if (!serial) {
+      const hashSegments = hashPath.split('?')[0].split('/').filter(Boolean);
+      if (hashSegments.length > 0) {
+        const lastHashSeg = hashSegments[hashSegments.length - 1];
+        if (!['blockchain', 'provenance', 'history'].includes(lastHashSeg.toLowerCase())) {
+          serial = lastHashSeg;
+        }
+      }
+    }
+  }
+
+  if (serial && typeof serial === 'string' && serial.trim()) {
+    searchQuery.value = decodeURIComponent(serial.trim());
+    handleSearch();
+  }
+};
+
+onMounted(() => {
+  extractAndSearch();
+});
+
+watch(() => route.params, () => { extractAndSearch(); }, { deep: true });
+watch(() => route.query, () => { extractAndSearch(); }, { deep: true });
+
+// =========================================================================
+// 🌟 HÀM RENDER MAP: LỌC TRÊN BẢN ĐỒ GIỐNG HỆT ADMIN
+// =========================================================================
 const renderMap = async (history) => {
   if (!history || history.length === 0) return;
 
-  if (mapInstance) {
-    mapInstance.remove();
+  // 🌟 BỘ LỌC ĐỒNG BỘ 100% VỚI ADMIN TRÁNH HIỂN THỊ ĐIỂM KHỞI TẠO LÊN MAP
+  const validHistory = history.filter(record => {
+    if (!record.location || record.location.trim() === "") return false;
+
+    const locText = record.location.toLowerCase();
+    const statusText = record.status ? record.status.toLowerCase() : "";
+
+    // Loại bỏ các địa điểm ảo mang tính hệ thống
+    if (
+      locText.includes("metadata") || 
+      locText.includes("không rõ") || 
+      locText.includes("bắt đầu sản xuất") || 
+      locText.includes("bat dau san xuat") ||
+      locText.includes("chưa rõ")
+    ) {
+      return false;
+    }
+
+    // Kiên quyết loại bỏ trạng thái chứa các keyword khởi tạo/mint kỹ thuật
+    if (
+      statusText.includes("khoi tao") || 
+      statusText.includes("khởi tạo") || 
+      statusText.includes("mint")
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  if (!validHistory || validHistory.length === 0) {
+    if (mapInstance) {
+      mapInstance.off();
+      mapInstance.remove();
+      mapInstance = null;
+    }
+    return;
   }
 
-  // Khởi tạo bản đồ với các tính năng tương tác đầy đủ
-  mapInstance = L.map('real-map', {
-    scrollWheelZoom: true, // Cho phép zoom bằng chuột
-    dragging: true,        
-    touchZoom: true        
-  }).setView([16.0470, 108.2062], 5); // Vị trí trung tâm ban đầu
+  if (mapInstance) {
+    mapInstance.off();
+    mapInstance.remove();
+    mapInstance = null;
+  }
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  await nextTick();
+
+  mapInstance = L.map('real-map', {
+    scrollWheelZoom: true,
+    dragging: true,
+    touchZoom: true
+  }).setView([16.0470, 108.2062], 5);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; CARTO',
     subdomains: 'abcd',
     maxZoom: 19
   }).addTo(mapInstance);
 
-  const latLngs = []; 
+  const latLngs = [];
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Dùng vòng lặp for...of thay cho forEach để dùng được await
-  for (const [index, record] of history.entries()) {
-    // TỰ ĐỘNG LẤY TỌA ĐỘ TỪ ĐỊA CHỈ
-    let coords = await getCoordinates(record.location);
-    
-    // Nếu không tìm thấy, dùng tọa độ mặc định (Hà Nội) để tránh lỗi
+  // Vẽ các marker trên Map sử dụng validHistory
+  for (const [index, record] of validHistory.entries()) {
+    let coords;
+
+    if (record.latitude && record.longitude) {
+      coords = [parseFloat(record.latitude), parseFloat(record.longitude)];
+    } else {
+      if (index > 0) await sleep(600);
+      coords = await getCoordinates(record.location);
+    }
+
     if (!coords) {
-      console.warn(`Không tìm thấy tọa độ cho: ${record.location}. Dùng vị trí mặc định.`);
-      coords = [21.0285, 105.8542]; 
+      console.warn(`Không tìm thấy tọa độ cho: ${record.location}.`);
+      coords = [21.0285 + (index * 0.15), 105.8542 + (index * 0.15)];
     }
 
     latLngs.push(coords);
-    const isLatest = index === history.length - 1;
-    
-    // Giữ nguyên thiết kế Icon của bạn
-    const markerHtml = isLatest 
-      ? `<div class="map-marker-live"><div class="pulse-ring"></div><div class="pulse-dot"></div></div>`
-      : `<div class="map-marker-history"></div>`;
-    
+    const isLatest = index === validHistory.length - 1;
+
+    const markerHtml = isLatest
+      ? `<div class="map-marker-live">
+          <div class="pulse-ring"></div>
+          <div class="live-number-inner">${index + 1}</div>
+         </div>`
+      : `<div class="map-marker-history">${index + 1}</div>`;
+
     const customIcon = L.divIcon({
-      className: 'custom-div-icon',
+      className: 'custom-clear-icon',
       html: markerHtml,
-      iconSize: isLatest ? [24, 24] : [12, 12],
-      iconAnchor: isLatest ? [12, 12] : [6, 6]
+      iconSize: isLatest ? [26, 26] : [22, 22],
+      iconAnchor: isLatest ? [13, 13] : [11, 11]
     });
 
     const popupContent = `
-      <div class="custom-map-popup">
-        <span class="popup-status ${isLatest ? 'text-orange' : 'text-gray'}">${record.status}</span>
-        <span class="popup-location">📍 ${record.location}</span>
+      <div class="custom-map-popup" style="color: #1e293b; font-family: sans-serif; padding: 2px;">
+        <b style="color: #f97316; font-size: 13px;">Chặng ${index + 1}: ${record.status}</b><br/>
+        <span style="font-size: 11px; color: #64748b; display: block; margin-top: 3px;">📍 Vị trí: ${record.location}</span>
       </div>
     `;
 
@@ -334,7 +451,7 @@ const renderMap = async (history) => {
       .addTo(mapInstance)
       .bindPopup(popupContent, {
         closeButton: false,
-        offset: [0, isLatest ? -10 : -5]
+        offset: [0, isLatest ? -5 : -2]
       });
 
     if (isLatest) {
@@ -342,604 +459,190 @@ const renderMap = async (history) => {
     }
   }
 
-  // TỰ ĐỘNG CĂN CHỈNH BẢN ĐỒ ĐỂ HIỆN TẤT CẢ CÁC ĐIỂM
   if (latLngs.length > 1) {
-    // Vẽ đường nối hành trình
     const polyline = L.polyline(latLngs, {
-      color: '#ff6b4a',
-      weight: 2,
-      dashArray: '5, 10',
-      opacity: 0.6
+      color: '#f97316',
+      weight: 4,
+      opacity: 0.9,
+      lineJoin: 'round',
+      lineCap: 'round'
     }).addTo(mapInstance);
 
-    // Tự động zoom bản đồ sao cho vừa khít tất cả các điểm tọa độ
     mapInstance.fitBounds(polyline.getBounds(), { padding: [50, 50] });
   } else if (latLngs.length === 1) {
-    // Nếu chỉ có 1 điểm, zoom vào điểm đó
-    mapInstance.setView(latLngs[0], 12);
+    mapInstance.setView(latLngs[0], 13);
   }
+
+  setTimeout(() => {
+    if (mapInstance) {
+      mapInstance.invalidateSize();
+    }
+  }, 500);
 };
 
 const getCoordinates = async (address) => {
+  if (!address) return null;
+  const MAPBOX_TOKEN = "pk.eyJ1IjoidG9hbjI0IiwiYSI6ImNtcGpsMjk3ZjFubHUycHExZzB1bzl1NmgifQ.Mly4KRU649MW2dy0tDwHgA";
   try {
-    // Gọi API của OpenStreetMap để tìm tọa độ
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&limit=1`
     );
     const data = await response.json();
-
-    if (data && data.length > 0) {
-      // Trả về [lat, lon]
-      return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    if (data && data.features && data.features.length > 0) {
+      const [lng, lat] = data.features[0].center;
+      return [lat, lng];
     }
   } catch (error) {
-    console.error("Lỗi lấy tọa độ:", error);
+    console.error("Lỗi tự động định vị Mapbox:", error);
   }
-  return null; // Trả về null nếu không tìm thấy
+  return null;
 };
 
+const handleMint = async () => {
+  if (!mintForm.value.serialNumber.trim() || !mintForm.value.manufacturer.trim()) {
+    alert("Vui lòng điền đầy đủ mã Serial và Nhà sản xuất!");
+    return;
+  }
+  isLoadingMint.value = true;
+  try {
+    const response = await axios.post('http://localhost:3000/api/blockchain/mint', {
+      serialNumber: mintForm.value.serialNumber,
+      manufacturer: mintForm.value.manufacturer
+    });
+    if (response.data.success) {
+      alert("Kích hoạt (Mint) mô hình lên Blockchain thành công!");
+      mintForm.value = { serialNumber: '', manufacturer: '' };
+    } else {
+      alert(response.data.message || "Khởi tạo trên Blockchain thất bại!");
+    }
+  } catch (error) {
+    console.error("Lỗi Mint:", error);
+    alert(error.response?.data?.message || "Lỗi kết nối API khởi tạo!");
+  } finally {
+    isLoadingMint.value = false;
+  }
+};
 
-const handleMint = async () => { /* Giữ nguyên logic Admin của bạn */ };
-const handleUpdate = async () => { /* Giữ nguyên logic Admin của bạn */ };
+const handleUpdate = async () => {
+  if (!updateForm.value.serialNumber.trim() || !updateForm.value.newStatus.trim() || !updateForm.value.location.trim()) {
+    alert("Vui lòng nhập đầy đủ các thông tin hành trình!");
+    return;
+  }
+  isLoadingUpdate.value = true;
+  try {
+    const response = await axios.post('http://localhost:3000/api/blockchain/update', {
+      serialNumber: updateForm.value.serialNumber,
+      newStatus: updateForm.value.newStatus,
+      location: updateForm.value.location
+    });
+    if (response.data.success) {
+      alert("Cập nhật hành trình trực tiếp lên Blockchain thành công!");
+      if (productData.value && productData.value.serialNumber === updateForm.value.serialNumber) {
+        searchQuery.value = updateForm.value.serialNumber;
+        await handleSearch();
+      }
+      updateForm.value = { serialNumber: '', newStatus: '', location: '' };
+    } else {
+      alert(response.data.message || "Cập nhật hành trình thất bại!");
+    }
+  } catch (error) {
+    console.error("Lỗi cập nhật:", error);
+    alert(error.response?.data?.message || "Lỗi kết nối API hành trình!");
+  } finally {
+    isLoadingUpdate.value = false;
+  }
+};
+
 const formatDate = (ts) => (ts && ts != 0) ? new Date(Number(ts) * 1000).toLocaleString('vi-VN') : '---';
 const formatAddress = (addr) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
 </script>
 
 <style scoped>
-/* =========================================
-   BASE STYLES & LAYOUT
-========================================= */
-.provenance-page {
-  background-color: #0d0e12;
-  color: #ffffff;
-  min-height: 100vh;
-  padding-bottom: 100px;
-}
-
-.main-container {
-  max-width: 1300px; /* Mở rộng max-width để chứa 3 cột */
-  margin: -80px auto 0;
-  padding: 0 20px;
-  position: relative;
-  z-index: 20;
-}
-
-/* =========================================
-   HERO SECTION
-========================================= */
-.hero-section {
-  position: relative;
-  height: 450px;
-  background-image: url('https://images8.alphacoders.com/102/1029194.jpg');
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(13, 14, 18, 0.4), rgba(13, 14, 18, 1));
-}
-
-.hero-content {
-  position: relative;
-  z-index: 10;
-}
-
-.hero-title {
-  font-size: 4rem;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: #ffffff;
-  margin: 10px 0;
-  text-shadow: 0 0 20px rgba(255, 107, 74, 0.5);
-}
-
-.hero-subtitle {
-  font-size: 1.1rem;
-  color: #ff6b4a;
-  letter-spacing: 4px;
-  font-weight: 500;
-}
-
-.hero-stats {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-top: 20px;
-  font-size: 0.9rem;
-  color: #ccc;
-}
-.hero-stats span { color: #ff6b4a; font-weight: bold; }
-
-/* =========================================
-   SEARCH BOX
-========================================= */
-.glass-card {
-  background: rgba(28, 29, 33, 0.95);
-  border: 1px solid rgba(255, 107, 74, 0.15);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  margin-bottom: 40px;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.search-box:focus-within {
-  border-color: #ff6b4a; /* Đổi viền của cả hộp search thành màu cam */
-  box-shadow: 0 0 8px rgba(255, 107, 74, 0.3); /* Thêm hiệu ứng hào quang nhẹ */
-  transition: all 0.3s ease;
-}
-
-.input-group {
-  display: flex;
-  align-items: center;
-  outline: none;
-}
-
-.input-group input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 1rem;
-  outline: none;
-  padding: 0 15px;
-  outline: none !important;
-  box-shadow: none !important;
+:deep(.custom-clear-icon) {
+  background: transparent !important;
   border: none !important;
 }
 
-.btn-search {
-  background: #ff6b4a;
-  color: white;
-  border: none;
-  padding: 14px 40px;
-  border-radius: 50px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn-search:hover {
-  background: #ff8566;
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(255, 107, 74, 0.4);
-}
-.error-msg { color: #ff4a4a; margin-top: 15px; text-align: center; }
-
-/* =========================================
-   INSTRUCTIONS (01 & 02)
-========================================= */
-.instruction-wrapper {
-  max-width: 1000px;
-  margin: 0 auto;
-  animation: fadeIn 1s ease-in;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.section-title span {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: rgba(255, 107, 74, 0.2);
-  font-style: italic;
-}
-
-.step-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.step-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid #222;
-  padding: 25px;
-  border-radius: 16px;
-  transition: 0.3s;
-}
-.step-card:hover { border-color: #ff6b4a; transform: translateY(-5px); }
-
-.step-number {
-  color: #ff6b4a;
-  font-size: 0.7rem;
-  font-weight: 800;
-  margin-bottom: 10px;
-  letter-spacing: 2px;
-}
-
-.security-info { margin-top: 60px; }
-.security-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.security-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  background: linear-gradient(135deg, rgba(255, 107, 74, 0.05), rgba(0, 0, 0, 0.2));
-  padding: 30px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 107, 74, 0.2);
-}
-.security-icon {
-  font-size: 2.5rem;
-  background: rgba(255, 107, 74, 0.1);
-  padding: 15px;
-  border-radius: 16px;
-}
-.security-text h4 { color: #ff6b4a; margin-bottom: 10px; }
-.security-text p { color: #a0a0a0; font-size: 0.95rem; line-height: 1.6; }
-
-/* =========================================
-   DASHBOARD RESULTS (3 COLUMNS)
-========================================= */
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr 1.5fr; /* Chia tỉ lệ 3 cột */
-  gap: 25px;
-  margin-top: 20px;
-}
-
-@media (max-width: 1024px) {
-  .dashboard-layout { grid-template-columns: 1fr 1fr; }
-  .product-panel { grid-column: span 2; } /* Cột 1 full ngang trên màn vừa */
-}
-
-@media (max-width: 768px) {
-  .dashboard-layout { grid-template-columns: 1fr; }
-  .product-panel { grid-column: span 1; }
-}
-
-.dashboard-panel {
-  background: #15161a;
-  border: 1px solid #2a2b30;
-  border-radius: 20px;
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-}
-
-.panel-header h3 {
-  font-size: 1.1rem;
-  color: #fff;
-  margin-bottom: 20px;
-  border-bottom: 1px dashed #333;
-  padding-bottom: 15px;
-}
-
-/* Col 1: Product Card */
-.product-card {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  align-items: center;
-  text-align: center;
-}
-
-.product-image-placeholder {
-  width: 120px;
-  height: 120px;
-  background: #1c1d21;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 4rem;
-  border: 2px dashed #ff6b4a;
-  margin-bottom: 10px;
-}
-.product-image-container {
-  width: 180px; /* Tăng kích thước so với placeholder cũ */
-  height: 180px;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #1c1d21;
-  border-radius: 16px;
-  overflow: hidden; /* Cắt phần ảnh thừa nếu ảnh không vuông */
-  border: 1px solid rgba(255, 107, 74, 0.3);
-}
-
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Ảnh sẽ lấp đầy khung mà không bị méo */
-  transition: transform 0.3s ease;
-}
-
-.product-image:hover {
-  transform: scale(1.1); /* Hiệu ứng phóng to nhẹ khi di chuột vào */
-}
-
-/* Điều chỉnh lại tên sản phẩm cho nổi bật */
-.product-name {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-}
-.product-name { font-size: 1.2rem; font-weight: 700; }
-.product-manufacturer { color: #a0a0a0; font-size: 0.9rem; margin-top: -10px; }
-
-.detail-group { width: 100%; text-align: left; margin-top: 15px; }
-.detail-group label { font-size: 0.8rem; color: #777; text-transform: uppercase; margin-bottom: 5px; display: block;}
-
-.hash-box {
-  background: #0d0e12;
-  padding: 10px 15px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  font-family: monospace;
-  word-break: break-all;
-}
-.serial-text { color: #ff6b4a; font-weight: bold; font-size: 1.1rem; text-align: center; }
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 30px;
-  font-weight: bold;
-  font-size: 0.95rem;
-  width: 100%;
-  justify-content: center;
-}
-.status-badge.success { background: rgba(46, 213, 115, 0.1); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); }
-.status-badge .dot { width: 8px; height: 8px; background: currentColor; border-radius: 50%; }
-
-/* Col 2: Timeline */
-.timeline-container {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 10px;
-}
-
-.timeline-item {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  position: relative;
-}
-
-.timeline-item:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 20px;
-  bottom: -25px;
-  width: 2px;
-  background: #333;
-  z-index: 1;
-}
-
-.timeline-dot {
-  width: 12px;
-  height: 12px;
-  background: #555;
-  border-radius: 50%;
-  margin-top: 5px;
-  z-index: 2;
-  border: 2px solid #15161a;
-}
-.timeline-dot.latest { background: #ff6b4a; box-shadow: 0 0 10px #ff6b4a; }
-
-.timeline-content {
-  flex: 1;
-  background: #1c1d21;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #2a2b30;
-}
-
-.timeline-status { font-size: 1.1rem; color: #fff; margin-bottom: 8px; }
-.timeline-meta { display: flex; flex-direction: column; gap: 5px; font-size: 0.85rem; color: #a0a0a0; margin-bottom: 10px;}
-.timeline-date { color: #ff6b4a; }
-.timeline-hash { font-size: 0.75rem; background: #0d0e12; padding: 6px 10px; border-radius: 6px; color: #777; }
-
-/* =========================================
-   CUSTOM LEAFLET MAP UI
-========================================= */
-/* Hiệu ứng chuyển động cho đường nét đứt (Lộ trình) */
-:deep(.animated-route) {
-  stroke-dashoffset: 1000;
-  animation: dash-animation 50s linear infinite;
-}
-
-@keyframes dash-animation {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Marker Lịch sử (Chấm nhỏ xám) */
 :deep(.map-marker-history) {
-  width: 12px;
-  height: 12px;
-  background-color: #555;
-  border: 2px solid #15161a;
+  width: 22px;
+  height: 22px;
+  background-color: #1e293b;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
   border-radius: 50%;
-  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
 }
 :deep(.map-marker-history:hover) {
-  background-color: #fff;
   transform: scale(1.2);
+  background-color: #f97316;
 }
 
-/* Marker Hiện tại (Chấm cam nhịp đập) */
 :deep(.map-marker-live) {
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-:deep(.pulse-dot) {
-  width: 14px;
-  height: 14px;
-  background-color: #ff6b4a;
+:deep(.live-number-inner) {
+  width: 22px;
+  height: 22px;
+  background-color: #ef4444; 
+  border: 2px solid #ffffff;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
   border-radius: 50%;
-  z-index: 2;
-  box-shadow: 0 0 10px #ff6b4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
 }
 
 :deep(.pulse-ring) {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
-  border: 2px solid #ff6b4a;
+  border: 3px solid #ef4444;
   border-radius: 50%;
+  height: 32px;
+  width: 32px;
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  animation: mapMarkerPulse-data 1.6s ease-out infinite;
+  opacity: 0;
   z-index: 1;
-  animation: radar-pulse 1.5s ease-out infinite;
 }
 
-@keyframes radar-pulse {
-  0% { transform: scale(0.5); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
+@keyframes mapMarkerPulse-data {
+  0% { transform: scale(0.4); opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { transform: scale(1.3); opacity: 0; }
 }
 
-/* Custom Popup đẹp mắt hợp với Dark Theme */
 :deep(.leaflet-popup-content-wrapper) {
-  background: #1c1d21 !important; /* Màu nền giống các card khác */
-  color: #fff !important;
-  border: 1px solid rgba(255, 107, 74, 0.3) !important;
-  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
   padding: 0 !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08) !important;
 }
-
 :deep(.leaflet-popup-tip) {
-  background: #1c1d21 !important;
-  border-bottom: 1px solid rgba(255, 107, 74, 0.3) !important;
-  border-right: 1px solid rgba(255, 107, 74, 0.3) !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
 }
-
 :deep(.leaflet-popup-content) {
-  margin: 10px 15px !important;
+  margin: 8px 12px !important;
 }
 
-/* Nội dung bên trong Popup */
-:deep(.custom-map-popup) {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-family: inherit;
-}
-
-:deep(.popup-status) {
-  font-weight: 800;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-}
-
-:deep(.popup-location) {
-  font-size: 0.8rem;
-  color: #a0a0a0;
-}
-
-:deep(.text-orange) { color: #ff6b4a; }
-:deep(.text-gray) { color: #d1d1d1; }
-
-
-.map-ui-overlay { position: absolute; top: 15px; right: 15px; z-index: 10; }
-.live-badge {
-  background: rgba(255, 107, 74, 0.15);
-  border: 1px solid rgba(255, 107, 74, 0.4);
-  color: #ff6b4a;
-  padding: 6px 12px;
-  border-radius: 30px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  backdrop-filter: blur(5px);
-}
-
-.pulsing-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #ff6b4a;
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-
-.map-background {
-  width: 100%;
-  height: 100%;
-  background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/83/Equirectangular_projection_SW.jpg');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.6;
-  filter: grayscale(100%) contrast(1.2) brightness(0.4);
-  position: absolute;
-  inset: 0;
-}
-
-.map-point {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #fff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-}
-.map-point.current {
-  background: #ff6b4a;
-  box-shadow: 0 0 15px #ff6b4a;
-  width: 16px;
-  height: 16px;
-}
-
-.point-1 { top: 80%; left: 30%; }
-.point-2 { top: 60%; left: 50%; }
-.point-3 { top: 35%; left: 75%; }
-
-.map-route {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%; z-index: 4;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 107, 74, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(255, 107, 74, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 107, 74, 0); }
-}
-
-/* =========================================
-   ADMIN SECTION
-========================================= */
-.admin-section { margin-top: 60px; border-top: 1px solid #333; padding-top: 40px; max-width: 1000px; margin-left: auto; margin-right: auto;}
-.admin-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.admin-card { background: #1c1d21; padding: 25px; border-radius: 20px; border: 1px dashed #444; }
-.admin-card input { width: 100%; padding: 12px; margin-bottom: 10px; background: #0d0e12; border: 1px solid #333; border-radius: 8px; color: white; }
-.btn-mint, .btn-update { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
-.btn-mint { background: #ff6b4a; color: white; }
-.btn-update { background: #3b82f6; color: white; }
-
-/* ANIMATION */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.5s, transform 0.5s; }
 .fade-enter-from { opacity: 0; transform: translateY(20px); }
 </style>

@@ -37,6 +37,7 @@ import AdminPromotionDetail from '../views/Admin_view/AdminPromotionDetail.vue';
 import AdminProfile from '../views/Admin_view/AdminProfile.vue';
 import AdminChangePassword from '../views/Admin_view/AdminChangePassword.vue';
 import AdminReport from '../views/Admin_view/AdminReport.vue';
+import AdminBlockchain from '../views/Admin_view/AdminBlockchain.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -136,8 +137,8 @@ const router = createRouter({
       component: checkout
     },
     {
-      path: '/truy-xuat',
-      name: 'TruyXuat',
+      path: '/truy-xuat/:serial',
+      name: 'ProvenanceTracking',
       component: ProvenanceTracking
     },
     {
@@ -274,6 +275,11 @@ const router = createRouter({
         requiresAuth: true, // Bắt buộc phải đăng nhập
         requiresAdmin: true
       }
+    },
+    {
+      path: '/admin/blockchain',
+      name: 'AdminBlockchain',
+      component: AdminBlockchain
     }
   ]
 });
