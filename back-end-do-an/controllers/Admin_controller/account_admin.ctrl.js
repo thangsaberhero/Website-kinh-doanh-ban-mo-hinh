@@ -96,6 +96,18 @@ const account_admin = {
                 VALUES (?, 'ACCOUNT_CREATE', ?, ?, NOW())
             `, [MaNguoiThucHien, noiDungLog, userIp]);
 
+            if (roleId === 1 || roleId === 2) {
+                await connection.query(`
+                    INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                    VALUES (?, ?, ?, ?)
+                `, [
+                    "Nhân sự mới", 
+                    `Tài khoản ${roleText} mang tên đăng nhập "@${TenDN}" vừa được cấp vào hệ thống.`, 
+                    "HeThong", 
+                    "/admin/user"
+                ]);
+            }
+
             await connection.commit();
             res.status(200).json({
                 success: true,
@@ -685,6 +697,16 @@ const account_admin = {
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'ACCOUNT_PASSWORD_RESET', ?, ?, NOW())
             `, [MaNguoiThucHien, noiDungLog, userIp]);
+
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                "Cảnh báo bảo mật", 
+                `Mật khẩu của tài khoản "@${targetName}" vừa bị Quản trị viên đặt lại về mặc định.`, 
+                "HeThong", 
+                "/admin/user"
+            ]);
 
             await connection.commit();
             res.status(200).json({ 

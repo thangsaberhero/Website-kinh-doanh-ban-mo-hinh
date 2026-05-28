@@ -156,6 +156,19 @@ const donhang_admin = {
             for (let kho of arrUpdateKho) {
                 const [resKho] = await connection.query(`UPDATE PhanLoai SET SoLuong = SoLuong - ? WHERE MaPhanLoai = ? AND SoLuong >= ?`, [kho[0], kho[1], kho[0]]);
                 if (resKho.affectedRows === 0) throw new Error("Cập nhật tồn kho thất bại");
+
+                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
+                if (checkStock.length > 0 && checkStock[0].SoLuong <= 3) {
+                    await connection.query(`
+                        INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                        VALUES (?, ?, ?, ?)
+                    `, [
+                        "Cảnh báo kho (Đơn tại quầy)", 
+                        `Sản phẩm "${checkStock[0].ChiTietPhanLoai}" chỉ còn ${checkStock[0].SoLuong} cái sau khi xuất bán.`, 
+                        "KhoHang", 
+                        "/admin/products"
+                    ]);
+                }
             }
 
             // 9. Cập nhật Số lượng khuyến mãi & Ghi Log Khuyến Mãi/Voucher
@@ -181,6 +194,16 @@ const donhang_admin = {
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, ?, ?, ?, NOW())
             `, [MaTK, 'INVOICE', noiDungLog, userIp]);
+
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                `Đơn hàng tại quầy #${maDH_moi}`, 
+                `Nhân viên vừa xuất một đơn hàng ngoài hệ thống trị giá ${tongTienThanhToan.toLocaleString('vi-VN')}đ.`, 
+                "DonHang", 
+                `/admin/orders`
+            ]);
 
             await connection.commit();
             res.status(200).json({
@@ -739,6 +762,16 @@ const donhang_admin = {
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'ORDER_UPDATE', ?, ?, NOW())
             `, [MaTK, noiDungLog, userIp]);
+
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                `Hoàn trả đơn hàng #${MaDH}`, 
+                `Đơn hàng mã ${maHienThi} vừa được xác nhận hoàn trả và nhập lại kho. Lý do: ${LyDoHoan}`, 
+                "DonHang", 
+                `/admin/orders/${MaDH}`
+            ]);
 
             await connection.commit();
             res.status(200).json({

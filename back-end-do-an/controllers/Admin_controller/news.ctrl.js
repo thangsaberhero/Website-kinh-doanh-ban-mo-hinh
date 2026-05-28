@@ -224,6 +224,17 @@ const newsController = {
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'NEWS_CREATE', ?, ?, NOW())
             `, [MaTK, noiDungLog, userIp]);
+
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                "Bài viết mới", 
+                `Bài viết "${TieuDe}" vừa được tạo thành công trên hệ thống.`, 
+                "HeThong", 
+                "/admin/news"
+            ]);
+            
             await connection.commit();
             res.status(200).json({
                 success: true,
