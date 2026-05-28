@@ -1,7 +1,26 @@
 const { Web3 } = require('web3');
+require('dotenv').config(); // Đảm bảo đã load cấu hình từ file .env
+
 const RPC_URL = process.env.RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com'; 
 const web3 = new Web3(RPC_URL);
 const CONTRACT_ADDRESS = '0x3d9afec87bf4243ae7807bb8eca970ca9106d902'; 
+
+// =====================================================================
+// 🔑 CẤU HÌNH VÍ ADMIN ĐỂ KÝ GIAO DỊCH (BẮT BUỘC PHẢI CÓ)
+// =====================================================================
+// Bạn hãy thêm dòng này vào file .env: PRIVATE_KEY=mã_private_key_ví_metamask_của_bạn
+const PRIVATE_KEY = process.env.PRIVATE_KEY || '0x_NHẬP_PRIVATE_KEY_VÍ_ADMIN_CỦA_BẠN_VÀO_ĐÂY_NẾU_KHÔNG_DÙNG_ENV'; 
+
+let adminAddress = '';
+try {
+    const account = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY.startsWith('0x') ? PRIVATE_KEY : '0x' + PRIVATE_KEY);
+    web3.eth.accounts.wallet.add(account);
+    adminAddress = account.address;
+    console.log('🔑 Ví Admin đã sẵn sàng thực hiện giao dịch:', adminAddress);
+} catch (err) {
+    console.error('🔴 Lỗi cấu hình Ví Admin: Hãy kiểm tra lại Private Key trong file .env!');
+}
+// =====================================================================
 
 const CONTRACT_ABI = [
     {
@@ -68,16 +87,14 @@ const CONTRACT_ABI = [
     }
 ];
 
-// KHỞI TẠO ĐỐI TƯỢNG CONTRACT
 const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-// 1. Hàm lấy lịch sử từ Blockchain (Chỉ đọc, không tốn gas)
+
+// 1. Hàm lấy lịch sử từ Blockchain (Chỉ đọc - Dùng .call())
 async function getHistoryFromBlockchain(serialNumber) {
     try {
-        // Đảm bảo không có khoảng trắng thừa
         const cleanSerial = serialNumber.trim(); 
-        
-        // Gọi Smart Contract
         const historyData = await contract.methods.getProductHistory(cleanSerial).call();
+        
         console.log("Dữ liệu thô từ Blockchain:", historyData); 
 
         return historyData.map(record => ({
@@ -88,40 +105,46 @@ async function getHistoryFromBlockchain(serialNumber) {
         }));
     } catch (error) {
         console.error("Lỗi khi đọc Blockchain:", error);
-        return []; // Nếu có lỗi nó sẽ trả về mảng rỗng
+        return [];
     }
 }
 
-// 2. Hàm khởi tạo sản phẩm mới trên Blockchain (Tốn phí Gas)
+// 2. Hàm khởi tạo sản phẩm mới trên Blockchain (Ghi dữ liệu - Dùng .methods.xxx().send())
 async function mintProductOnBlockchain(serialNumber, manufacturer) {
     console.log(`--- Đang khởi tạo sản phẩm mới: ${serialNumber} ---`);
     try {
-        // Gọi hàm từ Smart Contract
-        const tx = await contract.mintProduct(serialNumber, manufacturer);
-        console.log(`Đang chờ block xác nhận... Hash: ${tx.hash}`);
+        // Cú pháp chuẩn Web3.js: sử dụng .methods và kích hoạt bằng .send()
+        const receipt = await contract.methods.mintProduct(serialNumber, manufacturer).send({
+            from: adminAddress,
+            gas: 300000 // Lượng gas ước tính cho mạng Sepolia
+        });
         
-        // Bắt buộc phải có đoạn này để chờ giao dịch được ghi vào block thành công
-        const receipt = await tx.wait(); 
-        console.log("Khởi tạo thành công trên Blockchain!");
-        return receipt;
+        console.log("Khởi tạo thành công trên Blockchain! Hash:", receipt.transactionHash);
+        
+        // Trả về object có thuộc tính 'hash' để đồng bộ khớp với controller nhận dữ liệu
+        return { hash: receipt.transactionHash };
     } catch (error) {
         console.error("Lỗi khi khởi tạo sản phẩm:", error);
         throw error;
     }
 }
 
-// 3. Hàm cập nhật trạng thái/hành trình (Tốn phí Gas)
+// 3. Hàm cập nhật trạng thái/hành trình (Ghi dữ liệu - Dùng .methods.xxx().send())
 async function updateStatusOnBlockchain(serialNumber, newStatus, location) {
     console.log(`--- Đang cập nhật trạng thái cho: ${serialNumber} ---`);
     try {
-        const tx = await contract.updateProductStatus(serialNumber, newStatus, location);
-        console.log(`Đang chờ block xác nhận... Hash: ${tx.hash}`);
+        // Cú pháp chuẩn Web3.js: sử dụng .methods và kích hoạt bằng .send()
+        const receipt = await contract.methods.updateProductStatus(serialNumber, newStatus, location).send({
+            from: adminAddress,
+            gas: 300000
+        });
         
-        const receipt = await tx.wait();
-        console.log("Cập nhật trạng thái thành công!");
-        return receipt;
+        console.log("Cập nhật trạng thái thành công! Hash:", receipt.transactionHash);
+        
+        // Trả về object chứa hash giao dịch cho Frontend hiển thị
+        return { hash: receipt.transactionHash };
     } catch (error) {
-        console.error("Lỗi khi cập nhật trạng thái:", error);
+        console.error("Lỗi khi cập nhật trạng thái tại Service:", error);
         throw error;
     }
 }

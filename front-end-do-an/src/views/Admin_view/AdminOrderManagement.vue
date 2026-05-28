@@ -24,6 +24,10 @@
               <span class="material-symbols-outlined text-[20px]" :class="{'animate-bounce': isExporting}">file_download</span>
               {{ isExporting ? 'Đang tạo file...' : 'Xuất báo cáo' }}
             </button>
+            <button @click="isCreateExternalOrderOpen = true" class="flex-1 xl:flex-none bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 text-sm">
+                <span class="material-symbols-outlined text-[20px]">add_box</span>
+                Tạo đơn ngoài
+              </button>
             <button class="flex-1 xl:flex-none bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
               <span class="material-symbols-outlined text-[20px]">inventory</span>
               Xử lý hàng loạt
@@ -488,6 +492,53 @@
       <button @click="applyAdvancedFilter" class="flex-[2] py-3 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all text-sm">Áp dụng</button>
     </div>
   </div>
+  <div v-if="isCreateExternalOrderOpen" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-[fadeIn_0.2s_ease-out]">
+        
+        <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-500">add_shopping_cart</span>
+            Tạo đơn hàng thủ công
+          </h3>
+          <button @click="isCreateExternalOrderOpen = false" class="text-slate-400 hover:text-rose-500 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
+          <div class="space-y-4">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Thông tin Khách hàng</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">Tên khách hàng (*)</label>
+                <input v-model="externalOrderForm.TenNguoiNhan" type="text" placeholder="VD: Phùng Thắng" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">Số điện thoại (*)</label>
+                <input v-model="externalOrderForm.SDTNguoiNhan" type="text" placeholder="VD: 0912345678" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1.5">Địa chỉ giao hàng</label>
+              <input v-model="externalOrderForm.DiaChiGiao" type="text" placeholder="Nhập địa chỉ chi tiết..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mt-2">Sản phẩm & Thanh toán</h4>
+            <div class="p-8 border border-dashed border-slate-300 rounded-xl bg-slate-50 text-center">
+              <p class="text-sm font-medium text-slate-500">Khu vực chọn Mô hình và tính tiền sẽ được tích hợp tại đây.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="isCreateExternalOrderOpen = false" class="px-6 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Hủy</button>
+          <button @click="submitExternalOrder" class="px-6 py-2.5 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 rounded-xl transition-all">Lưu đơn hàng</button>
+        </div>
+
+      </div>
+    </div>
 </template>
   
 <script setup>
@@ -521,47 +572,58 @@
   const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalOrders.value));
 
   const isExporting = ref(false);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const exportExcelReport = async () => {
-  isExporting.value = true;
-  try {
-    // 1. Gọi API (Nhớ thêm Token nếu Route của bạn cần xác thực Admin)
-    const token = localStorage.getItem('token');
-    const response = await fetch('http://localhost:3000/api/invoice_admin/export-excel', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
+    isExporting.value = true;
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Khởi tạo URL cơ bản
+      let url = '${API_BASE_URL}/api/invoice_admin/export-excel';
+
+      // Gắn thêm bộ lọc ngày tháng và tìm kiếm nếu Admin đang thao tác trên màn hình
+      const params = new URLSearchParams();
+      if (filterDate.value.from) params.append('NgayBatDau', filterDate.value.from);
+      if (filterDate.value.to) params.append('NgayKetThuc', filterDate.value.to);
+      if (searchQuery.value) params.append('timkiem', searchQuery.value);
+
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`; // Ví dụ: ?NgayBatDau=2026-05-01...
+
+      // Gọi API
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi tải file từ Server");
       }
-    });
 
-    if (!response.ok) {
-      throw new Error("Lỗi khi tải file từ Server");
+      // Xử lý tải file Blob
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `Bao_Cao_Don_Hang_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      toastStore.showToast("Xuất báo cáo Excel thành công!", "success");
+    } catch (error) {
+      console.error("Lỗi xuất Excel:", error);
+      toastStore.showToast("Không thể xuất báo cáo lúc này!", "error");
+    } finally {
+      isExporting.value = false;
     }
-
-    // 2. Chuyển dữ liệu binary trả về thành dạng Blob
-    const blob = await response.blob();
-    
-    // 3. Tạo một URL ảo cho cục Blob này
-    const url = window.URL.createObjectURL(blob);
-    
-    // 4. Tạo 1 thẻ <a> ẩn, gán link và kích hoạt click để tải xuống
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Bao_Cao_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    
-    // 5. Dọn dẹp
-    a.remove();
-    window.URL.revokeObjectURL(url);
-    
-  } catch (error) {
-    console.error("Lỗi xuất Excel:", error);
-    alert("Không thể xuất báo cáo lúc này!");
-  } finally {
-    isExporting.value = false;
-  }
-};
+  };
 
   const changePage = (page) => {
     if (page >= 1 && page <= totalPages.value) {
@@ -716,7 +778,7 @@ const exportExcelReport = async () => {
       else if (activeTab.value === 'returned') statusParam = 6; 
 
       // Xây dựng URL với các tham số Tối ưu
-      let url = `http://localhost:3000/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      let url = `${API_BASE_URL}/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       
       if (statusParam) url += `&trangthai=${statusParam}`;
       if (searchQuery.value) url += `&timkiem=${encodeURIComponent(searchQuery.value)}`; 
@@ -798,7 +860,7 @@ const exportExcelReport = async () => {
     try {
       const token = localStorage.getItem('token');
       console.log("Đang gọi API lấy chi tiết mã đơn:", order.id); // Log ra để kiểm tra
-      const response = await fetch(`http://localhost:3000/api/invoice_admin/${order.id}`,{
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/${order.id}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const result = await response.json();
@@ -847,7 +909,7 @@ const exportExcelReport = async () => {
   const updateOrderStatus = async (orderId) => {
     try {
       const token = localStorage.getItem('token'); 
-      const res = await fetch(`http://localhost:3000/api/invoice_admin/update`, {
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
@@ -869,7 +931,7 @@ const exportExcelReport = async () => {
     if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này và hoàn lại tồn kho không?")) {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3000/api/invoice_admin/huy`, {
+        const res = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -905,7 +967,56 @@ const exportExcelReport = async () => {
     } else {
         toastStore.showToast("⚠️ Trình duyệt đã chặn cửa sổ Popup. Vui lòng cấp quyền mở Popup cho trang web!", "error");
     }
-};
+  };
+
+  // --- Biến cho Modal Tạo đơn ngoài ---
+  const isCreateExternalOrderOpen = ref(false);
+  
+  const externalOrderForm = ref({
+    TenNguoiNhan: '',
+    SDTNguoiNhan: '',
+    DiaChiGiao: '',
+    DanhSachHang: [],
+    TongTien: 0,
+    ThanhTien: 0
+  });
+
+  // --- Hàm Submit Gửi API ---
+  const submitExternalOrder = async () => {
+    // Validate cơ bản
+    if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan) {
+      toastStore.showToast('Vui lòng nhập Tên và Số điện thoại khách hàng!', 'error');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      // CHÚ Ý: Đổi đường dẫn API này theo đúng route Backend của bạn
+      const res = await fetch('${API_BASE_URL}/api/invoice_admin/create-external', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(externalOrderForm.value)
+      });
+      
+      const result = await res.json();
+      if (res.ok && result.success) {
+        toastStore.showToast('Tạo đơn hàng ngoài thành công!', 'success');
+        isCreateExternalOrderOpen.value = false;
+        fetchOrders(); // Load lại bảng danh sách
+        
+        // Có thể reset lại form ở đây
+        externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachHang: [] };
+      } else {
+        toastStore.showToast(result.message || 'Lỗi khi tạo đơn', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      toastStore.showToast('Lỗi kết nối máy chủ', 'error');
+    }
+  };
 </script>
   
 <style scoped>

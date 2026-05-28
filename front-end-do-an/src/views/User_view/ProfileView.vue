@@ -116,6 +116,7 @@
   const router = useRouter();
   const authStore = useAuthStore();
   const toastStore = useToastStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const isSaving = ref(false);
   const isAvatarRemoved = ref(false); 
@@ -134,7 +135,7 @@
 
   const displayName = computed(() => form.name || currentUser?.TenKH || currentUser?.username || 'Collector');
   const defaultAvatar = computed(() => `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&background=ff8f73&color=fff&bold=true&size=128`);
-  const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : '');
+  const avatarPreview = ref(currentUser?.AnhDaiDien ? `${API_BASE_URL}/Images_user/${currentUser.AnhDaiDien}` : '');
 
   const computedAvatar = computed(() => {
     if (avatarPreview.value) return avatarPreview.value;
@@ -160,7 +161,7 @@
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/info_user/laythongtin`, {headers: {'Authorization': `Bearer ${token}`}});
+      const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`, {headers: {'Authorization': `Bearer ${token}`}});
       const dataJSON = await res.json();
       
       if (res.ok && dataJSON.data) {
@@ -175,7 +176,7 @@
         stats.totalReviews = userData.SoDanhGia || 0;
         
         if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
-          avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+          avatarPreview.value = `${API_BASE_URL}/Images_user/${userData.AnhDaiDien}`;
           isAvatarRemoved.value = false;
         } 
         else {
@@ -244,7 +245,7 @@
         formData.append('avatar', selectedFile.value); 
       }
 
-      const response = await fetch('http://localhost:3000/api/info_user/change_info', {
+      const response = await fetch('${API_BASE_URL}/api/info_user/change_info', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData 

@@ -7,6 +7,10 @@ router.get('/history/:serialNumber', blockchainController.truyXuatNguonGoc);
 
 // Dành cho Admin gọi từ trang quản trị
 router.post('/mint', blockchainController.mintProduct);
-router.post('/update-status', blockchainController.updateProductStatus);
+router.post('/update', blockchainController.updateProductStatus);
 
+// Tạo mã QR dựa trên Serial (Bổ sung mới)
+router.get('/generate-qr/:serialNumber', blockchainController.generateProductQR);
+
+router.get('/get-serials', blockchainController.getValidSerials);
 module.exports = router;

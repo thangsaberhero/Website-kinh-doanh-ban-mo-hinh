@@ -110,7 +110,7 @@ CREATE TABLE MoHinh (
 );
 
 -- 8.5 Bảng phân loại mô hình
-CREATE TABLE Phanloai (
+CREATE TABLE PhanLoai (
     MaPhanLoai INT PRIMARY KEY AUTO_INCREMENT,
     ChiTietPhanLoai VARCHAR(100) NOT NULL,
     MaMoHinh INT NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE ChiTietYeuThich (
 	MaYeuThich INT NOT NULL,
 	MaMoHinh INT NOT NULL,
 	FOREIGN KEY (MaYeuThich) REFERENCES DanhMucYeuThich(MaYeuThich),
-	FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai),
+	FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh),
 	PRIMARY KEY (MaYeuThich, MaMoHinh)
 );
 
@@ -141,36 +141,6 @@ CREATE TABLE AnhMoHinh (
     MaAnh INT PRIMARY KEY AUTO_INCREMENT,
     LinkAnh VARCHAR(255) NOT NULL,
     MaMoHinh INT,
-    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
-);
-
--- 10. Bảng Nhà cung cấp
-CREATE TABLE NhaCungCap (
-    MaNCC INT PRIMARY KEY AUTO_INCREMENT,
-    TenNCC VARCHAR(100) NOT NULL,
-    SDT VARCHAR(15),
-    DiaChi VARCHAR(255)
-);
-
--- 11. Bảng Phiếu nhập
-CREATE TABLE PhieuNhap (
-    MaPN INT PRIMARY KEY AUTO_INCREMENT,
-    NgayNhap DATETIME,
-    MaNV INT,
-    MaNCC INT,
-    TongTienNhap DECIMAL(12,2) CHECK (TongTienNhap >= 0),
-    FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV),
-    FOREIGN KEY (MaNCC) REFERENCES NhaCungCap(MaNCC)
-);
-
--- 12. Bảng Chi tiết phiếu nhập
-CREATE TABLE ChiTietPhieuNhap (
-    MaPN INT,
-    MaMoHinh INT,
-    SoLuong INT CHECK (SoLuong > 0),
-    DonGiaNhap DECIMAL(12,2) CHECK (DonGiaNhap >= 0),
-    PRIMARY KEY (MaPN, MaMoHinh),
-    FOREIGN KEY (MaPN) REFERENCES PhieuNhap(MaPN),
     FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh)
 );
 
@@ -330,12 +300,6 @@ Create table LogSuDungMaGiamGia (
 	FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
 );
 
-CREATE TABLE LogHoatDongKhuyenMai (
-    MaLog INT PRIMARY KEY AUTO_INCREMENT,
-    NoiDung TEXT NOT NULL,
-    ThoiGian DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
 -- 21. Bảng Tin tức
 CREATE TABLE TinTuc (
     MaTT INT PRIMARY KEY AUTO_INCREMENT,
@@ -458,3 +422,8 @@ INSERT INTO TrangThai (TenTrangThai) VALUES
 INSERT INTO PhuongThucThanhToan (TenPhuongThuc) VALUES
 ('momo'),
 ('COD');
+INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen, Bi_khoa) 
+VALUES ('admin', '$2b$10$sGhccHSSMTHIGnC8oD8xqe.gglc.MfiWsUxkJhGACFiO5MPbSnd8G', 'admin@figurecollect.com', 1, 0);
+
+INSERT INTO NhanVien (TenNV, MaTK) 
+VALUES ('Quản trị viên', LAST_INSERT_ID());

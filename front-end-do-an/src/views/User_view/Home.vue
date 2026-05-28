@@ -140,14 +140,14 @@
           <div v-for="brand in brands" :key="`a-${brand.MaHSX}`"
               @click="goToBrand(brand.TenHSX)"
               class="flex-shrink-0 w-44 h-24 bg-surface-container-low border border-outline-variant/20 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-surface-bright transition-all p-4 shadow-sm">
-            <img v-if="brand.Logo" loading="lazy" :src="`http://localhost:3000/Images_brand/${brand.Logo}`" class="max-w-full max-h-full object-contain" />
+            <img v-if="brand.Logo" loading="lazy" :src="`${API_BASE_URL}/Images_brand/${brand.Logo}`" class="max-w-full max-h-full object-contain" />
             <span v-else class="font-headline font-black text-outline-variant text-lg uppercase italic">{{ brand.TenHSX }}</span>
           </div>
 
           <div v-for="brand in brands" :key="`b-${brand.MaHSX}`"
               @click="goToBrand(brand.TenHSX)"
               class="flex-shrink-0 w-44 h-24 bg-surface-container-low border border-outline-variant/20 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-surface-bright transition-all p-4 shadow-sm">
-            <img v-if="brand.Logo" loading="lazy" :src="`http://localhost:3000/Images_brand/${brand.Logo}`" class="max-w-full max-h-full object-contain" />
+            <img v-if="brand.Logo" loading="lazy" :src="`${API_BASE_URL}/Images_brand/${brand.Logo}`" class="max-w-full max-h-full object-contain" />
             <span v-else class="font-headline font-black text-outline-variant text-lg uppercase italic">{{ brand.TenHSX }}</span>
           </div>
         </div>
@@ -217,6 +217,7 @@
   const productList = ref([]);
   const productSlider = ref(null);
   const brands = ref([]);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const heroSlides = [
     {
@@ -269,7 +270,7 @@
 
   const fetchBrands = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/products/hsx');
+      const res = await fetch('${API_BASE_URL}/api/products/hsx');
       const dataJSON = await res.json();
       if (res.ok) {
         brands.value = dataJSON.data; 
@@ -313,7 +314,7 @@
     }
 
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${product.MaMoHinh}`);
+      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${product.MaMoHinh}`);
       const varJSON = await resVar.json();
       
       let maPhanLoai = null;
@@ -331,7 +332,7 @@
         soluong: 1      
       };
 
-      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -357,7 +358,7 @@
 
   onMounted(async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/products?limit=12');
+      const response = await fetch('${API_BASE_URL}/api/products?limit=12');
       const dataJSON = await response.json(); 
       
       if (response.ok) {

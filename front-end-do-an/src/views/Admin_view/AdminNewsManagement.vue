@@ -254,6 +254,7 @@
   const isDeleteModalOpen = ref(false);
   const postToDelete = ref(null);
   const isLoading = ref(true);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   setTimeout(() => {
     isLoading.value = false;
@@ -275,7 +276,7 @@
   const fetchStats = async () => {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/news/admin/stats',{
+        const response = await fetch('${API_BASE_URL}/api/news/admin/stats',{
           headers: {'Authorization': `Bearer ${token}`}
         });
         if (response.ok) {
@@ -308,7 +309,7 @@
     isLoading.value = true;
     try {
         // Nối URL với các tham số truy vấn
-        let url = `http://localhost:3000/api/news/admin/list?page=${page}&limit=${pagination.value.limit}`;
+        let url = `${API_BASE_URL}/api/news/admin/list?page=${page}&limit=${pagination.value.limit}`;
         
         if (searchQuery.value) url += `&search=${encodeURIComponent(searchQuery.value)}`;
         if (activeTab.value) url += `&status=${encodeURIComponent(activeTab.value)}`;
@@ -429,7 +430,7 @@
     try {
         isLoading.value = true;
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3000/api/news/${postToDelete.value.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/news/${postToDelete.value.id}`, {
             method: 'DELETE',
             headers: {'Authorization': `Bearer ${token}`}
         });

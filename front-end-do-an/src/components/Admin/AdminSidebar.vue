@@ -86,6 +86,7 @@ defineProps({
 const mainMenuItems = [
   { name: 'Bảng điều khiển', path: '/admin', icon: 'dashboard' },
   { name: 'Quản lý kho', path: '/admin/inventory', icon: 'inventory_2' },
+  { name: 'Quản lý Blockchain', path: '/admin/blockchain', icon: 'link' },
   { name: 'Quản lý hãng sản xuất', path: '/admin/manufacturers', icon: 'factory' },
   { name: 'Quản lý danh mục', path: '/admin/categories', icon: 'category' },
   { name: 'Hoàn tất đơn hàng', path: '/admin/orders', icon: 'local_shipping' },

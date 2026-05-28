@@ -63,7 +63,7 @@ const donhang_user = {
             }
 
             // 3. Tiến hành xử lý thêm hoặc cập nhật
-            const sql_check = 'Select SoLuong from ChiTietGioHang where MaGH = ?';
+            const sql_check = 'Select SoLuong from ChiTietGioHang where MaGH = ? and MaPhanLoai = ?';
             const [check] = await connection.query(sql_check, [maGH, MaPhanLoai]);
             
             let thongBao = "";

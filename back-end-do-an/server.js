@@ -9,13 +9,21 @@ const cron = require('node-cron');
 const db = require('./config/db');
 
 // Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5174",
+      "https://figure-collect-shop.vercel.app",
+    ].filter(Boolean)
+  }),
+);
 app.use(express.json()); // Giúp server đọc được dữ liệu JSON gửi lên
 
 // Khởi động Server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🔥 Máy chủ Backend đang chạy tại cổng ${PORT}`);
+const port = process.env.PORT || 3000; 
+// Code của bạn...
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
 
 // Import Route Auth

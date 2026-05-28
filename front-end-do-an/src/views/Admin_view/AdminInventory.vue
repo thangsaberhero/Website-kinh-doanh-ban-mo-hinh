@@ -147,9 +147,9 @@
           </div>
           
           <div class="flex gap-3 w-full xl:w-auto">
-            <button class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
-              <span class="material-symbols-outlined text-[20px]">receipt_long</span>
-              Nhập kho
+            <button @click="exportExcelReport" class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
+              <span class="material-symbols-outlined text-[20px]" :class="{'animate-bounce': isExporting}">file_download</span>
+              {{ isExporting ? 'Đang tạo file...' : 'Xuất báo cáo' }}
             </button>
             <button @click="openAddModal" class="flex-1 xl:flex-none bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
               <span class="material-symbols-outlined text-[20px]">add_box</span>
@@ -159,31 +159,49 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
-            <div class="relative z-10">
-              <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng sản phẩm</p>
-              <p class="text-3xl font-brand font-bold text-slate-900">{{totalProducts }}</p>
-              <!-- <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-emerald-500">
-                <span class="material-symbols-outlined text-sm">trending_up</span> +24 tháng này
-              </div> -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tổng mẫu sản phẩm</p>
+              <h3 class="text-2xl font-brand font-bold text-slate-900">{{ summary.TongSanPham || 0 }}</h3>
+              <p class="text-[11px] text-slate-400 font-medium mt-1">Mẫu mô hình trong danh mục</p>
             </div>
-            <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-inner">
-              <span class="material-symbols-outlined text-[#ff8f73]">inventory</span>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100 text-blue-500 shadow-inner shrink-0">
+              <span class="material-symbols-outlined text-[24px]">inventory_2</span>
             </div>
           </div>
-          
-          <div class="bg-white p-6 rounded-2xl border border-rose-50 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
-            <div class="relative z-10">
-              <p class="text-[11px] text-rose-400 font-bold uppercase tracking-widest mb-2">Sắp hết hàng</p>
-              <p class="text-3xl font-brand font-bold text-rose-600">0</p>
-              <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-rose-400 italic">
-                Cần nhập thêm ngay
-              </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Đang dồi dào kho</p>
+              <h3 class="text-2xl font-brand font-bold text-emerald-600">{{ summary.DangCoSan || 0 }}</h3>
+              <p class="text-[11px] text-emerald-500 font-bold mt-1">Số lượng tồn kho > 3</p>
             </div>
-            <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shadow-inner">
-              <span class="material-symbols-outlined text-rose-500">report_problem</span>
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 text-emerald-500 shadow-inner shrink-0">
+              <span class="material-symbols-outlined text-[24px]">check_circle</span>
             </div>
           </div>
+
+          <!-- <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Cảnh báo sắp hết</p>
+              <h3 class="text-2xl font-brand font-bold text-amber-600">{{ summary.SapHetHang || 0 }}</h3>
+              <p class="text-[11px] text-amber-500 font-bold mt-1">Số lượng chỉ còn từ 1 - 3</p>
+            </div>
+            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100 text-amber-500 shadow-inner shrink-0">
+              <span class="material-symbols-outlined text-[24px]">warning</span>
+            </div>
+          </div> -->
+
+          <!-- <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Đã cháy hàng</p>
+              <h3 class="text-2xl font-brand font-bold text-rose-600">{{ summary.HetHang || 0 }}</h3>
+              <p class="text-[11px] text-rose-500 font-bold mt-1">Tồn kho bằng 0 (Cần nhập thêm)</p>
+            </div>
+            <div class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center border border-rose-100 text-rose-500 shadow-inner shrink-0">
+              <span class="material-symbols-outlined text-[24px]">block</span>
+            </div>
+          </div> -->
           
           <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center gap-3 relative overflow-hidden">
             <div class="flex justify-between items-center relative z-10">
@@ -739,7 +757,7 @@
 
             <div class="space-y-4">
               <div v-for="(variant, index) in editingProduct.variants" :key="index" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 relative group">
-                <button @click.prevent="editingProduct.variants.splice(index, 1)" class="absolute -top-3 -right-3 w-8 h-8 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-md transition-all">
+                <button @click.prevent="removeEditVariant(index, variant.id)" class="absolute -top-3 -right-3 w-8 h-8 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-md transition-all hover:bg-rose-500 hover:text-white">
                   <span class="material-symbols-outlined text-[16px]">close</span>
                 </button>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
@@ -869,11 +887,12 @@
   const minprice = ref(null); // Giá từ
   const maxprice = ref(null); // Giá đến
   const sortBy = ref('newest'); // Sắp xếp mặc định
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const fetchBrands = async () => {
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch('http://localhost:3000/api/product_admin/get_brand',{
+      const response = await fetch('${API_BASE_URL}/api/product_admin/get_brand',{
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -892,6 +911,12 @@
 // Các tùy chọn cố định cho Form
   const saleTypeOptions = ['Có sẵn', 'Order', 'Pre-order'];
   const statusOptions = ['Đã phát hành', 'Chưa phát hành'];
+  const summary = ref({
+    TongSanPham: 0,
+    SapHetHang: 0,
+    HetHang: 0,
+    DangCoSan: 0
+  });
 
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === '') return '';
@@ -922,7 +947,7 @@
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch('http://localhost:3000/api/product_admin/getvariant',
+      const response = await fetch('${API_BASE_URL}/api/product_admin/getvariant',
         {
           headers: {'Authorization': `Bearer ${token}`}
         }
@@ -941,7 +966,7 @@
     }
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${MaDM}`,
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${MaDM}`,
         {
           headers: {'Authorization': `Bearer ${token}`}
         }
@@ -962,7 +987,7 @@
     isLoading.value = true;
     try {
       const token = localStorage.getItem('token'); // Lấy thẻ
-      let url = `http://localhost:3000/api/product_admin?page=${currentPage.value}&limit=${limit}`;
+      let url = `${API_BASE_URL}/api/product_admin?page=${currentPage.value}&limit=${limit}`;
       if (activeFilter.value !== 'all') url += `&hsx=${activeFilter.value}`;
       if (stockFilter.value !== 'all') url += `&TinhTrangTonKho=${stockFilter.value}`;
       if (saleTypeFilter.value !== 'all') url += `&LoaiHinhBan=${saleTypeFilter.value}`;
@@ -1010,6 +1035,7 @@
         totalProducts.value = result.pagination?.totalItems || result.data.length; 
         totalPages.value = result.pagination.totalPage;
         currentPage.value = result.pagination?.currentPage;
+        summary.value = result.summary || { TongSanPham: 0, SapHetHang: 0, HetHang: 0, DangCoSan: 0 };
       }
     } catch (error) {
       console.error("Lỗi khi tải danh sách sản phẩm:", error);
@@ -1130,7 +1156,7 @@
     // 3. Gọi API lấy danh mục con dựa vào MaDM (Dùng chuẩn Params /:MaDM đã sửa trước đó)
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`,{
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${newMaDM}`,{
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}` 
@@ -1211,7 +1237,7 @@
       // 3. Gửi xuống Backend
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/product_admin/add_product', {
+        const response = await fetch('${API_BASE_URL}/api/product_admin/add_product', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}` 
@@ -1239,7 +1265,8 @@
   const editingProduct = ref({
     id: null, name: '', brand: '', category: '', detailCategory: '', material: '', dimensions: '', description: '',
     saleType: '', status: '', isVisible: 1, basePrice: 0, minDeposit: 0, baseStock: 0,
-    variants: [], thumbnailUrl: '', thumbnailFile: null
+    variants: [], thumbnailUrl: '', thumbnailFile: null,
+    deletedVariantIds: []
   });
   const editFileInputRef = ref(null);
   const editGalleryInputRef = ref(null); 
@@ -1278,12 +1305,13 @@
       releaseDate: product.releaseDate || '', // Đã thêm ngày tháng
       variants: [],
       galleryUrls: [],
-      galleryFiles: []
+      galleryFiles: [],
+      deletedVariantIds: []
     };
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/watch/${product.id}`,
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/watch/${product.id}`,
         {
           method: 'GET',
           headers: {'Authorization': `Bearer ${token}`}
@@ -1335,6 +1363,18 @@
     editingProduct.value.variants.push({ name: '', sellPrice: 0, stock: 0 });
   };
 
+  const removeEditVariant = (index, variantId) => {
+    if (confirm("Bạn có chắc muốn dọn dẹp phân loại này khỏi hệ thống?")) {
+      // Nếu là phân loại cũ đã có trong DB (có mang theo variant.id)
+      if (variantId) {
+        // Đẩy ID này vào mảng chờ xóa
+        editingProduct.value.deletedVariantIds.push(variantId);
+      }
+      // Xóa khỏi giao diện hiện tại
+      editingProduct.value.variants.splice(index, 1);
+    }
+  };
+
   watch(() => editingProduct.value.category, async (newMaDM) => {
     if (!newMaDM) {
       modalDetailCategories.value = [];
@@ -1342,7 +1382,7 @@
     }
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/getdetailvariant/${newMaDM}`,{
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${newMaDM}`,{
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}` 
@@ -1438,6 +1478,11 @@
     // Mảng phân loại đặc biệt
     formData.append('DanhSachPhanLoai', JSON.stringify(editingProduct.value.variants));
 
+
+    if (editingProduct.value.deletedVariantIds && editingProduct.value.deletedVariantIds.length > 0) {
+      formData.append('PhanLoaiCanXoa', JSON.stringify(editingProduct.value.deletedVariantIds));
+    }
+
     // Ảnh đại diện
     if (editingProduct.value.thumbnailFile) {
         formData.append('AnhDaiDien', editingProduct.value.thumbnailFile);
@@ -1456,7 +1501,7 @@
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/product_admin/fix_info/${editingProduct.value.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/fix_info/${editingProduct.value.id}`, {
         method: 'PUT',
         headers: {'Authorization': `Bearer ${token}`},
         body: formData
@@ -1488,7 +1533,7 @@
 
       // Gọi API cập nhật nhanh trạng thái
       // (Lưu ý: Đảm bảo Backend của bạn có route PUT /toggle_visibility/:id)
-      const response = await fetch(`http://localhost:3000/api/product_admin/toggle_visibility/${product.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/toggle_visibility/${product.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1537,6 +1582,48 @@
     
     currentPage.value = 1;
     fetchProducts();
+  };
+
+  // --- HÀM XUẤT EXCEL KHO HÀNG ---
+  const isExporting = ref(false);
+
+  const exportExcelReport = async () => {
+    isExporting.value = true;
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Chú ý: Đảm bảo đường dẫn này khớp với route Backend của bạn
+      const url = '${API_BASE_URL}/api/product_admin/export-excel';
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi tải file từ Server");
+      }
+
+      // Xử lý tải file Blob
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `Bao_Cao_Kho_Hang_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      toastStore.showToast("Xuất báo cáo Excel thành công!", "success");
+    } catch (error) {
+      console.error("Lỗi xuất Excel:", error);
+      toastStore.showToast("Không thể xuất báo cáo lúc này!", "error");
+    } finally {
+      isExporting.value = false;
+    }
   };
 
 </script>

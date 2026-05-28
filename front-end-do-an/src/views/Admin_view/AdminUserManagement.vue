@@ -652,6 +652,7 @@
   const allLogsPagination = ref({ currentPage: 1, totalPage: 1 });
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const currentAdminId = currentUser.id;
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const searchQuery = ref('');
   let searchTimeout;
@@ -736,7 +737,7 @@
   const fetchUserStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/account_admin/stats', {
+      const res = await fetch('${API_BASE_URL}/api/account_admin/stats', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -756,7 +757,7 @@
     isLoading.value = true;
     try {
       const token = localStorage.getItem('token'); 
-      const response = await fetch(`http://localhost:3000/api/account_admin?page=${currentPage.value}&limit=10&quyen_admin=${filterRoles.value.Admin}&quyen_nhanvien=${filterRoles.value.Staff}&quyen_khach=${filterRoles.value.Collector}&keyword_hoten=${encodeURIComponent(searchQuery.value)}&keyword_sdt=${encodeURIComponent(searchPhone.value)}&keyword_diachi=${encodeURIComponent(searchAddress.value)}&trang_thai=${filterStatus.value}&tu_ngay=${fromDate.value}&den_ngay=${toDate.value}`, {
+      const response = await fetch(`${API_BASE_URL}/api/account_admin?page=${currentPage.value}&limit=10&quyen_admin=${filterRoles.value.Admin}&quyen_nhanvien=${filterRoles.value.Staff}&quyen_khach=${filterRoles.value.Collector}&keyword_hoten=${encodeURIComponent(searchQuery.value)}&keyword_sdt=${encodeURIComponent(searchPhone.value)}&keyword_diachi=${encodeURIComponent(searchAddress.value)}&trang_thai=${filterStatus.value}&tu_ngay=${fromDate.value}&den_ngay=${toDate.value}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -805,7 +806,7 @@
   const fetchSecurityLogs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/account_admin/logs/recent', {
+      const res = await fetch('${API_BASE_URL}/api/account_admin/logs/recent', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -824,7 +825,7 @@
   const fetchAllLogs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/account_admin/logs/all?page=${allLogsPagination.value.currentPage}`, {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/logs/all?page=${allLogsPagination.value.currentPage}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -901,7 +902,7 @@
     else if (newUser.value.role === 'Staff') maQuyen = 2;
 
     try {
-      const res = await fetch('http://localhost:3000/api/account_admin/add', {
+      const res = await fetch('${API_BASE_URL}/api/account_admin/add', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -935,7 +936,7 @@
 
   const toggleLockStatus = async (id) => {
     try {
-      const res = await fetch('http://localhost:3000/api/account_admin/lock', {
+      const res = await fetch('${API_BASE_URL}/api/account_admin/lock', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -980,7 +981,7 @@
 
     try {
       const token = localStorage.getItem('token'); 
-      const res = await fetch(`http://localhost:3000/api/account_admin/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/${id}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}` 
@@ -1056,7 +1057,7 @@
       const cleanPhone = viewingUser.value.phone === 'Chưa cập nhật' ? '' : viewingUser.value.phone;
       const cleanAddress = viewingUser.value.address === 'Chưa cập nhật' ? '' : viewingUser.value.address;
 
-      const res = await fetch(`http://localhost:3000/api/account_admin/update/${viewingUser.value.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/update/${viewingUser.value.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -1120,7 +1121,7 @@
         den_ngay: toDate.value
       }).toString();
 
-      const res = await fetch(`http://localhost:3000/api/account_admin/export?${queryParams}`, {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/export?${queryParams}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}` 
@@ -1159,7 +1160,7 @@
     if(!confirm("Bạn có chắc chắn muốn đặt lại mật khẩu của người dùng này thành '123456' không?")) return;
     
     try {
-      const res = await fetch(`http://localhost:3000/api/account_admin/reset-password/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/reset-password/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

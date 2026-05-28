@@ -151,6 +151,7 @@
   const router = useRouter();
   const authStore = useAuthStore();
   const toastStore = useToastStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const isSaving = ref(false);
 
@@ -207,7 +208,7 @@
     isSaving.value = true;
     
     try {
-      const response = await fetch('http://localhost:3000/api/auth/change-password', {
+      const response = await fetch('${API_BASE_URL}/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

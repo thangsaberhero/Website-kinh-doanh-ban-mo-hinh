@@ -223,6 +223,7 @@
   const limit = ref(9);
   const totalPages = ref(1);
   const totalItems = ref(0);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -283,20 +284,19 @@
   };
 
   const goToCategory = (id) => {
+    // LUÔN LUÔN xóa danh mục con trước khi chuyển đổi danh mục cha
+    subCategoryId.value = ''; 
+
     if (id) {
-      // Nếu bấm vào đúng Danh mục cha đang hiển thị, VÀ đang có Danh mục con được chọn
-      if (categoryId.value == id && subCategoryId.value !== '') {
-        // 1. Reset thằng con về rỗng (tắt dấu check của con, bật dấu check của cha)
-        subCategoryId.value = '';
-        
-        // 2. Gọi lại API lấy tất cả sản phẩm của thằng cha
-        fetchProducts(id);
+      if (categoryId.value == id) {
+        // Nếu bấm lại vào chính danh mục đang xem
+        // Do subCategoryId vừa bị xóa ở trên -> Watcher mảng của bạn sẽ tự động gọi lại API!
       } else {
-        // Nếu bấm sang một Danh mục cha KHÁC, thì cứ chuyển link như bình thường
+        // Chuyển sang danh mục cha KHÁC
         router.push(`/category/${id}`);
       }
     } else {
-      // Nếu bấm "Tất cả sản phẩm"
+      // Bấm "Tất cả sản phẩm"
       router.push(`/category`);
     }
   };
@@ -314,7 +314,7 @@
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/products/danhmuc');
+      const res = await fetch('${API_BASE_URL}/api/products/danhmuc');
       const dataJSON = await res.json();
       
       if (res.ok) {
@@ -322,7 +322,7 @@
         
         for (let cat of mainCats) {
           try {
-            const subRes = await fetch(`http://localhost:3000/api/products/danhmuc/${cat.MaDM}/chitiet`);
+            const subRes = await fetch(`${API_BASE_URL}/api/products/danhmuc/${cat.MaDM}/chitiet`);
             const subJSON = await subRes.json();
             if (subRes.ok) {
               cat.subCategories = subJSON.data || subJSON; // Gắn đàn con vào mảng cha
@@ -340,7 +340,7 @@
 
   const fetchBrand = async () => {
     try{
-      const res = await fetch('http://localhost:3000/api/products/hsx');
+      const res = await fetch('${API_BASE_URL}/api/products/hsx');
       const dataJSON = await res.json();
       if(res.ok){
         availableBrands.value = dataJSON.data || dataJSON;
@@ -360,7 +360,7 @@
   // Có thể lấy theo Cha hoặc theo Con
   const fetchProducts = async () => {
     try {
-      let url = `http://localhost:3000/api/products?page=${currentPage.value}&limit=${limit.value}`;
+      let url = `${API_BASE_URL}/api/products?page=${currentPage.value}&limit=${limit.value}`;
       if(categoryId.value)
         url += `&danhmuc=${categoryId.value}`;
       if(subCategoryId.value)
@@ -373,14 +373,14 @@
         url += `&gia=${maxPrice.value}`
       }
       
-      // let apiUrl = 'http://localhost:3000/api/products'; // Mặc định lấy tất cả
+      // let apiUrl = '${API_BASE_URL}/api/products'; // Mặc định lấy tất cả
 
       // if (maCTDM) {
       //   // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
-      //   apiUrl = `http://localhost:3000/api/products/chitietdm/${maCTDM}/products`;
+      //   apiUrl = `${API_BASE_URL}/api/products/chitietdm/${maCTDM}/products`;
       // } else if (maDM) {
       //   // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
-      //   apiUrl = `http://localhost:3000/api/products/danhmuc/${maDM}/products`;
+      //   apiUrl = `${API_BASE_URL}/api/products/danhmuc/${maDM}/products`;
       // }
         
       const response = await fetch(url);
@@ -435,7 +435,7 @@
     }
 
     try {
-      const resVar = await fetch(`http://localhost:3000/api/products/variants/${product.MaMoHinh}`);
+      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${product.MaMoHinh}`);
       const varJSON = await resVar.json();
       
       let maPhanLoai = null;
@@ -447,7 +447,7 @@
       }
 
       const payload = { MaKH: parseInt(maKH), MaPhanLoai: maPhanLoai, soluong: 1 };
-      const response = await fetch('http://localhost:3000/api/don_hang/add', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload) 
@@ -474,8 +474,12 @@
 
   watch(() => route.params.id, (newId) => {
     categoryId.value = newId || '';
-    fetchProducts(newId);
+    subCategoryId.value = ''; // <-- THÊM: Dọn dẹp bộ lọc khi khách bấm nút Back/Forward trên trình duyệt
     searchQuery.value = ''; 
+
+    // Bạn HÃY XÓA dòng `fetchProducts(newId);` cũ ở đây đi nhé!
+    // Vì bạn đã có `watch([categoryId, subCategoryId...])` ở bên trên rồi, 
+    // giữ lại dòng này sẽ khiến web gọi API 2 lần liên tiếp gây tốn tài nguyên.
   });
 
   watch(() => route.query.brand, (newBrand) => {

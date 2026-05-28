@@ -167,6 +167,7 @@
   const showScrollTop = ref(false);
   const copied = ref(false);
   const readingProgress = ref(0);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const updateProgress = () => {
     const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
@@ -188,7 +189,7 @@
   
   const fetchArticle = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/news/${postId.value}`);
+      const response = await fetch(`${API_BASE_URL}/api/news/${postId.value}`);
       const result = await response.json();
   
       if (response.ok && result.data) {
@@ -208,7 +209,7 @@
 
     if(!sessionStorage.getItem(storageKey)){
         try{
-          const response = await fetch(`http://localhost:3000/api/news/${postId.value}/view`, {
+          const response = await fetch(`${API_BASE_URL}/api/news/${postId.value}/view`, {
             method: 'PATCH'
           });
           if(response.ok){
@@ -226,7 +227,7 @@
 
   const fetchRelatedNews = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/news/${postId.value}/related`);
+      const response = await fetch(`${API_BASE_URL}/api/news/${postId.value}/related`);
       const result = await response.json();
       if (response.ok) {
           relatedNews.value = result.data;

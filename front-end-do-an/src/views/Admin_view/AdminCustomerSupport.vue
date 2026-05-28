@@ -394,6 +394,7 @@
   const contactToReply = ref(null);
   const emailContent = ref('');
   const isSendingEmail = ref(false);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const openEmailModal = (contact) => {
       contactToReply.value = contact;
@@ -410,7 +411,7 @@
     isSendingEmail.value = true;
     try {
       const token = localStorage.getItem('token'); 
-      const res = await fetch(`http://localhost:3000/api/contact/admin/reply/${contactToReply.value.MaLH}`, {
+      const res = await fetch(`${API_BASE_URL}/api/contact/admin/reply/${contactToReply.value.MaLH}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -439,7 +440,7 @@
 
   const fetchAdminReviews = async () => {
     try {
-      const url = new URL('http://localhost:3000/api/reviews/admin/list');
+      const url = new URL('${API_BASE_URL}/api/reviews/admin/list');
       url.searchParams.append('page', currentPage.value);
       url.searchParams.append('limit', itemsPerPage);
       url.searchParams.append('search', searchQuery.value);
@@ -496,7 +497,7 @@
   const fetchAdminContacts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const url = new URL('http://localhost:3000/api/contact/admin/list');
+      const url = new URL('${API_BASE_URL}/api/contact/admin/list');
       url.searchParams.append('page', currentContactPage.value);
       url.searchParams.append('limit', itemsPerPage);
       url.searchParams.append('search', searchContactQuery.value);
@@ -627,7 +628,7 @@
 
       try {
           const token = localStorage.getItem('token'); 
-          const res = await fetch(`http://localhost:3000/api/reviews/admin/${reviewToReply.value.id}`, {
+          const res = await fetch(`${API_BASE_URL}/api/reviews/admin/${reviewToReply.value.id}`, {
               method: 'PUT',
               headers: { 
                   'Content-Type': 'application/json',
@@ -654,7 +655,7 @@
       const newStatus = review.status === 1 ? 0 : 1;
       try {
           const token = localStorage.getItem('token'); 
-          const res = await fetch(`http://localhost:3000/api/reviews/admin/${review.id}`, {
+          const res = await fetch(`${API_BASE_URL}/api/reviews/admin/${review.id}`, {
               method: 'PUT',
               headers: { 
                   'Content-Type': 'application/json',

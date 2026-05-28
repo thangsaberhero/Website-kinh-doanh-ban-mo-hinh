@@ -86,7 +86,7 @@
             <div class="space-y-6 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
               <div v-for="item in checkoutItems" :key="item.MaPhanLoai" class="flex gap-4">
                 <div class="w-20 h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
-                  <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
+                  <img :src="'${API_BASE_URL}/Images_product/' + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
                 </div>
                 <div class="flex-grow flex flex-col justify-center">
                   <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
@@ -166,6 +166,7 @@ import { useToastStore } from '../../stores/toast';
 const router = useRouter();
 const authStore = useAuthStore();
 const toastStore = useToastStore();
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const isProcessing = ref(false);
 const paymentMethod = ref(''); 
@@ -223,7 +224,7 @@ onMounted(async () => {
 
   try {
     // 1. GỌI API LẤY THÔNG TIN CÁ NHÂN (Để điền tự động vào Form)
-    const resInfo = await fetch(`http://localhost:3000/api/info_user/laythongtin`,{
+    const resInfo = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`,{
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const dataInfo = await resInfo.json();
@@ -237,7 +238,7 @@ onMounted(async () => {
     }
 
     // 2. GỌI API LẤY GIỎ HÀNG (Dùng lại hàm watch cart ở trang Giỏ Hàng)
-    const resCart = await fetch(`http://localhost:3000/api/don_hang/watch`, {
+    const resCart = await fetch(`${API_BASE_URL}/api/don_hang/watch`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -320,7 +321,7 @@ const processCheckout = async () => {
     console.log("Gói hàng gửi đi:", payload);
 
     // 4. GỌI API ĐẾN BACKEND
-    const response = await fetch('http://localhost:3000/api/don_hang/xacnhan', {
+    const response = await fetch('${API_BASE_URL}/api/don_hang/xacnhan', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -345,7 +346,7 @@ const processCheckout = async () => {
     //router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
     if (paymentMethod.value === 'momo') {
             // Gọi API MoMo Mock
-            const momoRes = await fetch('http://localhost:3000/api/don_hang/payment/momo/create', {
+            const momoRes = await fetch('${API_BASE_URL}/api/don_hang/payment/momo/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' ,
                   'Authorization': `Bearer ${token}`

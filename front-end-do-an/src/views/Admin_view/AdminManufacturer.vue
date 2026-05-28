@@ -287,6 +287,7 @@
   const logoFile = ref(null);
   const logoPreview = ref(null);
   const logoInput = ref(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const onLogoChange = (event) => {
     const file = event.target.files[0];
@@ -300,7 +301,7 @@
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/product_admin/thong_ke_hsx',{
+      const response = await fetch('${API_BASE_URL}/api/product_admin/thong_ke_hsx',{
         headers: {'Authorization': `Bearer ${token}`}
       });
       const result = await response.json();
@@ -316,7 +317,7 @@
   // HÀM GỌI API LẤY DANH SÁCH HÃNG
   const fetchManufacturers = async () => {
     try {
-      let url = `http://localhost:3000/api/product_admin/get_all_brand?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      let url = `${API_BASE_URL}/api/product_admin/get_all_brand?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       
       // Truyền từ khóa tìm kiếm
       if (searchQuery.value) {
@@ -409,10 +410,10 @@
     }
 
     try {
-      let url = 'http://localhost:3000/api/product_admin/add_brand'; 
+      let url = '${API_BASE_URL}/api/product_admin/add_brand'; 
       let method = 'POST';
       if (isEditMode.value) {
-        url = `http://localhost:3000/api/product_admin/fix_brand/${formManufacturer.value.id}`;
+        url = `${API_BASE_URL}/api/product_admin/fix_brand/${formManufacturer.value.id}`;
         method = 'PUT';
       }
 
@@ -452,7 +453,7 @@
     try {
       const token = localStorage.getItem('token');
       // 👉 Sửa URL Xóa ở đây
-      const response = await fetch(`http://localhost:3000/api/product_admin/delete_brand/${itemToDelete.value.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_brand/${itemToDelete.value.id}`, {
         method: 'DELETE',
         headers: {'Authorization': `Bearer ${token}`}
       });

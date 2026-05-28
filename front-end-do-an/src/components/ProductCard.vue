@@ -25,7 +25,7 @@
 
         <img 
           loading="lazy" 
-          :src="`http://localhost:3000/Images_product/${product.AnhDaiDien}`" 
+          :src="`${API_BASE_URL}/Images_product/${product.AnhDaiDien}`" 
           @error="$event.target.src = 'https://server.wallpaperalchemy.com/storage/wallpapers/353/evernight-honkai-star-rail-4k-wallpaper.jpg'"
           :alt="product.TenMH" 
           :class="['w-full h-full object-cover transition-transform duration-700 group-hover:scale-105', product.SoLuong === 0 ? 'grayscale opacity-50' : '']"

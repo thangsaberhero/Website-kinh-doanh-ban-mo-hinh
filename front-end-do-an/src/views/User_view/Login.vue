@@ -177,6 +177,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const toastStore = useToastStore();
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // 1. Khai báo các biến
 const form = reactive({
@@ -221,7 +222,7 @@ const handleGoogleLogin = () => {
   googleTokenLogin().then(async (response) => {
     isLoading.value = true;
     try {
-      const res = await fetch('http://localhost:3000/api/auth/google', {
+      const res = await fetch('${API_BASE_URL}/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: response.access_token })
@@ -244,7 +245,7 @@ const handleFacebookLogin = () => {
     if (response.authResponse) {
       isLoading.value = true;
       try {
-        const res = await fetch('http://localhost:3000/api/auth/facebook', {
+        const res = await fetch('${API_BASE_URL}/api/auth/facebook', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ accessToken: response.authResponse.accessToken })

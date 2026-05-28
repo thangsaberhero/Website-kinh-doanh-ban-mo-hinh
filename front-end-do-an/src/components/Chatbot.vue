@@ -106,7 +106,7 @@ const isOpen = ref(false);
 const userInput = ref('');
 const isLoading = ref(false); // Biến theo dõi trạng thái gọi API
 const chatBox = ref(null); // Ref để tham chiếu tới thẻ div bao bọc tin nhắn
-
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const messages = ref([
   { sender: 'bot', text: 'Xin chào! Mình là trợ lý ảo của FigureCollect. Bạn cần tìm mô hình nào?', products: [] }
 ]);
@@ -140,7 +140,7 @@ const sendMessage = async () => {
   scrollToBottom(); // Cuộn ngay khi user vừa gửi tin nhắn
 
   try {
-    const response = await axios.post('http://localhost:3000/api/chatbot', { message: text });
+    const response = await axios.post('${API_BASE_URL}/api/chatbot', { message: text });
     
     messages.value.push({ 
       sender: 'bot', 

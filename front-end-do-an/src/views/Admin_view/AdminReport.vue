@@ -433,6 +433,7 @@
   const selectedYear = ref(currentYearObj);
   const selectedMonth = ref(new Date().getMonth() + 1);
   const selectedQuarter = ref(Math.ceil((new Date().getMonth() + 1) / 3));
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const setFilterMode = (mode) => {
     filterMode.value = mode;
@@ -582,7 +583,7 @@
         query = `?NgayBatDau=${startDate.value}&NgayKetThuc=${endDate.value}`;
       }
 
-      const resRevenue = await fetch(`http://localhost:3000/api/thongke/doanhthu${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const resRevenue = await fetch(`${API_BASE_URL}/api/thongke/doanhthu${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const dataRevenue = await resRevenue.json();
       if (dataRevenue.success && dataRevenue.data) {
         metrics.value.totalRevenue = dataRevenue.data.TongDoanhThu;
@@ -590,20 +591,20 @@
         metrics.value.totalOrders = dataRevenue.data.TongSoDonHang;
       }
 
-      const resProducts = await fetch(`http://localhost:3000/api/thongke/sanpham${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const resProducts = await fetch(`${API_BASE_URL}/api/thongke/sanpham${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const dataProducts = await resProducts.json();
       if (dataProducts.success && dataProducts.data) {
         productData.value.categories = dataProducts.data.topDanhMuc || [];
         productData.value.brands = dataProducts.data.topHSX || [];
       }
 
-      const resPromo = await fetch(`http://localhost:3000/api/thongke/khuyenmai${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const resPromo = await fetch(`${API_BASE_URL}/api/thongke/khuyenmai${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const dataPromo = await resPromo.json();
       if (dataPromo.success && dataPromo.data) {
         marketingData.value = dataPromo.data.topmagg || [];
       }
 
-      const resChart = await fetch(`http://localhost:3000/api/thongke/bieudo${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const resChart = await fetch(`${API_BASE_URL}/api/thongke/bieudo${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const dataChart = await resChart.json();
       if (dataChart.success && dataChart.data) {
         const categories = dataChart.data.map(item => item.Ngay);
@@ -617,7 +618,7 @@
         chartFinanceOptions.value = { ...chartFinanceOptions.value, xaxis: { categories } };
       }
 
-      const resExtra = await fetch(`http://localhost:3000/api/thongke/bosung${query}`, { 
+      const resExtra = await fetch(`${API_BASE_URL}/api/thongke/bosung${query}`, { 
         headers: { 'Authorization': `Bearer ${token}` } 
       });
       const dataExtra = await resExtra.json();
@@ -628,7 +629,7 @@
         orderStats.value = dataExtra.data.orderStats || { cancelRate: 0, cancelCount: 0, returnRate: 0, returnCount: 0 };
       }
 
-      const resTop = await fetch(`http://localhost:3000/api/thongke/top-san-pham${query}`, {
+      const resTop = await fetch(`${API_BASE_URL}/api/thongke/top-san-pham${query}`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -638,7 +639,7 @@
         topProducts.value = dataTop.data || [];
       }
 
-      const res = await fetch(`http://localhost:3000/api/thongke/donhang${query}`, {
+      const res = await fetch(`${API_BASE_URL}/api/thongke/donhang${query}`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -671,7 +672,7 @@
         query = `?NgayBatDau=${startDate.value}&NgayKetThuc=${endDate.value}`;
       }
       
-      const response = await fetch(`http://localhost:3000/api/thongke/xuatExcelDoanhThu${query}`, {
+      const response = await fetch(`${API_BASE_URL}/api/thongke/xuatExcelDoanhThu${query}`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });

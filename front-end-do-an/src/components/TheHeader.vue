@@ -8,7 +8,7 @@
           <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/category')">Cửa hàng</a>
           <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/news')">Tin tức</a>
           <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/contact')">Liên hệ</a>
-          <router-link to="/truy-xuat" class="hover:text-primary transition-colors font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
+          <router-link to="/truy-xuat/" class="hover:text-primary transition-colors font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
         </div>
       </div>
 
@@ -53,7 +53,7 @@
                     class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
                 >
                     <div class="w-14 h-14 shrink-0 rounded-md overflow-hidden bg-surface-container-lowest border border-white/10">
-                      <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover" />
+                      <img :src="'${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover" />
                     </div>
                     <div class="flex-1 flex flex-col justify-center">
                       <h4 class="text-sm font-bold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">
@@ -92,7 +92,7 @@
                   <div v-if="cartItems.length > 0" class="max-h-[300px] overflow-y-auto custom-scrollbar p-2">
                     <div v-for="item in cartItems" :key="item.MaPhanLoai" class="flex gap-3 p-2 hover:bg-white/5 rounded-lg transition-colors group relative">
                       <div class="w-16 h-16 shrink-0 rounded bg-surface-container-lowest border border-white/10 overflow-hidden cursor-pointer" @click="goToProduct(item.MaMoHinh)">
-                        <img :src="'http://localhost:3000/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
+                        <img :src="'${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
                       </div>
                       
                       <div class="flex-1 flex flex-col justify-between overflow-hidden pr-8">
@@ -208,10 +208,11 @@
   const showMiniCart = ref(false);
   const cartItems = ref([]);
   const cartTotal = ref(0);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const userAvatar = computed(() => {
     if (authStore.user && authStore.user.AnhDaiDien) {
-      return `http://localhost:3000/Images_user/${authStore.user.AnhDaiDien}`;
+      return `${API_BASE_URL}/Images_user/${authStore.user.AnhDaiDien}`;
     }
     const name = authStore.user?.TenKH || authStore.user?.username || authStore.user?.TenDN || 'Collector';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff8f73&color=fff&bold=true&size=150`;
@@ -232,7 +233,7 @@
     
     if (userObj && userObj.MaKH) {
       try {
-        const response = await fetch(`http://localhost:3000/api/don_hang/watch?t=${new Date().getTime()}`, {
+        const response = await fetch(`${API_BASE_URL}/api/don_hang/watch?t=${new Date().getTime()}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -265,7 +266,7 @@
   const removeFromCart = async (maPhanLoai) => {
     if (!authStore.user || !authStore.user.MaKH) return;
     try {
-      const response = await fetch('http://localhost:3000/api/don_hang/delete', {
+      const response = await fetch('${API_BASE_URL}/api/don_hang/delete', {
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -333,7 +334,7 @@
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/products/search?keyword=${searchQuery.value}`);
+        const response = await fetch(`${API_BASE_URL}/api/products/search?keyword=${searchQuery.value}`);
         const dataJSON = await response.json();
         
         if (response.ok) {
