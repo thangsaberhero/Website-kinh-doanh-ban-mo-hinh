@@ -50,6 +50,7 @@
   
   const router = useRouter();
   const authStore = useAuthStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   const totalFigures = ref(0); 
   const userString = localStorage.getItem('user');
@@ -58,7 +59,7 @@
   const fetchUserStats = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/info_user/laythongtin/${currentUser.id}`);
+      const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin/${currentUser.id}`);
       if (res.ok) {
         const resData = await res.json();
         totalFigures.value = resData.data?.SoFigureDaMua || 0;
@@ -91,7 +92,7 @@
   
   const userAvatar = computed(() => {
     if (authStore.user && authStore.user.AnhDaiDien) {
-      return `http://localhost:3000/Images_user/${authStore.user.AnhDaiDien}`;
+      return `${API_BASE_URL}/Images_user/${authStore.user.AnhDaiDien}`;
     }
     const displayName = authStore.user?.TenKH || authStore.user?.username || 'Collector';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff8f73&color=fff&bold=true&size=128`;
