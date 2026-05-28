@@ -25,10 +25,10 @@
         <div>
           <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Hỗ trợ khách hàng</h4>
           <ul class="space-y-4 text-on-surface-variant text-sm">
-            <li><router-link to="/guide" class="hover:text-primary transition-colors">Hướng dẫn đặt hàng</router-link></li>
-            <li><router-link to="/shipping-policy" class="hover:text-primary transition-colors">Chính sách vận chuyển</router-link></li>
-            <li><router-link to="/return-policy" class="hover:text-primary transition-colors">Chính sách đổi trả</router-link></li>
-            <li><router-link to="/orders" class="hover:text-primary transition-colors">Tra cứu đơn hàng</router-link></li>
+            <li><router-link to="/support?tab=guide" class="hover:text-primary transition-colors">Hướng dẫn đặt hàng</router-link></li>
+            <li><router-link to="/support?tab=shipping" class="hover:text-primary transition-colors">Chính sách vận chuyển</router-link></li>
+            <li><router-link to="/support?tab=return" class="hover:text-primary transition-colors">Chính sách đổi trả</router-link></li>
+            <li><router-link to="/support?tab=payment" class="hover:text-primary transition-colors">Chính sách thanh toán</router-link></li>
           </ul>
         </div>
 
