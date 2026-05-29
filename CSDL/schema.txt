@@ -385,16 +385,14 @@ CREATE TABLE VanChuyen (
     FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
 );
 
--- 27. Bảng Sản phẩm vật lý
-CREATE TABLE SanPhamVatLy (
-    MaMoHinhVL INT PRIMARY KEY AUTO_INCREMENT,
-    MaMoHinh INT,
-    MaVach_Serial VARCHAR(100) UNIQUE NOT NULL,
-    TrangThai VARCHAR(50),
-    Is_Minted BOOLEAN DEFAULT 0,
-    MaDH INT NULL,
-    FOREIGN KEY (MaMoHinh) REFERENCES MoHinh(MaMoHinh),
-    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
+CREATE TABLE ThongBaoAdmin (
+    MaTB INT PRIMARY KEY AUTO_INCREMENT,
+    TieuDe VARCHAR(255) NOT NULL,
+    NoiDung TEXT NOT NULL,
+    LoaiThongBao VARCHAR(50), -- VD: 'DonHang', 'KhoHang', 'HeThong'
+    DuongDan VARCHAR(255), -- Link để khi click vào sẽ chuyển hướng đến trang tương ứng
+    DaDoc TINYINT DEFAULT 0, -- 0: Chưa đọc, 1: Đã đọc
+    NgayTao DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Dữ liệu cơ bản--

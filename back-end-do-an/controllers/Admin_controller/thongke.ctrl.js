@@ -362,6 +362,7 @@ const thongke = {
             const [result] = await db.query(sql, value);
             res.status(200).json({ success: true, data: result });
         } catch (error) {
+            console.error("Lỗi khi tạo biểu đồ: ", error);
             res.status(500).json({ success: false, message: "Lỗi máy chủ!" });
         }
     },
