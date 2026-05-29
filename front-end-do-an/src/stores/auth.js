@@ -26,6 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
       // 3. Xử lý thành công/thất bại
       if (response.ok) {
         // Lưu thông tin vào State của Vue
+        console.log("Dữ liệu user từ Backend:", data.user);
         user.value = data.user;
         token.value = data.token;
 

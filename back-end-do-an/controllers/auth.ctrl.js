@@ -76,7 +76,8 @@ const authController = {
             const sql_login = `
                 SELECT tk.*, 
                     kh.MaKH, kh.TenKH,
-                    nv.MaNV, nv.TenNV
+                    nv.MaNV, nv.TenNV,
+                    tk.MaQuyen
                 FROM TaiKhoan tk
                 LEFT JOIN KhachHang kh ON tk.MaTK = kh.MaTK
                 LEFT JOIN NhanVien nv ON tk.MaTK = nv.MaTK

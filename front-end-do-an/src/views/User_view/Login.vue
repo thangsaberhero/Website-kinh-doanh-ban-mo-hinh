@@ -198,6 +198,8 @@ const handleLogin = async () => {
     if (isSuccess) {
       toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
       const userRole = authStore.user?.role || authStore.user?.MaQuyen;
+      console.log("Dữ liệu user từ Store:", authStore.user); // Thêm dòng này
+      console.log("Quyền hiện tại là:", userRole);           // Thêm dòng này
       
       setTimeout(() => {
         if (Number(userRole) === 1 || Number(userRole) === 2) {
