@@ -200,7 +200,7 @@ const handleLogin = async () => {
       const userRole = authStore.user?.role || authStore.user?.MaQuyen;
       
       setTimeout(() => {
-        if (userRole === 1 || userRole === 2) {
+        if (Number(userRole) === 1 || Number(userRole) === 2) {
           router.push('/admin');
         } else {
           const redirectPath = route.query.redirect || '/';
