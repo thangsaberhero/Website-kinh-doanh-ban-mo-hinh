@@ -30,35 +30,45 @@
 
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const MulterStorageCloudinary = require('multer-storage-cloudinary');
 
-// 1. Cấu hình chìa khóa kết nối với Cloudinary
+// 1. Cấu hình chìa khóa Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 2. Viết lại hàm tạo Uploader dùng Cloudinary
+// 2. Hàm tạo kho lưu trữ thông minh (Tự thích ứng mọi phiên bản)
 const createUploader = (folderName) => {
-    const storage = new CloudinaryStorage({
-        cloudinary: cloudinary,
-        params: {
-            // Cloudinary sẽ tự tạo thư mục này trên mây
-            folder: `FigureCollect/${folderName}`, 
-            // Chỉ cho phép các định dạng ảnh an toàn
-            allowedFormats: ['jpg', 'png', 'jpeg', 'webp'], 
-        },
-    });
+    let storage;
+    
+    if (MulterStorageCloudinary.CloudinaryStorage) {
+        // Cú pháp dành cho thư viện phiên bản mới (v4+)
+        storage = new MulterStorageCloudinary.CloudinaryStorage({
+            cloudinary: cloudinary,
+            params: {
+                folder: `FigureCollect/${folderName}`,
+                allowedFormats: ['jpg', 'png', 'jpeg', 'webp']
+            }
+        });
+    } else {
+        // Cú pháp dành cho thư viện phiên bản cũ (v2)
+        storage = MulterStorageCloudinary({
+            cloudinary: cloudinary,
+            folder: `FigureCollect/${folderName}`,
+            allowedFormats: ['jpg', 'png', 'jpeg', 'webp']
+        });
+    }
 
     return multer({ storage: storage });
 };
 
-// 3. Giữ nguyên hoàn toàn các Export cũ để code ở Route không bị lỗi
+// 3. Xuất các cổng upload để Route sử dụng
 module.exports = {
     uploadNews: createUploader('Images_news'),
     uploadReview: createUploader('Images_review'),
     uploadBrand: createUploader('Images_brand'),
-    uploadProduct: createUploader('Images_product'), // <--- THÊM DÒNG NÀY ĐỂ CHỨA ẢNH MÔ HÌNH
+    uploadProduct: createUploader('Images_product'),
     uploadUser: createUploader('Images_user')
 };
