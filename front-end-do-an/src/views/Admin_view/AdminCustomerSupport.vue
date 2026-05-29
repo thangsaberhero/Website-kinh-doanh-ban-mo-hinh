@@ -462,7 +462,7 @@
             return {
               id: item.MaDG,
               customerName: item.TenKH || 'Khách hàng', 
-              customerAvatar: item.AnhDaiDien ? `http://localhost:3000/Images_user/${item.AnhDaiDien}` : null,
+              customerAvatar: item.AnhDaiDien ? `${API_BASE_URL}/Images_user/${item.AnhDaiDien}` : null,
               date: `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`,
               productName: item.TenMH,
               variant: item.ChiTietPhanLoai,

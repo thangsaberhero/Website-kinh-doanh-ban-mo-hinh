@@ -931,7 +931,7 @@
               return;
           }
 
-          url = 'http://localhost:3000/api/khuyen_mai_admin';
+          url = `${API_BASE_URL}/api/khuyen_mai_admin`;
           payload = {
               TenKM: promotionForm.value.TenKM,
               ThoiGianBD: promotionForm.value.ThoiGianBD,
@@ -1051,7 +1051,7 @@
           if (!editingPromo.value.TenKM || !editingPromo.value.ThoiGianBD || !editingPromo.value.ThoiGianKT) {
             toastStore.showToast("Vui lòng điền đủ thông tin (*)", "error"); return;
           }
-          url = `http://localhost:3000/api/khuyen_mai_admin/${editingPromo.value.id}`;
+          url = `${API_BASE_URL}/api/khuyen_mai_admin/${editingPromo.value.id}`;
           payload = {
             TenKM: editingPromo.value.TenKM,
             ThoiGianBD: editingPromo.value.ThoiGianBD,

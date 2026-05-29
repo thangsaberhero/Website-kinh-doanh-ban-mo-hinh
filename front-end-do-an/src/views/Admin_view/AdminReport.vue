@@ -215,7 +215,7 @@
                   <tr v-for="item in inventoryWarnings" :key="item.MaPhanLoai" class="hover:bg-slate-50/80 transition-colors">
                     <td class="p-3">
                       <div class="flex items-center gap-3">
-                        <img :src="`http://localhost:3000/Images_product/${item.AnhDaiDien}`" class="w-10 h-10 rounded object-cover border border-slate-200 shadow-sm" alt="IMG">
+                        <img :src="`${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" class="w-10 h-10 rounded object-cover border border-slate-200 shadow-sm" alt="IMG">
                         <p class="font-bold text-slate-900 text-xs line-clamp-2 max-w-[200px]" :title="item.TenMH">{{ item.TenMH }}</p>
                       </div>
                     </td>
@@ -250,7 +250,7 @@
             <div class="flex-1 space-y-3 mb-6 overflow-y-auto custom-scrollbar pr-2">
               <div v-for="(review, index) in topReviews" :key="review.MaMoHinh" class="flex items-center gap-4 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
                 <div class="font-headline font-bold text-slate-300 text-xl w-4">{{ index + 1 }}</div>
-                <img :src="`http://localhost:3000/Images_product/${review.AnhDaiDien}`" class="w-12 h-12 rounded object-cover border border-slate-200">
+                <img :src="`${API_BASE_URL}/Images_product/${review.AnhDaiDien}`" class="w-12 h-12 rounded object-cover border border-slate-200">
                 <div class="flex-1">
                   <p class="text-xs font-bold text-slate-900 line-clamp-1" :title="review.TenMH">{{ review.TenMH }}</p>
                   <div class="flex items-center gap-2 mt-1">

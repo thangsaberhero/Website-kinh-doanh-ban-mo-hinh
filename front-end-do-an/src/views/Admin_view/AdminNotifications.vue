@@ -143,6 +143,7 @@
   const router = useRouter();
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   const isLoading = ref(true);  
   const activeTypeFilter = ref('all');
@@ -181,7 +182,7 @@
         
         // Nếu là xóa 1 cái
         if (confirmType.value === 'delete_single') {
-        const res = await fetch(`http://localhost:3000/api/thong_bao_admin/delete/${targetId.value}`, {
+        const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin/delete/${targetId.value}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -191,7 +192,7 @@
         } 
         // Nếu là dọn dẹp tất cả
         else if (confirmType.value === 'delete_all') {
-        const res = await fetch(`http://localhost:3000/api/thong_bao_admin/delete-read`, {
+        const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin/delete-read`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -224,7 +225,7 @@
         loai: activeTypeFilter.value
       }).toString();
   
-      const res = await fetch(`http://localhost:3000/api/thong_bao_admin/all-page?${params}`, {
+      const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin/all-page?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const result = await res.json();
@@ -245,7 +246,7 @@
     try {
       const token = localStorage.getItem('token');
       if (notif.DaDoc === 0) {
-        await fetch(`http://localhost:3000/api/thong_bao_admin/read/${notif.MaTB}`, {
+        await fetch(`${API_BASE_URL}/api/thong_bao_admin/read/${notif.MaTB}`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -262,7 +263,7 @@
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/thong_bao_admin/read-all`, {
+      await fetch(`${API_BASE_URL}/api/thong_bao_admin/read-all`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });

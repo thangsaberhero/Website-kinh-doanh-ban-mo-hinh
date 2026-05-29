@@ -155,7 +155,7 @@
   const selectedFile = ref(null); 
   const displayName = currentUser?.TenNV || currentUser?.username || 'Admin';
   const defaultAvatar = `https://ui-avatars.com/api/?name=${displayName}&background=ff8f73&color=fff&bold=true&size=150`;
-  const avatarPreview = ref(currentUser?.AnhDaiDien ? `http://localhost:3000/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
+  const avatarPreview = ref(currentUser?.AnhDaiDien ? `${API_BASE_URL}/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
   const ngayTaoFromDB = ref(null);
 
   
@@ -194,7 +194,7 @@
         ngayTaoFromDB.value = userData.NgayTao;
         
         if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
-          avatarPreview.value = `http://localhost:3000/Images_user/${userData.AnhDaiDien}`;
+          avatarPreview.value = `${API_BASE_URL}/Images_user/${userData.AnhDaiDien}`;
         }
       }
     } 

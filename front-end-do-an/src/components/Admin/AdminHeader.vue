@@ -199,7 +199,7 @@
           if (pollingInterval) clearInterval(pollingInterval);
           return;
       }
-      const res = await fetch('http://localhost:3000/api/thong_bao_admin', {
+      const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin`, {
           headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -220,7 +220,7 @@
   };
 
   const markAllAsRead = async () => {
-    await fetch('http://localhost:3000/api/thong_bao_admin/read-all', { 
+    await fetch(`${API_BASE_URL}/api/thong_bao_admin/read-all`, { 
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -233,7 +233,7 @@
   const clickNotification = async (notif) => {
     isNotificationOpen.value = false;
     if (notif.DaDoc === 0) {
-      await fetch(`http://localhost:3000/api/thong_bao_admin/read/${notif.MaTB}`, { 
+      await fetch(`${API_BASE_URL}/api/thong_bao_admin/read/${notif.MaTB}`, { 
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

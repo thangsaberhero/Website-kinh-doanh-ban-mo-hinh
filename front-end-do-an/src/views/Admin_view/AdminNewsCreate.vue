@@ -213,7 +213,7 @@
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('${API_BASE_URL}/api/news', {
+      const response = await fetch(`${API_BASE_URL}/api/news`, {
         headers: {'Authorization': `Bearer ${token}`}
       });
       const data = await response.json();
@@ -279,7 +279,7 @@
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('${API_BASE_URL}/api/news', {
+        const response = await fetch(`${API_BASE_URL}/api/news`, {
             method: 'POST',
             headers: {'Authorization': `Bearer ${token}`},
             body: formData 

@@ -360,7 +360,7 @@
             <div v-for="(prod, index) in viewingOrder.products" :key="index" class="flex items-start gap-3 border-b border-slate-50 pb-3 last:border-0">
               
               <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shrink-0 p-1">
-                <img v-if="prod.image" :src="'http://localhost:3000/Images_product/' + prod.image" class="w-full h-full object-contain"/>
+                <img v-if="prod.image" :src="`${API_BASE_URL}/Images_product/` + prod.image" class="w-full h-full object-contain"/>
                 <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
                   <span class="material-symbols-outlined">image_not_supported</span>
                 </div>
@@ -687,7 +687,7 @@ const exportExcelReport = async () => {
     isLoading.value = true;
     try {
       // Gửi kèm tiêu chí sắp xếp và tìm kiếm lên server
-      const response = await fetch(`http://localhost:3000/api/orders?sort=${sortBy.value}&search=${searchQuery.value}`);
+      const response = await fetch(`${API_BASE_URL}/api/orders?sort=${sortBy.value}&search=${searchQuery.value}`);
       const data = await response.json();
       orders.value = data; // Dữ liệu nhận về đã được server sắp xếp sẵn
     } finally {
@@ -957,7 +957,7 @@ const exportExcelReport = async () => {
     }
 
     // Đường dẫn trỏ trực tiếp đến API in hóa đơn vừa tạo ở Backend
-    const printUrl = `http://localhost:3000/api/orders/print/${maDHGoc}`;
+    const printUrl = `${API_BASE_URL}/api/orders/print/${maDHGoc}`;
 
     // Mở một popup/tab ẩn của trình duyệt để load giao diện HTML hóa đơn
     const printWindow = window.open(printUrl, '_blank', 'width=800,height=600');
@@ -992,7 +992,7 @@ const exportExcelReport = async () => {
     try {
       const token = localStorage.getItem('token');
       // CHÚ Ý: Đổi đường dẫn API này theo đúng route Backend của bạn
-      const res = await fetch('${API_BASE_URL}/api/invoice_admin/create-external', {
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/create-external`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -436,7 +436,7 @@ export default {
       if (image.startsWith('http://') || image.startsWith('https://')) {
         return image;
       }
-      return `http://localhost:3000/Images_product/${image}`;
+      return `${API_BASE_URL}/Images_product/${image}`;
     },
 
     async selectModel(product) {

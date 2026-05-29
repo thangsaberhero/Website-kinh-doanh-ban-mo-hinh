@@ -1029,7 +1029,7 @@
             sellPrice: Number(item.DonGia || 0).toLocaleString('vi-VN'),
             stock: item.SoLuong || 0,
             isVisible: item.HienThi,
-            thumbnailUrl: `http://localhost:3000/Images_product/${item.AnhDaiDien}`
+            thumbnailUrl: `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`
           };
         });
         totalProducts.value = result.pagination?.totalItems || result.data.length; 
@@ -1348,7 +1348,7 @@
         // Xử lý Ảnh phụ
         if (result.data.galleryUrls && result.data.galleryUrls.length > 0) {
           editingProduct.value.galleryUrls = result.data.galleryUrls.map(img => 
-             img.includes('http') ? img : `http://localhost:3000/Images_product/${img}`
+             img.includes('http') ? img : `${API_BASE_URL}/Images_product/${img}`
           );
         }
       }

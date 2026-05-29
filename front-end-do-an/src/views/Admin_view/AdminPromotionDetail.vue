@@ -149,7 +149,7 @@
                     <td class="py-4 px-6">
                       <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden shrink-0">
-                          <img v-if="sp.AnhDaiDien" :src="`http://localhost:3000/Images_product/${sp.AnhDaiDien}`" class="w-full h-full object-cover"/>
+                          <img v-if="sp.AnhDaiDien" :src="`${API_BASE_URL}/Images_product/${sp.AnhDaiDien}`" class="w-full h-full object-cover"/>
                           <span v-else class="material-symbols-outlined text-slate-300 flex items-center justify-center h-full">image</span>
                         </div>
                         <div class="flex flex-col min-w-0">
@@ -323,7 +323,7 @@
                 </div>
 
                 <div class="w-10 h-10 bg-slate-100 rounded-md overflow-hidden shrink-0 border border-slate-200">
-                  <img v-if="prod.AnhDaiDien" :src="`http://localhost:3000/Images_product/${prod.AnhDaiDien}`" class="w-full h-full object-cover"/>
+                  <img v-if="prod.AnhDaiDien" :src="`${API_BASE_URL}/Images_product/${prod.AnhDaiDien}`" class="w-full h-full object-cover"/>
                   <span v-else class="material-symbols-outlined text-slate-300 flex items-center justify-center h-full">image</span>
                 </div>
 
@@ -483,10 +483,10 @@
       const token = localStorage.getItem('token');
       
       const [resCate, resBrand] = await Promise.all([
-        fetch('http://localhost:3000/api/product_admin/get_all_cate?getAll=true', {
+        fetch(`${API_BASE_URL}/api/product_admin/get_all_cate?getAll=true`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch('http://localhost:3000/api/product_admin/get_all_brand', {
+        fetch(`${API_BASE_URL}/api/product_admin/get_all_brand`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
