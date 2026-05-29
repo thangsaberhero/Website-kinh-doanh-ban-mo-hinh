@@ -25,7 +25,7 @@
 
         <img 
           loading="lazy" 
-          :src="`${API_BASE_URL}/Images_product/${product.AnhDaiDien}`" 
+          :src="getImageUrl(product.AnhDaiDien)" 
           @error="$event.target.src = 'https://server.wallpaperalchemy.com/storage/wallpapers/353/evernight-honkai-star-rail-4k-wallpaper.jpg'"
           :alt="product.TenMH" 
           :class="['w-full h-full object-cover transition-transform duration-700 group-hover:scale-105', product.SoLuong === 0 ? 'grayscale opacity-50' : '']"
@@ -77,6 +77,7 @@
   </template>
   
   <script setup>
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const props = defineProps({
     product: {
         type: Object,
@@ -93,4 +94,17 @@
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
   };
+  const getImageUrl = (imagePath) => {
+  // 1. Nếu không có ảnh -> trả về ảnh trống hoặc bỏ qua để @error HTML tự lo
+  if (!imagePath) return 'https://server.wallpaperalchemy.com/storage/wallpapers/353/evernight-honkai-star-rail-4k-wallpaper.jpg';
+  
+  // 2. Nếu là ảnh mới up lên Cloudinary (bắt đầu bằng http hoặc https) -> Trả về nguyên link
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // 3. Nếu là ảnh cũ lưu ở Render (chỉ là tên file) -> Nối với API_BASE_URL
+  const cleanPath = imagePath.replace(/^public\//, ''); // Đề phòng DB lưu dính chữ public/
+  return `${API_BASE_URL}/Images_product/${cleanPath}`;
+};
   </script>
