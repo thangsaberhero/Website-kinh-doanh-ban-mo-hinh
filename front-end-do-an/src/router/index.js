@@ -307,7 +307,9 @@ router.beforeEach((to, from, next) => {
   
   // 2. Lấy thông tin xác thực
   const token = localStorage.getItem('token');
-  const userRole = parseInt(localStorage.getItem('role'));
+  const userString = localStorage.getItem('user');
+  const user = userString ? JSON.parse(userString) : null;
+  const userRole = user ? parseInt(user.MaQuyen) : null;
 
   // KỊCH BẢN 1: Đang cố vào trang Admin
   if (isAdminRoute) {
