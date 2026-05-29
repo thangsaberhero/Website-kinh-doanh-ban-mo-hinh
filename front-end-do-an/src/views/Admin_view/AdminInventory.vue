@@ -1029,7 +1029,9 @@
             sellPrice: Number(item.DonGia || 0).toLocaleString('vi-VN'),
             stock: item.SoLuong || 0,
             isVisible: item.HienThi,
-            thumbnailUrl: `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`
+            thumbnailUrl: (item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) 
+              ? item.AnhDaiDien 
+              : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`
           };
         });
         totalProducts.value = result.pagination?.totalItems || result.data.length; 
