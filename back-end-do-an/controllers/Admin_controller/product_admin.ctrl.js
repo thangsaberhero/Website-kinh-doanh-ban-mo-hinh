@@ -541,12 +541,12 @@ const product_admin = {
             // 3. XỬ LÝ ẢNH
             let tenAnhDaiDien = null;
             if (req.files && req.files['AnhDaiDien']) {
-                tenAnhDaiDien = req.files['AnhDaiDien'][0].filename; 
+                tenAnhDaiDien = req.files['AnhDaiDien'][0].path; // <--- SỬA CHỖ NÀY: .filename -> .path
             }
 
             let danhSachAnhPhu = [];
             if (req.files && req.files['BoSuuTapAnh']) {
-                danhSachAnhPhu = req.files['BoSuuTapAnh'].map(file => file.filename);
+                danhSachAnhPhu = req.files['BoSuuTapAnh'].map(file => file.path); // <--- SỬA CHỖ NÀY: file.filename -> file.path
             }
 
             // 4. THÊM MÔ HÌNH CHÍNH
@@ -724,7 +724,7 @@ const product_admin = {
                 }
             }
 
-            // 3. CẬP NHẬT MÔ HÌNH CHÍNH (Đã bổ sung đủ tham số còn thiếu)
+            // 3. CẬP NHẬT MÔ HÌNH CHÍNH
             const isVisible = (HienThi !== undefined && HienThi !== 'undefined') ? Number(HienThi) : 0;
             const sql_sua_tt_san_pham = `
                 UPDATE MoHinh SET
@@ -750,13 +750,13 @@ const product_admin = {
                 [isVisible, DonGia, SoLuong || 0, MaMH]
             );
 
-            // 5. CẬP NHẬT ẢNH ĐẠI DIỆN
+            // 5. CẬP NHẬT ẢNH ĐẠI DIỆN MỚI
             if (req.files && req.files['AnhDaiDien']) {
-                const tenAnhMoi = req.files['AnhDaiDien'][0].filename;
+                const tenAnhMoi = req.files['AnhDaiDien'][0].path; // <--- SỬA CHỖ NÀY: .filename -> .path
                 await connection.query(`UPDATE MoHinh SET AnhDaiDien = ? WHERE MaMoHinh = ?`, [tenAnhMoi, MaMH]);
             }
 
-            // 6. XÓA ẢNH BỘ SƯU TẬP CŨ
+            // 6. XÓA ẢNH BỘ SƯU TẬP CŨ TRONG DATABASE
             if (AnhCuCanXoa && AnhCuCanXoa !== 'undefined') {
                 const arrXoa = JSON.parse(AnhCuCanXoa);
                 if (Array.isArray(arrXoa) && arrXoa.length > 0) {
@@ -770,7 +770,7 @@ const product_admin = {
 
             // 7. THÊM ẢNH BỘ SƯU TẬP MỚI (BULK INSERT)
             if (req.files && req.files['BoSuuTapAnhMoi']) {
-                const valuesAnhMoi = req.files['BoSuuTapAnhMoi'].map(file => [file.filename, MaMH]);
+                const valuesAnhMoi = req.files['BoSuuTapAnhMoi'].map(file => [file.path, MaMH]); // <--- SỬA CHỖ NÀY: file.filename -> file.path
                 await connection.query(`INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES ?`, [valuesAnhMoi]);
             }
 
@@ -806,10 +806,9 @@ const product_admin = {
                         [variantsToInsert]
                     );
                 }
+            } // <--- Đã chuẩn hóa dấu đóng ngoặc ở đây (Xóa bỏ dấu ngoặc thừa)
 
-
-                }
-
+            // XỬ LÝ XÓA PHÂN LOẠI ĐƯỢC YÊU CẦU
             const phanLoaiCanXoa = (req.body.PhanLoaiCanXoa && req.body.PhanLoaiCanXoa !== 'undefined') 
                 ? JSON.parse(req.body.PhanLoaiCanXoa) 
                 : [];
@@ -820,7 +819,6 @@ const product_admin = {
                         // Bước 1: Thử xóa cứng (Dành cho phân loại gõ nhầm, tạo thừa, chưa ai mua)
                         const [resultDelete] = await connection.query('DELETE FROM PhanLoai WHERE MaPhanLoai = ?', [id]);
                         
-                        // Nếu dòng ID này đã bị xóa từ trước hoặc không tồn tại, cứ để vòng lặp chạy tiếp, không rollback đơn lẻ
                         if (resultDelete.affectedRows > 0) {
                             console.log(`[Hard Delete] Đã xóa vĩnh viễn phân loại ID: ${id}`);
                         }
@@ -828,13 +826,10 @@ const product_admin = {
                     } catch (error) {
                         // Bắt chính xác mã lỗi 1451: Ràng buộc khóa ngoại (Đã có trong ChiTietDonHang hoặc ChiTietKhuyenMai)
                         if (error.errno === 1451) {
-                            
                             // Bước 2: Tự động chuyển sang xóa mềm để bảo vệ dữ liệu thống kê
                             await connection.query('UPDATE PhanLoai SET HienThi = 0 WHERE MaPhanLoai = ?', [id]);
                             console.log(`[Soft Delete] Sản phẩm đã từng giao dịch. Đã ẩn vĩnh viễn phân loại ID: ${id}`);
-                            
                         } else {
-                            // Nếu dính các lỗi SQL nghiêm trọng khác (sập database, mất kết nối...) thì mới quăng lỗi ra ngoài để Rollback toàn bộ đơn
                             throw error;
                         }
                     }
