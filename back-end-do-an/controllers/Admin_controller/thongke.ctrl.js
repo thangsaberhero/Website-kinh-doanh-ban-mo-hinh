@@ -352,13 +352,13 @@ const thongke = {
 
             // Nhóm theo từng ngày để vẽ biểu đồ
             const sql = `SELECT DATE_FORMAT(dh.NgayLapDon, '%d/%m') as Ngay,
-                        IFNULL(SUM(ctdh.DonGiaBan * ctdh.SoLuong), 0) as DoanhThuNgay
-                        FROM DonHang dh
-                        INNER JOIN ChiTietDonHang ctdh ON dh.MaDH = ctdh.MaDH
-                        INNER JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
-                        ${whereClause}
-                        GROUP BY DATE(dh.NgayLapDon)
-                        ORDER BY DATE(dh.NgayLapDon) ASC`;
+                    IFNULL(SUM(ctdh.DonGiaBan * ctdh.SoLuong), 0) as DoanhThuNgay
+                    FROM DonHang dh
+                    INNER JOIN ChiTietDonHang ctdh ON dh.MaDH = ctdh.MaDH
+                    INNER JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
+                    ${whereClause}
+                    GROUP BY Ngay
+                    ORDER BY DATE(MAX(dh.NgayLapDon)) ASC`;
             const [result] = await db.query(sql, value);
             res.status(200).json({ success: true, data: result });
         } catch (error) {
