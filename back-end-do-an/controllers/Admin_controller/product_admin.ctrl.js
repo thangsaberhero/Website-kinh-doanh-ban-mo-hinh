@@ -541,12 +541,15 @@ const product_admin = {
             // 3. XỬ LÝ ẢNH
             let tenAnhDaiDien = null;
             if (req.files && req.files['AnhDaiDien']) {
-                tenAnhDaiDien = req.files['AnhDaiDien'][0].path; // <--- SỬA CHỖ NÀY: .filename -> .path
+                const file = req.files['AnhDaiDien'][0];
+                tenAnhDaiDien = file.path || file.secure_url || file.url || file.filename;
             }
 
             let danhSachAnhPhu = [];
             if (req.files && req.files['BoSuuTapAnh']) {
-                danhSachAnhPhu = req.files['BoSuuTapAnh'].map(file => file.path); // <--- SỬA CHỖ NÀY: file.filename -> file.path
+                danhSachAnhPhu = req.files['BoSuuTapAnh'].map(file => {
+                    return file.path || file.secure_url || file.url || file.filename;
+                });
             }
 
             // 4. THÊM MÔ HÌNH CHÍNH
@@ -752,7 +755,8 @@ const product_admin = {
 
             // 5. CẬP NHẬT ẢNH ĐẠI DIỆN MỚI
             if (req.files && req.files['AnhDaiDien']) {
-                const tenAnhMoi = req.files['AnhDaiDien'][0].path; // <--- SỬA CHỖ NÀY: .filename -> .path
+                const file = req.files['AnhDaiDien'][0];
+                const tenAnhMoi = file.path || file.secure_url || file.url || file.filename;
                 await connection.query(`UPDATE MoHinh SET AnhDaiDien = ? WHERE MaMoHinh = ?`, [tenAnhMoi, MaMH]);
             }
 
@@ -770,7 +774,10 @@ const product_admin = {
 
             // 7. THÊM ẢNH BỘ SƯU TẬP MỚI (BULK INSERT)
             if (req.files && req.files['BoSuuTapAnhMoi']) {
-                const valuesAnhMoi = req.files['BoSuuTapAnhMoi'].map(file => [file.path, MaMH]); // <--- SỬA CHỖ NÀY: file.filename -> file.path
+                const valuesAnhMoi = req.files['BoSuuTapAnhMoi'].map(file => [
+                    file.path || file.secure_url || file.url || file.filename, 
+                    MaMH
+                ]);
                 await connection.query(`INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES ?`, [valuesAnhMoi]);
             }
 
