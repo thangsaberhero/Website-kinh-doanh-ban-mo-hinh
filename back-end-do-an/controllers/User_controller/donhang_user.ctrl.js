@@ -559,7 +559,7 @@ const donhang_user = {
                       AND km.ThoiGianBD <= NOW()
                       AND km.ThoiGianKT >= NOW()
                       AND (ctkm.SoLuongKM - ctkm.SoLuongDaDung) > 0
-                    GROUP BY ctkm.MaPhanLoai, ctkm.SoLuongKM, ctkm.SoLuongDaDung
+                    GROUP BY ctkm.MaPhanLoai, ctkm.SoLuongKM, ctkm.SoLuongDaDung, km.MaKM
                 ) AS km_info ON pl.MaPhanLoai = km_info.MaPhanLoai
                 WHERE ct.MaGH = ?`;
             const [cart_item] = await connection.query(sql_get_cart_item, [MaGH]);
@@ -693,7 +693,7 @@ const donhang_user = {
                         "Cảnh báo sắp hết hàng", 
                         `Phân loại "${checkStock[0].ChiTietPhanLoai}" chỉ còn lại ${checkStock[0].SoLuong} sản phẩm trong kho.`, 
                         "KhoHang", 
-                        "/admin/products"
+                        "/admin/inventory"
                     ]);
                 }
             }
@@ -808,7 +808,7 @@ const donhang_user = {
                 COALESCE(COUNT(ct.MaPhanLoai), 0) AS TongSoSanPham,
                 (SELECT mh.AnhDaiDien 
                         FROM ChiTietDonHang ctdh 
-                        Join Phanloai pl on pl.MaPhanLoai = ctdh.MaPhanLoai
+                        Join PhanLoai pl on pl.MaPhanLoai = ctdh.MaPhanLoai
                         JOIN MoHinh mh ON mh.MaMoHinh = pl.MaMoHinh
                         WHERE ctdh.MaDH = DonHang.MaDH 
                         LIMIT 1) as Thumbnail,
@@ -1146,7 +1146,7 @@ const donhang_user = {
             } else {
                 const sql_tinh_tien_coc = `Select SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc
                                             from MoHinh mh
-                                            inner join Phanloai pl on pl.MaMoHinh = mh.MaMoHinh
+                                            inner join PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
                                             inner join ChiTietDonHang ct on ct.MaPhanLoai = pl.MaPhanLoai
                                             where ct.MaDH = ? 
                                             limit 1`;

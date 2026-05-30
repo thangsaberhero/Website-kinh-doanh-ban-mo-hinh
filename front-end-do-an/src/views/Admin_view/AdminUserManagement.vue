@@ -786,7 +786,7 @@
             lastLoginAbsolute: item.DangNhapCuoi ? new Date(item.DangNhapCuoi).toLocaleString('vi-VN') : 'Chưa từng đăng nhập',
             ip: item.IPDangNhap || 'Chưa ghi nhận', 
             avatar: item.AnhDaiDien 
-              ? `${API_BASE_URL}/Images_user/${item.AnhDaiDien}` 
+              ? item.AnhDaiDien 
               : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f8fafc&color=64748b`
           };
         });

@@ -53,7 +53,7 @@
                     class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
                 >
                     <div class="w-14 h-14 shrink-0 rounded-md overflow-hidden bg-surface-container-lowest border border-white/10">
-                      <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : '${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
+                      <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 flex flex-col justify-center">
                       <h4 class="text-sm font-bold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">
@@ -267,13 +267,15 @@
   };
 
   const removeFromCart = async (maPhanLoai) => {
-    if (!authStore.user || !authStore.user.MaKH) return;
+    const token = localStorage.getItem('token');
+    if (!authStore.user || !token) return;
     try {
       const response = await fetch(`${API_BASE_URL}/api/don_hang/delete`, {
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' },
         body: JSON.stringify({
-          MaKH: authStore.user.MaKH,
           MaPhanLoai: maPhanLoai
         })
       });
