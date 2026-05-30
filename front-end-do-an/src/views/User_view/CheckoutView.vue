@@ -86,7 +86,7 @@
             <div class="space-y-6 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
               <div v-for="item in checkoutItems" :key="item.MaPhanLoai" class="flex gap-4">
                 <div class="w-20 h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
-                  <img :src="`${API_BASE_URL}/Images_product/` + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
+                  <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
                 </div>
                 <div class="flex-grow flex flex-col justify-center">
                   <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
@@ -232,7 +232,6 @@ onMounted(async () => {
     if (resInfo.ok && dataInfo.data) {
       const userData = dataInfo.data;
       shippingInfo.name = userData.TenKH || userData.TenDN || '';
-      shippingInfo.email = userData.Email || userData.email || '';
       shippingInfo.phone = userData.SDT || '';
       shippingInfo.address = userData.diachi || userData.DiaChi || '';
     }
