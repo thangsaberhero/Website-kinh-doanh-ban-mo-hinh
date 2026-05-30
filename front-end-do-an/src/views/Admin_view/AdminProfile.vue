@@ -155,7 +155,9 @@
   const selectedFile = ref(null); 
   const displayName = currentUser?.TenNV || currentUser?.username || 'Admin';
   const defaultAvatar = `https://ui-avatars.com/api/?name=${displayName}&background=ff8f73&color=fff&bold=true&size=150`;
-  const avatarPreview = ref(currentUser?.AnhDaiDien ? `${API_BASE_URL}/Images_user/${currentUser.AnhDaiDien}` : defaultAvatar);
+  const avatarPreview = ref(currentUser?.AnhDaiDien 
+  ? (currentUser.AnhDaiDien.startsWith('http') ? currentUser.AnhDaiDien : `${API_BASE_URL}/Images_user/${currentUser.AnhDaiDien}`) 
+  : '');
   const ngayTaoFromDB = ref(null);
 
   
@@ -168,7 +170,7 @@
   });
   
   // UI Data
-  const userRole = computed(() => currentUser?.role === 1 ? 'Quản trị viên' : 'Nhân viên');
+  const userRole = computed(() => currentUser?.MaQuyen === 1 ? 'Quản trị viên' : 'Nhân viên');
   const joinDate = computed(() => {
     const dateStr = ngayTaoFromDB.value || currentUser?.NgayTao;
     if (!dateStr) return 'Đang tải...'; 
@@ -194,7 +196,12 @@
         ngayTaoFromDB.value = userData.NgayTao;
         
         if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
-          avatarPreview.value = `${API_BASE_URL}/Images_user/${userData.AnhDaiDien}`;
+          avatarPreview.value = userData.AnhDaiDien.startsWith('http')
+            ? userData.AnhDaiDien
+            : `${API_BASE_URL}/Images_user/${userData.AnhDaiDien}`;
+          isAvatarRemoved.value = false;
+        } else {
+          avatarPreview.value = '';
         }
       }
     } 
