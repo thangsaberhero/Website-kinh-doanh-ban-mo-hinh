@@ -22,8 +22,8 @@
             </div>
 
             <img 
-              :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
-              :alt="item.TenMH" 
+              :src="(allImages.startsWith('http')) ? allImages : `${API_BASE_URL}/Images_product/${allImages}`" 
+              :alt="product.TenMH" 
               class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
             />
             <div v-show="isZooming"
