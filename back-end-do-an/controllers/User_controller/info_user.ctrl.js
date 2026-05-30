@@ -24,17 +24,22 @@ const fix_user_info = {
             const [info] = await db.query(sql, [MaTK]);
 
             if (info.length === 0) {
-                return res.status(404).json({ message: "Không tìm thấy thông tin tài khoản!" });
+                return res.status(404).json({ 
+                    success: false,
+                    message: "Không tìm thấy thông tin tài khoản!" });
             }
 
             res.status(200).json({
+                success: true,
                 message: "Lấy thông tin thành công",
                 data: info[0]
             });
         }
         catch (error){
             console.error("Lỗi khi lấy dữ liệu thông tin cá nhân: ", error);
-            res.status(500).json({ message: "Lỗi server khi lấy dữ liệu cá nhân!" });
+            res.status(500).json({ 
+                success: false,
+                message: "Lỗi server khi lấy dữ liệu cá nhân!" });
         }
     },
 
@@ -51,54 +56,64 @@ const fix_user_info = {
             await connection.beginTransaction();
             const {email, TenKH, DiaChi, SDT, isAvatarRemoved} = req.body; 
             const MaTK = req.user.id; 
-            const newFileName = req.file ? req.file.filename : null; 
+            
+            // 1. LẤY LINK ẢNH TỪ CLOUDINARY
+            let newFileName = null;
+            if (req.file) {
+                newFileName = req.file.path || req.file.secure_url || req.file.url || req.file.filename;
+            }
 
             const [check] = await connection.query(`Select Email from TaiKhoan where Email = ? and MaTK != ?`,[email, MaTK]);
             if(check.length > 0){
                 await connection.rollback();
-                return res.status(400).json({
-                    success: false,
-                    message: "Không thay đổi được do trùng Email!"
-                });
+                return res.status(400).json({ success: false, message: "Không thay đổi được do trùng Email!" });
             }
 
+            // HÀM PHỤ TRỢ: Xóa ảnh cũ cục bộ (Bỏ qua nếu là link Cloud)
+            const handleRemoveOldLocalImage = (oldFileName) => {
+                if (oldFileName && oldFileName !== '' && !oldFileName.startsWith('http')) {
+                    const fs = require('fs');
+                    const path = require('path');
+                    const oldFilePath = path.join(__dirname, '..', 'public', 'Images_user', oldFileName);
+                    if (fs.existsSync(oldFilePath)) {
+                        fs.unlink(oldFilePath, (err) => {
+                            if (err) console.error("Lỗi khi gỡ ảnh cũ: ", err);
+                        });
+                    }
+                }
+            };
+
+            // 2. NẾU CÓ UP ẢNH MỚI
             if (newFileName) {
                 const sql_lay_anh_cu = 'SELECT AnhDaiDien FROM TaiKhoan WHERE MaTK = ?';
                 const [result_anh_cu] = await connection.query(sql_lay_anh_cu, [MaTK]);
                 
                 if (result_anh_cu.length > 0 && result_anh_cu[0].AnhDaiDien) {
-                    const oldFileName = result_anh_cu[0].AnhDaiDien;
-                    if (oldFileName && oldFileName !== '') {
-                      const oldFilePath = path.join(__dirname, '..', 'public', 'Images_user', oldFileName);
-                      fs.unlink(oldFilePath, (err) => {
-                          if (err) console.error("Lỗi khi gỡ ảnh cũ: ", err);
-                      });
-                    }
+                    handleRemoveOldLocalImage(result_anh_cu[0].AnhDaiDien);
                 }
                 await connection.query('UPDATE TaiKhoan SET AnhDaiDien = ?, email = ? WHERE MaTK = ?', [newFileName, email, MaTK]);
-                
             } 
+            // 3. NẾU BẤM NÚT "GỠ BỎ" ẢNH
             else if (isAvatarRemoved === 'true') {
                 const sql_lay_anh_cu = 'SELECT AnhDaiDien FROM TaiKhoan WHERE MaTK = ?';
                 const [result_anh_cu] = await connection.query(sql_lay_anh_cu, [MaTK]);
                 
                 if (result_anh_cu.length > 0 && result_anh_cu[0].AnhDaiDien) {
-                    const oldFileName = result_anh_cu[0].AnhDaiDien;
-                    const oldFilePath = path.join(__dirname, '..', 'public', 'Images_user', oldFileName);
-                    fs.unlink(oldFilePath, (err) => { 
-                        if (err) console.error("Lỗi khi gỡ ảnh cũ: ", err); 
-                    });
+                    handleRemoveOldLocalImage(result_anh_cu[0].AnhDaiDien);
                 }
                 await connection.query('UPDATE TaiKhoan SET AnhDaiDien = NULL, Email = ? WHERE MaTK = ?', [email, MaTK]);
-                
-            } else {
+            } 
+            // 4. NẾU CHỈ ĐỔI TEXT (TÊN, ĐỊA CHỈ, SĐT)
+            else {
                 await connection.query('UPDATE TaiKhoan SET Email = ? WHERE MaTK = ?', [email, MaTK]);
             }
 
-            await connection.query('UPDATE khachhang SET TenKH = ?, DiaChi = ?, SDT = ? WHERE MaTK = ?', [TenKH, DiaChi, SDT, MaTK]);
+            // Đảm bảo tên bảng viết đúng chữ Hoa/Thường (KhachHang)
+            await connection.query('UPDATE KhachHang SET TenKH = ?, DiaChi = ?, SDT = ? WHERE MaTK = ?', [TenKH, DiaChi, SDT, MaTK]);
             await connection.commit();
             
             res.status(200).json({ 
+                success: true,
                 message: "Cập nhật thông tin thành công!", 
                 newAvatarName: isAvatarRemoved === 'true' ? null : (newFileName || undefined)
             });
@@ -106,7 +121,7 @@ const fix_user_info = {
         catch (error){
             await connection.rollback();
             console.error("Lỗi khi cập nhật thông tin: ", error);
-            res.status(500).json({ message: "Lỗi server khi thao tác thông tin khách hàng!"});
+            res.status(500).json({ success: false, message: "Lỗi server khi thao tác thông tin khách hàng!"});
         }
         finally{
             connection.release();

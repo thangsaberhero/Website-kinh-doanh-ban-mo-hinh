@@ -30,7 +30,7 @@
             class="group rounded-2xl overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col h-[550px] bg-surface-container-low"
           >
             <div class="relative flex-1 overflow-hidden bg-surface-container-lowest cursor-pointer" @click="router.push(`/product/${item.MaMoHinh}`)">
-              <img :src="`${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
+              <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ?  item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
               
               <div class="absolute top-6 left-6">
                 <span :class="`px-4 py-1.5 backdrop-blur-md text-[10px] font-bold rounded-full border uppercase tracking-widest ${getTagClass(item.LoaiHinhBan)}`">

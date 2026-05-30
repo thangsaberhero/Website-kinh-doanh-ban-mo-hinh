@@ -53,7 +53,7 @@
                     class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
                 >
                     <div class="w-14 h-14 shrink-0 rounded-md overflow-hidden bg-surface-container-lowest border border-white/10">
-                      <img :src="'${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover" />
+                      <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : '${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 flex flex-col justify-center">
                       <h4 class="text-sm font-bold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">
@@ -92,7 +92,7 @@
                   <div v-if="cartItems.length > 0" class="max-h-[300px] overflow-y-auto custom-scrollbar p-2">
                     <div v-for="item in cartItems" :key="item.MaPhanLoai" class="flex gap-3 p-2 hover:bg-white/5 rounded-lg transition-colors group relative">
                       <div class="w-16 h-16 shrink-0 rounded bg-surface-container-lowest border border-white/10 overflow-hidden cursor-pointer" @click="goToProduct(item.MaMoHinh)">
-                        <img :src="'${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
+                        <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : '${API_BASE_URL}/Images_product/' + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
                       </div>
                       
                       <div class="flex-1 flex flex-col justify-between overflow-hidden pr-8">
@@ -212,8 +212,11 @@
 
   const userAvatar = computed(() => {
     if (authStore.user && authStore.user.AnhDaiDien) {
-      return `${API_BASE_URL}/Images_user/${authStore.user.AnhDaiDien}`;
+      const anh = authStore.user.AnhDaiDien;
+      return anh.startsWith('http') ? anh : `${API_BASE_URL}/Images_user/${anh}`;
     }
+    
+    // 2. NẾU USER CHƯA CÓ ẢNH (Tạo ảnh chữ cái nền cam san hô)
     const name = authStore.user?.TenKH || authStore.user?.username || authStore.user?.TenDN || 'Collector';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff8f73&color=fff&bold=true&size=150`;
   });

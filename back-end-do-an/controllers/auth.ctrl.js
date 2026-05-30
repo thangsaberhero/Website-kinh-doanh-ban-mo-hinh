@@ -115,7 +115,8 @@ const authController = {
             const token = jwt.sign(
                 { 
                     id: user.MaTK, 
-                    role: user.MaQuyen 
+                    role: user.MaQuyen,
+                    avatar: user.AnhDaiDien 
                 }, 
                 process.env.JWT_SECRET, 
                 { expiresIn: '1d' }

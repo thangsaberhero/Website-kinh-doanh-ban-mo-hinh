@@ -21,17 +21,20 @@
               </span>
             </div>
 
-            <img :src="`${API_BASE_URL}/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-cover transform transition-transform duration-700 drop-shadow-2xl"/>
-
+            <img 
+              :src="(mainImage && mainImage.startsWith('http')) ? mainImage : `${API_BASE_URL}/Images_product/${mainImage}`" 
+              :alt="product.TenMH" 
+              class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+            />
             <div v-show="isZooming"
               class="absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
               :style="{
-                width: '240px',          /* Chiều rộng khung lúp */
-                height: '240px',         /* Chiều cao khung lúp */
-                left: `${zoomPosition.x}%`, /* Chạy theo tọa độ X của chuột */
-                top: `${zoomPosition.y}%`,  /* Chạy theo tọa độ Y của chuột */
-                transform: 'translate(-50%, -50%)', /* Căn giữa khung lúp vào con chuột */
-                backgroundImage: `url(${API_BASE_URL}/Images_product/${mainImage})`,
+                width: '240px',          
+                height: '240px',         
+                left: `${zoomPosition.x}%`, 
+                top: `${zoomPosition.y}%`,  
+                transform: 'translate(-50%, -50%)', 
+                backgroundImage: `url(${(mainImage && mainImage.startsWith('http')) ? mainImage : API_BASE_URL + '/Images_product/' + mainImage})`,
                 backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
                 backgroundSize: '400%'
               }"
@@ -58,7 +61,7 @@
               :class="mainImage === anh ? 'border-2 border-primary shadow-[0_0_15px_rgba(255,61,0,0.4)] scale-100' : 'border border-outline-variant/30 hover:border-primary/50 opacity-60 hover:opacity-100 scale-95'"
               style="width: calc((100% - 4rem) / 5);"
             >
-              <img :src="`${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-cover"/>
+              <img :src="(anh && anh.startsWith('http')) ? anh : `${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-cover"/>
             </button>
           </transition-group>
         </div>
@@ -442,7 +445,7 @@
     <div class="relative w-[90vw] h-[80vh] overflow-hidden">
       <Transition :name="slideDirection">
         <img :key="currentIndex"
-            :src="`${API_BASE_URL}/Images_product/${allImages[currentIndex]}`"
+            :src="(allImages[currentIndex] && allImages[currentIndex].startsWith('http')) ? allImages[currentIndex] : `${API_BASE_URL}/Images_product/${allImages[currentIndex]}`"
             class="absolute inset-0 m-auto max-w-full max-h-[80vh] object-contain shadow-2xl" />
       </Transition>
     </div>
@@ -457,7 +460,7 @@
           @click="currentIndex = idx"
           :class="['w-16 h-16 rounded-lg overflow-hidden cursor-pointer transition-all border-2 shrink-0',
                     currentIndex === idx ? 'border-primary scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100']">
-        <img :src="`${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-cover" />
+        <img :src="(anh && anh.startsWith('http')) ? anh : `${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-cover" />
       </div>
     </div>
   </div>
@@ -949,75 +952,6 @@
     }
   };
 
-  // Truy xuất Blockchain bằng QR
-  /*
-  onMounted(async () => {
-    window.scrollTo(0, 0);
-    const spId = route.params.id;
-
-    // 1. Tải thông tin sản phẩm và ảnh
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products/${spId}`);
-      const dataJSON = await res.json();
-
-      if (res.ok) {
-        product.value = dataJSON.data[0];
-
-        if (product.value && product.value.MaVach_Serial) {
-            await fetchProductQR(product.value.MaVach_Serial);
-        }
-
-        let images = [product.value.AnhDaiDien];
-        if (product.value.DanhSachAnh) {
-          const gallery = product.value.DanhSachAnh.split(',');
-          images = [...images,...gallery];
-        }
-        allImages.value = [...new Set(images.filter(Boolean))];
-        mainImage.value = allImages.value[0];
-      }
-    } catch (error) {
-      console.error("Lỗi tải sản phẩm:", error);
-    }
-
-    // 2. Tải danh sách phân loại (Variant)
-    try {
-      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${spId}`);
-      const varJSON = await resVar.json();
-
-      if (resVar.ok) {
-        variants.value = varJSON.data;
-        if (variants.value.length > 0) {
-          selectedVariant.value = variants.value[0];
-        }
-      }
-    } catch (error) {
-      console.error("Lỗi tải phân loại:", error);
-    }
-
-    // ================= 3. [MỚI]: KIỂM TRA TRẠNG THÁI YÊU THÍCH KHI LOAD WEB =================
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
-
-    if (token && userString) {
-        try {
-            const userObj = JSON.parse(userString);
-            // Giả sử Backend có API GET /api/favorite/check/:maKH/:maMH để kiểm tra
-            const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${userObj.MaKH}/${spId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const favData = await resFav.json();
-
-            if (resFav.ok && favData.isFavorite) {
-                isFavorite.value = true; // Nếu Backend bảo đã thích -> tô đỏ trái tim
-            }
-        } catch (err) {
-            console.error("Lỗi kiểm tra trạng thái yêu thích:", err);
-        }
-    }
-    await fetchReviews(spId);
-    await checkEligibility(spId);
-  });
-  */
   const qrCodeImg = ref('');
   /*
   const showQR = async (serial) => {
@@ -1112,11 +1046,7 @@ const handleShowQR = async () => {
 
           // Gọi hàm sinh QR Blockchain nếu có mã vạch
           if (product.value.MaVach_Serial && typeof fetchProductQR === 'function') {
-              try {
-                await fetchProductQR(product.value.MaVach_Serial);
-              } catch (qrErr) {
-                console.error("Lỗi chạy hàm QR:", qrErr);
-              }
+              fetchProductQR(product.value.MaVach_Serial).catch(e => console.error(e));
           }
 
           // ✨ SỬA LỖI 2: Xử lý ảnh thông minh (Mảng thì gộp luôn, Chuỗi thì mới split)
@@ -1129,6 +1059,7 @@ const handleShowQR = async () => {
             }
           }
           allImages.value = [...new Set(images.filter(Boolean))];
+          displayImages.value = [...allImages.value];
           mainImage.value = allImages.value[0] || '';
         }
       }

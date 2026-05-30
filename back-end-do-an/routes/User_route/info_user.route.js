@@ -2,38 +2,15 @@ const express = require('express');
 const router = express.Router();
 const info_userController = require('../../controllers/User_controller/info_user.ctrl.js');
 const authMiddleware = require('../../middlewares/auth.middleware.js');
-const multer = require('multer');
-const path = require('path');
 
+const { uploadUser } = require('../../middlewares/upload.js');
 
-// 1. Định nghĩa nơi lưu và cách đổi tên ảnh
-const storage = multer.diskStorage({
-  // Nơi cất ảnh
-  destination: (req, file, cb) => {
-    cb(null, 'public/Images_user/'); // Cất vào thư mục public/Images_user/
-  },
-  // Cách đổi tên ảnh để KHÔNG BAO GIỜ bị trùng: avatar_[MaTK]_[timestamp].[ext]
-  filename: (req, file, cb) => {
-    const maTK = req.body.MaTK || 'unknown'; 
-    // Lấy đuôi file ảnh (VD: .jpg, .png)
-    const fileExt = path.extname(file.originalname);
-    // Ghép tên mới
-    const newFileName = `avatar_TK${maTK}_${Date.now()}${fileExt}`;
-    cb(null, newFileName); // Báo cho Multer tên mới này
-  }
-});
-
-// 2. Tạo Middleware upload với giới hạn 5MB
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn 5MB
-});
-// === KẾT THÚC CẤU HÌNH MULTER ===
-
-
-// 3. Sửa Route: Thêm middleware 'upload.single('avatar')' vào giữa
+// 2. CÁC ĐƯỜNG DẪN ROUTE
 router.get('/laythongtin', authMiddleware.verifyToken, info_userController.laythongtin);
-router.post('/change_info', authMiddleware.verifyToken, upload.single('avatar'), info_userController.capnhatthongtin);
+
+// SỬ DỤNG uploadUser TẠI ĐÂY ĐỂ ĐẨY ẢNH LÊN MÂY
+router.post('/change_info', authMiddleware.verifyToken, uploadUser.single('avatar'), info_userController.capnhatthongtin);
+
 router.post('/change_password', authMiddleware.verifyToken, info_userController.doi_mat_khau);
 
 module.exports = router;

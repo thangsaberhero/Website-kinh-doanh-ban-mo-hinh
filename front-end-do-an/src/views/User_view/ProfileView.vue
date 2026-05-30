@@ -158,7 +158,6 @@
 
   const fetchUserData = async () => {
     if (!currentUser) return;
-    
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`, {headers: {'Authorization': `Bearer ${token}`}});
@@ -176,9 +175,11 @@
         stats.totalReviews = userData.SoDanhGia || 0;
         
         if (userData.AnhDaiDien && userData.AnhDaiDien !== '') {
-          avatarPreview.value = `${API_BASE_URL}/Images_user/${userData.AnhDaiDien}`;
+          avatarPreview.value = userData.AnhDaiDien.startsWith('http') 
+            ? userData.AnhDaiDien 
+            : `${API_BASE_URL}/Images_user/${userData.AnhDaiDien}`;
           isAvatarRemoved.value = false;
-        } 
+        }
         else {
           avatarPreview.value = '';
         }
@@ -234,7 +235,6 @@
     
     try {
       const formData = new FormData();
-      formData.append('MaTK', currentUser.id);
       formData.append('TenKH', form.name);
       formData.append('email', form.email);
       formData.append('SDT', form.phone);
