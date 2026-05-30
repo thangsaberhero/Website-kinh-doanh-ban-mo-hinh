@@ -7,13 +7,15 @@
 
   <RouterView /> 
   <TheToast />
-  <PhoneRing v-if="!route.meta?.hidePhone" />
   
-  <template v-if="!route.meta.hideFooter">
-    <FooterMinimal v-if="route.meta.useMinimalFooter" />
+  <PhoneRing v-if="!route.meta?.hidePhone && !route.meta?.requiresAdmin" />
+  
+  <template v-if="!route.meta?.hideFooter && !route.meta?.requiresAdmin">
+    <FooterMinimal v-if="route.meta?.useMinimalFooter" />
     <FooterFull v-else />
   </template>
-  <Chatbox />
+  
+  <Chatbox v-if="!route.meta?.requiresAdmin" />
 </template>
 
 <script setup>
