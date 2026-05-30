@@ -693,7 +693,7 @@ const donhang_user = {
                         "Cảnh báo sắp hết hàng", 
                         `Phân loại "${checkStock[0].ChiTietPhanLoai}" chỉ còn lại ${checkStock[0].SoLuong} sản phẩm trong kho.`, 
                         "KhoHang", 
-                        "/admin/products"
+                        "/admin/inventory"
                     ]);
                 }
             }
