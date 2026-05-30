@@ -116,7 +116,7 @@ const authController = {
                 { 
                     id: user.MaTK, 
                     role: user.MaQuyen,
-                    avatar: user:AnhDaiDien 
+                    avatar: user.AnhDaiDien 
                 }, 
                 process.env.JWT_SECRET, 
                 { expiresIn: '1d' }
