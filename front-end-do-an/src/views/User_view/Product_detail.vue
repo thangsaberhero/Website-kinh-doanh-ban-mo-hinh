@@ -92,6 +92,7 @@
 
           <div class="space-y-8 flex-1">
             <div class="grid grid-cols-2 gap-px bg-outline-variant/15 rounded overflow-hidden border border-outline-variant/20">
+              
               <div class="bg-surface-container-low p-4">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Thương hiệu</span>
                 <span class="text-white font-semibold">{{ product.TenHSX }}</span>
@@ -100,6 +101,7 @@
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Chất liệu</span>
                 <span class="text-white font-semibold">{{ product.ChatLieu }}</span>
               </div>
+
               <div class="bg-surface-container-low p-4">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Kích thước</span>
                 <span class="text-white font-semibold">{{ product.KichThuoc }}</span>
@@ -110,6 +112,20 @@
                   {{ selectedVariant ? (selectedVariant.SoLuong === 0 ? 'Hết hàng' : selectedVariant.SoLuong + ' hộp') : 'Đang tải...' }}
                 </span>
               </div>
+
+              <div class="bg-surface-container-low p-4 overflow-hidden">
+                <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Series</span>
+                <span class="text-white font-semibold truncate block" :title="product.Series">
+                  {{ product.Series || 'Đang cập nhật' }}
+                </span>
+              </div>
+              <div class="bg-surface-container-low p-4 overflow-hidden">
+                <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Nhân vật</span>
+                <span class="text-white font-semibold truncate block" :title="product.TenNhanVat">
+                  {{ product.TenNhanVat || 'Đang cập nhật' }}
+                </span>
+              </div>
+
             </div>
 
             <div v-if="variants.length > 1" class="pt-6 border-t border-outline-variant/15">
@@ -148,7 +164,11 @@
                       : 'bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-[0_0_20px_rgba(255,143,115,0.3)] hover:brightness-110 active:scale-95'
                   ]"
                 >
-                  {{ (!selectedVariant || selectedVariant.SoLuong === 0) ? 'HẾT HÀNG' : 'THÊM VÀO GIỎ HÀNG' }}
+                  {{ 
+                    (!selectedVariant || selectedVariant.SoLuong === 0) 
+                      ? 'HẾT HÀNG' 
+                      : (product.LoaiHinhBan?.toUpperCase() === 'PRE-ORDER' ? 'ĐẶT TRƯỚC SẢN PHẨM' : 'THÊM VÀO GIỎ HÀNG') 
+                  }}
                 </button>
 
                 <button
@@ -178,49 +198,58 @@
             </div>
 
             <button
-            @click="handleShowQR"
-            class="mt-4 flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl border border-orange-500/40 text-orange-500 hover:bg-orange-500 hover:text-white transition-all duration-300 font-bold uppercase text-xs tracking-[0.2em]"
-          >
-            <span>{{ isQRVisible ? '✖ Đóng xác thực' : '🛡️ Truy xuất Blockchain' }}</span>
-          </button>
+              @click="handleShowQR"
+              class="mt-4 flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl border border-orange-500/40 text-orange-500 hover:bg-orange-500 hover:text-white transition-all duration-300 font-bold uppercase text-xs tracking-[0.2em]"
+            >
+              <span>{{ isQRVisible ? '✖ Đóng xác thực' : '🛡️ Truy xuất Blockchain' }}</span>
+            </button>
 
-          <transition name="fade">
-            <div v-if="isQRVisible && qrCodeImg" class="mt-4 p-5 bg-white/5 border border-orange-500/20 rounded-2xl backdrop-blur-md shadow-2xl">
-              <div class="flex flex-col sm:flex-row items-center gap-6">
-                <div class="relative group">
-                  <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-lg overflow-hidden relative">
-                    <img :src="qrCodeImg" alt="Blockchain QR" class="w-full h-full object-contain" />
-                    <div class="scan-line absolute left-0 w-full h-0.5 bg-orange-500 shadow-[0_0_10px_#ff6b4a]"></div>
+            <transition name="fade">
+              <div v-if="isQRVisible && qrCodeImg" class="mt-4 flex flex-col gap-4 p-5 bg-white/5 border border-orange-500/20 rounded-2xl backdrop-blur-md shadow-2xl">
+                <div class="flex flex-col sm:flex-row items-center gap-6">
+                  <div class="relative group">
+                    <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-lg overflow-hidden relative">
+                      <img :src="qrCodeImg" alt="Blockchain QR" class="w-full h-full object-contain" />
+                      <div class="scan-line absolute left-0 w-full h-0.5 bg-orange-500 shadow-[0_0_10px_#ff6b4a]"></div>
+                    </div>
                   </div>
 
+                  <div class="flex-1 text-center sm:text-left">
+                    <h4 class="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Genuine Product</h4>
+                    <p class="text-white font-bold text-sm mb-2 font-mono">{{ product.MaVach_Serial }}</p>
+                    <p class="text-gray-400 text-[11px] leading-relaxed mb-3">
+                      Mã QR chứa chữ ký số định danh sản phẩm trên mạng lưới Blockchain.
+                    </p>
+                    <button @click="downloadQR" class="text-[10px] text-gray-400 hover:text-white underline">
+                      Tải ảnh QR về máy
+                    </button>
+                  </div>
                 </div>
 
-                <div class="flex-1 text-center sm:text-left">
-                  <h4 class="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Genuine Product</h4>
-                  <p class="text-white font-bold text-sm mb-2 font-mono">{{ product.MaVach_Serial }}</p>
-                  <p class="text-gray-400 text-[11px] leading-relaxed mb-3">
-                    Mã QR chứa chữ ký số định danh sản phẩm trên mạng lưới Blockchain.
-                  </p>
-                  <button @click="downloadQR" class="text-[10px] text-gray-400 hover:text-white underline">
-                    Tải ảnh QR về máy
-                  </button>
-                </div>
+                <router-link
+                  v-if="product && product.MaVach_Serial"
+                  :to="`/truy-xuat/${product.MaVach_Serial}`"
+                  class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-xl text-xs font-bold tracking-wider uppercase hover:brightness-110 active:scale-[0.98] transition-all shadow-sm group"
+                >
+                  <span>Xem chi tiết nguồn gốc</span> <span class="material-symbols-outlined text-base group-hover:translate-x-0.5 transition-transform duration-200">
+                    arrow_right_alt
+                  </span>
+                </router-link>
               </div>
-            </div>
-          </transition>
-          <router-link
-            v-if="product && product.MaVach_Serial"
-            :to="`/truy-xuat/${product.MaVach_Serial}`"
-            class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-primary text-on-primary rounded-xl text-xs font-bold tracking-wider uppercase hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm group"
-          >
-            <span>Truy xuất nguồn gốc</span>
-            <span class="material-symbols-outlined text-base group-hover:translate-x-0.5 transition-transform duration-200">
-              arrow_right_alt
-            </span>
-          </router-link>
+            </transition>
           </div>
         </div>
       </div>
+
+      <section v-if="product.ThongTinChiTiet" class="max-w-7xl mx-auto px-6 py-12 w-full mt-8 border-t border-white/5">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="h-8 w-1.5 bg-primary rounded-full"></div>
+          <h3 class="text-2xl font-headline font-black text-white uppercase italic tracking-wider">Thông tin chi tiết</h3>
+        </div>
+        <div class="bg-surface-container-low rounded-2xl p-8 border border-white/5 shadow-lg">
+            <p class="text-on-surface-variant text-sm leading-relaxed whitespace-pre-wrap">{{ product.ThongTinChiTiet }}</p>
+        </div>
+      </section>
 
       <section class="max-w-7xl mx-auto px-6 pb-24 w-full border-t border-white/5 pt-16">
         <h3 class="font-headline text-3xl font-bold text-white mb-10 text-center uppercase tracking-widest">Đánh giá từ cộng đồng</h3>
@@ -620,7 +649,11 @@
       const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
       const dataJSON = await res.json();
       if (res.ok) {
-        product.value = dataJSON.data; // Không cần [0] nữa vì Backend đã lấy ra object chuẩn
+        product.value = dataJSON.data;
+
+        if (product.value.MaVach_Serial && typeof fetchProductQR === 'function') {
+          fetchProductQR(product.value.MaVach_Serial).catch(e => console.error(e));
+        }
 
         // 1. Xử lý danh sách ảnh
         let images = [product.value.AnhDaiDien];
@@ -735,11 +768,18 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
     product.value = null;
 
-    await fetchProductDetails(id);
-    await checkFavoriteStatus(id);
-    await fetchReviews(id);
-    await checkEligibility(id);
-    await fetchRelatedProducts(id);
+    try {
+      await Promise.all([
+        fetchProductDetails(id),
+        checkFavoriteStatus(id),
+        fetchReviews(id),
+        checkEligibility(id),
+        fetchRelatedProducts(id)
+      ]);
+    } 
+    catch (error) {
+      console.error("Lỗi trong quá trình tải dữ liệu trang:", error);
+    }
   };
 
   watch(() => route.params.id, async (newId) => {
@@ -1000,195 +1040,103 @@
     link.click();
   };
 
-const isQRVisible = ref(false);
+  const isQRVisible = ref(false);
 
-// 2. Hàm xử lý khi bấm nút "Kiểm tra Blockchain"
-const handleShowQR = async () => {
-  // Nếu đang mở thì đóng lại
-  if (isQRVisible.value) {
-    isQRVisible.value = false;
-    return;
-  }
-
-  // Nếu chưa có ảnh QR trong bộ nhớ thì mới gọi API
-  if (!qrCodeImg.value && product.value?.MaVach_Serial) {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${product.value.MaVach_Serial}`);
-      if (res.data.success) {
-        qrCodeImg.value = res.data.qrCodeData;
-      }
-    } catch (err) {
-      console.error("Lỗi lấy mã QR:", err);
-      toastStore.showToast("⚠️ Không thể lấy mã QR lúc này", "error");
+  // 2. Hàm xử lý khi bấm nút "Kiểm tra Blockchain"
+  const handleShowQR = async () => {
+    // Nếu đang mở thì đóng lại
+    if (isQRVisible.value) {
+      isQRVisible.value = false;
       return;
     }
-  }
 
-  // Hiện khung QR sau khi đã có dữ liệu
-  isQRVisible.value = true;
-};
-// Truy xuất Blockchain bằng QR và Tải dữ liệu trang
-  onMounted(async () => {
-    window.scrollTo(0, 0);
-    const spId = route.params.id;
-
-    // 1. Tải thông tin sản phẩm và ảnh
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products/${spId}`);
-      const dataJSON = await res.json();
-
-      if (res.ok) {
-        // ✨ SỬA LỖI 1: Tự động nhận diện Object hoặc Array từ Backend một cách an toàn
-        const targetData = Array.isArray(dataJSON.data) ? dataJSON.data[0] : dataJSON.data;
-
-        if (targetData) {
-          product.value = targetData;
-
-          // Gọi hàm sinh QR Blockchain nếu có mã vạch
-          if (product.value.MaVach_Serial && typeof fetchProductQR === 'function') {
-              fetchProductQR(product.value.MaVach_Serial).catch(e => console.error(e));
-          }
-
-          // ✨ SỬA LỖI 2: Xử lý ảnh thông minh (Mảng thì gộp luôn, Chuỗi thì mới split)
-          let images = [product.value.AnhDaiDien];
-          if (product.value.DanhSachAnh) {
-            if (Array.isArray(product.value.DanhSachAnh)) {
-              images = [...images, ...product.value.DanhSachAnh];
-            } else if (typeof product.value.DanhSachAnh === 'string') {
-              images = [...images, ...product.value.DanhSachAnh.split(',')];
-            }
-          }
-          allImages.value = [...new Set(images.filter(Boolean))];
-          displayImages.value = [...allImages.value];
-          mainImage.value = allImages.value[0] || '';
+    // Nếu chưa có ảnh QR trong bộ nhớ thì mới gọi API
+    if (!qrCodeImg.value && product.value?.MaVach_Serial) {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${product.value.MaVach_Serial}`);
+        if (res.data.success) {
+          qrCodeImg.value = res.data.qrCodeData;
         }
+      } catch (err) {
+        console.error("Lỗi lấy mã QR:", err);
+        toastStore.showToast("⚠️ Không thể lấy mã QR lúc này", "error");
+        return;
       }
-    } catch (error) {
-      console.error("Lỗi tải sản phẩm:", error);
     }
 
-    // 2. Tải danh sách phân loại (Variant)
-    try {
-      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${spId}`);
-      const varJSON = await resVar.json();
-
-      if (resVar.ok) {
-        variants.value = varJSON.data;
-        if (variants.value.length > 0) {
-          selectedVariant.value = variants.value[0];
-        }
-      }
-    } catch (error) {
-      console.error("Lỗi tải phân loại:", error);
-    }
-
-    // 3. Tải sản phẩm liên quan (Đồng bộ hàm fetchRelatedProducts của bạn)
-    if (product.value && product.value.MaLoaiMH) {
-      await fetchRelatedProducts(product.value.MaLoaiMH);
-    }
-
-    // 4. KIỂM TRA TRẠNG THÁI YÊU THÍCH KHI LOAD WEB
-    const token = localStorage.getItem('token');
-
-    if (token) {
-        try {
-            const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${spId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (resFav.ok) {
-              const favData = await resFav.json();
-              if (favData && favData.isFavorite) {
-                  isFavorite.value = true;
-              }
-            }
-        } catch (err) {
-            console.error("Lỗi kiểm tra trạng thái yêu thích:", err);
-        }
-    }
-
-    // 5. Tải các thành phần bổ sung (Bọc try-catch phòng hờ hàm chưa khai báo)
-    try {
-      if (typeof fetchReviews === 'function') await fetchReviews(spId);
-      if (typeof checkEligibility === 'function') await checkEligibility(spId);
-    } catch (e) {
-      console.error("Lỗi tải bổ sung:", e);
-    }
-  });
+    // Hiện khung QR sau khi đã có dữ liệu
+    isQRVisible.value = true;
+  };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+  .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .is-favorite-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 600;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .thumbnail-move {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
+  @keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
 
-.material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-.is-favorite-icon {
-    font-variation-settings: 'FILL' 1, 'wght' 600;
-}
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.thumbnail-move {
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+  .slide-right-enter-active,
+  .slide-right-leave-active,
+  .slide-left-enter-active,
+  .slide-left-leave-active {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: absolute;
+  }
 
-@keyframes zoomIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
+  .slide-right-enter-from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  .slide-right-leave-to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
 
-.slide-right-enter-active,
-.slide-right-leave-active,
-.slide-left-enter-active,
-.slide-left-leave-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute;
-}
+  .slide-left-enter-from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  .slide-left-leave-to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 
-.slide-right-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-.slide-right-leave-to {
-  transform: translateX(-100%);
-  opacity: 0;
-}
+  /* Hiệu ứng quét QR Code */
+  .scan-line {
+    animation: scanning 2.5s infinite linear;
+  }
 
-.slide-left-enter-from {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-.slide-left-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
+  @keyframes scanning {
+    0% { top: 0%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
 
-/* Hiệu ứng quét QR Code */
-.scan-line {
-  animation: scanning 2.5s infinite linear;
-}
-
-@keyframes scanning {
-  0% { top: 0%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-}
-
-/* Hiệu ứng hover nhẹ cho khung QR */
-.group:hover .scan-line {
-  animation-duration: 1.5s; /* Quét nhanh hơn khi di chuột vào */
-}
+  /* Hiệu ứng hover nhẹ cho khung QR */
+  .group:hover .scan-line {
+    animation-duration: 1.5s; /* Quét nhanh hơn khi di chuột vào */
+  }
 
 </style>

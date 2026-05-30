@@ -108,7 +108,7 @@ const reviewController = {
                         JOIN ChiTietDonHang ctdh ON ctdh.MaDH = dh.MaDH
                         JOIN PhanLoai pl ON pl.MaPhanLoai = ctdh.MaPhanLoai
                         JOIN ChiTietTrangThai cttt ON cttt.MaDH = dh.MaDH
-                        WHERE dh.MaKH = ? AND pl.MaMoHinh = ? AND cttt.MaTrangThai = 5
+                        WHERE dh.MaKH = ? AND pl.MaMoHinh = ? AND cttt.MaTrangThai = 4
                         ORDER BY cttt.ThoiGian DESC
                         LIMIT 1`;
             const [result] = await db.query(sql, [MaKH, MaMoHinh]);
