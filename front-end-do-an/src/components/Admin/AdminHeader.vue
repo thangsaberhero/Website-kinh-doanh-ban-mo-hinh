@@ -123,7 +123,7 @@
               <p class="text-[10px] text-[#ff8f73] uppercase font-bold tracking-wider">{{ roleName }}</p>
             </div>
             <div class="w-9 h-9 rounded-full bg-[#ff8f73]/10 border border-[#ff8f73]/30 flex items-center justify-center text-[#ff8f73] font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-[#ff8f73]/30 transition-all">
-              <img :src="user?.AnhDaiDien ? `${API_BASE_URL}/Images_user/${user.AnhDaiDien}` : `https://ui-avatars.com/api/?name=${user?.TenNV || user?.username || user?.TenDN || 'Admin'}&background=ff8f73&color=fff&bold=true`" alt="Avatar" class="w-full h-full object-cover">
+              <img :src="adminAvatar" alt="Admin Avatar" class="w-10 h-10 rounded-full object-cover border border-slate-200" />
             </div>
           </div>
   
@@ -181,6 +181,23 @@
     return roleId === 1 ? 'Quản trị viên' : 'Nhân viên';
   });
 
+
+  const adminAvatar = computed(() => {
+    // Ưu tiên lấy thông tin từ authStore, nếu chưa có thì fallback sang localStorage
+    const user = authStore.user || JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // 1. Trường hợp có ảnh đại diện
+    if (user && user.AnhDaiDien) {
+      const anh = user.AnhDaiDien;
+      return anh.startsWith('http') ? anh : `${API_BASE_URL}/Images_user/${anh}`;
+    }
+    
+    // 2. Trường hợp KHÔNG có ảnh: Tự động lấy tên hiển thị ban đầu tạo Avatar chữ
+    // Hệ thống check lần lượt tên Nhân viên (TenNV), username, tên đăng nhập (TenDN) hoặc mặc định là 'Admin'
+    const name = user.TenNV || user.username || user.TenDN || 'Admin';
+
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff8f73&color=fff&bold=true&size=128`;
+  });
   // Xử lý đăng xuất
   const handleLogout = () => {
     if (authStore.logout) {

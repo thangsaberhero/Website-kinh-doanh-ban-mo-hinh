@@ -157,7 +157,7 @@
               <div v-if="showUserMenu" class="absolute top-[120%] right-0 w-60 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50 py-2">
                 <div class="px-4 py-3 border-b border-outline-variant/10 mb-2 bg-surface-container">
                   <p class="text-sm text-on-surface font-bold truncate">{{ authStore.user.username || authStore.user.TenKH || 'Collector' }}</p>
-                  <p class="text-xs text-outline truncate">{{ authStore.user.email || 'collector@figure.com' }}</p>
+                  <p class="text-xs text-outline truncate">{{ authStore.user.Email || 'collector@figure.com' }}</p>
                 </div>
                 
                 <a @click="router.push('/profile'); showUserMenu = false" class="flex items-center gap-3 px-4 py-2 text-sm text-on-surface hover:bg-white/5 transition-colors cursor-pointer">
