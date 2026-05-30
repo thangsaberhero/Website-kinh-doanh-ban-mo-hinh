@@ -786,7 +786,7 @@
             lastLoginAbsolute: item.DangNhapCuoi ? new Date(item.DangNhapCuoi).toLocaleString('vi-VN') : 'Chưa từng đăng nhập',
             ip: item.IPDangNhap || 'Chưa ghi nhận', 
             avatar: item.AnhDaiDien 
-              ? item.AnhDaiDien 
+              ? (item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_user/${item.AnhDaiDien}`)
               : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f8fafc&color=64748b`
           };
         });
@@ -1011,7 +1011,7 @@
           lastLoginAbsolute: data.DangNhapCuoi ? new Date(data.DangNhapCuoi).toLocaleString('vi-VN') : 'Chưa từng đăng nhập',
           ip: data.IPDangNhap || 'Chưa ghi nhận', 
           avatar: data.AnhDaiDien 
-            ? `${API_BASE_URL}/Images_user/${data.AnhDaiDien}` 
+            ? (data.AnhDaiDien.startsWith('http') ? data.AnhDaiDien : `${API_BASE_URL}/Images_user/${data.AnhDaiDien}`)
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f8fafc&color=64748b`,
           orderCount: data.SoDonHang, 
           totalSpent: data.TongChiTieu
