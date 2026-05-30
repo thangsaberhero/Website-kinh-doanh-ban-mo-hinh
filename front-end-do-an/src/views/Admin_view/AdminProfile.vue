@@ -25,7 +25,10 @@
               <div class="flex flex-col sm:flex-row items-center gap-6 pb-8 border-b border-slate-100">
                 <div class="relative group cursor-pointer shrink-0">
                   <div class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-slate-50 shadow-md overflow-hidden transition-all duration-300 group-hover:border-[#ff8f73]/50 bg-slate-100">
-                    <img class="w-full h-full object-cover" alt="Admin Avatar" :src="displayAvatar"/>
+                    <img 
+                      :src="avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(form.name || 'Admin')}&background=ff8f73&color=fff&bold=true&size=150`" 
+                      alt="Admin Avatar" 
+                    />
                   </div>
                 </div>
 
