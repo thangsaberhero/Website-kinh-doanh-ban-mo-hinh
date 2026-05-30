@@ -341,7 +341,7 @@ const processCheckout = async () => {
     //router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
     if (paymentMethod.value === 'momo') {
             // Gọi API MoMo Mock
-            const momoRes = await fetch('${API_BASE_URL}/api/don_hang/payment/momo/create', {
+            const momoRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/momo/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' ,
                   'Authorization': `Bearer ${token}`
