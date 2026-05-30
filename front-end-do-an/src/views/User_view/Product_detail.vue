@@ -952,75 +952,6 @@
     }
   };
 
-  // Truy xuất Blockchain bằng QR
-  /*
-  onMounted(async () => {
-    window.scrollTo(0, 0);
-    const spId = route.params.id;
-
-    // 1. Tải thông tin sản phẩm và ảnh
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products/${spId}`);
-      const dataJSON = await res.json();
-
-      if (res.ok) {
-        product.value = dataJSON.data[0];
-
-        if (product.value && product.value.MaVach_Serial) {
-            await fetchProductQR(product.value.MaVach_Serial);
-        }
-
-        let images = [product.value.AnhDaiDien];
-        if (product.value.DanhSachAnh) {
-          const gallery = product.value.DanhSachAnh.split(',');
-          images = [...images,...gallery];
-        }
-        allImages.value = [...new Set(images.filter(Boolean))];
-        mainImage.value = allImages.value[0];
-      }
-    } catch (error) {
-      console.error("Lỗi tải sản phẩm:", error);
-    }
-
-    // 2. Tải danh sách phân loại (Variant)
-    try {
-      const resVar = await fetch(`${API_BASE_URL}/api/products/variants/${spId}`);
-      const varJSON = await resVar.json();
-
-      if (resVar.ok) {
-        variants.value = varJSON.data;
-        if (variants.value.length > 0) {
-          selectedVariant.value = variants.value[0];
-        }
-      }
-    } catch (error) {
-      console.error("Lỗi tải phân loại:", error);
-    }
-
-    // ================= 3. [MỚI]: KIỂM TRA TRẠNG THÁI YÊU THÍCH KHI LOAD WEB =================
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
-
-    if (token && userString) {
-        try {
-            const userObj = JSON.parse(userString);
-            // Giả sử Backend có API GET /api/favorite/check/:maKH/:maMH để kiểm tra
-            const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${userObj.MaKH}/${spId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const favData = await resFav.json();
-
-            if (resFav.ok && favData.isFavorite) {
-                isFavorite.value = true; // Nếu Backend bảo đã thích -> tô đỏ trái tim
-            }
-        } catch (err) {
-            console.error("Lỗi kiểm tra trạng thái yêu thích:", err);
-        }
-    }
-    await fetchReviews(spId);
-    await checkEligibility(spId);
-  });
-  */
   const qrCodeImg = ref('');
   /*
   const showQR = async (serial) => {
@@ -1115,11 +1046,7 @@ const handleShowQR = async () => {
 
           // Gọi hàm sinh QR Blockchain nếu có mã vạch
           if (product.value.MaVach_Serial && typeof fetchProductQR === 'function') {
-              try {
-                await fetchProductQR(product.value.MaVach_Serial);
-              } catch (qrErr) {
-                console.error("Lỗi chạy hàm QR:", qrErr);
-              }
+              fetchProductQR(product.value.MaVach_Serial).catch(e => console.error(e));
           }
 
           // ✨ SỬA LỖI 2: Xử lý ảnh thông minh (Mảng thì gộp luôn, Chuỗi thì mới split)
@@ -1132,6 +1059,7 @@ const handleShowQR = async () => {
             }
           }
           allImages.value = [...new Set(images.filter(Boolean))];
+          displayImages.value = [...allImages.value];
           mainImage.value = allImages.value[0] || '';
         }
       }
