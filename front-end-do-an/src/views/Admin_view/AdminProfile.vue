@@ -25,7 +25,7 @@
               <div class="flex flex-col sm:flex-row items-center gap-6 pb-8 border-b border-slate-100">
                 <div class="relative group cursor-pointer shrink-0">
                   <div class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-slate-50 shadow-md overflow-hidden transition-all duration-300 group-hover:border-[#ff8f73]/50 bg-slate-100">
-                    <img class="w-full h-full object-cover" alt="Admin Avatar" :src="avatarPreview"/>
+                    <img class="w-full h-full object-cover" alt="Admin Avatar" :src="displayAvatar"/>
                   </div>
                 </div>
 
@@ -155,11 +155,20 @@
   const selectedFile = ref(null); 
   const displayName = currentUser?.TenNV || currentUser?.username || 'Admin';
   const defaultAvatar = `https://ui-avatars.com/api/?name=${displayName}&background=ff8f73&color=fff&bold=true&size=150`;
-  const avatarPreview = ref(currentUser?.AnhDaiDien 
-  ? (currentUser.AnhDaiDien.startsWith('http') ? currentUser.AnhDaiDien : `${API_BASE_URL}/Images_user/${currentUser.AnhDaiDien}`) 
-  : '');
+  const avatarPreview = ref('');
   const ngayTaoFromDB = ref(null);
-
+  const displayAvatar = computed(() => {
+  // 1. Nếu có ảnh xem trước (link mây, link local cũ hoặc link tạm thời lúc vừa chọn file)
+  if (avatarPreview.value) {
+    return avatarPreview.value;
+  }
+  
+  // 2. Nếu không có ảnh: Lấy tên đang nhập trong Form (form.name), nếu trống thì lấy trong currentUser
+  const adminName = form.name || currentUser?.TenNV || currentUser?.username || 'Admin';
+  
+  // Trả về avatar chữ nền cam san hô chuẩn màu đồ án
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=ff8f73&color=fff&bold=true&size=150`;
+});
   
   // Khởi tạo Form
   const form = reactive({
@@ -278,9 +287,11 @@
       // Xử lý lưu ảnh mới hoặc xóa ảnh
       if (data.newAvatarName) {
         updatedUser.AnhDaiDien = data.newAvatarName;
+        avatarPreview.value = data.newAvatarName;
       } 
       else if (isAvatarRemoved.value) {
-        updatedUser.AnhDaiDien = null; 
+        updatedUser.AnhDaiDien = null;
+        avatarPreview.value = '';
       }
 
       localStorage.setItem('user', JSON.stringify(updatedUser));
