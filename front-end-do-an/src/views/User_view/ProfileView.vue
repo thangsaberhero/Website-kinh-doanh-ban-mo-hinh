@@ -158,7 +158,6 @@
 
   const fetchUserData = async () => {
     if (!currentUser) return;
-    
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`, {headers: {'Authorization': `Bearer ${token}`}});
@@ -234,7 +233,6 @@
     
     try {
       const formData = new FormData();
-      formData.append('MaTK', currentUser.id);
       formData.append('TenKH', form.name);
       formData.append('email', form.email);
       formData.append('SDT', form.phone);
