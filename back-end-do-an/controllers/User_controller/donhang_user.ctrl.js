@@ -559,7 +559,7 @@ const donhang_user = {
                       AND km.ThoiGianBD <= NOW()
                       AND km.ThoiGianKT >= NOW()
                       AND (ctkm.SoLuongKM - ctkm.SoLuongDaDung) > 0
-                    GROUP BY ctkm.MaPhanLoai, ctkm.SoLuongKM, ctkm.SoLuongDaDung
+                    GROUP BY ctkm.MaPhanLoai, ctkm.SoLuongKM, ctkm.SoLuongDaDung, km.MaKM
                 ) AS km_info ON pl.MaPhanLoai = km_info.MaPhanLoai
                 WHERE ct.MaGH = ?`;
             const [cart_item] = await connection.query(sql_get_cart_item, [MaGH]);

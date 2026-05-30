@@ -303,14 +303,10 @@ const processCheckout = async () => {
     return;
   }
 
-  // Lấy đúng mã Khách Hàng (Tương thích cả 2 trường hợp id hoặc MaKH)
-  const maKH = JSON.parse(userString).MaKH || JSON.parse(userString).id;
-
   try {
     // 3. ĐÓNG GÓI DỮ LIỆU CỰC KỲ ĐƠN GIẢN
     // Vì Backend của bạn chỉ yêu cầu MaKH (nhìn dòng: const { MaKH } = req.body;)
     const payload = {
-      MaKH: parseInt(maKH),
       TenNguoiNhan: shippingInfo.name,
       SDTNguoiNhan: shippingInfo.phone,
       DiaChiGiao: shippingInfo.address,
