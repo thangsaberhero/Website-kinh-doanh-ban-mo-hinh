@@ -160,18 +160,6 @@
   const defaultAvatar = `https://ui-avatars.com/api/?name=${displayName}&background=ff8f73&color=fff&bold=true&size=150`;
   const avatarPreview = ref('');
   const ngayTaoFromDB = ref(null);
-  const displayAvatar = computed(() => {
-  // 1. Nếu có ảnh xem trước (link mây, link local cũ hoặc link tạm thời lúc vừa chọn file)
-  if (avatarPreview.value) {
-    return avatarPreview.value;
-  }
-  
-  // 2. Nếu không có ảnh: Lấy tên đang nhập trong Form (form.name), nếu trống thì lấy trong currentUser
-  const adminName = form.name || currentUser?.TenNV || currentUser?.username || 'Admin';
-  
-  // Trả về avatar chữ nền cam san hô chuẩn màu đồ án
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(adminName)}&background=ff8f73&color=fff&bold=true&size=150`;
-});
   
   // Khởi tạo Form
   const form = reactive({
@@ -229,6 +217,11 @@
     } 
     else {
       fetchUserData();
+    }
+    if (currentUser && currentUser.AnhDaiDien) {
+      avatarPreview.value = currentUser.AnhDaiDien.startsWith('http') 
+        ? currentUser.AnhDaiDien 
+        : `${API_BASE_URL}/Images_user/${currentUser.AnhDaiDien}`;
     }
   });
   
