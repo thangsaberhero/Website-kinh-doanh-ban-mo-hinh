@@ -296,7 +296,11 @@ const router = createRouter({
     {
       path: '/admin/blockchain',
       name: 'AdminBlockchain',
-      component: AdminBlockchain
+      component: AdminBlockchain,
+      meta: {
+        requiresAuth: true, 
+        requiresAdmin: true
+      }
     }
   ]
 });
