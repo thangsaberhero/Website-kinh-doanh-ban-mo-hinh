@@ -276,7 +276,6 @@
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json' },
         body: JSON.stringify({
-          MaKH: authStore.user.MaKH,
           MaPhanLoai: maPhanLoai
         })
       });
