@@ -59,10 +59,24 @@
   const fetchUserStats = async () => {
     if (!currentUser) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin/${currentUser.id}`);
-      if (res.ok) {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`,{
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+    });
+      if (res.success) {
         const resData = await res.json();
         totalFigures.value = resData.data?.SoFigureDaMua || 0;
+        
+        // 3. ĐỒNG BỘ AVATAR: Ép Store và LocalStorage nhận link Cloudinary mới nhất
+        if (authStore.user && resData.data?.AnhDaiDien) {
+          authStore.user.AnhDaiDien = resData.data.AnhDaiDien;
+          
+          // Cập nhật luôn xuống LocalStorage để F5 không bị mất
+          const updatedUser = { ...currentUser, AnhDaiDien: resData.data.AnhDaiDien };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
       }
     } 
     catch (error) {

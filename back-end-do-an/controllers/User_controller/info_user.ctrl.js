@@ -24,17 +24,22 @@ const fix_user_info = {
             const [info] = await db.query(sql, [MaTK]);
 
             if (info.length === 0) {
-                return res.status(404).json({ message: "Không tìm thấy thông tin tài khoản!" });
+                return res.status(404).json({ 
+                    success: false,
+                    message: "Không tìm thấy thông tin tài khoản!" });
             }
 
             res.status(200).json({
+                success: true,
                 message: "Lấy thông tin thành công",
                 data: info[0]
             });
         }
         catch (error){
             console.error("Lỗi khi lấy dữ liệu thông tin cá nhân: ", error);
-            res.status(500).json({ message: "Lỗi server khi lấy dữ liệu cá nhân!" });
+            res.status(500).json({ 
+                success: false,
+                message: "Lỗi server khi lấy dữ liệu cá nhân!" });
         }
     },
 
