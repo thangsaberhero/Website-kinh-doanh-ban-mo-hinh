@@ -21,8 +21,11 @@
               </span>
             </div>
 
-            <img :src="`${API_BASE_URL}/Images_product/${mainImage}` " class="w-full aspect-[4/5] object-cover transform transition-transform duration-700 drop-shadow-2xl"/>
-
+            <img 
+              :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
+              :alt="item.TenMH" 
+              class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+            />
             <div v-show="isZooming"
               class="absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
               :style="{
