@@ -92,7 +92,8 @@
   
   const userAvatar = computed(() => {
     if (authStore.user && authStore.user.AnhDaiDien) {
-      return `${API_BASE_URL}/Images_user/${authStore.user.AnhDaiDien}`;
+      const anh = authStore.user.AnhDaiDien;
+      return anh.startsWith('http') ? anh : `${API_BASE_URL}/Images_user/${anh}`;
     }
     const displayName = authStore.user?.TenKH || authStore.user?.username || 'Collector';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff8f73&color=fff&bold=true&size=128`;
