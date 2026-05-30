@@ -808,7 +808,7 @@ const donhang_user = {
                 COALESCE(COUNT(ct.MaPhanLoai), 0) AS TongSoSanPham,
                 (SELECT mh.AnhDaiDien 
                         FROM ChiTietDonHang ctdh 
-                        Join Phanloai pl on pl.MaPhanLoai = ctdh.MaPhanLoai
+                        Join PhanLoai pl on pl.MaPhanLoai = ctdh.MaPhanLoai
                         JOIN MoHinh mh ON mh.MaMoHinh = pl.MaMoHinh
                         WHERE ctdh.MaDH = DonHang.MaDH 
                         LIMIT 1) as Thumbnail,
@@ -1146,7 +1146,7 @@ const donhang_user = {
             } else {
                 const sql_tinh_tien_coc = `Select SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc
                                             from MoHinh mh
-                                            inner join Phanloai pl on pl.MaMoHinh = mh.MaMoHinh
+                                            inner join PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
                                             inner join ChiTietDonHang ct on ct.MaPhanLoai = pl.MaPhanLoai
                                             where ct.MaDH = ? 
                                             limit 1`;
