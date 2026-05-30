@@ -17,7 +17,7 @@ CREATE TABLE TaiKhoan (
     MatKhau VARCHAR(255) NOT NULL,
     Email VARCHAR(100),
     MaQuyen INT,
-    AnhDaiDien VARCHAR(100),
+    AnhDaiDien VARCHAR(255),
 	ResetOTP VARCHAR(10) NULL,
 	OTPExpires DATETIME NULL,
 	Bi_khoa TINYINT default 0,
