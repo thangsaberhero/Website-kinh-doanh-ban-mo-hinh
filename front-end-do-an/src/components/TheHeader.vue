@@ -267,11 +267,14 @@
   };
 
   const removeFromCart = async (maPhanLoai) => {
-    if (!authStore.user || !authStore.user.MaKH) return;
+    const token = localStorage.getItem('token');
+    if (!authStore.user || !token) return;
     try {
       const response = await fetch(`${API_BASE_URL}/api/don_hang/delete`, {
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' },
         body: JSON.stringify({
           MaKH: authStore.user.MaKH,
           MaPhanLoai: maPhanLoai
