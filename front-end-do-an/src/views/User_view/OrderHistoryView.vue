@@ -41,7 +41,7 @@
                   </div>
                   <img 
                       v-if="order.Thumbnail" 
-                      :src="`${API_BASE_URL}/Images_product/` + order.Thumbnail" 
+                      :src="`(order.Thumbnail.startsWith('http')) ? order.Thumbnail : ${API_BASE_URL}/Images_product/` + order.Thumbnail" 
                       alt="Product" 
                       class="w-full h-full object-contain"
                   />
