@@ -237,14 +237,15 @@ const donhang_admin = {
                 SELECT cttt.MaTrangThai, dh.MaDonHangHienThi
                 FROM DonHang dh
                 LEFT JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
-                WHERE dh.MaDH = ?
+                INNER JOIN KhachHang kh on dh.MaKH = kh.MaKH
+                WHERE dh.MaDH = ? and kh.MaTK = ?
                 ORDER BY cttt.Thoigian DESC LIMIT 1
             `;
-            const [don_hang] = await connection.query(sql_kiemtra_tt, [MaDH]);
+            const [don_hang] = await connection.query(sql_kiemtra_tt, [MaDH, MaTK]);
 
             if(don_hang.length === 0) {
                 await connection.rollback();
-                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng của này!" });
+                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
             }
 
             const currentStatus = don_hang[0].MaTrangThai;

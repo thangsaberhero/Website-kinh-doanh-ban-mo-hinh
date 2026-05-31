@@ -70,7 +70,7 @@ cron.schedule('* * * * *', async () => {
         // 1. Tìm đơn hàng: Trạng thái 'Chờ duyệt', quá 5 phút
         const sql_tim_don = `
             SELECT MaDH FROM DonHang 
-            WHERE TrangThaiThanhToan = 'Chờ thanh toán' 
+            WHERE TrangThaiThanhToan = 'Chưa thanh toán' 
             AND TIMESTAMPDIFF(MINUTE, NgayLapDon, NOW()) >= 5
         `;
         const [don_qua_han] = await connection.query(sql_tim_don);

@@ -653,11 +653,24 @@ const donhang_user = {
                         });
                 }
             }
+            
+            //Tạo mã đơn hàng hiển thị
+            const taoMaDonHangHienThi = () => {
+                const date = new Date();
+                const ddmmyy = date.getDate().toString().padStart(2, '0') +
+                            (date.getMonth() + 1).toString().padStart(2, '0') +
+                            date.getFullYear().toString().slice(-2);
+                            
+                const randomString = Math.random().toString(36).substring(2, 6).toUpperCase();
+                return `FC${ddmmyy}-${randomString}`; 
+            };
+            
+            const maHienThi = taoMaDonHangHienThi();
 
             // 2. Tạo Đơn hàng mới 
-            const sql_tao_don = `INSERT INTO DonHang (MaKH, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
-            VALUES (?, ?, ?, NOW(), 'Chưa Thanh Toán', ?, ? ,?, ?)`;
-            const [tao_don] = await connection.query(sql_tao_don, [MaKH, TongTienHang, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note]);
+            const sql_tao_don = `INSERT INTO DonHang (MaKH, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
+            VALUES (?, ?, ?, ?, NOW(), 'Chưa Thanh Toán', ?, ? ,?, ?)`;
+            const [tao_don] = await connection.query(sql_tao_don, [MaKH, maHienThi, TongTienHang, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note]);
             
             // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động
             const maDH_moi = tao_don.insertId; 
