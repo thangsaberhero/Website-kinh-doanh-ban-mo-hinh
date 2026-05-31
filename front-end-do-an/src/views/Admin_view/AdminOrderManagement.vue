@@ -1155,20 +1155,26 @@ const exportExcelReport = async () => {
   const submitExternalOrder = async () => {
     // Validate cơ bản
     if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan || !externalOrderForm.value.DiaChiGiao) {
-      toastStore.showToast('Vui lòng nhập Tên và Số điện thoại khách hàng!', 'error');
+      toastStore.showToast('Vui lòng nhập Tên, Số điện thoại và Địa chỉ của khách hàng!', 'error');
       return;
     }
 
     try {
       const token = localStorage.getItem('token');
-      // CHÚ Ý: Đổi đường dẫn API này theo đúng route Backend của bạn
+      const payload = {
+        DanhSachSanPham: externalOrderForm.value.DanhSachSanPham,
+        Ten: externalOrderForm.value.TenNguoiNhan,
+        SDT: externalOrderForm.value.SDTNguoiNhan,
+        DiaChi: externalOrderForm.value.DiaChiGiao,
+        Note: "Đơn tạo thủ công tại quầy"
+      };
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(externalOrderForm.value)
+        body: JSON.stringify(payload)
       });
       
       const result = await res.json();

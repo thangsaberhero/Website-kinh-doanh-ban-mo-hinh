@@ -14,7 +14,6 @@ const donhang_admin = {
                 return res.status(400).json({ success: false, message: "Danh sách sản phẩm trống!" });
             }
             if (!Ten || !SDT || !DiaChi) {
-                await connection.rollback();
                 return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin!" });
             }
 
@@ -168,7 +167,7 @@ const donhang_admin = {
                         "Cảnh báo kho (Đơn tại quầy)", 
                         `Sản phẩm "${checkStock[0].ChiTietPhanLoai}" chỉ còn ${checkStock[0].SoLuong} cái sau khi xuất bán.`, 
                         "KhoHang", 
-                        "/admin/products"
+                        "/admin/inventory"
                     ]);
                 }
             }
