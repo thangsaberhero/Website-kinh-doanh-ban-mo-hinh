@@ -159,7 +159,7 @@
   };
 
   // Lấy danh sách yêu thích từ Backend
-  const fetchWishlist = async () => {
+  const fetchWishlist = async (isBackgroundLoad = false) => {
       const token = localStorage.getItem('token');
       const userString = localStorage.getItem('user');
 
@@ -171,7 +171,9 @@
       const userObj = JSON.parse(userString);
 
       try {
-        isLoading.value = true;
+        if (!isBackgroundLoad) {
+          isLoading.value = true;
+        }
         const response = await fetch(`${API_BASE_URL}/api/products/list_favorite?page=${currentPage.value}&limit=8`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -194,7 +196,9 @@
         console.error("Lỗi khi kết nối API lấy danh sách yêu thích:", error);
       } 
       finally {
-        isLoading.value = false;
+        if (!isBackgroundLoad) {
+          isLoading.value = false;
+        }
       }
   };
 
@@ -241,7 +245,7 @@
     else {
       fetchWishlist();
       pollingInterval = setInterval(() => {
-        fetchWishlist();
+        fetchWishlist(true);
       }, 5000);
     }
   });
