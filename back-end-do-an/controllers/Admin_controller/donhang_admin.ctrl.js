@@ -772,6 +772,7 @@ const donhang_admin = {
                 WHERE dh.MaDH = ?
                 ORDER BY cttt.Thoigian DESC
                 LIMIT 1
+                FOR UPDATE
             `;
             const [trang_thai] = await connection.query(sql_kiemtra_tt, [MaDH]);
 

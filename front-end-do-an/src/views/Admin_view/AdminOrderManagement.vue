@@ -258,6 +258,9 @@
                               <button @click="cancelOrder(order.id)" class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">cancel</span> Hủy đơn
                               </button>
+                              <button @click="returnOrder(order.id)" class="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 font-medium flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[16px]">assignment_return</span> Hoàn hàng
+                              </button>
                           </div>
                       </div>
                   </td>
@@ -641,6 +644,43 @@
         </div>
       </div>
     </div>
+    <div v-if="isReturnModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-purple-100 flex justify-between items-center bg-purple-50 shrink-0">
+          <h3 class="text-lg font-bold text-purple-600 flex items-center gap-2">
+            <span class="material-symbols-outlined">assignment_return</span>
+            Xác nhận Hoàn trả đơn
+          </h3>
+          <button @click="isReturnModalOpen = false" class="text-slate-400 hover:text-purple-600 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-slate-600 font-medium">
+            Xác nhận hàng đã về kho và hoàn tiền cho đơn <span class="font-bold text-slate-900">#FC-{{ orderToReturn }}</span>?<br>
+            <span class="text-purple-500 font-bold text-xs">* Tồn kho sẽ được cộng lại hệ thống ngay lập tức.</span>
+          </p>
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Lý do hoàn hàng <span class="text-purple-500">*</span></label>
+            <textarea 
+              v-model="returnReason" 
+              rows="3" 
+              placeholder="VD: Khách boom hàng, Sản phẩm lỗi do NSX, v.v..." 
+              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="isReturnModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
+          <button @click="executeReturnOrder" class="px-5 py-2.5 text-sm font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 rounded-xl transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">inventory_2</span> Nhập lại kho
+          </button>
+        </div>
+      </div>
+    </div>
 </template>
   
 <script setup>
@@ -724,6 +764,54 @@ const exportExcelReport = async () => {
       toastStore.showToast("Không thể xuất báo cáo lúc này!", "error");
     } finally {
       isExporting.value = false;
+    }
+  };
+
+  // --- QUẢN LÝ MODAL HOÀN HÀNG ---
+  const isReturnModalOpen = ref(false);
+  const returnReason = ref('');
+  const orderToReturn = ref(null);
+
+  const returnOrder = (id) => {
+    orderToReturn.value = id;
+    returnReason.value = ''; 
+    isReturnModalOpen.value = true;
+    activeMenuId.value = null; 
+  };
+
+  const executeReturnOrder = async () => {
+    if (!returnReason.value.trim()) {
+      toastStore.showToast("Vui lòng nhập lý do hoàn hàng!", "error");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      // Chú ý: Route bạn viết là .put('/hoan_hang')
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/hoan_hang`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+         },
+        body: JSON.stringify({ 
+          MaDH: orderToReturn.value, 
+          LyDoHoan: returnReason.value.trim() 
+        })
+      });
+      
+      const result = await res.json();
+      
+      if(result.success) {
+        toastStore.showToast("Xác nhận hoàn hàng thành công!", "success");
+        isReturnModalOpen.value = false; 
+        fetchOrders(); 
+      } else {
+        toastStore.showToast(result.message, "error");
+      }
+    } catch(e) { 
+      console.error(e);
+      toastStore.showToast("Lỗi kết nối máy chủ", "error");
     }
   };
 
@@ -1056,7 +1144,7 @@ const exportExcelReport = async () => {
         });
         const result = await res.json();
         if(result.success) {
-          alert("Hủy đơn thành công!");
+          toastStore.showToast("Hủy đơn thành công!", "success");
           isCancelModalOpen.value = false;
           fetchOrders();
         } else 
