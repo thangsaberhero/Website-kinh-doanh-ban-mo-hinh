@@ -363,7 +363,7 @@
             <div v-for="(prod, index) in viewingOrder.products" :key="index" class="flex items-start gap-3 border-b border-slate-50 pb-3 last:border-0">
               
               <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shrink-0 p-1">
-                <img v-if="prod.image" :src="`${API_BASE_URL}/Images_product/` + prod.image" class="w-full h-full object-contain"/>
+                <img v-if="prod.image" :src="(prod.image && prod.image.startsWith('http')) ? prod.image : `${API_BASE_URL}/Images_product/` + prod.image" class="w-full h-full object-contain"/>
                 <div v-else class="w-full h-full flex items-center justify-center text-slate-300">
                   <span class="material-symbols-outlined">image_not_supported</span>
                 </div>
@@ -1057,7 +1057,7 @@ const exportExcelReport = async () => {
       
       if (result.success) {
         const info = result.data.ThongTinGiaoHang;
-        const productsList = result.data.DanhSachSanPham;
+        const productsList = result.data.DanhSachHang;
         
         viewingOrder.value = {
           id: order.id,
@@ -1079,8 +1079,8 @@ const exportExcelReport = async () => {
             price: p.DonGiaBan || 0,
             image: p.AnhDaiDien || '', 
             isSale: p.LaHangKhuyenMai === 1,
-            originalPrice: p.DonGiaGoc || p.DonGiaBan || 0,
-            totalPrice: p.ThanhTienItem || (p.SoLuong * p.DonGiaBan) || 0
+            originalPrice: p.DonGiaGoc || 0,
+            totalPrice: (p.SoLuong * p.DonGiaBan) || 0
           }))
         };
         isViewOrderDrawerOpen.value = true;
