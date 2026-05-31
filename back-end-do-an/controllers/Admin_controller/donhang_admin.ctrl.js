@@ -545,7 +545,6 @@ const donhang_admin = {
                 FROM DonHang dh
                 LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
                 LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
-                INNER JOIN ThanhToan tt on tt.MaDH = dh.MaDH
                 ${condition_clause}
                 ${having_clause}
             `;
