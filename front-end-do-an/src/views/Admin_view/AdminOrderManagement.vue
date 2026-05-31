@@ -1041,7 +1041,6 @@ const exportExcelReport = async () => {
 
   // 4. GỌI API HỦY ĐƠN HÀNG
   const executeCancelOrder = async (id) => {
-    if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này và hoàn lại tồn kho không?")) {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
@@ -1051,7 +1050,7 @@ const exportExcelReport = async () => {
             'Authorization': `Bearer ${token}`
            },
           body: JSON.stringify({ 
-            MaDH: id,
+            MaDH: orderToCancel.value,
             LyDoHuy: reason.trim() || 'Quản trị viên thao tác hủy'
            })
         });
@@ -1066,9 +1065,8 @@ const exportExcelReport = async () => {
         console.error(e); 
         toastStore.showToast("Lỗi kết nối máy chủ", "error");
       }
-    }
-    activeMenuId.value = null;
-  };
+    };
+    
   const handlePrintInvoice = (maDHGoc) => {
     const token = localStorage.getItem('token');
     
