@@ -588,12 +588,12 @@ const product_view = {
             const Ma_dmyt = check[0].MaYeuThich;
 
             let page = parseInt(req.query.page) || 1;
-            let limit = parseInt(req.query.limit) || 9;
+            let limit = parseInt(req.query.limit) || 8;
             
 
             if (!page || isNaN(page) || page < 1) page = 1;
-            if (!limit || isNaN(limit) || limit < 1) limit = 9;
-            if (limit > 27) limit = 27;
+            if (!limit || isNaN(limit) || limit < 1) limit = 8;
+            if (limit > 16) limit = 16;
 
             const offset = (page - 1) * limit;
 

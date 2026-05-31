@@ -6,7 +6,7 @@ const authMiddleware = require('../../middlewares/auth.middleware.js');
 router.post('/add_remove_favorite', authMiddleware.verifyToken, product_view.toggle_favorite_product);
 router.post('/cart-suggestions', product_view.getCartSuggestions);
 router.get('/check_favorite/:id', authMiddleware.verifyToken, product_view.check_favorite_product);
-router.get('/list_favorite/:MaKH', authMiddleware.verifyToken, product_view.watch_favorite_product);
+router.get('/list_favorite', authMiddleware.verifyToken, product_view.watch_favorite_product);
 
 router.get('/', product_view.getAllProduct);
 router.get('/search', product_view.getProductsBySearch);

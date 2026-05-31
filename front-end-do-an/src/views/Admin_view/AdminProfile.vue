@@ -218,11 +218,6 @@
     else {
       fetchUserData();
     }
-    if (currentUser && currentUser.AnhDaiDien) {
-      avatarPreview.value = currentUser.AnhDaiDien.startsWith('http') 
-        ? currentUser.AnhDaiDien 
-        : `${API_BASE_URL}/Images_user/${currentUser.AnhDaiDien}`;
-    }
   });
   
   // Xử lý File Ảnh

@@ -80,6 +80,38 @@
 
         </TransitionGroup>
 
+        <div v-if="totalPages > 1 && !isLoading" class="mt-12 flex justify-center items-center gap-2 pb-12">
+          <button 
+            @click="changePage(currentPage - 1)" 
+            :disabled="currentPage === 1"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+
+          <button 
+            v-for="page in totalPages" 
+            :key="page"
+            @click="changePage(page)"
+            :class="[
+              'w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all',
+              currentPage === page 
+                ? 'bg-primary text-on-primary shadow-lg shadow-primary/30' 
+                : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest'
+            ]"
+          >
+            {{ page }}
+          </button>
+
+          <button 
+            @click="changePage(currentPage + 1)" 
+            :disabled="currentPage === totalPages"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </div>
+
         <div v-if="!isLoading && wishlistItems.length === 0" class="text-center py-32 border border-dashed border-outline-variant/30 rounded-2xl bg-surface-container-low">
           <span class="material-symbols-outlined text-6xl text-outline-variant mb-4">heart_broken</span>
           <h2 class="font-headline text-2xl text-white font-bold mb-2">Chưa có báu vật nào!</h2>
@@ -112,6 +144,19 @@
   const isLoading = ref(true);
   const userString = localStorage.getItem('user');
 
+  const currentPage = ref(1);
+  const totalPages = ref(1);
+
+  // HÀM CHUYỂN TRANG
+  const changePage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchWishlist();
+      // Tự động cuộn lên đầu danh sách mượt mà khi đổi trang
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // Lấy danh sách yêu thích từ Backend
   const fetchWishlist = async () => {
       const token = localStorage.getItem('token');
@@ -126,7 +171,7 @@
 
       try {
         isLoading.value = true;
-        const response = await fetch(`${API_BASE_URL}/api/products/list_favorite/${userObj.MaKH}`, {
+        const response = await fetch(`${API_BASE_URL}/api/products/list_favorite?page=${currentPage.value}&limit=8`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -136,6 +181,10 @@
 
         if (response.ok) {
             wishlistItems.value = dataJSON.data || [];
+            if (result.pagination) {
+              currentPage.value = result.pagination.currentPage;
+              totalPages.value = result.pagination.totalPage;
+            }
         } else {
             console.error("Lỗi:", dataJSON.message);
         }
