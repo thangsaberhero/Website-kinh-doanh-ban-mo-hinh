@@ -10,7 +10,7 @@ const authMiddleware = require('../../middlewares/auth.middleware.js');
 router.get('/export-excel', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.xuatExcelDonHang);
 router.get('/print/:MaDH', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.in_hoa_don);
 router.get('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.liet_ke_don_hang);
-router,get('/search-products',authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.liet_ke_san_pham);
+router.get('/search-products',authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.liet_ke_san_pham);
 
 // CHỐT CHẶN CUỐI CÙNG: Route chứa tham số động (/:MaDH) phải ở ĐÁY của nhóm GET
 router.get('/:MaDH', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.xem_chi_tiet_don_hang);
