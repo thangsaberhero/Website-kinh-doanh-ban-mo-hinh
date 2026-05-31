@@ -1051,7 +1051,7 @@ const exportExcelReport = async () => {
            },
           body: JSON.stringify({ 
             MaDH: orderToCancel.value,
-            LyDoHuy: reason.trim() || 'Quản trị viên thao tác hủy'
+            LyDoHuy: cancelReason.value.trim()
            })
         });
         const result = await res.json();
