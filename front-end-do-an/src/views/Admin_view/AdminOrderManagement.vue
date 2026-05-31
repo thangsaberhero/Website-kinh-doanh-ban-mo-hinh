@@ -564,10 +564,10 @@
             </div>
           </div>
 
-          <div v-if="externalOrderForm.DanhSachHang.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
+          <div v-if="externalOrderForm.DanhSachSanPham.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sản phẩm đã chọn</h4>
             <div class="space-y-2">
-              <div v-for="(item, index) in externalOrderForm.DanhSachHang" :key="index" class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+              <div v-for="(item, index) in externalOrderForm.DanhSachSanPham" :key="index" class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
                 <div class="flex-1">
                   <p class="text-xs font-bold text-slate-800 line-clamp-1" :title="item.TenMH">{{ item.TenMH }}</p>
                   <p class="text-[10px] font-semibold text-slate-500 mt-0.5">Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</p>
@@ -591,7 +591,7 @@
             </div>
 
             <div class="flex justify-between items-center p-4 bg-emerald-50 border border-emerald-100 rounded-xl mt-4">
-              <span class="text-sm font-bold text-emerald-800">Tổng cộng ({{ externalOrderForm.DanhSachHang.reduce((sum, i) => sum + i.SoLuong, 0) }} SP)</span>
+              <span class="text-sm font-bold text-emerald-800">Tổng cộng ({{ externalOrderForm.DanhSachSanPham.reduce((sum, i) => sum + i.SoLuong, 0) }} SP)</span>
               <span class="text-xl font-brand font-black text-emerald-600">{{ externalOrderForm.TongTien?.toLocaleString('vi-VN') }} ₫</span>
             </div>
           </div>
@@ -932,7 +932,7 @@ const exportExcelReport = async () => {
       
       if (result.success) {
         const info = result.data.ThongTinGiaoHang;
-        const productsList = result.data.DanhSachHang;
+        const productsList = result.data.DanhSachSanPham;
         
         viewingOrder.value = {
           id: order.id,
@@ -1041,7 +1041,7 @@ const exportExcelReport = async () => {
     TenNguoiNhan: '',
     SDTNguoiNhan: '',
     DiaChiGiao: '',
-    DanhSachHang: [],
+    DanhSachSanPham: [],
     TongTien: 0,
     ThanhTien: 0
   });
@@ -1084,21 +1084,21 @@ const exportExcelReport = async () => {
     searchProductTimeout = setTimeout(fetchProductsForOrder, 500);
   };
 
-  // Thêm sản phẩm vào mảng DanhSachHang
+  // Thêm sản phẩm vào mảng DanhSachSanPham
   const addVariantToOrder = (product, variant) => {
     // Kiểm tra xem phân loại này đã có trong giỏ chưa
-    const existingIndex = externalOrderForm.value.DanhSachHang.findIndex(item => item.MaPhanLoai === variant.MaPhanLoai);
+    const existingIndex = externalOrderForm.value.DanhSachSanPham.findIndex(item => item.MaPhanLoai === variant.MaPhanLoai);
     
     if (existingIndex > -1) {
       // Đã có -> Tăng số lượng nếu còn kho
-      if (externalOrderForm.value.DanhSachHang[existingIndex].SoLuong < variant.TonKho) {
-        externalOrderForm.value.DanhSachHang[existingIndex].SoLuong++;
+      if (externalOrderForm.value.DanhSachSanPham[existingIndex].SoLuong < variant.TonKho) {
+        externalOrderForm.value.DanhSachSanPham[existingIndex].SoLuong++;
       } else {
         toastStore.showToast("Đã đạt giới hạn tồn kho!", "error");
       }
     } else {
       // Chưa có -> Thêm mới
-      externalOrderForm.value.DanhSachHang.push({
+      externalOrderForm.value.DanhSachSanPham.push({
         MaMoHinh: product.MaMoHinh,
         TenMH: product.TenMH,
         AnhDaiDien: product.AnhDaiDien,
@@ -1118,13 +1118,13 @@ const exportExcelReport = async () => {
 
   // Xóa sản phẩm khỏi mảng
   const removeVariantFromOrder = (index) => {
-    externalOrderForm.value.DanhSachHang.splice(index, 1);
+    externalOrderForm.value.DanhSachSanPham.splice(index, 1);
     recalculateOrderTotal();
   };
 
   // Tăng giảm số lượng sản phẩm trong mảng
   const updateItemQuantity = (index, change) => {
-    const item = externalOrderForm.value.DanhSachHang[index];
+    const item = externalOrderForm.value.DanhSachSanPham[index];
     const newQty = item.SoLuong + change;
     
     if (newQty > 0 && newQty <= item.TonKho) {
@@ -1135,7 +1135,7 @@ const exportExcelReport = async () => {
 
   // Tính toán lại tổng tiền
   const recalculateOrderTotal = () => {
-    const total = externalOrderForm.value.DanhSachHang.reduce((sum, item) => {
+    const total = externalOrderForm.value.DanhSachSanPham.reduce((sum, item) => {
       return sum + (item.DonGia * item.SoLuong);
     }, 0);
     externalOrderForm.value.TongTien = total;
@@ -1145,7 +1145,7 @@ const exportExcelReport = async () => {
   // Reset Form mỗi khi đóng Modal
   watch(isCreateExternalOrderOpen, (newVal) => {
     if (!newVal) {
-      externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachHang: [], TongTien: 0, ThanhTien: 0 };
+      externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [], TongTien: 0, ThanhTien: 0 };
       searchProductQuery.value = '';
       searchResults.value = [];
     }
@@ -1178,7 +1178,7 @@ const exportExcelReport = async () => {
         fetchOrders(); // Load lại bảng danh sách
         
         // Có thể reset lại form ở đây
-        externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachHang: [] };
+        externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [] };
       } else {
         toastStore.showToast(result.message || 'Lỗi khi tạo đơn', 'error');
       }
