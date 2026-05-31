@@ -993,6 +993,11 @@ const exportExcelReport = async () => {
 
   // 4. GỌI API HỦY ĐƠN HÀNG
   const cancelOrder = async (id) => {
+    const reason = prompt("Vui lòng nhập lý do hủy đơn hàng này:");
+    if (reason === null) {
+      activeMenuId.value = null;
+      return; 
+    }
     if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này và hoàn lại tồn kho không?")) {
       try {
         const token = localStorage.getItem('token');
@@ -1002,14 +1007,21 @@ const exportExcelReport = async () => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
            },
-          body: JSON.stringify({ MaDH: id })
+          body: JSON.stringify({ 
+            MaDH: id,
+            LyDoHuy: reason.trim() || 'Quản trị viên thao tác hủy'
+           })
         });
         const result = await res.json();
         if(result.success) {
           alert("Hủy đơn thành công!");
           fetchOrders();
-        } else alert(result.message);
-      } catch(e) { console.error(e); }
+        } else 
+        toastStore.showToast(result.message, "error");
+      } catch(e) { 
+        console.error(e); 
+        toastStore.showToast("Lỗi kết nối máy chủ", "error");
+      }
     }
     activeMenuId.value = null;
   };

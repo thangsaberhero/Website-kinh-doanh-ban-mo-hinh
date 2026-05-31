@@ -318,9 +318,9 @@ const donhang_admin = {
                 SELECT cttt.MaTrangThai, dh.MaDonHangHienThi
                 FROM DonHang dh
                 LEFT JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
-                INNER JOIN KhachHang kh on dh.MaKH = kh.MaKH
-                WHERE dh.MaDH = ? and kh.MaTK = ?
+                WHERE dh.MaDH = ?
                 ORDER BY cttt.Thoigian DESC LIMIT 1
+                FOR UPDATE
             `;
             const [don_hang] = await connection.query(sql_kiemtra_tt, [MaDH, MaTK]);
 
@@ -332,14 +332,14 @@ const donhang_admin = {
             const currentStatus = don_hang[0].MaTrangThai;
             const maHienThi = don_hang[0].MaDonHangHienThi;
 
-            if (currentStatus === 5) {
+            if (currentStatus === 5 || currentStatus === 6) {
                 await connection.rollback();
                 return res.status(400).json({ 
                     success: false, 
-                    message: "Đơn hàng này đã bị hủy từ trước! Không thể hoàn kho thêm lần nữa." 
+                    message: "Đơn hàng này đã bị hủy hoặc hoàn từ trước! Không thể hoàn kho thêm lần nữa." 
                 });
             }
-
+            const finalLyDoHuy = LyDoHuy || 'Quản trị viên hủy đơn';
             // 3. THÊM TRẠNG THÁI HỦY (Mã 5)
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, [MaDH]);
 
@@ -387,7 +387,7 @@ const donhang_admin = {
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            const noiDungLog = `Hủy đơn hàng #${MaDH} - (${maHienThi}) với lý do: ${LyDoHuy}`;
+            const noiDungLog = `Hủy đơn hàng #${MaDH} - (${maHienThi}) với lý do: ${finalLyDoHuy}`;
             await connection.query(`
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'ORDER_CANCEL', ?, ?, NOW())
