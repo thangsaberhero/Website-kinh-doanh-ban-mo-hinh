@@ -1041,11 +1041,6 @@ const exportExcelReport = async () => {
 
   // 4. GỌI API HỦY ĐƠN HÀNG
   const executeCancelOrder = async (id) => {
-    const reason = prompt("Vui lòng nhập lý do hủy đơn hàng này:");
-    if (reason === null) {
-      activeMenuId.value = null;
-      return; 
-    }
     if(confirm("Bạn có chắc chắn muốn hủy đơn hàng này và hoàn lại tồn kho không?")) {
       try {
         const token = localStorage.getItem('token');
@@ -1063,6 +1058,7 @@ const exportExcelReport = async () => {
         const result = await res.json();
         if(result.success) {
           alert("Hủy đơn thành công!");
+          isCancelModalOpen.value = false;
           fetchOrders();
         } else 
         toastStore.showToast(result.message, "error");
