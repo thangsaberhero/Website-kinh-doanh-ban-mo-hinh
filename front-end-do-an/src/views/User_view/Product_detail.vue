@@ -650,6 +650,7 @@
       const dataJSON = await res.json();
       if (res.ok) {
         product.value = dataJSON.data;
+        document.title = `${product.value.TenMH} | FigureCollect`;
 
         if (product.value.MaVach_Serial && typeof fetchProductQR === 'function') {
           fetchProductQR(product.value.MaVach_Serial).catch(e => console.error(e));

@@ -44,291 +44,48 @@ import AdminBlockchain from '../views/Admin_view/AdminBlockchain.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', 
-      name: 'home', 
-      component: HomeView },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
-      meta: { hideFooter: true, hidePhone: true }
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
-      meta: { hideFooter: true, hidePhone: true }
-    },
-    { path: '/product/:id', 
-      name: 'product-detail', component: 
-      ProductDetail },
-    { path: '/category/:id?', 
-      name: 'category', component: 
-      CategoryView },
-    {
-      path: '/profile',
-      name: 'Profile',
-      component: ProfileView,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/change-password',
-      name: 'ChangePassword',
-      component: ChangePassword,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/cart',
-      name: 'Cart',
-      component: CartView,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/checkout',
-      name: 'Checkout',
-      component: CheckoutView,
-      meta: { 
-        useMinimalFooter: true,
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/ordersuccess',
-      name: 'Ordersuccess',
-      component: OrderSuccessView,
-      meta: { 
-        useMinimalFooter: true,
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/orders',
-      name: 'Order',
-      component: OrderHistoryView,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/orders/:id',
-      name: 'Order-detail',
-      component: OrderDetailView,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/wishlist',
-      name: 'Wishlist',
-      component: WishlistView,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/search',
-      name: 'Search',
-      component: SearchView
-    },
-    {
-      path: '/news',
-      name: 'News',
-      component: NewsView
-    },
-    {
-      path: '/news/:id',
-      name: 'NewsDetail',
-      component: NewsDetailView
-    },
-    {
-      path: '/contact',
-      name: 'Contact',
-      component: ContactView
-    },
-    {
-      path: '/forgot-password',
-      name: 'ForgotPassword',
-      component: ForgotPasswordView,
-      meta: { hideFooter: true, hidePhone: true }
-    },
-    {
-      path: '/momo-payment',
-      name: 'MoMoMock',
-      component: checkout,
-      meta: {
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/truy-xuat/:serial',
-      name: 'ProvenanceTracking',
-      component: ProvenanceTracking
-    },
-    {
-      path: '/support',
-      name: 'Support',
-      component: SupportView,
-      meta: { title: 'Hỗ trợ khách hàng - FigureCollect' }
-    },
-    {
-      path: '/admin',
-      name: 'AdminDashboard',
-      component: AdminDashboard,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/inventory',
-      name: 'Inventory',
-      component: AdminInventory,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/users',
-      name: 'UserManagement',
-      component: AdminUserManagement,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/orders',
-      name: 'OrderManagement',
-      component: AdminOrderManagement,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/promotion',
-      name: 'PromotionsManagement',
-      component: AdminPromotionsManagement,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/news',
-      name: 'NewsManagement',
-      component: AdminNewsManagement,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/news/create',
-      name: 'NewsCreate',
-      component: AdminNewsCreate,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/news/edit/:id',
-      name: 'NewsEdit',
-      component: AdminNewsEdit,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/manufacturers',
-      name: 'Manufacturer',
-      component: AdminManufacturer,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/categories',
-      name: 'Category',
-      component: AdminCategory,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/support',
-      name: 'CustomerSupport',
-      component: AdminCustomerSupport,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/promotion/:type/:id',
-      name: 'AdminPromotionDetail',
-      component: AdminPromotionDetail,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/profile',
-      name: 'AdminProfile',
-      component: AdminProfile,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/change-password',
-      name: 'AdminChangePassword',
-      component: AdminChangePassword,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/report',
-      name: 'AdminReport',
-      component: AdminReport,
-      meta: {
-        requiresAuth: true, // Bắt buộc phải đăng nhập
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/notifications',
-      name: 'AdminNotifications',
-      component: AdminNotifications, 
-      meta: {
-        requiresAuth: true, 
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/blockchain',
-      name: 'AdminBlockchain',
-      component: AdminBlockchain,
-      meta: {
-        requiresAuth: true, 
-        requiresAdmin: true
-      }
-    }
+    // --- KHU VỰC KHÁCH HÀNG ---
+    { path: '/', name: 'home', component: HomeView, meta: { title: 'Trang chủ | FigureCollect' } },
+    { path: '/login', name: 'login', component: LoginView, meta: { hideFooter: true, hidePhone: true, title: 'Đăng nhập | FigureCollect' } },
+    { path: '/register', name: 'register', component: RegisterView, meta: { hideFooter: true, hidePhone: true, title: 'Đăng ký | FigureCollect' } },
+    { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView, meta: { hideFooter: true, hidePhone: true, title: 'Quên mật khẩu | FigureCollect' } },
+    { path: '/profile', name: 'Profile', component: ProfileView, meta: { requiresAuth: true, title: 'Thông tin cá nhân | FigureCollect' } },
+    { path: '/change-password', name: 'ChangePassword', component: ChangePassword, meta: { requiresAuth: true, title: 'Đổi mật khẩu | FigureCollect' } },
+    { path: '/cart', name: 'Cart', component: CartView, meta: { requiresAuth: true, title: 'Giỏ hàng của bạn | FigureCollect' } },
+    { path: '/checkout', name: 'Checkout', component: CheckoutView, meta: { useMinimalFooter: true, requiresAuth: true, title: 'Thanh toán | FigureCollect' } },
+    { path: '/ordersuccess', name: 'Ordersuccess', component: OrderSuccessView, meta: { useMinimalFooter: true, requiresAuth: true, title: 'Đặt hàng thành công | FigureCollect' } },
+    { path: '/orders', name: 'Order', component: OrderHistoryView, meta: { requiresAuth: true, title: 'Lịch sử đơn hàng | FigureCollect' } },
+    { path: '/wishlist', name: 'Wishlist', component: WishlistView, meta: { requiresAuth: true, title: 'Sản phẩm yêu thích | FigureCollect' } },
+    { path: '/search', name: 'Search', component: SearchView, meta: { title: 'Tìm kiếm sản phẩm | FigureCollect' } },
+    { path: '/news', name: 'News', component: NewsView, meta: { title: 'Tin tức & Cập nhật | FigureCollect' } },
+    { path: '/contact', name: 'Contact', component: ContactView, meta: { title: 'Liên hệ | FigureCollect' } },
+    { path: '/support', name: 'Support', component: SupportView, meta: { title: 'Hỗ trợ khách hàng | FigureCollect' } },
+    { path: '/category/:id?', name: 'category', component: CategoryView, meta: { title: 'Danh mục sản phẩm | FigureCollect' } },
+    { path: '/product/:id', name: 'product-detail', component: ProductDetail },
+    { path: '/orders/:id', name: 'Order-detail', component: OrderDetailView, meta: { requiresAuth: true } },
+    { path: '/news/:id', name: 'NewsDetail', component: NewsDetailView },
+    { path: '/truy-xuat/:serial', name: 'ProvenanceTracking', component: ProvenanceTracking, meta: { title: 'Truy xuất nguồn gốc | FigureCollect' } },
+    
+    // --- KHU VỰC ADMIN ---
+    { path: '/admin', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true, title: 'Bảng điều khiển | Admin - FigureCollect' } },
+    { path: '/admin/inventory', name: 'Inventory', component: AdminInventory, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý kho hàng | Admin - FigureCollect' } },
+    { path: '/admin/users', name: 'UserManagement', component: AdminUserManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý người dùng | Admin - FigureCollect' } },
+    { path: '/admin/orders', name: 'OrderManagement', component: AdminOrderManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý đơn hàng | Admin - FigureCollect' } },
+    { path: '/admin/promotion', name: 'PromotionsManagement', component: AdminPromotionsManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý khuyến mãi | Admin - FigureCollect' } },
+    { path: '/admin/news', name: 'NewsManagement', component: AdminNewsManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý tin tức | Admin - FigureCollect' } },
+    { path: '/admin/news/create', name: 'NewsCreate', component: AdminNewsCreate, meta: { requiresAuth: true, requiresAdmin: true, title: 'Viết bài mới | Admin - FigureCollect' } },
+    { path: '/admin/manufacturers', name: 'Manufacturer', component: AdminManufacturer, meta: { requiresAuth: true, requiresAdmin: true, title: 'Hãng sản xuất | Admin - FigureCollect' } },
+    { path: '/admin/categories', name: 'Category', component: AdminCategory, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý danh mục | Admin - FigureCollect' } },
+    { path: '/admin/support', name: 'CustomerSupport', component: AdminCustomerSupport, meta: { requiresAuth: true, requiresAdmin: true, title: 'Hỗ trợ khách hàng | Admin - FigureCollect' } },
+    { path: '/admin/profile', name: 'AdminProfile', component: AdminProfile, meta: { requiresAuth: true, requiresAdmin: true, title: 'Hồ sơ cá nhân | Admin - FigureCollect' } },
+    { path: '/admin/change-password', name: 'AdminChangePassword', component: AdminChangePassword, meta: { requiresAuth: true, requiresAdmin: true, title: 'Đổi mật khẩu | Admin - FigureCollect' } },
+    { path: '/admin/report', name: 'AdminReport', component: AdminReport, meta: { requiresAuth: true, requiresAdmin: true, title: 'Báo cáo thống kê | Admin - FigureCollect' } },
+    { path: '/admin/notifications', name: 'AdminNotifications', component: AdminNotifications, meta: { requiresAuth: true, requiresAdmin: true, title: 'Thông báo hệ thống | Admin - FigureCollect' } },
+    { path: '/admin/blockchain', name: 'AdminBlockchain', component: AdminBlockchain, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý Blockchain | Admin - FigureCollect' } },
+    { path: '/admin/news/edit/:id', name: 'NewsEdit', component: AdminNewsEdit, meta: { requiresAuth: true, requiresAdmin: true } },
+    { path: '/admin/promotion/:type/:id', name: 'AdminPromotionDetail', component: AdminPromotionDetail, meta: { requiresAuth: true, requiresAdmin: true } },
+    
+    { path: '/momo-payment', name: 'MoMoMock', component: checkout, meta: { requiresAuth: true, title: 'Cổng thanh toán MoMo' } },
   ]
 });
 
@@ -355,6 +112,10 @@ router.beforeEach((to, from, next) => {
     }
   }
   next();
+});
+
+router.afterEach((to, from) => {
+  document.title = to.meta.title || 'FigureCollect - Shop Mô Hình Chính Hãng';
 });
 
 export default router;
