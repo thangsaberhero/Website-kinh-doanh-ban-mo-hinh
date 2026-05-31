@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted , onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '../../stores/auth';
   import { useToastStore } from '../../stores/toast';
@@ -146,6 +146,7 @@
 
   const currentPage = ref(1);
   const totalPages = ref(1);
+  let pollingInterval = null;
 
   // HÀM CHUYỂN TRANG
   const changePage = (page) => {
@@ -239,7 +240,14 @@
     } 
     else {
       fetchWishlist();
+      pollingInterval = setInterval(() => {
+        fetchWishlist();
+      }, 5000);
     }
+  });
+
+  onUnmounted(() => {
+    if (pollingInterval) clearInterval(pollingInterval);
   });
 
   // CÁC HÀM XỬ LÝ MÀU SẮC DỰA TRÊN TRẠNG THÁI TỪ BACKEND
