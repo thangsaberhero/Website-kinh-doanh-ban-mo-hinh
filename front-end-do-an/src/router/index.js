@@ -64,7 +64,7 @@ const router = createRouter({
     { path: '/product/:id', name: 'product-detail', component: ProductDetail },
     { path: '/orders/:id', name: 'Order-detail', component: OrderDetailView, meta: { requiresAuth: true } },
     { path: '/news/:id', name: 'NewsDetail', component: NewsDetailView },
-    { path: '/truy-xuat/:serial', name: 'ProvenanceTracking', component: ProvenanceTracking, meta: { title: 'Truy xuất nguồn gốc | FigureCollect' } },
+    { path: '/truy-xuat/:serial?', name: 'ProvenanceTracking', component: ProvenanceTracking, meta: { title: 'Truy xuất nguồn gốc | FigureCollect' } },
     
     // --- KHU VỰC ADMIN ---
     { path: '/admin', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true, title: 'Bảng điều khiển | Admin - FigureCollect' } },
