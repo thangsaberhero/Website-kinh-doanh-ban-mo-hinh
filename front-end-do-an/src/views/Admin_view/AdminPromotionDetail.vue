@@ -592,6 +592,9 @@
       const result = await res.json();
       if (result.success) {
         detailData.value = result.data.tt;
+        const promoName = detailData.value.TenKM || detailData.value.TenMaGiamGia || 'Chi tiết khuyến mãi';
+        document.title = `${promoName} | Admin - FigureCollect`;
+
         productsList.value = result.data.detail || [];
         logsList.value = result.data.log || [];
         paginationSP.value = {

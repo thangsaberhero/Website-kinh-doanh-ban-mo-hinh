@@ -275,6 +275,7 @@ const fetchOrderdata = async () => {
     return;
   }
   const maDH = route.params.id;
+  document.title = `Chi tiết đơn hàng #${maDH} | FigureCollect`;
   try {
     const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
       method: 'GET',

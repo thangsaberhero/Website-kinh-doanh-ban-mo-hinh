@@ -242,6 +242,7 @@
 
         if(response.ok){
             const article = result.data;
+            document.title = `Chỉnh sửa: ${article.TieuDe} | Admin - FigureCollect`;
             postData.value = {
                 title: article.TieuDe,
                 content: article.NoiDung,

@@ -104,10 +104,10 @@
             <div class="flex flex-col gap-4 items-center text-center">
               <div class="w-[180px] h-[180px] mb-3 flex items-center justify-center bg-[#1c1d21] rounded-2xl overflow-hidden border border-[#ff6b4a]/30">
                 <img
-                    v-if="productData.image"
-                    :src="`/Images_product/` + productData.image"
-                    alt="Product Image"
-                    class="w-full h-full object-cover transition duration-300 hover:scale-110"
+                  v-if="productData.image"
+                  :src="(productData.image.startsWith('http')) ? productData.image : `${API_BASE_URL}/Images_product/${productData.image}`"
+                  alt="Product Image"
+                  class="w-full h-full object-cover transition duration-300 hover:scale-110"
                 >
                 <div v-else class="text-6xl">🤖</div>
               </div>
@@ -294,42 +294,25 @@ const extractAndSearch = () => {
   if (route.params) {
     serial = route.params.serial || route.params.serialNumber || route.params.id;
   }
+  
   if (!serial && route.query) {
     serial = route.query.serial || route.query.serialNumber || route.query.search;
   }
-  if (!serial) {
-    const urlParams = new URLSearchParams(window.location.search);
-    serial = urlParams.get('serial') || urlParams.get('serialNumber') || urlParams.get('search');
-  }
-  if (!serial) {
-    const pathSegments = window.location.pathname.split('/').filter(Boolean);
-    if (pathSegments.length > 0) {
-      const lastSeg = pathSegments[pathSegments.length - 1];
-      if (!['blockchain', 'provenance', 'history'].includes(lastSeg.toLowerCase())) {
-        serial = lastSeg;
-      }
-    }
-  }
-  if (!serial && window.location.hash) {
-    const hashPath = window.location.hash.replace('#', '');
-    if (hashPath.includes('?')) {
-      const hashParams = new URLSearchParams(hashPath.split('?')[1]);
-      serial = hashParams.get('serial') || hashParams.get('serialNumber');
-    }
-    if (!serial) {
-      const hashSegments = hashPath.split('?')[0].split('/').filter(Boolean);
-      if (hashSegments.length > 0) {
-        const lastHashSeg = hashSegments[hashSegments.length - 1];
-        if (!['blockchain', 'provenance', 'history'].includes(lastHashSeg.toLowerCase())) {
-          serial = lastHashSeg;
-        }
-      }
-    }
-  }
 
-  if (serial && typeof serial === 'string' && serial.trim()) {
+  if (serial && typeof serial === 'string' && serial.trim() && serial.trim() !== 'truy-xuat') {
     searchQuery.value = decodeURIComponent(serial.trim());
     handleSearch();
+  } 
+  else {
+    searchQuery.value = '';
+    productData.value = null;
+    errorMsg.value = ''; 
+    
+    if (mapInstance) {
+      mapInstance.off();
+      mapInstance.remove();
+      mapInstance = null;
+    }
   }
 };
 
@@ -483,7 +466,7 @@ const renderMap = async (history) => {
 
 const getCoordinates = async (address) => {
   if (!address) return null;
-  const MAPBOX_TOKEN = "pk.eyJ1IjoidG9hbjI0IiwiYSI6ImNtcGpsMjk3ZjFubHUycHExZzB1bzl1NmgifQ.Mly4KRU649MW2dy0tDwHgA";
+  const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
   try {
     const response = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${MAPBOX_TOKEN}&limit=1`
