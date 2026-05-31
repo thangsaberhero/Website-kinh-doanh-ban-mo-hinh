@@ -1150,18 +1150,7 @@ const exportExcelReport = async () => {
       searchResults.value = [];
     }
   });
-
-  // --- Hàm Submit Gửi API (Giữ nguyên như cũ, bổ sung check rỗng) ---
-  const submitExternalOrder = async () => {
-    if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan) {
-      toastStore.showToast('Vui lòng nhập Tên và Số điện thoại khách hàng!', 'error');
-      return;
-    }
-    if (externalOrderForm.value.DanhSachHang.length === 0) {
-      toastStore.showToast('Đơn hàng chưa có sản phẩm nào!', 'error');
-      return;
-    }
-
+  
   // --- Hàm Submit Gửi API ---
   const submitExternalOrder = async () => {
     // Validate cơ bản
