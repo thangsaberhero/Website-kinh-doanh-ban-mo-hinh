@@ -604,6 +604,43 @@
 
       </div>
     </div>
+    <div v-if="isCancelModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-rose-100 flex justify-between items-center bg-rose-50 shrink-0">
+          <h3 class="text-lg font-bold text-rose-600 flex items-center gap-2">
+            <span class="material-symbols-outlined">warning</span>
+            Xác nhận hủy đơn hàng
+          </h3>
+          <button @click="isCancelModalOpen = false" class="text-slate-400 hover:text-rose-600 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-slate-600 font-medium">
+            Bạn có chắc chắn muốn hủy đơn hàng <span class="font-bold text-slate-900">#FC-{{ orderToCancel }}</span> không?<br>
+            <span class="text-rose-500 font-bold text-xs">* Tồn kho và khuyến mãi sẽ được hoàn lại tự động.</span>
+          </p>
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Lý do hủy đơn <span class="text-rose-500">*</span></label>
+            <textarea 
+              v-model="cancelReason" 
+              rows="3" 
+              placeholder="VD: Khách yêu cầu hủy, Hết hàng thực tế, v.v..." 
+              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="isCancelModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
+          <button @click="executeCancelOrder" class="px-5 py-2.5 text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/20 rounded-xl transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">delete_forever</span> Xác nhận hủy
+          </button>
+        </div>
+      </div>
+    </div>
 </template>
   
 <script setup>
@@ -991,8 +1028,19 @@ const exportExcelReport = async () => {
     activeMenuId.value = null;
   };
 
+  const isCancelModalOpen = ref(false);
+  const cancelReason = ref('');
+  const orderToCancel = ref(null);
+
+  const cancelOrder = (id) => {
+    orderToCancel.value = id;
+    cancelReason.value = ''; // Xóa trắng lý do cũ (nếu có)
+    isCancelModalOpen.value = true;
+    activeMenuId.value = null; // Đóng menu 3 chấm
+  };
+
   // 4. GỌI API HỦY ĐƠN HÀNG
-  const cancelOrder = async (id) => {
+  const executeCancelOrder = async (id) => {
     const reason = prompt("Vui lòng nhập lý do hủy đơn hàng này:");
     if (reason === null) {
       activeMenuId.value = null;
