@@ -1,15 +1,19 @@
 <template>
-  <div class="flex min-h-screen bg-slate-50 text-slate-800 font-sans">
-    <AdminSidebar />
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+    <div 
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+    ></div>
 
-    <div class="flex-1 flex flex-col min-w-0">
-      <AdminHeader />
+    <AdminSidebar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
 
-      <main class="p-6 flex-1 overflow-y-auto space-y-6">
-
+    <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">   
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
+      <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
         <div>
-          <h1 class="text-2xl font-bold text-slate-900">Quản lý Blockchain</h1>
-          <p class="text-sm text-slate-500 mt-1">Kích hoạt định danh mã vạch mô hình và cập nhật hành trình trực tiếp lên Smart Contract.</p>
+          <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý Blockchain</h1>
+          <p class="text-sm text-slate-500 font-medium">Kích hoạt định danh mã vạch mô hình và cập nhật hành trình trực tiếp lên Smart Contract.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -235,35 +239,8 @@
             </div>
           </div>
         </section>
-
       </main>
     </div>
-
-    <div class="fixed top-5 right-5 z-[9999] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
-      <TransitionGroup name="toast">
-        <div
-          v-for="toast in toasts"
-          :key="toast.id"
-          :class="[
-            'p-4 rounded-xl shadow-xl border flex items-start gap-3 text-sm font-medium transition-all duration-300 pointer-events-auto',
-            toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800 shadow-emerald-100/40' : '',
-            toast.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-800 shadow-rose-100/40' : '',
-            toast.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800 shadow-amber-100/40' : '',
-            toast.type === 'info' ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-blue-100/40' : ''
-          ]"
-        >
-          <span class="text-base mt-0.5 shrink-0">
-            <span v-if="toast.type === 'success'">✅</span>
-            <span v-else-if="toast.type === 'error'">❌</span>
-            <span v-else-if="toast.type === 'warning'">⚠️</span>
-            <span v-else>ℹ️</span>
-          </span>
-          <div class="flex-1 leading-snug whitespace-pre-line">{{ toast.message }}</div>
-          <button @click="removeToast(toast.id)" class="text-slate-400 hover:text-slate-600 transition-colors px-1">✕</button>
-        </div>
-      </TransitionGroup>
-    </div>
-
   </div>
 </template>
 
@@ -273,6 +250,8 @@ import AdminHeader from "../../components/Admin/AdminHeader.vue";
 import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useLayoutStore } from '../../stores/layout';
+import { useToastStore } from '../../stores/toast';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 export default {
@@ -280,6 +259,11 @@ export default {
   components: {
     AdminSidebar,
     AdminHeader
+  },
+  setup() {
+    const layoutStore = useLayoutStore();
+    const toastStore = useToastStore();
+    return { layoutStore, toastStore };
   },
   data() {
     return {
@@ -290,7 +274,6 @@ export default {
       mintForm: { serialNumber: "", manufacturer: "" },
       updateForm: { serialNumber: "", newStatus: "", location: "" },
       mapInstance: null,
-      toasts: [],
 
       locationSearchQuery: "",
       locationSuggestions: [],
@@ -349,14 +332,7 @@ export default {
   },
   methods: {
     showToast(message, type = 'success', duration = 3500) {
-      const id = Date.now();
-      this.toasts.push({ id, message, type });
-      setTimeout(() => {
-        this.removeToast(id);
-      }, duration);
-    },
-    removeToast(id) {
-      this.toasts = this.toasts.filter(t => t.id !== id);
+      this.toastStore.showToast(message, type);
     },
 
     onLocationInput() {
@@ -690,78 +666,65 @@ export default {
 </script>
 
 <style scoped>
-.toast-enter-from {
-  opacity: 0;
-  transform: translateX(60px) scale(0.9);
-}
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(60px) scale(0.9);
-}
+  :deep(.custom-div-icon) {
+    background: transparent !important;
+    border: none !important;
+  }
 
-:deep(.custom-div-icon) {
-  background: transparent !important;
-  border: none !important;
-}
+  :deep(.map-marker-history) {
+    width: 22px;
+    height: 22px;
+    background-color: #1e293b;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  }
 
-:deep(.map-marker-history) {
-  width: 22px;
-  height: 22px;
-  background-color: #1e293b;
-  border: 2px solid #ffffff;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-}
+  :deep(.map-marker-live) {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  :deep(.live-number-inner) {
+    width: 22px;
+    height: 22px;
+    background-color: #ef4444; 
+    border: 2px solid #ffffff;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  }
+  :deep(.pulse-ring) {
+    border: 3px solid #ef4444;
+    border-radius: 50%;
+    height: 32px;
+    width: 32px;
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    animation: mapMarkerPulse-data 1.6s ease-out infinite;
+    opacity: 0;
+    z-index: 1;
+  }
 
-:deep(.map-marker-live) {
-  position: relative;
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-:deep(.live-number-inner) {
-  width: 22px;
-  height: 22px;
-  background-color: #ef4444; 
-  border: 2px solid #ffffff;
-  color: white;
-  font-size: 11px;
-  font-weight: 800;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
-}
-:deep(.pulse-ring) {
-  border: 3px solid #ef4444;
-  border-radius: 50%;
-  height: 32px;
-  width: 32px;
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  animation: mapMarkerPulse-data 1.6s ease-out infinite;
-  opacity: 0;
-  z-index: 1;
-}
-
-@keyframes mapMarkerPulse-data {
-  0% { transform: scale(0.4); opacity: 0; }
-  50% { opacity: 0.5; }
-  100% { transform: scale(1.3); opacity: 0; }
-}
+  @keyframes mapMarkerPulse-data {
+    0% { transform: scale(0.4); opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { transform: scale(1.3); opacity: 0; }
+  }
 </style>
