@@ -227,7 +227,7 @@
 <script setup>
   import TheHeader from '../../components/TheHeader.vue';
   import ProductCard from '../../components/ProductCard.vue';
-  import { ref, computed, watch, onMounted } from 'vue';
+  import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
   
@@ -242,6 +242,7 @@
 
   const sortBy = ref('default');
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  let pollingInterval = null;
 
   const cartSummary = ref({
     subtotal: 0,
@@ -268,9 +269,15 @@
           'Authorization': `Bearer ${token}`
         }
       });
+      if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('token');
+            router.push('/login');
+            return;
+        }
 
       const result = await response.json();
       console.log(result)
+
       if (result.success) {
         cartItems.value = result.data; 
         cartSummary.value = result.cartSummary;
@@ -311,8 +318,17 @@
   };
 
   onMounted(() => {
+    window.scroll(0, 0);
     fetchCartData();
-    // fetchSuggestions();
+    fetchSuggestions();
+    pollingInterval = setInterval(() => {
+      fetchCartData(true);
+      fetchSuggestions(true);
+    }, 5000);
+  });
+
+  onUnmounted(() => {
+    if (pollingInterval) clearInterval(pollingInterval);
   });
 
 

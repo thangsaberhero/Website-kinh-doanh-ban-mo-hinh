@@ -182,6 +182,12 @@
 
         const dataJSON = await response.json();
 
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('token');
+            router.push('/login');
+            return;
+        }
+
         if (response.ok) {
             wishlistItems.value = dataJSON.data || [];
             if (result.pagination) {
@@ -239,15 +245,10 @@
 
   onMounted(() => {
     window.scrollTo(0, 0);
-    if (!authStore.user && !localStorage.getItem('token')) {
-      router.push('/login');
-    } 
-    else {
-      fetchWishlist();
-      pollingInterval = setInterval(() => {
-        fetchWishlist(true);
-      }, 5000);
-    }
+    fetchWishlist(); // Tải lần đầu
+    pollingInterval = setInterval(() => {
+      fetchWishlist(true); // Tải ngầm
+    }, 5000);
   });
 
   onUnmounted(() => {
