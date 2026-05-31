@@ -151,11 +151,12 @@ const updateProductStatus = async (req, res) => {
 // =====================================================================
 // 4. Tạo mã QR dựa trên Serial số mô hình
 // =====================================================================
+const FRONTEND_URL = process.env.VITE_CLIENT_URL || 'http://localhost:5173';
+
 const generateProductQR = async (req, res) => {
     try {
         const { serialNumber } = req.params;
-        const baseUrl = "http://localhost:5173/truy-xuat"; 
-        const qrUrl = `${baseUrl}/${serialNumber}`;
+        const qrUrl = `${FRONTEND_URL}/truy-xuat/${serialNumber}`;
 
         const qrImageBase64 = await QRCode.toDataURL(qrUrl, {
             errorCorrectionLevel: 'H', 
@@ -170,7 +171,8 @@ const generateProductQR = async (req, res) => {
             qrCodeData: qrImageBase64, 
             targetUrl: qrUrl
         });
-    } catch (error) {
+    } 
+    catch (error) {
         console.error("Lỗi tạo mã QR:", error);
         res.status(500).json({ success: false, message: "Không thể tạo mã QR" });
     }

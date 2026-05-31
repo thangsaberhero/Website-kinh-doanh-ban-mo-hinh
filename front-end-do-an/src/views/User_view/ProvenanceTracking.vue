@@ -104,10 +104,10 @@
             <div class="flex flex-col gap-4 items-center text-center">
               <div class="w-[180px] h-[180px] mb-3 flex items-center justify-center bg-[#1c1d21] rounded-2xl overflow-hidden border border-[#ff6b4a]/30">
                 <img
-                    v-if="productData.image"
-                    :src="`/Images_product/` + productData.image"
-                    alt="Product Image"
-                    class="w-full h-full object-cover transition duration-300 hover:scale-110"
+                  v-if="productData.image"
+                  :src="(productData.image.startsWith('http')) ? productData.image : `${API_BASE_URL}/Images_product/${productData.image}`"
+                  alt="Product Image"
+                  class="w-full h-full object-cover transition duration-300 hover:scale-110"
                 >
                 <div v-else class="text-6xl">🤖</div>
               </div>
