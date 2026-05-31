@@ -526,7 +526,7 @@ const donhang_admin = {
             const sql_core = `
                 SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan,
-                dh.ThanhTien, dh.TrangThaiThanhToan, tt.SoTienGiaoDich, tt.NgayThanhToan, pt.TenPhuongThuc,
+                dh.ThanhTien, dh.TrangThaiThanhToan,
                 (
                     SELECT cttt.MaTrangThai
                     FROM ChiTietTrangThai cttt 
@@ -546,7 +546,6 @@ const donhang_admin = {
                 LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
                 LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
                 INNER JOIN ThanhToan tt on tt.MaDH = dh.MaDH
-                INNER JOIN PhuongThucThanhToan pt on pt.MaPT = tt.MaPT
                 ${condition_clause}
                 ${having_clause}
             `;
