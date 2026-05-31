@@ -68,44 +68,68 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'Profile',
-      component: ProfileView
+      component: ProfileView,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/change-password',
       name: 'ChangePassword',
-      component: ChangePassword
+      component: ChangePassword,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/cart',
       name: 'Cart',
-      component: CartView
+      component: CartView,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/checkout',
       name: 'Checkout',
       component: CheckoutView,
-      meta: { useMinimalFooter: true }
+      meta: { 
+        useMinimalFooter: true,
+        requiresAuth: true
+      }
     },
     {
       path: '/ordersuccess',
       name: 'Ordersuccess',
       component: OrderSuccessView,
-      meta: { useMinimalFooter: true }
+      meta: { 
+        useMinimalFooter: true,
+        requiresAuth: true
+      }
     },
     {
       path: '/orders',
       name: 'Order',
-      component: OrderHistoryView
+      component: OrderHistoryView,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/orders/:id',
       name: 'Order-detail',
-      component: OrderDetailView
+      component: OrderDetailView,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/wishlist',
       name: 'Wishlist',
-      component: WishlistView
+      component: WishlistView,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/search',
@@ -136,7 +160,10 @@ const router = createRouter({
     {
       path: '/momo-payment',
       name: 'MoMoMock',
-      component: checkout
+      component: checkout,
+      meta: {
+        requiresAuth: true
+      }
     },
     {
       path: '/truy-xuat/:serial',
@@ -315,33 +342,19 @@ router.beforeEach((to, from, next) => {
   const user = userString ? JSON.parse(userString) : null;
   const userRole = user ? parseInt(user.MaQuyen) : null;
 
-  // KỊCH BẢN 1: Đang cố vào trang Admin
-  if (isAdminRoute) {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!token) {
-      // Chưa đăng nhập -> Đuổi về trang login
-      next({ name: 'login' }); // Chú ý chữ 'login' viết thường cho khớp với khai báo
-    } 
-    else if (userRole !== 1 && userRole !== 2) {
-      // Có đăng nhập nhưng là Khách hàng (Role 3) -> Đuổi về trang chủ
-      next({ path: '/' });
-    } 
-    else {
-      // Là Admin hoặc Staff -> Cho phép vào
-      next();
+      return next({ name: 'login' }); // Chưa đăng nhập -> Đá ra Login
     }
-  } 
-  // KỊCH BẢN 2: Các trang thông thường của khách (Profile, Cart, Checkout...)
-  else if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!token) {
-      next({ name: 'login' });
-    } else {
-      next();
+
+    // Nếu trang đó đặc biệt yêu cầu quyền Admin/Staff
+    if (to.matched.some(record => record.meta.requiresAdmin)) {
+      if (userRole !== 1 && userRole !== 2) {
+        return next({ path: '/' }); // Khách hàng mò vào Admin -> Đá ra Trang chủ
+      }
     }
-  } 
-  // KỊCH BẢN 3: Các trang Public (Home, Product, Category...)
-  else {
-    next();
   }
+  next();
 });
 
 export default router;
