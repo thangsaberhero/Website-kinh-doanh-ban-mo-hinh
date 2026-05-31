@@ -197,7 +197,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from 'vue';
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { useAuthStore } from '../../stores/auth.js';
   import { useToastStore } from '../../stores/toast';
@@ -465,11 +465,16 @@
     }
   };
 
+  let pollingInterval = null;
   onMounted(() => {
     window.scroll(0,0)
     fetchCategories();
     fetchBrand();
     fetchProducts(categoryId.value);
+  });
+
+  onUnmounted(() => {
+    if (pollingInterval) clearInterval(pollingInterval);
   });
 
   watch(() => route.params.id, (newId) => {

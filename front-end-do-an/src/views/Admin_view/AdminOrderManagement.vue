@@ -524,10 +524,75 @@
             </div>
           </div>
 
-          <div class="space-y-4">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mt-2">Sản phẩm & Thanh toán</h4>
-            <div class="p-8 border border-dashed border-slate-300 rounded-xl bg-slate-50 text-center">
-              <p class="text-sm font-medium text-slate-500">Khu vực chọn Mô hình và tính tiền sẽ được tích hợp tại đây.</p>
+          <div class="space-y-4 pt-4 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Thêm sản phẩm vào đơn</h4>
+            
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search_insights</span>
+              <input v-model="searchProductQuery" @input="debounceSearchProduct" type="text" placeholder="Tìm tên mô hình, nhân vật..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium text-slate-700">
+              <span v-if="isSearchingProducts" class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin">progress_activity</span>
+            </div>
+
+            <div v-if="searchResults.length > 0" class="max-h-60 overflow-y-auto custom-scrollbar bg-white border border-slate-200 rounded-xl shadow-lg p-2 space-y-2">
+              <div v-for="prod in searchResults" :key="prod.MaMoHinh" class="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div class="flex gap-3 items-start">
+                  <div class="w-12 h-12 bg-white rounded border border-slate-200 p-1 shrink-0">
+                    <img :src="prod.AnhDaiDien ? (prod.AnhDaiDien.startsWith('http') ? prod.AnhDaiDien : `${API_BASE_URL}/Images_product/${prod.AnhDaiDien}`) : ''" class="w-full h-full object-contain" />
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm font-bold text-slate-900 mb-2">{{ prod.TenMH }}</p>
+                    <div class="space-y-1.5">
+                      <div v-for="variant in prod.PhanLoai" :key="variant.MaPhanLoai" class="flex justify-between items-center bg-white px-3 py-1.5 rounded border border-slate-200">
+                        <div>
+                          <span class="text-xs font-semibold text-slate-700">{{ variant.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : variant.ChiTietPhanLoai }}</span>
+                          <span class="text-[10px] text-slate-400 ml-2">Kho: {{ variant.TonKho }}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                          <span class="text-xs font-bold text-[#ff3d00]">{{ variant.DonGia?.toLocaleString('vi-VN') }} ₫</span>
+                          <button @click="addVariantToOrder(prod, variant)" class="w-6 h-6 flex items-center justify-center bg-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded transition-colors">
+                            <span class="material-symbols-outlined text-[16px]">add</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="searchProductQuery.length > 0 && !isSearchingProducts" class="text-center py-4 text-xs font-medium text-slate-400 border border-dashed border-slate-200 rounded-xl">
+              Không tìm thấy mô hình nào phù hợp.
+            </div>
+          </div>
+
+          <div v-if="externalOrderForm.DanhSachHang.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sản phẩm đã chọn</h4>
+            <div class="space-y-2">
+              <div v-for="(item, index) in externalOrderForm.DanhSachHang" :key="index" class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                <div class="flex-1">
+                  <p class="text-xs font-bold text-slate-800 line-clamp-1" :title="item.TenMH">{{ item.TenMH }}</p>
+                  <p class="text-[10px] font-semibold text-slate-500 mt-0.5">Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</p>
+                  <p class="text-xs font-bold text-[#ff3d00] mt-1">{{ item.DonGia?.toLocaleString('vi-VN') }} ₫</p>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0">
+                  <button @click="updateItemQuantity(index, -1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors"><span class="material-symbols-outlined text-[14px]">remove</span></button>
+                  <span class="text-xs font-bold w-6 text-center text-slate-700">{{ item.SoLuong }}</span>
+                  <button @click="updateItemQuantity(index, 1)" :disabled="item.SoLuong >= item.TonKho" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 rounded transition-colors disabled:opacity-30"><span class="material-symbols-outlined text-[14px]">add</span></button>
+                </div>
+                
+                <div class="text-right shrink-0 w-24">
+                  <p class="text-sm font-bold text-slate-900">{{ (item.DonGia * item.SoLuong).toLocaleString('vi-VN') }} ₫</p>
+                </div>
+
+                <button @click="removeVariantFromOrder(index)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors shrink-0">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center p-4 bg-emerald-50 border border-emerald-100 rounded-xl mt-4">
+              <span class="text-sm font-bold text-emerald-800">Tổng cộng ({{ externalOrderForm.DanhSachHang.reduce((sum, i) => sum + i.SoLuong, 0) }} SP)</span>
+              <span class="text-xl font-brand font-black text-emerald-600">{{ externalOrderForm.TongTien?.toLocaleString('vi-VN') }} ₫</span>
             </div>
           </div>
         </div>
@@ -980,6 +1045,122 @@ const exportExcelReport = async () => {
     TongTien: 0,
     ThanhTien: 0
   });
+
+  const searchProductQuery = ref('');
+  const searchResults = ref([]);
+  const isSearchingProducts = ref(false);
+  let searchProductTimeout = null;
+
+  // Hàm gọi API tìm sản phẩm (Cần Backend hoàn thiện)
+  const fetchProductsForOrder = async () => {
+    if (!searchProductQuery.value.trim()) {
+      searchResults.value = [];
+      return;
+    }
+    
+    isSearchingProducts.value = true;
+    try {
+      const token = localStorage.getItem('token');
+      // ĐÂY LÀ ROUTE BẠN CẦN CODE Ở BACKEND
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/search-products?keyword=${encodeURIComponent(searchProductQuery.value)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        searchResults.value = data.data;
+      } else {
+        searchResults.value = [];
+      }
+    } catch (error) {
+      console.error("Lỗi tìm sản phẩm:", error);
+    } finally {
+      isSearchingProducts.value = false;
+    }
+  };
+
+  // Debounce tránh gọi API liên tục khi gõ
+  const debounceSearchProduct = () => {
+    clearTimeout(searchProductTimeout);
+    searchProductTimeout = setTimeout(fetchProductsForOrder, 500);
+  };
+
+  // Thêm sản phẩm vào mảng DanhSachHang
+  const addVariantToOrder = (product, variant) => {
+    // Kiểm tra xem phân loại này đã có trong giỏ chưa
+    const existingIndex = externalOrderForm.value.DanhSachHang.findIndex(item => item.MaPhanLoai === variant.MaPhanLoai);
+    
+    if (existingIndex > -1) {
+      // Đã có -> Tăng số lượng nếu còn kho
+      if (externalOrderForm.value.DanhSachHang[existingIndex].SoLuong < variant.TonKho) {
+        externalOrderForm.value.DanhSachHang[existingIndex].SoLuong++;
+      } else {
+        toastStore.showToast("Đã đạt giới hạn tồn kho!", "error");
+      }
+    } else {
+      // Chưa có -> Thêm mới
+      externalOrderForm.value.DanhSachHang.push({
+        MaMoHinh: product.MaMoHinh,
+        TenMH: product.TenMH,
+        AnhDaiDien: product.AnhDaiDien,
+        MaPhanLoai: variant.MaPhanLoai,
+        ChiTietPhanLoai: variant.ChiTietPhanLoai,
+        DonGia: variant.DonGia,
+        TonKho: variant.TonKho,
+        SoLuong: 1
+      });
+    }
+    recalculateOrderTotal();
+    
+    // Tùy chọn: Xóa ô tìm kiếm sau khi thêm xong để giỏ hàng gọn gàng
+    // searchProductQuery.value = '';
+    // searchResults.value = [];
+  };
+
+  // Xóa sản phẩm khỏi mảng
+  const removeVariantFromOrder = (index) => {
+    externalOrderForm.value.DanhSachHang.splice(index, 1);
+    recalculateOrderTotal();
+  };
+
+  // Tăng giảm số lượng sản phẩm trong mảng
+  const updateItemQuantity = (index, change) => {
+    const item = externalOrderForm.value.DanhSachHang[index];
+    const newQty = item.SoLuong + change;
+    
+    if (newQty > 0 && newQty <= item.TonKho) {
+      item.SoLuong = newQty;
+      recalculateOrderTotal();
+    }
+  };
+
+  // Tính toán lại tổng tiền
+  const recalculateOrderTotal = () => {
+    const total = externalOrderForm.value.DanhSachHang.reduce((sum, item) => {
+      return sum + (item.DonGia * item.SoLuong);
+    }, 0);
+    externalOrderForm.value.TongTien = total;
+    externalOrderForm.value.ThanhTien = total; // Đơn ngoài tạm thời chưa tính mã giảm giá
+  };
+
+  // Reset Form mỗi khi đóng Modal
+  watch(isCreateExternalOrderOpen, (newVal) => {
+    if (!newVal) {
+      externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachHang: [], TongTien: 0, ThanhTien: 0 };
+      searchProductQuery.value = '';
+      searchResults.value = [];
+    }
+  });
+
+  // --- Hàm Submit Gửi API (Giữ nguyên như cũ, bổ sung check rỗng) ---
+  const submitExternalOrder = async () => {
+    if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan) {
+      toastStore.showToast('Vui lòng nhập Tên và Số điện thoại khách hàng!', 'error');
+      return;
+    }
+    if (externalOrderForm.value.DanhSachHang.length === 0) {
+      toastStore.showToast('Đơn hàng chưa có sản phẩm nào!', 'error');
+      return;
+    }
 
   // --- Hàm Submit Gửi API ---
   const submitExternalOrder = async () => {

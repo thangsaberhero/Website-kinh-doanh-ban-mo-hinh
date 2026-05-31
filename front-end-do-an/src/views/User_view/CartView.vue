@@ -276,7 +276,6 @@
         }
 
       const result = await response.json();
-      console.log(result)
 
       if (result.success) {
         cartItems.value = result.data; 

@@ -225,6 +225,88 @@ const donhang_admin = {
         }
     },
 
+    liet_ke_san_phamm: async(req, res) => {
+        try {
+            const keyword = req.query.search || '';
+            const maDM = req.query.maDM || '';
+            const maHSX = req.query.maHSX || '';
+            const maKM = req.query.maKM || ''; 
+            const maGG = req.query.maGG || '';
+
+            // BỔ SUNG: pl.SoLuong > 0 (Chỉ lấy hàng còn tồn kho) và mh.HienThi = 1
+            let condition = ["(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?) AND pl.HienThi = 1 AND mh.HienThi = 1 AND pl.SoLuong > 0"];
+            let value = [`%${keyword}%`, `%${keyword}%`];
+
+            if (maDM) {
+                condition.push("mh.MaDM = ?");
+                value.push(maDM);
+            }
+            
+            if (maHSX) {
+                condition.push("mh.MaHSX = ?");
+                value.push(maHSX);
+            }
+
+            if (maKM) {
+                condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietKhuyenMai WHERE MaKM = ?)`);
+                value.push(maKM);
+            }
+
+            if (maGG) {
+                condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?)`);
+                value.push(maGG);
+            }
+
+            let whereClause = "WHERE " + condition.join(" AND ");
+
+            // Đổi pl.SoLuong AS TonKho để khớp với Frontend
+            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX,
+                                pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho
+                        FROM MoHinh mh
+                        INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
+                        ${whereClause}
+                        LIMIT 100`; // Nới rộng limit một chút vì sau khi gom nhóm số lượng sẽ ít đi
+            
+            const [flatData] = await db.query(sql, value);
+            
+            // TUYỆT CHIÊU GOM NHÓM: Biến dữ liệu phẳng thành cấu trúc lồng nhau (Nested)
+            const groupedData = flatData.reduce((acc, row) => {
+                // Tìm xem mô hình này đã có trong mảng kết quả chưa
+                let model = acc.find(m => m.MaMoHinh === row.MaMoHinh);
+                
+                // Nếu chưa có, tạo mới lớp vỏ Mô hình
+                if (!model) {
+                    model = {
+                        MaMoHinh: row.MaMoHinh,
+                        TenMH: row.TenMH,
+                        AnhDaiDien: row.AnhDaiDien,
+                        PhanLoai: [] // Tạo mảng rỗng để chứa các phân loại
+                    };
+                    acc.push(model);
+                }
+                
+                // Nhét phân loại vào bụng mô hình
+                model.PhanLoai.push({
+                    MaPhanLoai: row.MaPhanLoai,
+                    ChiTietPhanLoai: row.ChiTietPhanLoai,
+                    DonGia: row.DonGia,
+                    TonKho: row.TonKho
+                });
+                
+                return acc;
+            }, []);
+            
+            res.status(200).json({ 
+                success: true, 
+                data: groupedData 
+            });
+        } 
+        catch (error) {
+            console.error("Lỗi tìm kiếm sản phẩm: ", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi tìm kiếm sản phẩm" });
+        }
+    },
+
     huy_don_hang: async(req, res) => {
         const connection = await db.getConnection();
         try {
