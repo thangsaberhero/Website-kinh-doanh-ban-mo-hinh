@@ -1150,11 +1150,11 @@ const exportExcelReport = async () => {
       searchResults.value = [];
     }
   });
-  
+
   // --- Hàm Submit Gửi API ---
   const submitExternalOrder = async () => {
     // Validate cơ bản
-    if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan) {
+    if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan || !externalOrderForm.value.DiaChiGiao) {
       toastStore.showToast('Vui lòng nhập Tên và Số điện thoại khách hàng!', 'error');
       return;
     }
@@ -1162,7 +1162,7 @@ const exportExcelReport = async () => {
     try {
       const token = localStorage.getItem('token');
       // CHÚ Ý: Đổi đường dẫn API này theo đúng route Backend của bạn
-      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/create-external`, {
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
