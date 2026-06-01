@@ -1402,7 +1402,7 @@ const donhang_user = {
 
             // 🔥 ĐÃ FIX LỖI 1: TÌM MaDH BẰNG MÃ HIỂN THỊ
             const maHienThiGoc = orderId.split('_')[0];
-            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
+            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan, Note FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
             const [don_hang] = await connection.query(sql_tim_don, [maHienThiGoc]);
 
             if (don_hang.length === 0) return res.status(204).send(); 
@@ -1413,21 +1413,30 @@ const donhang_user = {
 
             // 🔥 ĐÃ FIX LỖI 2: CHỐNG TRÙNG LẶP (IDEMPOTENCY)
             if (resultCode === 0) {
-                // Nếu đơn hàng đã được cập nhật trước đó rồi thì bỏ qua để tránh ghi đúp
-                if (don_hang[0].TrangThaiThanhToan === 'Đã thanh toán' || don_hang[0].TrangThaiThanhToan === 'Đã cọc') {
+                const trangThaiHienTai = don_hang[0].TrangThaiThanhToan;
+
+                if (trangThaiHienTai === 'Đã thanh toán' || trangThaiHienTai === 'Đã cọc') {
                     await connection.rollback();
-                    return res.status(204).send(); // Phản hồi 204 để MoMo ngừng gọi lại
+                    return res.status(204).send(); 
                 }
 
                 const decodedExtraData = Buffer.from(extraData, 'base64').toString('utf8');
+                const hinhThuc = decodedExtraData;
+                const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
+
+                // 🔥 CHỐT CHẶN: XỬ LÝ KHÁCH THANH TOÁN TRỄ SAU KHI CRON ĐÃ HỦY
+                if (trangThaiHienTai === 'Đã hủy') {
+                    const noteMoi = (don_hang[0].Note || "") + "\n🚨 CẢNH BÁO: KHÁCH THANH TOÁN TRỄ QUA MOMO KHI ĐƠN ĐÃ BỊ HỦY. ADMIN KIỂM TRA LẠI TỒN KHO HOẶC HOÀN TIỀN!";
+                    await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ?, Note = ? WHERE MaDH = ?`, [trangThaiMoi, noteMoi, MaDH]);
+                } else {
+                    await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
+                }
 
                 await connection.query(`
                     INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
                     VALUES (1, ?, NOW(), ?, ?, 'Thành công', ?)
-                `, [MaDH, amount, decodedExtraData, transId]);
+                `, [MaDH, amount, hinhThuc, transId]);
 
-                const trangThaiMoi = decodedExtraData === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
-                await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
                 await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
             }
 
@@ -1574,22 +1583,30 @@ const donhang_user = {
 
             await connection.beginTransaction();
 
-            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
+            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan, Note FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
             const [don_hang] = await connection.query(sql_tim_don, [maHienThiGoc]);
 
             if (don_hang.length > 0) {
                 const MaDH = don_hang[0].MaDH;
+                const trangThaiHienTai = don_hang[0].TrangThaiThanhToan;
 
-                // 🔥 ĐÃ FIX LỖI 2: CHỐNG TRÙNG LẶP CHO ZALOPAY
-                if (don_hang[0].TrangThaiThanhToan !== 'Đã thanh toán' && don_hang[0].TrangThaiThanhToan !== 'Đã cọc') {
+                if (trangThaiHienTai !== 'Đã thanh toán' && trangThaiHienTai !== 'Đã cọc') {
                     
+                    const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
+
+                    // 🔥 CHỐT CHẶN: XỬ LÝ KHÁCH THANH TOÁN TRỄ QUA ZALOPAY
+                    if (trangThaiHienTai === 'Đã hủy') {
+                        const noteMoi = (don_hang[0].Note || "") + "\n🚨 CẢNH BÁO: KHÁCH THANH TOÁN TRỄ QUA ZALOPAY KHI ĐƠN ĐÃ BỊ HỦY. ADMIN KIỂM TRA LẠI TỒN KHO!";
+                        await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ?, Note = ? WHERE MaDH = ?`, [trangThaiMoi, noteMoi, MaDH]);
+                    } else {
+                        await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
+                    }
+
                     await connection.query(`
                         INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
                         VALUES (2, ?, NOW(), ?, ?, 'Thành công', ?)
                     `, [MaDH, amount, hinhThuc, transId]);
 
-                    const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
-                    await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
                     await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
                 }
             }

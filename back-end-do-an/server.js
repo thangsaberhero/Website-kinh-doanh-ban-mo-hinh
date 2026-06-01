@@ -65,74 +65,85 @@ cron.schedule('* * * * *', async () => {
     const connection = await db.getConnection();
 
     try {
-        await connection.beginTransaction();
-
-        // 1. Tìm đơn hàng: Trạng thái 'Chờ duyệt', quá 5 phút
+        // 1. Tìm đơn hàng: Trạng thái 'Chưa Thanh Toán', quá 15 phút
+        // Dùng lệnh SELECT bình thường, chưa cần Transaction ở đây
         const sql_tim_don = `
             SELECT MaDH FROM DonHang 
-            WHERE TrangThaiThanhToan = 'Chưa thanh toán' 
+            WHERE TrangThaiThanhToan = 'Chưa Thanh Toán' 
             AND TIMESTAMPDIFF(MINUTE, NgayLapDon, NOW()) >= 15
         `;
         const [don_qua_han] = await connection.query(sql_tim_don);
 
         if (don_qua_han.length > 0) {
+            console.log(`[CRON] Phát hiện ${don_qua_han.length} đơn hàng quá hạn. Bắt đầu hủy...`);
+
+            // Xử lý từng đơn một cách độc lập
             for (let don of don_qua_han) {
                 const maDH = don.MaDH;
-
-                // 2. Cập nhật trạng thái hóa đơn thành Đã Hủy
-                await connection.query(
-                    `UPDATE DonHang SET TrangThaiThanhToan = 'Đã hủy (Quá hạn thanh toán)' WHERE MaDH = ?`, 
-                    [maDH]
-                );
-
-                // 3. Ghi log trạng thái đơn hàng = 5 (Đã hủy) - (Đã xóa dòng lặp code)
-                await connection.query(
-                    `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, 
-                    [maDH]
-                );
-
-                // 4. Hoàn lại số lượng tồn kho (Nhả kho)
-                const sql_hoan_kho = `
-                    UPDATE PhanLoai pl
-                    INNER JOIN ChiTietDonHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
-                    SET pl.SoLuong = pl.SoLuong + ct.SoLuong
-                    WHERE ct.MaDH = ?
-                `;
-                await connection.query(sql_hoan_kho, [maDH]);
                 
-                // 5. HOÀN LẠI FLASH SALE (Cực kỳ gọn gàng nhờ vào cột LaHangKhuyenMai)
-                // Lấy số lượng hàng khuyến mãi đã đặt trả lại cho bảng ChiTietKhuyenMai
-                await connection.query(`
-                    UPDATE ChiTietKhuyenMai ctkm
-                    INNER JOIN ChiTietDonHang ctdh ON ctkm.MaPhanLoai = ctdh.MaPhanLoai
-                    SET ctkm.SoLuongDaDung = ctkm.SoLuongDaDung - ctdh.SoLuong
-                    WHERE ctdh.MaDH = ? AND ctdh.LaHangKhuyenMai = 1
-                `, [maDH]);
+                // 🔥 ĐƯA TRANSACTION VÀO TRONG VÒNG LẶP: Hủy lỗi đơn nào thì rollback đơn đó, các đơn khác vẫn an toàn
+                await connection.beginTransaction(); 
 
-                // Sau khi Update xong mới được xóa Log
-                await connection.query(`DELETE FROM LogSuDungKhuyenMai WHERE MaDH = ?`, [maDH]);
+                try {
+                    // 2. Cập nhật trạng thái 'Đã hủy' (Cho khớp với IPN) và ghi lý do vào Note
+                    await connection.query(
+                        `UPDATE DonHang 
+                         SET TrangThaiThanhToan = 'Đã hủy', 
+                             Note = CONCAT(IFNULL(Note, ''), '\n[Hệ thống] Hủy tự động do quá 15 phút không thanh toán.') 
+                         WHERE MaDH = ?`, 
+                        [maDH]
+                    );
 
-                // 6. HOÀN LẠI VOUCHER (MÃ GIẢM GIÁ)
-                // Trừ đi 1 lượt sử dụng để khách khác có thể lấy mã này
-                await connection.query(`
-                    UPDATE MaGiamGia mg
-                    INNER JOIN LogSuDungMaGiamGia log ON log.MaGG = mg.MaGG
-                    SET mg.SoLuongDaDung = mg.SoLuongDaDung - 1 
-                    WHERE log.MaDH = ?
-                `, [maDH]);
+                    // 3. Ghi log trạng thái đơn hàng = 5 (Đã hủy)
+                    await connection.query(
+                        `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, 
+                        [maDH]
+                    );
 
-                // Sau khi Update xong mới được xóa Log
-                await connection.query(`DELETE FROM LogSuDungMaGiamGia WHERE MaDH = ?`, [maDH]);
+                    // 4. Hoàn lại số lượng tồn kho (Nhả kho)
+                    const sql_hoan_kho = `
+                        UPDATE PhanLoai pl
+                        INNER JOIN ChiTietDonHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
+                        SET pl.SoLuong = pl.SoLuong + ct.SoLuong
+                        WHERE ct.MaDH = ?
+                    `;
+                    await connection.query(sql_hoan_kho, [maDH]);
+                    
+                    // 5. HOÀN LẠI FLASH SALE 
+                    await connection.query(`
+                        UPDATE ChiTietKhuyenMai ctkm
+                        INNER JOIN ChiTietDonHang ctdh ON ctkm.MaPhanLoai = ctdh.MaPhanLoai
+                        SET ctkm.SoLuongDaDung = ctkm.SoLuongDaDung - ctdh.SoLuong
+                        WHERE ctdh.MaDH = ? AND ctdh.LaHangKhuyenMai = 1
+                    `, [maDH]);
 
-                console.log(`❌ Đã tự động hủy đơn FC-${maDH} và hoàn lại kho.`);
+                    await connection.query(`DELETE FROM LogSuDungKhuyenMai WHERE MaDH = ?`, [maDH]);
+
+                    // 6. HOÀN LẠI VOUCHER (MÃ GIẢM GIÁ)
+                    await connection.query(`
+                        UPDATE MaGiamGia mg
+                        INNER JOIN LogSuDungMaGiamGia log ON log.MaGG = mg.MaGG
+                        SET mg.SoLuongDaDung = mg.SoLuongDaDung - 1 
+                        WHERE log.MaDH = ?
+                    `, [maDH]);
+
+                    await connection.query(`DELETE FROM LogSuDungMaGiamGia WHERE MaDH = ?`, [maDH]);
+
+                    // Lưu thay đổi cho đơn hàng NÀY
+                    await connection.commit();
+                    console.log(`✅ Đã tự động hủy thành công đơn FC-${maDH} và hoàn lại kho.`);
+
+                } catch (err_don_hang) {
+                    // Nếu lỗi chỉ Rollback đơn NÀY, vòng lặp vẫn tiếp tục chạy đơn tiếp theo
+                    await connection.rollback();
+                    console.error(`⚠️ Lỗi khi hủy đơn FC-${maDH}:`, err_don_hang);
+                }
             }
         }
-
-        await connection.commit();
     } catch (error) {
-        await connection.rollback();
-        console.error("⚠️ [CRON] Lỗi khi chạy tác vụ hủy đơn:", error);
+        console.error("⚠️ [CRON] Lỗi truy vấn tổng thể:", error);
     } finally {
+        // Chạy xong hết mới thả kết nối Database ra
         connection.release();
     }
 });
