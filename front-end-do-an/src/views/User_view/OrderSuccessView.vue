@@ -169,10 +169,14 @@ const fetchOrderdata = async () => {
     const result = await response.json();
 
     if (response.ok) {
-      orderIdDisplay.value = result.data.MaDonHangHienThi
       orderInfo.value = result.data.ThongTinGiaoHang; 
       orderItems.value = result.data.DanhSachHang;
       totalQty.value = orderItems.value.reduce((sum, item) => sum + item.SoLuong, 0);
+      
+      // 🔥 BỔ SUNG DÒNG NÀY ĐỂ CẬP NHẬT MÃ HIỂN THỊ XỊN
+      if (orderInfo.value.MaDonHangHienThi) {
+        orderIdDisplay.value = orderInfo.value.MaDonHangHienThi;
+      }
     }
   } catch (error) {
     console.error("Lỗi khi tải thông tin hóa đơn:", error);

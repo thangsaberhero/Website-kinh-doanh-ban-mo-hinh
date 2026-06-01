@@ -993,6 +993,7 @@ const donhang_user = {
                 FROM DonHang
                 LEFT JOIN ThanhToan tt on DonHang.MaDH = tt.MaDH
                 WHERE DonHang.MaDH = ? AND MaKH = ?
+                GROUP BY DonHang.MaDH
             `;
             const [donhang_info] = await db.query(sql_donhang, [MaDH, MaKH]);
 
