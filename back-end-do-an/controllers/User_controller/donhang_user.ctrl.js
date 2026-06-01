@@ -1291,7 +1291,7 @@ const donhang_user = {
             console.error("Lỗi khi lấy danh sách mã giảm giá: ", error);
             res.status(500).json({ success: false, message: "Lỗi hệ thống tải danh sách mã giảm giá!" });
         }
-    }
+    },
 
     //Thanh Toán
     tao_link_momo_mock: async (req, res) => {
