@@ -226,7 +226,10 @@ const handleGoogleLogin = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify({ token: response.access_token })
       });
       const data = await res.json();
@@ -249,7 +252,10 @@ const handleFacebookLogin = () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/facebook`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
           body: JSON.stringify({ accessToken: response.authResponse.accessToken })
         });
         const data = await res.json();
@@ -273,7 +279,7 @@ const handleSuccessfulLogin = (data) => {
   localStorage.setItem('token', data.token);
   localStorage.setItem('user', JSON.stringify(data.user));
   authStore.user = data.user;
-  toastStore.showToast('Đăng nhập thành công!', 'success', 2500, 'top-right');
+  toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
   
   setTimeout(() => {
     const redirectPath = (data.user.role === 1 || data.user.role === 2) ? '/admin' : (route.query.redirect || '/');
