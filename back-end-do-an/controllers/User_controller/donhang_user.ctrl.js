@@ -972,7 +972,7 @@ const donhang_user = {
             }
         try {
             const MaTK = req.user.id;
-            const MaDH = req.params.maDH;
+            const MaDH = req.params.MaDH;
             const sql_laymakhachhang = `
                 Select DonHang.MaKH
                 from DonHang
