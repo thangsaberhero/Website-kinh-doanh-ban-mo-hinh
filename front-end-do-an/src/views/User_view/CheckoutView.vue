@@ -94,7 +94,7 @@
             
             <h2 class="text-xl font-headline font-bold uppercase tracking-widest mb-6 border-b border-outline-variant/20 pb-4 text-white">Tóm tắt đơn hàng</h2>
             
-            <div class="space-y-6 mb-8 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
+            <div class="space-y-6 mb-6 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
               <div v-for="item in checkoutItems" :key="item.MaPhanLoai" class="flex gap-4">
                 <div class="w-20 h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
                   <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
@@ -122,19 +122,51 @@
               </div>
             </div>
 
-            <div class="space-y-4 pt-6 border-t border-outline-variant/20">
+            <div class="border-y border-outline-variant/20 py-5 my-5 relative z-10">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-slate-300 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[18px]">confirmation_number</span>
+                  Mã giảm giá
+                </span>
+                <button type="button" @click="openVoucherModal" class="text-sm font-bold text-primary hover:text-primary-container transition-colors flex items-center">
+                  {{ selectedVoucher ? 'Đổi mã khác' : 'Chọn hoặc nhập mã' }}
+                  <span class="material-symbols-outlined text-[16px] ml-1">chevron_right</span>
+                </button>
+              </div>
+              
+              <div v-if="selectedVoucher" class="flex justify-between items-center bg-primary/10 p-3 rounded-xl border border-primary/30 mt-4 animate-[fadeIn_0.2s_ease-out]">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[16px]">local_activity</span>
+                  </div>
+                  <div>
+                    <span class="text-xs text-primary font-bold block">{{ selectedVoucher.MaVoucher }}</span>
+                    <span class="text-[10px] text-on-surface-variant font-medium">- {{ formatPrice(voucherDiscountAmount) }}</span>
+                  </div>
+                </div>
+                <button type="button" @click="removeVoucher" class="text-outline hover:text-error transition-colors p-1" title="Bỏ chọn mã">
+                  <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-4 pt-2">
               <div class="flex justify-between text-sm text-on-surface-variant font-medium">
                 <span>Tạm tính</span>
                 <span class="text-white">{{ formatPrice(cartSummary.subtotal) }}</span>
               </div>
-              <div class="flex justify-between text-sm text-on-surface-variant font-medium">
-                <span>Giảm giá</span>
+              <div v-if="cartSummary.discount > 0" class="flex justify-between text-sm text-on-surface-variant font-medium">
+                <span>Khuyến mãi (Flash Sale)</span>
                 <span class="text-error font-bold">- {{ formatPrice(cartSummary.discount) }}</span>
               </div>
+              <div v-if="voucherDiscountAmount > 0" class="flex justify-between text-sm text-on-surface-variant font-medium">
+                <span>Voucher giảm giá</span>
+                <span class="text-primary font-bold">- {{ formatPrice(voucherDiscountAmount) }}</span>
+              </div>
               
-              <div class="flex justify-between items-end pt-6">
+              <div class="flex justify-between items-end pt-6 border-t border-outline-variant/20 mt-4">
                 <span class="text-sm font-bold uppercase tracking-widest text-white">Tổng cộng</span>
-                <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(cartSummary.totalPrice) }}</span>
+                <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(finalTotal) }}</span>
               </div>
             </div>
 
@@ -164,6 +196,88 @@
         </aside>
       </form>
     </main>
+
+    <div v-if="isVoucherModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-surface-container-high rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] border border-outline-variant/20">
+        
+        <div class="px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container shrink-0">
+          <h3 class="text-lg font-headline font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">sell</span>
+            Chọn Mã Giảm Giá
+          </h3>
+          <button @click="isVoucherModalOpen = false" class="text-outline hover:text-error transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-surface-container-low space-y-6">
+          
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-3">Thêm mã giảm giá cá nhân</label>
+            <div class="flex gap-2">
+              <input v-model="voucherInputCode" type="text" placeholder="Nhập mã voucher..." class="flex-1 bg-background border border-outline-variant/30 focus:border-primary focus:ring-0 text-white p-3 rounded-xl uppercase transition-colors outline-none font-medium">
+              <button @click="applyVoucherByCode" class="bg-primary text-on-primary-fixed px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all active:scale-95 disabled:opacity-50" :disabled="!voucherInputCode.trim()">
+                ÁP DỤNG
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-3">Mã giảm giá có sẵn</label>
+            
+            <div v-if="isFetchingVouchers" class="flex justify-center py-8">
+              <span class="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
+            </div>
+            
+            <div v-else-if="availableVouchers.length > 0" class="space-y-4">
+              <div v-for="v in availableVouchers" :key="v.MaGG" 
+                   @click="isEligible(v) ? selectVoucherFromList(v) : null"
+                   :class="['flex border rounded-2xl overflow-hidden transition-all', 
+                            isEligible(v) ? 'bg-surface-container hover:border-primary border-outline-variant/30 cursor-pointer group' : 'bg-surface-dim border-outline-variant/10 opacity-50 grayscale cursor-not-allowed']">
+                
+                <div class="w-24 bg-primary/10 border-r border-dashed border-outline-variant/30 flex flex-col items-center justify-center p-2 relative">
+                  <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-surface-container-low rounded-full"></div>
+                  <span class="material-symbols-outlined text-primary text-3xl mb-1">loyalty</span>
+                  <span class="text-[10px] font-bold text-primary uppercase text-center leading-tight">
+                    {{ v.LoaiGiamGia === 'TienMat' ? 'Giảm Tiền' : 'Giảm %' }}
+                  </span>
+                </div>
+
+                <div class="flex-1 p-4 relative">
+                  <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-surface-container-low rounded-full"></div>
+                  
+                  <h4 class="text-sm font-bold text-white mb-1 leading-tight">{{ formatVoucherDesc(v) }}</h4>
+                  <p class="text-[11px] font-medium text-outline mb-2">Đơn tối thiểu {{ formatPrice(v.GiaTriDonToiThieu) }}</p>
+                  
+                  <div class="flex justify-between items-end mt-3">
+                    <span class="text-[10px] text-error font-semibold flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[12px]">schedule</span> HSD: {{ formatDate(v.ThoiGianKT) }}
+                    </span>
+                    
+                    <span v-if="!isEligible(v)" class="text-[10px] font-bold text-error">Mua thêm {{ formatPrice(v.GiaTriDonToiThieu - cartSummary.totalPrice) }}</span>
+                    <button v-else-if="selectedVoucher?.MaGG === v.MaGG" class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary-fixed">
+                      <span class="material-symbols-outlined text-[16px]">check</span>
+                    </button>
+                    <button v-else class="text-xs font-bold text-primary group-hover:text-primary-container">Chọn</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div v-else class="text-center py-10 border border-dashed border-outline-variant/20 rounded-2xl">
+              <span class="material-symbols-outlined text-outline text-4xl mb-2">sentiment_dissatisfied</span>
+              <p class="text-sm text-outline font-medium">Hiện tại chưa có mã giảm giá nào.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="px-6 py-5 border-t border-outline-variant/20 bg-surface-container flex gap-3 shrink-0">
+          <button @click="isVoucherModalOpen = false" class="flex-1 py-3.5 rounded-xl font-bold text-outline hover:text-white bg-surface-container-highest transition-colors text-sm">Đóng</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -181,16 +295,11 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const isProcessing = ref(false);
 const paymentMethod = ref(''); 
-const checkoutItems = ref([]); // Đổi thành mảng rỗng để chứa dữ liệu thật
+const checkoutItems = ref([]);
 
-const momoType = ref('Thanh toán toàn bộ'); // Mặc định là thanh toán hết
-const requiresDeposit = computed(() => {
-    // Kiểm tra xem có món nào trong giỏ có yêu cầu cọc không (TienCocToiThieu > 0)
-    // Lưu ý: Đảm bảo API get giỏ hàng của bạn có trả về trường TienCocToiThieu
-    return checkoutItems.value.some(item => item.TienCocToiThieu > 0);
-});
+const momoType = ref('Thanh toán toàn bộ');
+const requiresDeposit = computed(() => checkoutItems.value.some(item => item.TienCocToiThieu > 0));
 
-// Dữ liệu Form giao hàng
 const shippingInfo = reactive({
   name: '',
   phone: '',
@@ -198,24 +307,113 @@ const shippingInfo = reactive({
   note: ''
 });
 
-const cartSummary = ref({
-  subtotal: 0,
-  discount: 0,
-  totalPrice: 0
+// Giữ nguyên summary được Backend trả về cho Flash Sale
+const cartSummary = ref({ subtotal: 0, discount: 0, totalPrice: 0 });
+
+// ===============================================
+// HỆ THỐNG VOUCHER (MÃ GIẢM GIÁ)
+// ===============================================
+const isVoucherModalOpen = ref(false);
+const isFetchingVouchers = ref(false);
+const availableVouchers = ref([]);
+const selectedVoucher = ref(null);
+const voucherInputCode = ref('');
+
+// 1. Mở Modal và Load API Voucher
+const openVoucherModal = async () => {
+  isVoucherModalOpen.value = true;
+  await fetchVouchers();
+};
+
+// 2. Gọi API danh sách Voucher
+const fetchVouchers = async () => {
+  isFetchingVouchers.value = true;
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/api/don_hang/get_magg`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      availableVouchers.value = data.data;
+    }
+  } catch (error) {
+    console.error("Lỗi lấy danh sách Voucher:", error);
+  } finally {
+    isFetchingVouchers.value = false;
+  }
+};
+
+// 3. Hàm kiểm tra điều kiện (Đơn tối thiểu)
+const isEligible = (voucher) => {
+  // cartSummary.totalPrice ở đây chính là (Tiền Hàng - Tiền Flash Sale)
+  return cartSummary.value.totalPrice >= voucher.GiaTriDonToiThieu;
+};
+
+// 4. Bấm "Chọn" ở List
+const selectVoucherFromList = (voucher) => {
+  selectedVoucher.value = voucher;
+  isVoucherModalOpen.value = false;
+  toastStore.showToast(`Đã áp dụng mã: ${voucher.MaVoucher}`, "success");
+};
+
+// 5. Bấm nút "Áp dụng" khi nhập tay
+const applyVoucherByCode = () => {
+  const code = voucherInputCode.value.trim().toUpperCase();
+  const found = availableVouchers.value.find(v => v.MaVoucher.toUpperCase() === code);
+  
+  if (found) {
+    if (isEligible(found)) {
+      selectVoucherFromList(found);
+      voucherInputCode.value = '';
+    } else {
+      toastStore.showToast(`Đơn hàng chưa đạt tối thiểu ${formatPrice(found.GiaTriDonToiThieu)} để dùng mã này!`, "error");
+    }
+  } else {
+    toastStore.showToast("Mã voucher không tồn tại hoặc đã hết hạn!", "error");
+  }
+};
+
+// 6. Xóa Voucher đang chọn
+const removeVoucher = () => {
+  selectedVoucher.value = null;
+  toastStore.showToast("Đã bỏ áp dụng mã giảm giá", "success");
+};
+
+// 7. Tính số tiền Voucher giảm được (Mô phỏng logic Backend)
+const voucherDiscountAmount = computed(() => {
+  if (!selectedVoucher.value) return 0;
+  const v = selectedVoucher.value;
+  const currentTotal = cartSummary.value.totalPrice; 
+
+  if (currentTotal < v.GiaTriDonToiThieu) return 0; // Đề phòng
+
+  if (v.LoaiGiamGia === 'TienMat') {
+    return Number(v.ChietKhau);
+  } else if (v.LoaiGiamGia === 'ChietKhau') {
+    const tinhGiam = currentTotal * (Number(v.ChietKhau) / 100);
+    return Math.min(tinhGiam, Number(v.GiaTriGiamToiDa || tinhGiam));
+  }
+  return 0;
 });
+
+// 8. TỔNG TIỀN CUỐI CÙNG SAU KHI TRỪ VOUCHER
+const finalTotal = computed(() => {
+  return Math.max(0, cartSummary.value.totalPrice - voucherDiscountAmount.value);
+});
+
+// Helper hiển thị cho Voucher
+const formatVoucherDesc = (v) => {
+  if (v.LoaiGiamGia === 'TienMat') return `Giảm ${formatPrice(v.ChietKhau)}`;
+  return `Giảm ${v.ChietKhau}% (Tối đa ${formatPrice(v.GiaTriGiamToiDa)})`;
+};
+const formatDate = (dateStr) => {
+  return new Date(dateStr).toLocaleDateString('vi-VN');
+};
 
 // Hàm định dạng tiền tệ
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-
-// Tính toán tự động dựa trên dữ liệu thật
-const subtotal = computed(() => checkoutItems.value.reduce((sum, item) => sum + (item.DonGia * item.SoLuong), 0));
-const discount = computed(() => {
-  return checkoutItems.value.reduce((sum, item) => {
-    const mucGiamGiaCuaItem = item.dongiakhuyenmai ? (item.DonGia - item.dongiakhuyenmai) : 0;
-    return sum + (mucGiamGiaCuaItem * item.SoLuong);
-  }, 0);
-});
-const totalPrice = computed(() => subtotal.value > 0 ? Math.max(0, subtotal.value - discount.value) : 0);
 
 // ===============================================
 // HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
@@ -234,7 +432,6 @@ onMounted(async () => {
   const userObj = JSON.parse(userString);
 
   try {
-    // 1. GỌI API LẤY THÔNG TIN CÁ NHÂN (Để điền tự động vào Form)
     const resInfo = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`,{
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -247,7 +444,6 @@ onMounted(async () => {
       shippingInfo.address = userData.diachi || userData.DiaChi || '';
     }
 
-    // 2. GỌI API LẤY GIỎ HÀNG (Dùng lại hàm watch cart ở trang Giỏ Hàng)
     const resCart = await fetch(`${API_BASE_URL}/api/don_hang/watch`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -258,13 +454,10 @@ onMounted(async () => {
       checkoutItems.value = dataCart.data;
       cartSummary.value = dataCart.cartSummary;
       
-      // Nếu giỏ hàng rỗng, đá khách về trang Giỏ Hàng
       if (checkoutItems.value.length === 0) {
         toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
         router.push('/cart');
       }
-
-
     }
   } catch (error) {
     console.error("Lỗi khi tải dữ liệu Checkout:", error);
@@ -273,13 +466,9 @@ onMounted(async () => {
 });
 
 // ===============================================
-// XỬ LÝ ĐẶT HÀNG (Gọi API Tạo Đơn)
-// ===============================================
-// ===============================================
 // XỬ LÝ ĐẶT HÀNG (Gọi API Xác Nhận Đơn Hàng)
 // ===============================================
 const processCheckout = async () => {
-  // 1. KIỂM TRA BẢO VỆ VÒNG NGOÀI
   if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
     toastStore.showToast("Vui lòng điền đầy đủ thông tin giao hàng!", "error");
     return;
@@ -290,21 +479,18 @@ const processCheckout = async () => {
     return;
   }
 
-  // ================= BỔ SUNG TRẠM GÁC THANH TOÁN Ở ĐÂY =================
   if (!paymentMethod.value) {
     toastStore.showToast("Vui lòng chọn phương thức thanh toán!", "error");
-    return; // Dừng lại ngay, không cho chạy tiếp
+    return; 
   }
 
   if (paymentMethod.value === 'cod' && requiresDeposit.value) {
     toastStore.showToast("Đơn hàng chứa sản phẩm bắt buộc cọc, không thể dùng COD!", "error");
-    return; // Chặn luôn trường hợp dùng F12 lách luật chọn COD
+    return; 
   }
-  // ====================================================================
 
   isProcessing.value = true;
   
-  // 2. LẤY THÔNG TIN XÁC THỰC
   const token = localStorage.getItem('token');
   const userString = localStorage.getItem('user');
   
@@ -315,18 +501,15 @@ const processCheckout = async () => {
   }
 
   try {
-    // 3. ĐÓNG GÓI DỮ LIỆU CỰC KỲ ĐƠN GIẢN
-    // Vì Backend của bạn chỉ yêu cầu MaKH (nhìn dòng: const { MaKH } = req.body;)
+    // 🔥 ĐÃ BỔ SUNG TRUYỀN MaGG XUỐNG BACKEND ĐỂ ÁP DỤNG VOUCHER 🔥
     const payload = {
       TenNguoiNhan: shippingInfo.name,
       SDTNguoiNhan: shippingInfo.phone,
       DiaChiGiao: shippingInfo.address,
       Note: shippingInfo.note,
+      MaGG: selectedVoucher.value ? selectedVoucher.value.MaGG : null 
     };
 
-    console.log("Gói hàng gửi đi:", payload);
-
-    // 4. GỌI API ĐẾN BACKEND
     const response = await fetch(`${API_BASE_URL}/api/don_hang/xacnhan`, {
       method: 'POST',
       headers: {
@@ -346,6 +529,7 @@ const processCheckout = async () => {
 
     toastStore.showToast("🎉 " + data.message, "success");
     
+    // Xử lý cổng thanh toán
     if (paymentMethod.value === 'momo') {
       const momoRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/momo/create`, {
         method: 'POST',
@@ -353,20 +537,12 @@ const processCheckout = async () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          MaDH: data.MaDonHang, 
-          HinhThuc: momoType.value 
-        })
+        body: JSON.stringify({ MaDH: data.MaDonHang, HinhThuc: momoType.value })
       });
       const momoData = await momoRes.json();
       
-      if (momoRes.ok && momoData.checkoutUrl) {
-        window.location.href = momoData.checkoutUrl;
-      } 
-      else {
-        toastStore.showToast("Lỗi tạo cổng thanh toán MoMo", "error");
-        isProcessing.value = false;
-      }
+      if (momoRes.ok && momoData.checkoutUrl) window.location.href = momoData.checkoutUrl;
+      else { toastStore.showToast("Lỗi tạo cổng thanh toán MoMo", "error"); isProcessing.value = false; }
     } 
     else if (paymentMethod.value === 'zalopay') {
       const zaloRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/zalopay/create`, {
@@ -375,20 +551,12 @@ const processCheckout = async () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          MaDH: data.MaDonHang,
-          HinhThuc: momoType.value 
-        })
-    });
+        body: JSON.stringify({ MaDH: data.MaDonHang, HinhThuc: momoType.value })
+      });
       const zaloData = await zaloRes.json();
       
-      if (zaloRes.ok && zaloData.checkoutUrl) {
-        window.location.href = zaloData.checkoutUrl;
-      } 
-      else {
-          toastStore.showToast("Lỗi tạo cổng thanh toán ZaloPay", "error");
-          isProcessing.value = false;
-      }
+      if (zaloRes.ok && zaloData.checkoutUrl) window.location.href = zaloData.checkoutUrl;
+      else { toastStore.showToast("Lỗi tạo cổng thanh toán ZaloPay", "error"); isProcessing.value = false; }
     } 
     else {
       router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
@@ -398,17 +566,12 @@ const processCheckout = async () => {
     console.error("Lỗi quá trình đặt hàng:", error);
     toastStore.showToast("Đã xảy ra lỗi, vui lòng thử lại sau!", "error");
   } finally {
-    // Chỉ tắt trạng thái loading nếu không bị chuyển hướng sang Ví điện tử
-    if (paymentMethod.value === 'cod') {
-        isProcessing.value = false;
-    }
+    if (paymentMethod.value === 'cod') isProcessing.value = false;
   }
 };
 </script>
 
 <style scoped>
-
-
 .neon-glow {
   box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
 }
@@ -417,7 +580,6 @@ const processCheckout = async () => {
   box-shadow: 0 10px 15px -3px rgba(255, 143, 115, 0.05);
 }
 
-/* Hiệu ứng trượt mở Form nhập thẻ mượt mà */
 .slide-down {
   animation: slideDown 0.3s ease-out forwards;
   transform-origin: top;
@@ -425,6 +587,12 @@ const processCheckout = async () => {
 @keyframes slideDown {
   from { opacity: 0; transform: scaleY(0.9); }
   to { opacity: 1; transform: scaleY(1); }
+}
+
+/* Modal Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
