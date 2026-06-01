@@ -1,4 +1,6 @@
 const db = require('../../config/db.js');
+const crypto = require('crypto');
+const https = require('https');
 //const PayOS = require("@payos/node");
 // /const payos = new PayOS("YOUR_CLIENT_ID", "YOUR_API_KEY", "YOUR_CHECKSUM_KEY");
 
@@ -1144,38 +1146,366 @@ const donhang_user = {
     },
 
     //Thanh Toán
-    // 1. Hàm tạo link chuyển hướng sang Cổng thanh toán MoMo (Giả)
     tao_link_momo_mock: async (req, res) => {
         try {
             const { MaDH, HinhThuc } = req.body;
             let soTienCanThanhToan = 0;
 
+            // 1. Lấy số tiền cần thanh toán từ Database
             if (HinhThuc === 'Thanh toán toàn bộ') {
-                // Nếu thanh toán hết -> Lấy Tổng Tiền của Đơn hàng
-                const sql_tong_tien = `SELECT TongTien FROM DonHang WHERE MaDH = ?`;
+                const sql_tong_tien = `SELECT TongTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
                 const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
                 soTienCanThanhToan = result_tong[0].TongTien;
-
+                maHienThi = result_tong[0].MaDonHangHienThi || MaDH.toString();
             } else {
-                const sql_tinh_tien_coc = `Select SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc
-                                            from MoHinh mh
-                                            inner join PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
-                                            inner join ChiTietDonHang ct on ct.MaPhanLoai = pl.MaPhanLoai
-                                            where ct.MaDH = ? 
-                                            limit 1`;
-                const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH])                   
+                const sql_tinh_tien_coc = `SELECT SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc, dh.MaDonHangHienThi
+                                            FROM MoHinh mh
+                                            INNER JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh
+                                            INNER JOIN ChiTietDonHang ct ON ct.MaPhanLoai = pl.MaPhanLoai
+                                            INNER JOIN DonHang dh ON dh.MaDH = ct.MaDH
+                                            WHERE ct.MaDH = ? LIMIT 1`;
+                const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH]);                   
                 soTienCanThanhToan = result_tien_coc[0].TienCoc;
+                maHienThi = result_tien_coc[0].MaDonHangHienThi || MaDH.toString();
             }
-            const mockUrl = `http://localhost:5173/momo-payment?orderId=${MaDH}&amount=${soTienCanThanhToan}&type=${encodeURIComponent(HinhThuc || 'Thanh toán toàn bộ')}`;
 
-            res.status(200).json({
-                message: "Tạo link thanh toán MoMo thành công!",
-                checkoutUrl: mockUrl
+            // 2. Cấu hình thông số MoMo Sandbox
+            const partnerCode = "MOMO";
+            const accessKey = "F8BBA842ECF85";
+            const secretkey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+            
+            const DOMAIN_BACKEND = "https://website-kinh-doanh-ban-mo-hinh.onrender.com"; 
+            const DOMAIN_FRONTEND = "https://figurecollectshop.vercel.app";
+
+            const requestId = partnerCode + new Date().getTime();
+            const orderId = maHienThi + "_" + new Date().getTime();
+            const orderInfo = "Thanh toán đơn hàng " + maHienThi;
+            
+            // Nơi MoMo đưa khách về sau khi quẹt app xong
+            const redirectUrl = `${DOMAIN_FRONTEND}/orders/${MaDH}`; 
+            // Nơi MoMo gọi ngầm Server to Server để báo kết quả
+            const ipnUrl = `${DOMAIN_BACKEND}/api/don_hang/payment/momo/ipn`; 
+            
+            const amountNum = Math.max(1000, Number(soTienCanThanhToan)); 
+            const extraData = Buffer.from(HinhThuc || "").toString('base64'); 
+            const requestType = "captureWallet";
+
+            const rawSignature = "accessKey=" + accessKey + "&amount=" + amountNum + "&extraData=" + extraData + 
+                                "&ipnUrl=" + ipnUrl + "&orderId=" + orderId + "&orderInfo=" + orderInfo + 
+                                "&partnerCode=" + partnerCode + "&redirectUrl=" + redirectUrl + 
+                                "&requestId=" + requestId + "&requestType=" + requestType;
+
+            const signature = crypto.createHmac('sha256', secretkey)
+                                    .update(rawSignature)
+                                    .digest('hex');
+
+            // Sửa lại JSON Body để truyền đúng kiểu Number cho amount
+            const requestBody = JSON.stringify({
+                partnerCode: partnerCode,
+                accessKey: accessKey,
+                requestId: requestId,
+                amount: amountNum,
+                orderId: orderId,
+                orderInfo: orderInfo,
+                redirectUrl: redirectUrl,
+                ipnUrl: ipnUrl,
+                extraData: extraData, 
+                requestType: requestType,
+                signature: signature,
+                lang: 'vi'
             });
 
+            // 5. Gửi Request lấy payUrl từ MoMo bằng HTTPS
+            const options = {
+                hostname: 'test-payment.momo.vn',
+                port: 443,
+                path: '/v2/gateway/api/create',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(requestBody)
+                }
+            };
+
+            const reqMoMo = https.request(options, resMoMo => {
+                let body = '';
+                resMoMo.on('data', chunk => { body += chunk; });
+                resMoMo.on('end', () => {
+                    const response = JSON.parse(body);
+                    if (response.payUrl) {
+                        res.status(200).json({
+                            message: "Tạo link MoMo thành công!",
+                            checkoutUrl: response.payUrl
+                        });
+                    } else {
+                        res.status(400).json({ message: "Lỗi từ MoMo", data: response });
+                    }
+                });
+            });
+
+            reqMoMo.on('error', (e) => {
+                console.error("Lỗi HTTP Request lên MoMo:", e);
+                res.status(500).json({ message: "Không thể kết nối đến MoMo" });
+            });
+
+            reqMoMo.write(requestBody);
+            reqMoMo.end();
+
+        } 
+        catch (error) {
+            console.error("Lỗi Controller:", error);
+            res.status(500).json({ message: "Lỗi hệ thống tạo thanh toán!" });
+        }
+    },
+
+    momo_ipn: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            // MoMo gửi dữ liệu qua req.body
+            const { 
+                partnerCode, orderId, requestId, amount, orderInfo, orderType, 
+                transId, resultCode, message, payType, responseTime, extraData, signature 
+            } = req.body;
+
+            const accessKey = "F8BBA842ECF85";
+            const secretkey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+
+            // 1. Kiểm tra chữ ký (Signature) để xác thực đúng là MoMo gửi
+            const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
+            
+            const expectedSignature = crypto.createHmac('sha256', secretkey)
+                                            .update(rawSignature)
+                                            .digest('hex');
+
+            if (signature !== expectedSignature) {
+                return res.status(400).json({ message: "Chữ ký không hợp lệ!" });
+            }
+
+            const MaDH = orderId.split('_')[0];
+
+            await connection.beginTransaction();
+
+            // 3. Nếu thanh toán thành công (resultCode == 0)
+            if (resultCode === 0) {
+                // GIẢI MÃ BASE64 NGƯỢC LẠI THÀNH TIẾNG VIỆT
+                const decodedExtraData = Buffer.from(extraData, 'base64').toString('utf8');
+
+                const sql_thanh_toan = `
+                    INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
+                    VALUES (1, ?, NOW(), ?, ?, 'Thành công', ?)
+                `;
+                // Dùng decodedExtraData để lưu vào Database
+                await connection.query(sql_thanh_toan, [MaDH, amount, decodedExtraData, transId]);
+
+                // Cập nhật trạng thái
+                const trangThaiMoi = decodedExtraData === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
+                await connection.query(
+                    `UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, 
+                    [trangThaiMoi, MaDH]
+                );
+
+                await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
+            }
+
+            await connection.commit();
+            
+            // Bắt buộc phải phản hồi HTTP 204 hoặc 200 cho MoMo biết là đã nhận được
+            return res.status(204).send();
+
         } catch (error) {
-            console.error("Lỗi tạo thanh toán MoMo mock:", error);
-            res.status(500).json({ message: "Lỗi tạo cổng thanh toán!" });
+            await connection.rollback();
+            console.error("Lỗi xử lý IPN MoMo:", error);
+            return res.status(500).json({ message: "Lỗi server" });
+        } finally {
+            connection.release();
+        }
+    },
+
+    tao_link_zalopay_mock: async (req, res) => {
+        try {
+            const { MaDH, HinhThuc } = req.body;
+            let soTienCanThanhToan = 0;
+            let maHienThi = "";
+
+            // 1. Tính toán số tiền và mã hiển thị 
+            if (HinhThuc === 'Thanh toán toàn bộ') {
+                const sql_tong_tien = `SELECT TongTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
+                const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
+                soTienCanThanhToan = result_tong[0].TongTien;
+                maHienThi = result_tong[0].MaDonHangHienThi || MaDH.toString(); 
+            } else {
+                const sql_tinh_tien_coc = `SELECT SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc, dh.MaDonHangHienThi
+                                            FROM MoHinh mh
+                                            INNER JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh
+                                            INNER JOIN ChiTietDonHang ct ON ct.MaPhanLoai = pl.MaPhanLoai
+                                            INNER JOIN DonHang dh ON dh.MaDH = ct.MaDH
+                                            WHERE ct.MaDH = ? LIMIT 1`;
+                const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH]);                   
+                soTienCanThanhToan = result_tien_coc[0].TienCoc;
+                maHienThi = result_tien_coc[0].MaDonHangHienThi || MaDH.toString();
+            }
+
+            // 2. Cấu hình thông số ZaloPay
+            const config = {
+                app_id: 2553,
+                key1: "PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL",
+                endpoint: "sb-openapi.zalopay.vn",
+                path: "/v2/create"
+            };
+
+            const DOMAIN_BACKEND = "https://website-kinh-doanh-ban-mo-hinh.onrender.com"; 
+            const DOMAIN_FRONTEND = "https://figurecollectshop.vercel.app";
+
+            // ZaloPay bắt buộc app_trans_id phải có format YYMMDD_xxxx
+            const date = new Date();
+            const yy = date.getFullYear().toString().slice(-2);
+            const mm = ('0' + (date.getMonth() + 1)).slice(-2);
+            const dd = ('0' + date.getDate()).slice(-2);
+            const prefixDate = `${yy}${mm}${dd}`; 
+            
+            const shortTimestamp = date.getTime().toString().slice(-6);
+            const app_trans_id = `${prefixDate}_${MaDH}_${shortTimestamp}`; 
+            
+            const embed_data = { 
+                redirecturl: `${DOMAIN_FRONTEND}/ordersuccess?orderId=${MaDH}`,
+                hinhThuc: HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit',
+                maDonHangHienThi: maHienThi
+            };
+            const item = []; 
+
+            const order = {
+                app_id: config.app_id,
+                app_trans_id: app_trans_id,
+                app_user: "KhachHang",
+                app_time: date.getTime(), 
+                item: JSON.stringify(item),
+                embed_data: JSON.stringify(embed_data),
+                amount: Math.max(1000, Number(soTienCanThanhToan)), 
+                description: `Thanh toan don hang ${maHienThi}`,
+                bank_code: "zalopayapp", 
+                callback_url: `${DOMAIN_BACKEND}/api/don_hang/payment/zalopay/ipn`
+            };
+
+            // 3. Tạo chữ ký MAC cho ZaloPay
+            const data = config.app_id + "|" + order.app_trans_id + "|" + order.app_user + "|" + order.amount + "|" + order.app_time + "|" + order.embed_data + "|" + order.item;
+            order.mac = crypto.createHmac('sha256', config.key1).update(data).digest('hex');
+
+            // 4. Gửi Request bằng module https
+            const postData = JSON.stringify(order);
+            const options = {
+                hostname: config.endpoint,
+                port: 443,
+                path: config.path,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(postData) 
+                }
+            };
+
+            const reqZalo = https.request(options, resZalo => {
+                let body = '';
+                resZalo.on('data', chunk => { body += chunk; });
+                resZalo.on('end', () => {
+                    const response = JSON.parse(body);
+                    if (response.return_code === 1) {
+                        res.status(200).json({
+                            message: "Tạo link ZaloPay thành công!",
+                            checkoutUrl: response.order_url
+                        });
+                    } else {
+                        res.status(400).json({ message: "Lỗi từ ZaloPay", data: response });
+                    }
+                });
+            });
+
+            reqZalo.on('error', (e) => {
+                console.error("Lỗi gọi ZaloPay API:", e);
+                res.status(500).json({ message: "Không thể kết nối đến ZaloPay" });
+            });
+
+            reqZalo.write(postData);
+            reqZalo.end();
+
+        } catch (error) {
+            console.error("Lỗi Controller ZaloPay:", error);
+            res.status(500).json({ message: "Lỗi hệ thống tạo thanh toán ZaloPay!" });
+        }
+    },
+
+    zalopay_ipn: async (req, res) => {
+        const connection = await db.getConnection();
+        let result = {};
+        
+        try {
+            const config = {
+                key2: "kLtgPl8YESDrtTq8xXFWeA1k11iPnZNc"
+            };
+
+            const dataStr = req.body.data;
+            const reqMac = req.body.mac;
+
+            // 1. Kiểm tra MAC hợp lệ
+            const mac = crypto.createHmac('sha256', config.key2).update(dataStr).digest('hex');
+
+            if (reqMac !== mac) {
+                // MAC không khớp
+                result.return_code = -1;
+                result.return_message = "mac not equal";
+                return res.status(400).json(result);
+            }
+
+            // 2. Parse dataStr để lấy dữ liệu giao dịch
+            const dataJson = JSON.parse(dataStr);
+            const embed_data = JSON.parse(dataJson.embed_data); 
+            const maHienThiGoc = embed_data.maDonHangHienThi;
+            
+            const hinhThuc = embed_data.hinhThuc === 'full' ? 'Thanh toán toàn bộ' : 'Cọc một phần';            
+            const amount = dataJson.amount;
+            const transId = dataJson.zp_trans_id;
+
+            await connection.beginTransaction();
+
+            // 3. Tìm đơn hàng trong DB
+            const sql_tim_don = `SELECT MaDH FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
+            const [don_hang] = await connection.query(sql_tim_don, [maHienThiGoc]);
+
+            if (don_hang.length > 0) {
+                const MaDH = don_hang[0].MaDH;
+
+                // Ghi vào bảng ThanhToan
+                const sql_thanh_toan = `
+                    INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
+                    VALUES (2, ?, NOW(), ?, ?, 'Thành công', ?)
+                `;
+                await connection.query(sql_thanh_toan, [MaDH, amount, hinhThuc, transId]);
+
+                // Cập nhật trạng thái bảng DonHang
+                const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
+                await connection.query(
+                    `UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, 
+                    [trangThaiMoi, MaDH]
+                );
+
+                // Thêm lịch sử trạng thái
+                await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
+            }
+
+            await connection.commit();
+            
+            // 4. Báo cho ZaloPay biết đã ghi nhận thành công
+            result.return_code = 1;
+            result.return_message = "success";
+            return res.json(result);
+
+        } catch (error) {
+            await connection.rollback();
+            console.error("Lỗi xử lý IPN ZaloPay:", error);
+            result.return_code = 0; // ZaloPay sẽ gọi lại callback sau
+            result.return_message = error.message;
+            return res.status(500).json(result);
+        } finally {
+            connection.release();
         }
     },
 

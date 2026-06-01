@@ -47,11 +47,22 @@
               <div :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'momo' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
                 <label class="flex items-center gap-4 cursor-pointer p-6">
                   <input v-model="paymentMethod" value="momo" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
-                  <span class="flex-grow font-bold text-white">Ví MoMo / ZaloPay (Mock)</span>
-                  <span class="material-symbols-outlined text-outline">account_balance_wallet</span>
+                  <span class="flex-grow font-bold text-white">Thanh toán qua Ví MoMo</span>
+                  <span class="material-symbols-outlined text-outline text-[#A50064]">account_balance_wallet</span>
                 </label>
-                
-                <div v-if="paymentMethod === 'momo'" class="px-6 pb-6 pt-2 border-t border-outline-variant/15 flex flex-col gap-3 slide-down bg-black/20">
+              </div>
+
+              <div :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'zalopay' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
+                <label class="flex items-center gap-4 cursor-pointer p-6">
+                  <input v-model="paymentMethod" value="zalopay" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
+                  <span class="flex-grow font-bold text-white">Thanh toán qua ZaloPay</span>
+                  <span class="material-symbols-outlined text-outline text-[#0068FF]">account_balance_wallet</span>
+                </label>
+              </div>
+
+              <div v-if="paymentMethod === 'momo' || paymentMethod === 'zalopay'" class="px-6 pb-6 pt-4 border rounded-xl border-primary/50 bg-surface-container-high slide-down">
+                  <h3 class="text-xs font-label uppercase tracking-widest text-outline mb-4">Tùy chọn thanh toán</h3>
+                  <div class="flex flex-col gap-3">
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input v-model="momoType" value="Thanh toán toàn bộ" type="radio" class="text-primary w-4 h-4" />
                         <span class="text-sm font-medium text-white">Thanh toán toàn bộ (100%)</span>
@@ -60,7 +71,7 @@
                         <input v-model="momoType" value="Cọc một phần" type="radio" class="text-primary w-4 h-4" />
                         <span class="text-sm font-medium text-white">Chỉ đặt cọc trước (Theo quy định sản phẩm)</span>
                     </label>
-                </div>
+                  </div>
               </div>
 
               <div :class="['border rounded-xl transition-all duration-300', paymentMethod === 'cod' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low', requiresDeposit ? 'opacity-50 cursor-not-allowed bg-surface-container-lowest' : 'hover:border-outline-variant']">
@@ -333,42 +344,62 @@ const processCheckout = async () => {
       return;
     }
 
-    // 5. XỬ LÝ KHI THÀNH CÔNG
     toastStore.showToast("🎉 " + data.message, "success");
     
-    // Chuyển hướng khách hàng về trang Lịch sử đơn hàng để xem lại
-    // Data ở đây là kết quả từ Backend trả về, có chứa MaDonHang: maDH_moi
-    //router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
     if (paymentMethod.value === 'momo') {
-            // Gọi API MoMo Mock
-            const momoRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/momo/create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' ,
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ 
-                    MaDH: data.MaDonHang, // Lấy mã đơn hàng vừa tạo xong
-                    HinhThuc: momoType.value 
-                })
-            });
-            const momoData = await momoRes.json();
-            
-            if (momoRes.ok) {
-                // Điều hướng sang trang MoMo màu hồng!
-                window.location.href = momoData.checkoutUrl;
-            } else {
-                toastStore.showToast("Lỗi tạo cổng thanh toán MoMo", "error");
-            }
-        } else {
-            // Nếu là COD thì đưa thẳng ra trang Success
-            router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
-        }
+      const momoRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/momo/create`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          MaDH: data.MaDonHang, 
+          HinhThuc: momoType.value 
+        })
+      });
+      const momoData = await momoRes.json();
+      
+      if (momoRes.ok && momoData.checkoutUrl) {
+        window.location.href = momoData.checkoutUrl;
+      } 
+      else {
+        toastStore.showToast("Lỗi tạo cổng thanh toán MoMo", "error");
+        isProcessing.value = false;
+      }
+    } 
+    else if (paymentMethod.value === 'zalopay') {
+      const zaloRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/zalopay/create`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          MaDH: data.MaDonHang,
+          HinhThuc: momoType.value 
+        })
+    });
+      const zaloData = await zaloRes.json();
+      
+      if (zaloRes.ok && zaloData.checkoutUrl) {
+        window.location.href = zaloData.checkoutUrl;
+      } 
+      else {
+          toastStore.showToast("Lỗi tạo cổng thanh toán ZaloPay", "error");
+          isProcessing.value = false;
+      }
+    } 
+    else {
+      router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
+    }
 
   } catch (error) {
     console.error("Lỗi quá trình đặt hàng:", error);
-    toastStore.showToast(error.message, "error");
+    toastStore.showToast("Đã xảy ra lỗi, vui lòng thử lại sau!", "error");
   } finally {
-    if (paymentMethod.value !== 'momo') {
+    // Chỉ tắt trạng thái loading nếu không bị chuyển hướng sang Ví điện tử
+    if (paymentMethod.value === 'cod') {
         isProcessing.value = false;
     }
   }
