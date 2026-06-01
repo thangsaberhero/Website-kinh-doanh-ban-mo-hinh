@@ -1619,9 +1619,10 @@ const khuyenmai = {
             const sql_ds = `
                 SELECT 
                     log.*, 
-                    COALESCE(tk.HoTen, tk.TenDN, 'Admin') AS NguoiThucHien 
+                    COALESCE(nv.TenNV, tk.TenDN, 'Admin') AS NguoiThucHien 
                 FROM LogHoatDongTaiKhoan log
-                LEFT JOIN TaiKhoan tk ON log.MaTK = tk.MaTK
+                INNER JOIN TaiKhoan tk ON log.MaTK = tk.MaTK
+                Inner join NhanVien nv on nv.MaTK = tk.MaTK
                 ${whereClause}
                 ORDER BY log.ThoiGian DESC 
                 LIMIT ? OFFSET ?
