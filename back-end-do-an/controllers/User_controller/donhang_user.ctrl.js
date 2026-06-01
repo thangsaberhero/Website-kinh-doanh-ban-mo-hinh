@@ -1335,7 +1335,7 @@ const donhang_user = {
             const orderId = maHienThi + "_" + new Date().getTime();
             const orderInfo = "Thanh toán đơn hàng " + maHienThi;
             
-            const redirectUrl = `${DOMAIN_FRONTEND}/ordersuccess?orderId=${MaDH}`; 
+            const redirectUrl = `${DOMAIN_FRONTEND}/ordersuccess?maDH=${MaDH}`; 
             const ipnUrl = `${DOMAIN_BACKEND}/api/don_hang/payment/momo/ipn`; 
             
             const amountNum = Math.max(1000, Number(soTienCanThanhToan)); 
@@ -1491,7 +1491,7 @@ const donhang_user = {
             const app_trans_id = `${prefixDate}_${MaDH}_${shortTimestamp}`; 
             
             const embed_data = { 
-                redirecturl: `${DOMAIN_FRONTEND}/ordersuccess?orderId=${MaDH}`,
+                redirecturl: `${DOMAIN_FRONTEND}/ordersuccess?maDH=${MaDH}`,
                 hinhThuc: HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit',
                 maDonHangHienThi: maHienThi
             };
