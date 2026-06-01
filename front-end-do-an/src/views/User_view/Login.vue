@@ -282,7 +282,8 @@ const handleSuccessfulLogin = (data) => {
   toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
   
   setTimeout(() => {
-    const redirectPath = (data.user.role === 1 || data.user.role === 2) ? '/admin' : (route.query.redirect || '/');
+    const userRole = Number(data.user.MaQuyen); 
+    const redirectPath = (userRole === 1 || userRole === 2) ? '/admin' : (route.query.redirect || '/');
     router.push(redirectPath);
   }, 500);
 };
