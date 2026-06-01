@@ -49,7 +49,7 @@ const donhang_user = {
             // ==========================================
             const sql_kiemtra_kho = `SELECT pl.SoLuong AS TonKho, mh.LoaiHinhBan
                 FROM PhanLoai pl
-                INNER JOIN MoHinh mh on mh.MaPhanLoai on pl.MaPhanLoai
+                INNER JOIN MoHinh mh on mh.MaPhanLoai = pl.MaPhanLoai
                 WHERE pl.MaPhanLoai = ? and pl.HienThi = 1`;
             const [kho] = await connection.query(sql_kiemtra_kho, [MaPhanLoai]);
 
