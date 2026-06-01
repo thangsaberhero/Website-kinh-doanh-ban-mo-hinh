@@ -14,9 +14,10 @@
           <p class="text-on-surface-variant font-medium">Theo dõi và kiểm tra lịch sử các kho báu bạn đã sở hữu.</p>
         </header>
 
+        <!-- ĐÃ BỔ SUNG: 2 Tab Đang hoàn hàng và Đã hoàn hàng -->
         <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-4 mb-8">
           <button 
-            v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đã hủy']" 
+            v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đang hoàn hàng', 'Đã hoàn hàng', 'Đã hủy']" 
             :key="tab"
             @click="activeTab = tab"
             :class="['px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300', activeTab === tab ? 'bg-primary text-on-primary-fixed shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container border border-outline-variant/20 text-outline hover:text-white hover:border-outline-variant']"
@@ -53,7 +54,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 flex-grow">
                   <div class="flex flex-col gap-1">
                     <span class="text-[10px] font-bold text-primary tracking-widest uppercase">Mã đơn</span>
-                    <span class="text-lg font-headline font-bold text-white tracking-tight">{{ order.MaDH }}</span>
+                    <span class="text-lg font-headline font-bold text-white tracking-tight">{{ order.MaDonHangHienThi || order.MaDH }}</span>
                   </div>
                   
                   <div class="flex flex-col gap-1">
@@ -82,20 +83,31 @@
                 </div>
               </div>
 
+              <!-- CỤM NÚT THAO TÁC -->
               <div class="flex lg:flex-col gap-3 shrink-0 border-t lg:border-t-0 lg:border-l border-outline-variant/20 pt-4 lg:pt-0 lg:pl-6">
-                <button @click="router.push(`/orders/${order.MaDH}`)" class="flex-1 lg:w-36 px-4 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all text-center shadow-lg shadow-primary/20">
+                
+                <div v-if="order.TrangThaiThanhToan === 'Chưa thanh toán' && order.TrangThaiDonHang !== 'Đã hủy'" class="flex flex-col gap-2 flex-1 lg:w-36">
+                  
+                  <div v-if="!isExpired(order.NgayLapDon)" class="text-[10px] text-rose-500 font-bold text-center bg-rose-500/10 py-1.5 rounded-lg border border-rose-500/20 animate-pulse flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[12px]">timer</span>
+                    {{ formatCountdown(order.NgayLapDon) }}
+                  </div>
+                  <div v-else class="text-[10px] text-outline font-bold text-center bg-surface-container py-1.5 rounded-lg border border-outline-variant/20 flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[12px]">hourglass_empty</span>
+                    Đang xử lý hủy
+                  </div>
+
+                  <button 
+                    @click="openPaymentModal(order)" 
+                    :disabled="isExpired(order.NgayLapDon)"
+                    class="w-full px-4 py-2 bg-gradient-to-r from-rose-600 to-[#a50064] text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-1 shadow-lg shadow-pink-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Thanh toán
+                  </button>
+                </div>
+
+                <button @click="router.push(`/orders/${order.MaDH}`)" class="flex-1 lg:w-36 px-4 py-2 bg-surface-container-high hover:bg-primary/10 border border-outline-variant/30 hover:border-primary/50 text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:text-primary transition-all text-center">
                   Xem chi tiết
-                </button>
-                <button v-if="order.status === 'Đã giao'" class="flex-1 lg:w-36 px-4 py-2 border border-outline-variant text-outline rounded-lg font-bold text-xs uppercase tracking-widest hover:text-white hover:border-white transition-all text-center">
-                  Mua lại
-                </button>
-                <button 
-                  v-if="order.TrangThaiDonHang === 'Chờ duyệt' && (order.TrangThaiThanhToan === 'Chưa thanh toán' || !order.TrangThaiThanhToan)"
-                  @click="openPaymentModal(order)" 
-                  class="flex-1 lg:w-36 px-4 py-2 bg-[#a50064] text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-1 shadow-lg shadow-pink-500/20"
-                >
-                  <span class="material-symbols-outlined text-sm">payments</span>
-                  Thanh toán
                 </button>
               </div>
             </div>
@@ -108,59 +120,52 @@
           </div>
 
           <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-10 mb-4">
-            <button 
-              @click="changePage(currentPage - 1)" 
-              :disabled="currentPage === 1" 
-              class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"
-            >
-              <span class="material-symbols-outlined">chevron_left</span>
-            </button>
-
-            <button 
-              v-for="p in totalPages" 
-              :key="p" 
-              @click="changePage(p)"
-              :class="[
-                'w-10 h-10 flex items-center justify-center rounded-lg font-bold text-sm transition-all border',
-                currentPage === p 
-                  ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(255,143,115,0.3)]' 
-                  : 'bg-surface-container-low text-on-surface hover:bg-surface-container-highest border-outline-variant/20'
-              ]"
-            >
-              {{ p }}
-            </button>
-
-            <button 
-              @click="changePage(currentPage + 1)" 
-              :disabled="currentPage === totalPages" 
-              class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"
-            >
-              <span class="material-symbols-outlined">chevron_right</span>
-            </button>
+            <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"><span class="material-symbols-outlined">chevron_left</span></button>
+            <button v-for="p in totalPages" :key="p" @click="changePage(p)" :class="['w-10 h-10 flex items-center justify-center rounded-lg font-bold text-sm transition-all border', currentPage === p ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container-low text-on-surface hover:bg-surface-container-highest border-outline-variant/20']">{{ p }}</button>
+            <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"><span class="material-symbols-outlined">chevron_right</span></button>
           </div>
         </div>
 
       </main>
     </div>
+    
     <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-8 max-w-sm w-full shadow-2xl">
-        <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Chọn hình thức</h3>
-        <p class="text-sm text-on-surface-variant mb-6">Bạn muốn cọc trước hay thanh toán toàn bộ cho đơn hàng #{{ selectedOrder?.MaDH }}?</p>
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+        <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
+        <p class="text-sm text-on-surface-variant mb-6">Mã đơn: <span class="font-bold text-primary">{{ selectedOrder?.MaDonHangHienThi || selectedOrder?.MaDH }}</span></p>
         
-        <div class="space-y-3 mb-8">
-          <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-primary transition-all">
-            <input type="radio" v-model="repayMethod" value="Thanh toán toàn bộ" class="text-primary" />
-            <span class="text-sm font-bold text-white">Thanh toán toàn bộ (100%)</span>
-          </label>
-          <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-primary transition-all">
-            <input type="radio" v-model="repayMethod" value="Cọc một phần" class="text-primary" />
-            <span class="text-sm font-bold text-white">Đặt cọc tối thiểu</span>
-          </label>
+        <div class="space-y-4 mb-6">
+          <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">1. Chọn hình thức cọc</label>
+          <div class="grid grid-cols-2 gap-3 mb-6">
+            <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Thanh toán toàn bộ' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
+              <input type="radio" v-model="repayMethod" value="Thanh toán toàn bộ" class="hidden" />
+              <span class="text-xs font-bold">Thanh toán<br>Toàn bộ (100%)</span>
+            </label>
+            <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Cọc một phần' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
+              <input type="radio" v-model="repayMethod" value="Cọc một phần" class="hidden" />
+              <span class="text-xs font-bold">Chỉ đặt cọc<br>tối thiểu</span>
+            </label>
+          </div>
+
+          <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">2. Chọn cổng thanh toán</label>
+          <div class="space-y-3 mb-8">
+            <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#a50064] transition-all">
+              <input type="radio" v-model="paymentGateway" value="momo" class="text-[#a50064] focus:ring-[#a50064]" />
+              <span class="text-sm font-bold text-white">Ví MoMo</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#0068FF] transition-all">
+              <input type="radio" v-model="paymentGateway" value="zalopay" class="text-[#0068FF] focus:ring-[#0068FF]" />
+              <span class="text-sm font-bold text-white">ZaloPay</span>
+            </label>
+          </div>
         </div>
 
         <div class="flex gap-3">
-          <button @click="showPaymentModal = false" class="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-outline hover:text-white transition-colors">Hủy</button>
-          <button @click="handleRepay" class="flex-[2] py-3 bg-[#a50064] text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all">Tiến hành quét mã</button>
+          <button @click="showPaymentModal = false" class="flex-1 py-3 bg-surface-container text-xs font-bold uppercase tracking-widest text-outline hover:text-white rounded-lg transition-colors">Hủy</button>
+          <button @click="handleRepay" class="flex-[2] py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2">
+            <span v-if="isProcessingPayment" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
+            Quét mã
+          </button>
         </div>
       </div>
     </div>
@@ -168,7 +173,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted, watch } from 'vue';
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '../../stores/auth';
   import { useToastStore } from '../../stores/toast';
@@ -181,32 +186,75 @@
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const activeTab = ref('Tất cả');
-
   const userString = localStorage.getItem('user');
   const orders = ref([]);
 
   const showPaymentModal = ref(false);
   const selectedOrder = ref(null);
   const repayMethod = ref('Thanh toán toàn bộ');
+  const paymentGateway = ref('momo'); 
+  const isProcessingPayment = ref(false);
 
   const currentPage = ref(1);
   const limit = ref(5);
   const totalPages = ref(1);
   const totalItemsCount = ref(0);
 
-  // Mở Modal và lưu lại đơn hàng đang chọn
+  // Đồng hồ đếm ngược
+  const now = ref(Date.now());
+  let timerInterval;
+
+  onMounted(() => {
+    window.scroll(0,0);
+    fetchOrderdata();
+    
+    timerInterval = setInterval(() => {
+      now.value = Date.now();
+    }, 1000);
+  });
+
+  onUnmounted(() => {
+    clearInterval(timerInterval);
+  });
+
+  const getRemainingTime = (dateString) => {
+    if (!dateString) return 0;
+    const createdTime = new Date(dateString).getTime();
+    const expireTime = createdTime + 15 * 60 * 1000; 
+    return expireTime - now.value;
+  };
+
+  const formatCountdown = (dateString) => {
+    const diff = getRemainingTime(dateString);
+    if (diff <= 0) return '00:00';
+
+    const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+    const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const isExpired = (dateString) => {
+    return getRemainingTime(dateString) <= 0;
+  };
+
+  // Xử lý thanh toán
   const openPaymentModal = (order) => {
     selectedOrder.value = order;
     showPaymentModal.value = true;
   };
 
-  // Gọi API tạo link MoMo từ Modal
   const handleRepay = async () => {
     const token = localStorage.getItem('token');
     if (!selectedOrder.value) return;
 
+    isProcessingPayment.value = true;
+
     try {
-      const response = await fetch(`${API_BASE_URL}/api/payment/momo/create`, {
+      const endpoint = paymentGateway.value === 'momo' 
+            ? '/api/don_hang/payment/momo/create' 
+            : '/api/don_hang/payment/zalopay/create';
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -220,7 +268,6 @@
 
       const data = await response.json();
       if (response.ok) {
-        // Bế khách sang trang MoMo màu hồng!
         window.location.href = data.checkoutUrl;
       } 
       else {
@@ -230,24 +277,27 @@
     catch (error) {
       console.error("Lỗi thanh toán lại:", error);
       toastStore.showToast("Lỗi kết nối máy chủ thanh toán", "error");
+    } finally {
+      isProcessingPayment.value = false;
     }
   };
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-  // Hàm chọn màu Badge dựa trên trạng thái
+  // ĐÃ BỔ SUNG: Màu sắc cho 2 trạng thái Hoàn hàng
   const getStatusColor = (status) => {
     switch(status) {
       case 'Đang vận chuyển': return 'bg-tertiary/10 text-tertiary border-tertiary/20';
       case 'Đã giao': return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'Đang đóng gói': return 'bg-secondary/10 text-secondary border-secondary/20';
       case 'Chờ duyệt': return 'bg-secondary/10 text-secondary border-secondary/20';  
+      case 'Đang hoàn hàng': return 'bg-orange-500/10 text-orange-400 border-orange-500/20'; // Màu cam cảnh báo
+      case 'Đã hoàn hàng': return 'bg-purple-500/10 text-purple-400 border-purple-500/20'; // Màu tím khác biệt
       case 'Đã hủy': return 'bg-error/10 text-error border-error/20';
       default: return 'bg-outline/10 text-outline border-outline/20';
     }
   };
 
-  // Lọc đơn hàng theo Tab
   const filteredOrders = computed(() => {
     if (activeTab.value === 'Tất cả') return orders.value;
     return orders.value.filter(order => order.TrangThaiDonHang === activeTab.value);
@@ -306,20 +356,12 @@
     }
   };
 
-  onMounted(() => {
-    window.scroll(0,0);
-    fetchOrderdata();
-  });
-
   const formatDate = (dateString) => {
     if (!dateString) return 'Đang cập nhật';
-    
     const date = new Date(dateString);
-    
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${day}/${month}/${year} - ${hours}:${minutes}`;
@@ -327,7 +369,6 @@
 </script>
 
 <style scoped>
-  /* Hiệu ứng mượt mà khi lọc danh sách */
   .list-enter-active,
   .list-leave-active {
     transition: all 0.4s ease;
@@ -344,4 +385,9 @@
   .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 </style>
