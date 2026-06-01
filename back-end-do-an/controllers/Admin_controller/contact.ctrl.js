@@ -81,10 +81,12 @@ const contactController = {
             const contact = contactObj[0];
 
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
+                host: 'smtp-relay.brevo.com',
+                port: 2525, 
+                secure: false,
                 auth: {
-                    user: process.env.EMAIL_USER, 
-                    pass: process.env.EMAIL_PASS
+                    user: process.env.SMTP_USER, 
+                    pass: process.env.SMTP_PASS
                 }
             });
 
