@@ -10,7 +10,11 @@ router.post('/xacnhan', authMiddleware.verifyToken,donhang_userController.xac_nh
 router.post('/deleteAll', authMiddleware.verifyToken, donhang_userController.xoa_het_hang_trong_gio);
 
 router.post('/payment/momo/create', authMiddleware.verifyToken, donhang_userController.tao_link_momo_mock);
+router.post('/payment/momo/ipn', donhang_userController.momo_ipn);
 router.post('/payment/momo/confirm', authMiddleware.verifyToken, donhang_userController.xac_nhan_momo_mock);
+
+router.post('/payment/zalopay/create', authMiddleware.verifyToken, donhang_userController.tao_link_zalopay_mock);
+router.post('/payment/zalopay/ipn', donhang_userController.zalopay_ipn);
 
 router.get('/watch', authMiddleware.verifyToken,donhang_userController.xem_hang_trong_gio);
 router.get('/watch_order', authMiddleware.verifyToken, donhang_userController.xem_don_hang);
