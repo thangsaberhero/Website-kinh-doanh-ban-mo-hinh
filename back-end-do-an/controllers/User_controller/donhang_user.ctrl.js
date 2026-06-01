@@ -554,7 +554,8 @@ const donhang_user = {
                 Select count(Distinct mh.LoaiHinhBan) As SoLoaihinh
                 from MoHinh mh
                 Inner join PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
-                Inner join GioHang gh on gh.MaPhanLoai = pl.MaPhanLoai
+                Inner join GioHang gh on gh.MaGH = ctgh.MaGH
+                Inner join ChiTietGioHang ctgh on ctgh.MaPhanLoai = pl.MaPhanLoai
                 Where gh.MaGH = ?`;
             
             const [typeResult] = await connection.query(sql_check_type, [MaGH]);
