@@ -747,7 +747,7 @@ const donhang_user = {
 
             // 2. Tạo Đơn hàng mới 
             const sql_tao_don = `INSERT INTO DonHang (MaKH, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
-            VALUES (?, ?, ?, ?, NOW(), 'Chưa Thanh Toán', ?, ? ,?, ?)`;
+            VALUES (?, ?, ?, ?, NOW(), 'Chưa thanh toán', ?, ? ,?, ?)`;
             const [tao_don] = await connection.query(sql_tao_don, [MaKH, maHienThi, TongTienHang, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note]);
             
             // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động

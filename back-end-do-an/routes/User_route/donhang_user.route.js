@@ -8,6 +8,7 @@ router.post('/update', authMiddleware.verifyToken, donhang_userController.cap_nh
 router.post('/delete', authMiddleware.verifyToken, donhang_userController.xoa_hang_trong_gio);
 router.post('/xacnhan', authMiddleware.verifyToken,donhang_userController.xac_nhan_don_hang);
 router.post('/deleteAll', authMiddleware.verifyToken, donhang_userController.xoa_het_hang_trong_gio);
+router.put('/cancel', authMiddleware.verifyToken, donhang_userController.huy_don_hang);
 
 router.post('/payment/momo/create', authMiddleware.verifyToken, donhang_userController.tao_link_momo_mock);
 router.post('/payment/momo/ipn', donhang_userController.momo_ipn);
