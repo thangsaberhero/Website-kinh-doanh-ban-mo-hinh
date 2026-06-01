@@ -1453,9 +1453,9 @@ const donhang_user = {
             let maHienThi = "";
 
             if (HinhThuc === 'Thanh toán toàn bộ') {
-                const sql_tong_tien = `SELECT TongTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
+                const sql_tong_tien = `SELECT ThanhTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
                 const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
-                soTienCanThanhToan = result_tong[0].TongTien;
+                soTienCanThanhToan = result_tong[0].ThanhTien;
                 maHienThi = result_tong[0].MaDonHangHienThi || MaDH.toString(); 
             } else {
                 const sql_tinh_tien_coc = `
@@ -1475,7 +1475,7 @@ const donhang_user = {
             const DOMAIN_BACKEND = process.env.DOMAIN_BACKEND; 
             const DOMAIN_FRONTEND = process.env.DOMAIN_FRONTEND;
             const config = {
-                app_id: process.env.ZALO_APP_ID,
+                app_id: Number(process.env.ZALO_APP_ID),
                 key1: process.env.ZALO_KEY1,
                 endpoint: "sb-openapi.zalopay.vn",
                 path: "/v2/create"
