@@ -45,7 +45,10 @@ const donhang_user = {
             // ==========================================
             // CHỐT CHẶN BẢO MẬT 2: KIỂM TRA SẢN PHẨM & TỒN KHO 
             // ==========================================
-            const sql_kiemtra_kho = `SELECT SoLuong AS TonKho FROM PhanLoai WHERE MaPhanLoai = ? and HienThi = 1`;
+            const sql_kiemtra_kho = `SELECT pl.SoLuong AS TonKho, mh.LoaiHinhBan
+                FROM PhanLoai pl
+                INNER JOIN MoHinh mh on mh.MaPhanLoai on pl.MaPhanLoai
+                WHERE pl.MaPhanLoai = ? and pl.HienThi = 1`;
             const [kho] = await connection.query(sql_kiemtra_kho, [MaPhanLoai]);
 
             // Chặn nếu sản phẩm không tồn tại (bị xóa) hoặc gửi mã bậy bạ
@@ -55,11 +58,38 @@ const donhang_user = {
             }
 
             const tonKho = kho[0].TonKho;
+            const newItemType = kho[0].LoaiHinhBan;
 
             // Chặn nếu kho đã cạn kiệt
             if (tonKho <= 0) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Sản phẩm này đã hết hàng trong kho!" });
+            }
+
+            // ==========================================
+            // CHỐT CHẶN BẢO MẬT 3: CHỐNG LẪN LỘN LOẠI HÌNH BÁN
+            // ==========================================
+            // Lấy ra loại hình bán của các món đang nằm sẵn trong giỏ
+            const sql_check_cart_type = `
+                SELECT DISTINCT mh.LoaiHinhBan
+                FROM ChiTietGioHang ct
+                INNER JOIN PhanLoai pl ON ct.MaPhanLoai = pl.MaPhanLoai
+                INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                WHERE ct.MaGH = ?
+            `;
+            const [cartTypes] = await connection.query(sql_check_cart_type, [maGH]);
+
+            // Nếu giỏ hàng đang có đồ, kiểm tra xem có bị lệch pha không
+            if (cartTypes.length > 0) {
+                const currentCartType = cartTypes[0].LoaiHinhBan;
+                
+                if (newItemType !== currentCartType) {
+                    await connection.rollback();
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Lỗi nghiệp vụ: Giỏ hàng đang chứa sản phẩm '${currentCartType}'. Không thể đặt chung với sản phẩm '${newItemType}'!` 
+                    });
+                }
             }
 
             // 3. Tiến hành xử lý thêm hoặc cập nhật
@@ -368,7 +398,7 @@ const donhang_user = {
                 filter = "order by mh.NgayPhatHanh DESC";
 
             const sql_ds = `SELECT 
-                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu,
+                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu, mh.LoaiHinhBan,
                     pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho,
                     ct.SoLuong,
                     
@@ -517,6 +547,24 @@ const donhang_user = {
 
             const MaGH = result_giohang[0].MaGH;
             const MaKH = result_giohang[0].MaKH;
+
+            const sql_check_type = `
+                Select count(Distinct mh.LoaiHinhBan) As SoLoaihinh
+                from MoHinh mh
+                Inner join PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
+                Inner join GioHang gh on gh.MaPhanLoai = pl.MaPhanLoai
+                Where gh.MaGH = ?`;
+            
+            const [typeResult] = await connection.query(sql_check_type, [MaGH]);
+
+            if (typeResult[0].SoLoaiHinh > 1) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Không thể đặt chung hàng Có sẵn và hàng Đặt trước (Pre-order/Order) trong cùng một đơn hàng!" 
+                });
+            }
+
             
             // 1. Kiểm tra giỏ hàng có đồ không? Giỏ trống thì không cho đặt!
             
@@ -524,44 +572,54 @@ const donhang_user = {
             // ================= BẮT ĐẦU TRANSACTION =================
             await connection.beginTransaction(); 
             //Kiểm tra số lượng tồn kho trước khi đặt hàng:
-            const sql_get_cart_item = `SELECT 
+            const sql_get_cart_item = `
+                SELECT 
                     mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu, mh.GiaNhap,
                     pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho,
                     ct.SoLuong,
                     km_info.MaKM,
                     COALESCE(km_info.MucGiam, 0) AS MucGiam,
-                    
-                    -- Giá sau khuyến mãi (Nếu không có sale thì bằng giá gốc)
                     (pl.DonGia - COALESCE(km_info.MucGiam, 0)) AS DonGiaKhuyenMai,
-                    
-                    -- Lấy số lượng khuyến mãi còn lại ra cho Frontend hiển thị
                     COALESCE(km_info.SoLuongConLai, 0) AS SoLuongKhuyenMaiConLai
-                    
                 FROM MoHinh mh
                 INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
                 INNER JOIN ChiTietGioHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
                 
-                -- TUYỆT CHIÊU: GOM LOGIC KHUYẾN MÃI VÀO 1 BẢNG ẢO (LEFT JOIN)
+                -- BẢNG ẢO LỌC KHUYẾN MÃI (ĐÃ FIX LỖI NHÂN BẢN)
                 LEFT JOIN (
-                    SELECT 
-                        ctkm.MaPhanLoai,
-                        km.MaKM,
-                        (ctkm.SoLuongKM - ctkm.SoLuongDaDung) AS SoLuongConLai,
-                        MAX(CASE
-                            WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
-                            WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl_sub.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl_sub.DonGia))
-                            ELSE 0
-                        END) AS MucGiam
-                    FROM ChiTietKhuyenMai ctkm
-                    INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
-                    INNER JOIN PhanLoai pl_sub ON ctkm.MaPhanLoai = pl_sub.MaPhanLoai
-                    WHERE km.TrangThaiHoatDong = 1
-                      AND km.ThoiGianBD <= NOW()
-                      AND km.ThoiGianKT >= NOW()
-                      AND (ctkm.SoLuongKM - ctkm.SoLuongDaDung) > 0
-                    GROUP BY ctkm.MaPhanLoai, ctkm.SoLuongKM, ctkm.SoLuongDaDung, km.MaKM
+                    SELECT * FROM (
+                        SELECT 
+                            ctkm.MaPhanLoai,
+                            km.MaKM,
+                            (ctkm.SoLuongKM - ctkm.SoLuongDaDung) AS SoLuongConLai,
+                            (CASE
+                                WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
+                                WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl_sub.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl_sub.DonGia))
+                                ELSE 0
+                            END) AS MucGiam,
+                            
+                            -- TUYỆT CHIÊU: Xếp hạng Khuyến mãi. Nếu 1 sản phẩm có 2 KM, cái nào giảm tiền nhiều hơn (DESC) sẽ xếp thứ 1 (rn = 1)
+                            ROW_NUMBER() OVER(PARTITION BY ctkm.MaPhanLoai ORDER BY (
+                                CASE
+                                    WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
+                                    WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl_sub.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl_sub.DonGia))
+                                    ELSE 0
+                                END
+                            ) DESC) as rn
+                            
+                        FROM ChiTietKhuyenMai ctkm
+                        INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
+                        INNER JOIN PhanLoai pl_sub ON ctkm.MaPhanLoai = pl_sub.MaPhanLoai
+                        WHERE km.TrangThaiHoatDong = 1
+                          AND km.ThoiGianBD <= NOW()
+                          AND km.ThoiGianKT >= NOW()
+                          AND (ctkm.SoLuongKM - ctkm.SoLuongDaDung) > 0
+                    ) AS ranked_promo
+                    WHERE rn = 1 -- CHỐT CHẶN: Chỉ lấy duy nhất 1 chương trình giảm giá ngon nhất
                 ) AS km_info ON pl.MaPhanLoai = km_info.MaPhanLoai
-                WHERE ct.MaGH = ?`;
+                
+                WHERE ct.MaGH = ?
+            `;
             const [cart_item] = await connection.query(sql_get_cart_item, [MaGH]);
             if (cart_item.length === 0) {
                 await connection.rollback();
@@ -606,36 +664,52 @@ const donhang_user = {
             //Xử lý voucher
             let soTienGiamVoucher = 0;
             if (MaGG) {
+                // 1. CÂU TRUY VẤN ĐÃ FIX: Thêm gg.MaGG = ? và đơn giản hóa Subquery
                 const sql_check_voucher = `
-                    SELECT * FROM MaGiamGia 
-                    WHERE MaGG = ? AND TrangThaiHoatDong = 1 AND ThoiGianBD <= NOW() AND ThoiGianKT >= NOW()
+                    SELECT DISTINCT gg.*
+                    FROM MaGiamGia gg
+                    LEFT JOIN ChiTietMaGiamGia ctgg ON ctgg.MaGG = gg.MaGG
+                    WHERE gg.MaGG = ? 
+                      AND gg.TrangThaiHoatDong = 1 
+                      AND gg.ThoiGianBD <= NOW() 
+                      AND gg.ThoiGianKT >= NOW()
+                      
+                      -- CHỐT CHẶN: Áp dụng toàn shop HOẶC món đó đang nằm trong giỏ
+                      AND (
+                          ctgg.MaGG IS NULL 
+                          OR ctgg.MaPhanLoai IN (SELECT MaPhanLoai FROM ChiTietGioHang WHERE MaGH = ?)
+                      )
                 `;
-                const [voucherInfo] = await connection.query(sql_check_voucher, [MaGG]);
+                // Đã truyền đủ 2 biến [MaGG, MaGH] cho 2 dấu chấm hỏi
+                const [voucherInfo] = await connection.query(sql_check_voucher, [MaGG, MaGH]);
                 
                 if (voucherInfo.length > 0) {
                     const v = voucherInfo[0];
-                    const sql_check_used = `
-                        Select MaLichSu from LogSuDungMaGiamGia
-                        where MaGG = ? and MaKH = ?
-                    `;
+                    
+                    // Kiểm tra xem khách đã dùng mã này chưa (Đoạn này bạn viết rất chuẩn)
+                    const sql_check_used = `SELECT MaLichSu FROM LogSuDungMaGiamGia WHERE MaGG = ? AND MaKH = ?`;
                     const [check_used] = await connection.query(sql_check_used, [MaGG, MaKH]);
+                    
                     if(check_used.length > 0){
                         await connection.rollback();
-                        return res.status(400).json({
-                            success: false,
-                            message: `Mã voucher ${voucherInfo[0].MaVoucher} đã được bạn sử dụng!`
-                        });
+                        return res.status(400).json({ success: false, message: `Mã voucher ${v.MaVoucher} đã được bạn sử dụng!` });
                     }
 
                     if(v.SoLuongDaDung >= v.SoLuongDungToiDa){
                         await connection.rollback();
-                        return res.status(400).json({
-                            success: false,
-                            message: `Mã voucher ${voucherInfo[0].MaVoucher} đã đạt giới hạn sử dụng!`
+                        return res.status(400).json({ success: false, message: `Mã voucher ${v.MaVoucher} đã hết lượt sử dụng!` });
+                    }
+
+                    // 2. ĐÃ SỬA LỖI TÊN CỘT: Dùng GiaTriDonToiThieu
+                    if(v.GiaTriDonToiThieu > tongTienThanhToan){
+                        await connection.rollback();
+                        return res.status(400).json({ 
+                            success: false, 
+                            message: `Đơn hàng chưa đạt giá trị tối thiểu (${v.GiaTriDonToiThieu.toLocaleString('vi-VN')}đ) để sử dụng mã này!` 
                         });
                     }
                     
-                    
+                    // Tính toán số tiền giảm
                     if (v.LoaiGiamGia === 'TienMat') {
                         soTienGiamVoucher = Number(v.ChietKhau);
                     } else if (v.LoaiGiamGia === 'ChietKhau') {
@@ -645,12 +719,13 @@ const donhang_user = {
                     
                     tongTienThanhToan -= soTienGiamVoucher;
                     if (tongTienThanhToan < 0) tongTienThanhToan = 0;
+                    
                 } else {
                     await connection.rollback();
-                        return res.status(400).json({
-                            success: false,
-                            message: `Mã voucher ${voucherInfo[0].MaVoucher} không tồn tại hoặc hết hạn!`
-                        });
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Mã voucher không tồn tại, hết hạn hoặc không áp dụng cho sản phẩm trong giỏ!` 
+                    });
                 }
             }
             
@@ -742,7 +817,22 @@ const donhang_user = {
                     INSERT INTO LogSuDungMaGiamGia (MaGG, MaKH, MaDH, SoTienDaGiam, ThoiGianSuDung)
                     VALUES (?, ?, ?, ?, NOW())
                 `, [MaGG, MaKH, maDH_moi, soTienGiamVoucher]);
-                await connection.query(`UPDATE MaGiamGia SET SoLuongDaDung = SoLuongDaDung + 1 WHERE MaGG = ?`, [MaGG]);
+                
+                // Nâng cấp: Dùng Khóa Lạc Quan bảo vệ số lượng Voucher
+                const [updateVoucher] = await connection.query(`
+                    UPDATE MaGiamGia 
+                    SET SoLuongDaDung = SoLuongDaDung + 1 
+                    WHERE MaGG = ? AND SoLuongDaDung < SoLuongDungToiDa
+                `, [MaGG]);
+                
+                // Nếu không cập nhật được (do có người khác vừa dùng slot cuối cùng) -> Rollback ngay
+                if (updateVoucher.affectedRows === 0) {
+                    await connection.rollback();
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: "Rất tiếc! Lượt sử dụng cuối cùng của Voucher này vừa có người nhanh tay hơn. Vui lòng chọn mã khác!" 
+                    });
+                }
             }
 
             await connection.query(`DELETE FROM ChiTietGioHang WHERE MaGH = ?`, [MaGH]);
@@ -1142,6 +1232,64 @@ const donhang_user = {
             if (connection) connection.release();
         }
     },
+
+    liet_ke_maGG: async (req, res) =>{
+        try{
+            const MaTK = req.user.id;
+            
+            // CẦN TRUYỀN [MaTK, MaTK] VÌ TRONG CÂU SQL SỬ DỤNG ? Ở 2 VỊ TRÍ
+            const sql_lay_ds = `
+                SELECT DISTINCT 
+                    gg.MaGG, 
+                    gg.MaVoucher, 
+                    gg.LoaiGiamGia, 
+                    gg.ChietKhau, 
+                    gg.GiaTriGiamToiDa, 
+                    gg.GiaTriDonToiThieu, 
+                    gg.ThoiGianKT
+                FROM MaGiamGia gg
+                LEFT JOIN ChiTietMaGiamGia ctgg ON ctgg.MaGG = gg.MaGG
+                
+                WHERE gg.TrangThaiHoatDong = 1 
+                  AND gg.ThoiGianBD <= NOW()  -- SỬA LỖI: Đã đến giờ bắt đầu
+                  AND gg.ThoiGianKT >= NOW()  -- SỬA LỖI: Chưa qua giờ kết thúc
+                  AND gg.SoLuongDungToiDa > gg.SoLuongDaDung
+                  
+                  -- CHỐT CHẶN 1: Mã áp dụng toàn shop HOẶC áp dụng cho món đang có trong giỏ
+                  AND (
+                      ctgg.MaGG IS NULL 
+                      OR ctgg.MaPhanLoai IN (
+                          SELECT ctgh.MaPhanLoai
+                          FROM ChiTietGioHang ctgh
+                          INNER JOIN GioHang gh ON gh.MaGH = ctgh.MaGH
+                          INNER JOIN KhachHang kh ON kh.MaKH = gh.MaKH 
+                          WHERE kh.MaTK = ?
+                      )
+                  )
+                  
+                  -- CHỐT CHẶN 2: Khách hàng chưa từng sử dụng mã này
+                  AND gg.MaGG NOT IN (
+                      SELECT log.MaGG 
+                      FROM LogSuDungMaGiamGia log
+                      INNER JOIN KhachHang kh_log ON log.MaKH = kh_log.MaKH
+                      WHERE kh_log.MaTK = ?
+                  )
+            `;
+            
+            // Nhớ truyền MaTK 2 lần cho 2 dấu chấm hỏi (?) ở trên
+            const [ds] = await db.query(sql_lay_ds, [MaTK, MaTK]);
+            
+            res.status(200).json({
+                success: true,
+                data: ds,
+                message: "Lấy danh sách mã giảm giá thành công!"
+            });
+        }
+        catch(error){
+            console.error("Lỗi khi lấy danh sách mã giảm giá: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống tải danh sách mã giảm giá!" });
+        }
+    }
 
     //Thanh Toán
     // 1. Hàm tạo link chuyển hướng sang Cổng thanh toán MoMo (Giả)

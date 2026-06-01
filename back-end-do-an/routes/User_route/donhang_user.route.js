@@ -14,6 +14,7 @@ router.post('/payment/momo/confirm', authMiddleware.verifyToken, donhang_userCon
 
 router.get('/watch', authMiddleware.verifyToken,donhang_userController.xem_hang_trong_gio);
 router.get('/watch_order', authMiddleware.verifyToken, donhang_userController.xem_don_hang);
+router.get('/get_magg', authMiddleware.verifyToken, donhang_userController.liet_ke_maGG)
 router.get('/watch_detail_order/:MaDH', authMiddleware.verifyToken, donhang_userController.xem_hang_trong_don_hang);
 
 module.exports = router;

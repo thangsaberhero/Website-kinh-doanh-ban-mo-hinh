@@ -956,14 +956,29 @@
     const token = localStorage.getItem('token');
 
     if (!token) {
-      toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error",
-        {headers: {'Authorization': `Bearer ${token}`}}
-      );
+      toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error");
       router.push({ path: '/login', query: { redirect: route.fullPath } })
       return;
     }
 
     try {
+      const cartRes = await fetch(`${API_BASE_URL}/api/don_hang/watch`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const cartData = await cartRes.json();
+      if(cartData.success && cartData.data && cartData.data.length){
+        const currentCartType = cartData.data[0].LoaiHinhBan;
+        const newItemType = product.value.LoaiHinhBan;
+
+        if (newItemType !== currentCartType) {
+          toastStore.showToast(
+            `⚠️ Giỏ hàng đang có hàng ${currentCartType}. Không thể đặt chung với hàng ${newItemType}!`, 
+            "error"
+          );
+          return;
+        }
+      }
+
       const payload = {
         MaPhanLoai: selectedVariant.value.MaPhanLoai,
         soluong: buyQuantity.value
