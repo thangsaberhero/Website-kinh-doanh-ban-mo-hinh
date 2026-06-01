@@ -146,17 +146,17 @@ const fetchOrderdata = async () => {
     return;
   }
   
-  // Lấy maDH từ biến maDH mới (hoặc tương thích ngược với orderId cũ nếu khách chọn COD)
-  let rawMaDH = route.query.maDH || route.query.orderId; 
+  // // Lấy maDH từ biến maDH mới (hoặc tương thích ngược với orderId cũ nếu khách chọn COD)
+  // let rawMaDH = route.query.maDH || route.query.orderId; 
 
-  if (!rawMaDH) {
-    router.push('/');
-    return;
-  }
+  // if (!rawMaDH) {
+  //   router.push('/');
+  //   return;
+  // }
 
-  // Đề phòng trường hợp Frontend cũ truyền 1 cục Array vào
-  const maDH = Array.isArray(rawMaDH) ? rawMaDH[0] : rawMaDH;
-  orderIdDisplay.value = maDH;
+  // // Đề phòng trường hợp Frontend cũ truyền 1 cục Array vào
+  // const maDH = Array.isArray(rawMaDH) ? rawMaDH[0] : rawMaDH;
+  // orderIdDisplay.value = maDH;
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
@@ -169,6 +169,7 @@ const fetchOrderdata = async () => {
     const result = await response.json();
 
     if (response.ok) {
+      orderIdDisplay.value = result.data.MaDonHangHienThi
       orderInfo.value = result.data.ThongTinGiaoHang; 
       orderItems.value = result.data.DanhSachHang;
       totalQty.value = orderItems.value.reduce((sum, item) => sum + item.SoLuong, 0);
