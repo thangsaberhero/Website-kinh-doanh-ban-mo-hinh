@@ -7,15 +7,12 @@ const { OAuth2Client } = require('google-auth-library');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com', 
-    port: 465,
-    secure: true, 
+    host: 'smtp-relay.brevo.com', 
+    port: 2525,
+    secure: false, 
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 });
 

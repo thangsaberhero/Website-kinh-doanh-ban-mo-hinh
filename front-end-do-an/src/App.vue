@@ -15,7 +15,7 @@
     <FooterFull v-else />
   </template>
   
-  <Chatbox v-if="!route.meta?.requiresAdmin" />
+  <Chatbox v-if="!route.meta?.hideChatbot && !route.meta?.requiresAdmin" />
 </template>
 
 <script setup>

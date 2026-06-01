@@ -46,14 +46,14 @@ const router = createRouter({
   routes: [
     // --- KHU VỰC KHÁCH HÀNG ---
     { path: '/', name: 'home', component: HomeView, meta: { title: 'Trang chủ | FigureCollect' } },
-    { path: '/login', name: 'login', component: LoginView, meta: { hideFooter: true, hidePhone: true, title: 'Đăng nhập | FigureCollect' } },
-    { path: '/register', name: 'register', component: RegisterView, meta: { hideFooter: true, hidePhone: true, title: 'Đăng ký | FigureCollect' } },
-    { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView, meta: { hideFooter: true, hidePhone: true, title: 'Quên mật khẩu | FigureCollect' } },
+    { path: '/login', name: 'login', component: LoginView, meta: { hideFooter: true, hidePhone: true, hideChatbot: true, title: 'Đăng nhập | FigureCollect' } },
+    { path: '/register', name: 'register', component: RegisterView, meta: { hideFooter: true, hidePhone: true, hideChatbot: true, title: 'Đăng ký | FigureCollect' } },
+    { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView, meta: { hideFooter: true, hidePhone: true, hideChatbot: true, title: 'Quên mật khẩu | FigureCollect' } },
     { path: '/profile', name: 'Profile', component: ProfileView, meta: { requiresAuth: true, title: 'Thông tin cá nhân | FigureCollect' } },
     { path: '/change-password', name: 'ChangePassword', component: ChangePassword, meta: { requiresAuth: true, title: 'Đổi mật khẩu | FigureCollect' } },
     { path: '/cart', name: 'Cart', component: CartView, meta: { requiresAuth: true, title: 'Giỏ hàng của bạn | FigureCollect' } },
     { path: '/checkout', name: 'Checkout', component: CheckoutView, meta: { useMinimalFooter: true, requiresAuth: true, title: 'Thanh toán | FigureCollect' } },
-    { path: '/ordersuccess', name: 'Ordersuccess', component: OrderSuccessView, meta: { useMinimalFooter: true, requiresAuth: true, title: 'Đặt hàng thành công | FigureCollect' } },
+    { path: '/ordersuccess', name: 'Ordersuccess', component: OrderSuccessView, meta: { useMinimalFooter: true, hideChatbot: true, requiresAuth: true, title: 'Đặt hàng thành công | FigureCollect' } },
     { path: '/orders', name: 'Order', component: OrderHistoryView, meta: { requiresAuth: true, title: 'Lịch sử đơn hàng | FigureCollect' } },
     { path: '/wishlist', name: 'Wishlist', component: WishlistView, meta: { requiresAuth: true, title: 'Sản phẩm yêu thích | FigureCollect' } },
     { path: '/search', name: 'Search', component: SearchView, meta: { title: 'Tìm kiếm sản phẩm | FigureCollect' } },
