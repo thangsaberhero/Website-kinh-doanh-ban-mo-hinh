@@ -352,6 +352,24 @@
           </div>
         </div>
 
+        </div>
+
+        <div v-if="viewingOrder.note" class="bg-amber-50/80 p-5 rounded-2xl border border-amber-200/50 shadow-sm relative overflow-hidden">
+          <div class="absolute -right-2 -top-2 text-amber-500/10 pointer-events-none">
+            <span class="material-symbols-outlined text-6xl">edit_note</span>
+          </div>
+          
+          <h3 class="text-xs font-bold text-amber-700 uppercase tracking-widest flex items-center gap-2 mb-2 relative z-10">
+            <span class="material-symbols-outlined text-[16px]">speaker_notes</span> Lưu ý / Ghi chú
+          </h3>
+          
+          <p class="text-sm font-medium text-amber-900 leading-relaxed relative z-10 italic border-l-2 border-amber-400 pl-3">
+            {{ viewingOrder.note }}
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+
         <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
           <div class="flex justify-between items-center border-b border-slate-50 pb-3">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -1072,6 +1090,7 @@ const exportExcelReport = async () => {
           paymentStatus: info.TrangThaiThanhToan || 'Chưa thanh toán',
           subtotal: info.TongTien || 0,
           total: info.ThanhTien || 0,
+          note: info.Note || '',
           discount: (info.TongTien || 0) - (info.ThanhTien || 0),
           products: productsList.map(p => ({
             name: p.TenMH || 'Mô hình',
