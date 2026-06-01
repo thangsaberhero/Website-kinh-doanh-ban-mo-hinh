@@ -988,7 +988,7 @@ const donhang_user = {
             const MaKH = result_kh[0].MaKH;
             
             const sql_donhang = `
-                SELECT TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note,
+                SELECT MaDH, MaDonHangHienThi, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note,
                 COALESCE(SUM(tt.SoTienGiaoDich), 0) AS DaThanhToan
                 FROM DonHang
                 LEFT JOIN ThanhToan tt on DonHang.MaDH = tt.MaDH
