@@ -1348,7 +1348,7 @@ const donhang_user = {
 
             const requestBody = JSON.stringify({
                 partnerCode, accessKey, requestId, amount: amountNum, orderId, orderInfo,
-                redirectUrl, ipnUrl, extraData, requestType, signature, lang: 'vi'
+                redirectUrl, ipnUrl, extraData, requestType, signature, lang: 'vi', orderExpireTime: 15
             });
 
             // 5. Gửi Request lên MoMo
@@ -1501,6 +1501,7 @@ const donhang_user = {
                 app_trans_id: app_trans_id,
                 app_user: "KhachHang",
                 app_time: date.getTime(), 
+                expire_duration_seconds: 900,
                 item: JSON.stringify([]),
                 embed_data: JSON.stringify(embed_data),
                 amount: Math.max(1000, Number(soTienCanThanhToan)), 

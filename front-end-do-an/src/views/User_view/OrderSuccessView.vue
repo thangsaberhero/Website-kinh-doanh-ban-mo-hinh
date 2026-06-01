@@ -156,7 +156,7 @@ const fetchOrderdata = async () => {
 
   // Đề phòng trường hợp Frontend cũ truyền 1 cục Array vào
   const maDH = Array.isArray(rawMaDH) ? rawMaDH[0] : rawMaDH;
-  orderIdDisplay.value = maDH;
+  // orderIdDisplay.value = maDH;
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {

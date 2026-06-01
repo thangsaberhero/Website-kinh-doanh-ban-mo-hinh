@@ -71,7 +71,7 @@ cron.schedule('* * * * *', async () => {
         const sql_tim_don = `
             SELECT MaDH FROM DonHang 
             WHERE TrangThaiThanhToan = 'Chưa thanh toán' 
-            AND TIMESTAMPDIFF(MINUTE, NgayLapDon, NOW()) >= 5
+            AND TIMESTAMPDIFF(MINUTE, NgayLapDon, NOW()) >= 15
         `;
         const [don_qua_han] = await connection.query(sql_tim_don);
 
