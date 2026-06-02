@@ -34,7 +34,8 @@
             Đang xử lý hủy
           </button>
 
-          <button v-if="orderInfo.TrangThaiDonHang === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán'"
+          <!-- 🔥 ĐÃ SỬA: Thay orderInfo.TrangThaiDonHang thành currentOrderStatus -->
+          <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán'"
                   @click="showCancelModal = true"
                   class="px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center gap-2 transition-all active:scale-95">
             <span class="material-symbols-outlined text-lg">cancel</span>
@@ -70,7 +71,8 @@
                 <div v-if="step.status === 'completed'" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary-fixed mb-3 shadow-[0_0_15px_rgba(255,143,115,0.4)]">
                   <span class="material-symbols-outlined text-lg font-bold">check</span>
                 </div>
-                <div v-else-if="step.status === 'active' && orderInfo.TrangThaiDonHang === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)]">
+                <!-- 🔥 ĐÃ SỬA: Cập nhật biến currentOrderStatus cho Lộ trình -->
+                <div v-else-if="step.status === 'active' && currentOrderStatus === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)]">
                   <span class="material-symbols-outlined text-xl">cancel</span>
                 </div>
                 <div v-else-if="step.status === 'active'" class="w-12 h-12 -mt-1 rounded-full bg-primary-container border-4 border-surface flex items-center justify-center text-on-primary-fixed mb-2 shadow-[0_0_20px_rgba(255,120,86,0.6)] animate-pulse">
@@ -80,8 +82,8 @@
                   <span class="material-symbols-outlined text-lg">{{ step.icon }}</span>
                 </div>
 
-                <span :class="['text-[11px] font-bold uppercase tracking-tighter', step.status === 'active' ? (orderInfo.TrangThaiDonHang === 'Đã hủy' ? 'text-error' : 'text-primary') : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
-                  {{ orderInfo.TrangThaiDonHang === 'Đã hủy' && step.status === 'active' ? 'Đã hủy' : step.name }}
+                <span :class="['text-[11px] font-bold uppercase tracking-tighter', step.status === 'active' ? (currentOrderStatus === 'Đã hủy' ? 'text-error' : 'text-primary') : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
+                  {{ currentOrderStatus === 'Đã hủy' && step.status === 'active' ? 'Đã hủy' : step.name }}
                 </span>
                 <span v-if="step.time" class="text-[10px] text-outline mt-1">{{ step.time }}</span>
               </div>
@@ -308,6 +310,14 @@ const isProcessingPayment = ref(false);
 const showCancelModal = ref(false);
 const isCanceling = ref(false);
 
+// 🔥 ĐÃ BỔ SUNG: Computed tự động nhặt trạng thái mới nhất từ Lộ trình (Timeline)
+const currentOrderStatus = computed(() => {
+  if (orderStatus.value && orderStatus.value.length > 0) {
+    return orderStatus.value[orderStatus.value.length - 1].TenTrangThai;
+  }
+  return '';
+});
+
 // Đồng hồ đếm ngược
 const now = ref(Date.now());
 let timerInterval;
@@ -349,8 +359,7 @@ const baseSteps = [
 ];
 
 const timeline = computed(() => {
-  const latestStepName = (orderStatus.value && orderStatus.value.length > 0) 
-    ? orderStatus.value[orderStatus.value.length - 1].TenTrangThai : '';
+  const latestStepName = currentOrderStatus.value;
 
   return baseSteps.map((step) => {
     const safeOrderStatus = orderStatus.value || [];
@@ -367,7 +376,7 @@ const timeline = computed(() => {
 
 const progressWidth = computed(() => {
   if (!orderStatus.value || orderStatus.value.length === 0) return '0%';
-  const latestStepName = orderStatus.value[orderStatus.value.length - 1].TenTrangThai;
+  const latestStepName = currentOrderStatus.value;
   let currentIndex = baseSteps.findIndex(s => s.name === latestStepName);
   if (currentIndex === -1) currentIndex = 0;
   return `${(currentIndex / (baseSteps.length - 1)) * 100}%`;
@@ -421,13 +430,10 @@ const handleRepay = async () => {
   }
 };
 
-// HÀM XÁC NHẬN HỦY ĐƠN HÀNG (MỚI)
 const confirmCancelOrder = async () => {
   isCanceling.value = true;
   try {
     const token = localStorage.getItem('token');
-    
-    // Gọi API /cancel bằng phương thức PUT
     const response = await fetch(`${API_BASE_URL}/api/don_hang/cancel`, {
       method: 'PUT',
       headers: {
@@ -442,7 +448,7 @@ const confirmCancelOrder = async () => {
     if (response.ok) {
       toastStore.showToast("Đã hủy đơn hàng thành công!", "success");
       showCancelModal.value = false;
-      fetchOrderdata(); // Load lại data để cập nhật giao diện
+      fetchOrderdata(); 
     } else {
       toastStore.showToast(data.message, "error");
     }
