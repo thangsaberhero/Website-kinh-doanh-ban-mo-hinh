@@ -1075,14 +1075,13 @@
   };
 
   const getCurrentStatusCode = () => {
-    if (!selectedOrder.value) return 0;
-    if (selectedOrder.value.Trang_thai_don_hang && selectedOrder.value.Trang_thai_don_hang.length > 0) {
-       const tenTT = selectedOrder.value.Trang_thai_don_hang[0].TenTrangThai?.toUpperCase() || '';
-       if (tenTT.includes('CHỜ')) return 1;
-       if (tenTT.includes('GÓI')) return 2;
-       if (tenTT.includes('VẬN CHUYỂN')) return 3;
-       if (tenTT.includes('ĐÃ GIAO')) return 4;
-    }
+    if (!selectedOrder.value || !selectedOrder.value.TrangThaiHienTai) return 0;
+    const tenTT = selectedOrder.value.TrangThaiHienTai.TenTrangThai?.toUpperCase() || '';
+    
+    if (tenTT.includes('CHỜ')) return 1;
+    if (tenTT.includes('GÓI')) return 2;
+    if (tenTT.includes('VẬN CHUYỂN')) return 3;
+    if (tenTT.includes('ĐÃ GIAO')) return 4;
     return updateStatusValue.value; 
   };
 
