@@ -428,7 +428,7 @@
     requestAnimationFrame(animateScroll);
   };
   onMounted(() => {
-    scrollToTopCustom(1500);
+    scrollToTopCustom();
     fetchCategories();
     fetchProducts(); 
     fetchBrand();

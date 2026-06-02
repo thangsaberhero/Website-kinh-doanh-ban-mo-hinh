@@ -344,7 +344,7 @@
     //   left: 0,
     //   behavior: 'smooth'
     // });
-    scrollToTopCustom(1000);
+    scrollToTopCustom();
     fetchCartData();
     fetchSuggestions();
     pollingInterval = setInterval(() => {

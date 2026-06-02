@@ -378,7 +378,7 @@
   };
 
   onMounted(() => {
-    scrollToTopCustom(1500);
+    scrollToTopCustom();
     if (route.query.tab && ['guide', 'shipping', 'return', 'payment'].includes(route.query.tab)) {
         activeTab.value = route.query.tab;
     }

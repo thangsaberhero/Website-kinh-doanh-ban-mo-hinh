@@ -265,7 +265,7 @@
   };
 
   onMounted(() => {
-    scrollToTopCustom(1500);
+    scrollToTopCustom();
     fetchWishlist(); // Tải lần đầu
     pollingInterval = setInterval(() => {
       fetchWishlist(true); // Tải ngầm

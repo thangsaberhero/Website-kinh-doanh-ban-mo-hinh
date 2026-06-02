@@ -338,7 +338,7 @@ const scrollToTopCustom = (duration = 1000) => {
   };
 
 onMounted(() => {
-  scrollToTopCustom(1500);
+  scrollToTopCustom(1000);
   extractAndSearch();
 });
 
