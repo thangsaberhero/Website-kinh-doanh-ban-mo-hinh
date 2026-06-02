@@ -1524,8 +1524,7 @@ const donhang_user = {
             const config = {
                 app_id: Number(process.env.ZALO_APP_ID),
                 key1: process.env.ZALO_KEY1,
-                endpoint: "sb-openapi.zalopay.vn",
-                path: "/v2/create"
+                apiUrl: "https://sb-openapi.zalopay.vn/v2/create",
             };
 
             const date = new Date();
@@ -1551,9 +1550,9 @@ const donhang_user = {
                 expire_duration_seconds: 900,
                 item: JSON.stringify([]),
                 embed_data: JSON.stringify(embed_data),
-                amount: Math.max(1000, Number(soTienCanThanhToan)), 
+                amount: Math.max(1000, Math.round(Number(soTienCanThanhToan))), 
                 description: `Thanh toan don hang ${maHienThi}`,
-                bank_code: "zalopayapp", 
+                bank_code: "", 
                 callback_url: `${DOMAIN_BACKEND}/api/don_hang/payment/zalopay/ipn`
             };
 
