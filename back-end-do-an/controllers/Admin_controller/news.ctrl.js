@@ -213,7 +213,7 @@ const newsController = {
             const newNewsId = result.insertId;
 
             if(file){
-                const imageUrl = file.path;
+                const imageUrl = file.path || file.secure_url || file.url || file.filename;
                 const sqlInsertImage = `INSERT INTO AnhTinTuc (MaTT, LinkAnh) VALUES (?, ?)`;
                 await connection.query(sqlInsertImage, [newNewsId, imageUrl]);
             }
