@@ -213,7 +213,7 @@ const newsController = {
             const newNewsId = result.insertId;
 
             if(file){
-                const imageUrl = `http://localhost:3000/Images_news/${file.filename}`;
+                const imageUrl = file.filename;
                 const sqlInsertImage = `INSERT INTO AnhTinTuc (MaTT, LinkAnh) VALUES (?, ?)`;
                 await connection.query(sqlInsertImage, [newNewsId, imageUrl]);
             }
@@ -264,7 +264,7 @@ const newsController = {
 
             // 1. KIỂM TRA BÀI VIẾT CÓ TỒN TẠI HAY KHÔNG
             const [check] = await connection.query(`SELECT TieuDe FROM TinTuc WHERE MaTT = ?`, [newsId]);
-            if(check.length === 0) { // FIX LỖI 1: Sửa > 0 thành === 0
+            if(check.length === 0) {
                 await connection.rollback();
                 return res.status(404).json({
                     success: false,
@@ -275,7 +275,7 @@ const newsController = {
             // 2. KIỂM TRA TRÙNG TIÊU ĐỀ VỚI BÀI VIẾT *KHÁC*
             // Chỉ tìm những bài có cùng TieuDe nhưng khác MaTT hiện tại
             const [checkDuplicate] = await connection.query(`SELECT MaTT FROM TinTuc WHERE TieuDe = ? AND MaTT != ?`, [TieuDe, newsId]);
-            if(checkDuplicate.length > 0) { // FIX LỖI 2: Dùng câu truy vấn mới
+            if(checkDuplicate.length > 0) { 
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
@@ -293,8 +293,6 @@ const newsController = {
 
             // 4. CẬP NHẬT ẢNH (NẾU CÓ)
             if(file){
-                // Lời khuyên: Chỉ nên lưu file.filename (VD: 16298371.jpg), không nên lưu cả cụm localhost:3000
-                // Để sau này Deploy lên Server thật (vd: figurecollect.com), ảnh sẽ không bị lỗi hỏng link.
                 const imageUrl = file.filename; 
                 
                 const [checkImage] = await connection.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
