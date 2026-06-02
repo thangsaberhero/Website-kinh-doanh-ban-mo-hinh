@@ -15,14 +15,30 @@
         <div>
           <span class="font-headline text-primary tracking-widest text-xs uppercase font-bold mb-2 block">Chi Tiết Giao Dịch</span>
           <h1 class="text-5xl md:text-6xl font-headline font-black tracking-tighter text-white">
-            {{ "Mã: " + route.params.id }}
+            {{ "Mã: " + (orderInfo.MaDonHangHienThi || route.params.id) }}
           </h1>
         </div>
         <div class="flex flex-wrap gap-4">
-          <button class="px-6 py-3 bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-bold rounded-lg flex items-center gap-2 transition-all border border-outline-variant/15">
+          
+          <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && !isExpired(orderInfo.NgayLapDon)"
+                  @click="showPaymentModal = true" 
+                  class="px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
+            <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
+            Thanh toán ngay ({{ formatCountdown(orderInfo.NgayLapDon) }})
+          </button>
+          
+          <button v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && isExpired(orderInfo.NgayLapDon)"
+                  disabled
+                  class="px-6 py-3 bg-surface-container-high text-outline text-sm font-bold rounded-lg flex items-center gap-2 border border-outline-variant/20 cursor-not-allowed">
+            <span class="material-symbols-outlined text-lg">hourglass_empty</span>
+            Đang xử lý hủy
+          </button>
+
+          <button v-else class="px-6 py-3 bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-bold rounded-lg flex items-center gap-2 transition-all border border-outline-variant/15">
             <span class="material-symbols-outlined text-lg">support_agent</span>
             Liên hệ hỗ trợ
           </button>
+
           <button @click="router.push('/category')" class="px-8 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-bold rounded-lg flex items-center gap-2 transition-all hover:brightness-110 active:scale-95 shadow-lg shadow-primary/20">
             Tiếp tục mua sắm
           </button>
@@ -62,7 +78,6 @@
                   {{ step.name }}
                 </span>
                 <span v-if="step.time" class="text-[10px] text-outline mt-1">{{ step.time }}</span>
-                <!-- <span v-if="step.status === 'active'" class="text-[10px] text-primary/70 mt-1 italic">Hôm nay</span> -->
               </div>
             </div>
           </section>
@@ -89,7 +104,7 @@
                   <p class="text-sm text-outline font-medium tracking-tight">Mã định danh: {{ item.MaPhanLoai }}</p>
                 </div>
                 <div class="mt-4 md:mt-0 md:text-right flex flex-col justify-between">
-                  <span class="text-xs text-outline font-bold uppercase tracking-widest">Số lượng: 0{{ item.SoLuong }}</span>
+                  <span class="text-xs text-outline font-bold uppercase tracking-widest">Số lượng: {{ item.SoLuong < 10 ? '0'+item.SoLuong : item.SoLuong }}</span>
                   <div class="text-right mt-1">
                     <div v-if="item.LaHangKhuyenMai === 1" class="text-xs text-outline line-through mb-0.5">
                       {{ formatPrice(item.DonGiaGoc * item.SoLuong) }}
@@ -148,7 +163,7 @@
               </div>
               
               <div class="flex justify-between items-center text-sm" v-if="orderInfo.TongTien > orderInfo.ThanhTien">
-                <span class="text-outline">Voucher giảm giá và khuyến mãi</span>
+                <span class="text-outline">Voucher giảm giá và ưu đãi</span>
                 <span class="text-error font-bold">- {{ formatPrice(orderInfo.TongTien - orderInfo.ThanhTien) }}</span>
               </div>
               
@@ -157,12 +172,20 @@
                 <span class="text-lg font-headline font-black text-white">{{ formatPrice(orderInfo.ThanhTien) }}</span>
               </div>
 
-              <div class="flex justify-between items-center text-sm mt-2">
-                <span class="text-outline uppercase font-bold text-[10px] tracking-widest">Đã thanh toán</span>
-                <span class="text-green-400 font-bold">{{ formatPrice(orderInfo.DaThanhToan || 0) }}</span>
+              <div class="pt-4 border-t border-outline-variant/20 mt-4">
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-outline uppercase font-bold text-[10px] tracking-widest">Đã thanh toán</span>
+                  <span class="text-green-400 font-bold">{{ formatPrice(orderInfo.DaThanhToan || 0) }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm mt-2">
+                  <span class="text-outline uppercase font-bold text-[10px] tracking-widest">Phương thức</span>
+                  <span class="text-white font-medium max-w-[200px] text-right truncate" :title="orderInfo.TenPhuongThuc || 'Chưa giao dịch'">
+                    {{ orderInfo.TenPhuongThuc || 'Chưa giao dịch' }}
+                  </span>
+                </div>
               </div>
 
-              <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end mt-2">
+              <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end mt-2 bg-primary/5 -mx-6 px-6 py-4 border-b border-b-primary/20">
                 <span class="font-headline font-bold text-white uppercase tracking-widest text-[11px] w-2/3">
                   Số tiền cần trả 
                 </span>
@@ -175,7 +198,7 @@
             <div class="p-4 rounded-lg bg-surface-container-lowest border border-primary/20 flex items-start gap-3">
               <span class="material-symbols-outlined text-primary text-lg mt-0.5">verified_user</span>
               <div class="text-[11px] text-on-surface-variant leading-tight">
-                Đơn hàng của bạn được bảo hộ bởi <span class="text-primary font-bold">The Collector's Shield</span>. Hoàn tiền 200% nếu phát hiện hàng giả hoặc hư hỏng.
+                Đơn hàng của bạn được bảo hộ bởi <span class="text-primary font-bold">The Collector's Shield</span>. Hoàn tiền 200% nếu phát hiện hàng giả.
               </div>
             </div>
           </section>
@@ -183,16 +206,60 @@
         </div>
       </div>
     </main>
+
+    <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+        <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
+        <p class="text-sm text-on-surface-variant mb-6">Mã đơn: <span class="font-bold text-primary">{{ orderInfo.MaDonHangHienThi || route.params.id }}</span></p>
+        
+        <div class="space-y-4 mb-6">
+          <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">1. Chọn hình thức cọc</label>
+          <div class="grid grid-cols-2 gap-3 mb-6">
+            <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Thanh toán toàn bộ' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
+              <input type="radio" v-model="repayMethod" value="Thanh toán toàn bộ" class="hidden" />
+              <span class="text-xs font-bold">Thanh toán<br>Toàn bộ (100%)</span>
+            </label>
+            <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Cọc một phần' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
+              <input type="radio" v-model="repayMethod" value="Cọc một phần" class="hidden" />
+              <span class="text-xs font-bold">Chỉ đặt cọc<br>tối thiểu</span>
+            </label>
+          </div>
+
+          <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">2. Chọn cổng thanh toán</label>
+          <div class="space-y-3 mb-8">
+            <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#a50064] transition-all">
+              <input type="radio" v-model="paymentGateway" value="momo" class="text-[#a50064] focus:ring-[#a50064]" />
+              <span class="text-sm font-bold text-white">Ví MoMo</span>
+            </label>
+            <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#0068FF] transition-all">
+              <input type="radio" v-model="paymentGateway" value="zalopay" class="text-[#0068FF] focus:ring-[#0068FF]" />
+              <span class="text-sm font-bold text-white">ZaloPay</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button @click="showPaymentModal = false" class="flex-1 py-3 bg-surface-container text-xs font-bold uppercase tracking-widest text-outline hover:text-white rounded-lg transition-colors">Hủy</button>
+          <button @click="handleRepay" class="flex-[2] py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2">
+            <span v-if="isProcessingPayment" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
+            Quét mã
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
+import { useToastStore } from '../../stores/toast';
+import TheHeader from '../../components/TheHeader.vue';
 
 const authStore = useAuthStore();
+const toastStore = useToastStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -205,7 +272,16 @@ const orderInfo = ref({});
 const orderStatus = ref([]);
 const order = ref([]);
 
-//format time từ sql lên giao diện
+// QUẢN LÝ THANH TOÁN LẠI
+const showPaymentModal = ref(false);
+const repayMethod = ref('Thanh toán toàn bộ');
+const paymentGateway = ref('momo'); 
+const isProcessingPayment = ref(false);
+
+// Đồng hồ đếm ngược
+const now = ref(Date.now());
+let timerInterval;
+
 const formatTime = (dateString) => {
   if (!dateString) return null;
   const date = new Date(dateString);
@@ -216,6 +292,25 @@ const formatTime = (dateString) => {
   return `${hours}:${minutes}, ${day}/${month}`;
 };
 
+const getRemainingTime = (dateString) => {
+  if (!dateString) return 0;
+  const createdTime = new Date(dateString).getTime();
+  const expireTime = createdTime + 15 * 60 * 1000; 
+  return expireTime - now.value;
+};
+
+const formatCountdown = (dateString) => {
+  const diff = getRemainingTime(dateString);
+  if (diff <= 0) return '00:00';
+  const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+  const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+};
+
+const isExpired = (dateString) => {
+  return getRemainingTime(dateString) <= 0;
+};
+
 const baseSteps = [
   { name: 'Chờ duyệt', icon: 'receipt_long' },
   { name: 'Đang đóng gói', icon: 'inventory_2' },
@@ -223,49 +318,29 @@ const baseSteps = [
   { name: 'Đã giao', icon: 'check_circle' }
 ];
 
-// Logic Lộ trình động
 const timeline = computed(() => {
-  // Bọc lót an toàn khi lấy trạng thái mới nhất
   const latestStepName = (orderStatus.value && orderStatus.value.length > 0) 
-    ? orderStatus.value[orderStatus.value.length - 1].TenTrangThai 
-    : '';
+    ? orderStatus.value[orderStatus.value.length - 1].TenTrangThai : '';
 
   return baseSteps.map((step) => {
-    // Thêm mảng rỗng [] dự phòng nếu orderStatus.value bị undefined
     const safeOrderStatus = orderStatus.value || [];
     const dbRecord = safeOrderStatus.find(s => s.TenTrangThai === step.name);
-    
     let currentStatus = 'pending';
     let timeString = null;
-
     if (dbRecord) {
       timeString = formatTime(dbRecord.ThoiGian);
       currentStatus = (step.name === latestStepName) ? 'active' : 'completed';
     }
-
-    return {
-      ...step,
-      status: currentStatus,
-      time: timeString
-    };
+    return { ...step, status: currentStatus, time: timeString };
   });
 });
 
-// 4. Tính toán độ dài thanh tiến trình màu cam ĐỘNG
 const progressWidth = computed(() => {
   if (!orderStatus.value || orderStatus.value.length === 0) return '0%';
-  
   const latestStepName = orderStatus.value[orderStatus.value.length - 1].TenTrangThai;
   let currentIndex = baseSteps.findIndex(s => s.name === latestStepName);
-  
   if (currentIndex === -1) currentIndex = 0;
-  const stepCount = baseSteps.length - 1;
-  
-  return `${(currentIndex / stepCount) * 100}%`;
-});
-
-const subtotal = computed(() => {
-  return orderItems.value.reduce((sum, item) => sum + item.DonGia * item.SoLuong, 0);
+  return `${(currentIndex / (baseSteps.length - 1)) * 100}%`;
 });
 
 const fetchOrderdata = async () => {
@@ -275,13 +350,10 @@ const fetchOrderdata = async () => {
     return;
   }
   const maDH = route.params.id;
-  document.title = `Chi tiết đơn hàng #${maDH} | FigureCollect`;
   try {
     const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
 
     const result = await response.json();
@@ -290,8 +362,8 @@ const fetchOrderdata = async () => {
       orderInfo.value = result.data.ThongTinGiaoHang; 
       orderItems.value = result.data.DanhSachHang;
       orderStatus.value = result.data.Trang_thai_don_hang;
+      document.title = `Mã ${orderInfo.value.MaDonHangHienThi || maDH} | FigureCollect`;
     } else {
-      console.error(result.message);
       order.value = [];
     }
   } catch (error) {
@@ -299,24 +371,46 @@ const fetchOrderdata = async () => {
   }
 }
 
+const handleRepay = async () => {
+  const token = localStorage.getItem('token');
+  isProcessingPayment.value = true;
+  try {
+    const endpoint = paymentGateway.value === 'momo' ? '/api/don_hang/payment/momo/create' : '/api/don_hang/payment/zalopay/create';
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ MaDH: route.params.id, HinhThuc: repayMethod.value })
+    });
+    const data = await response.json();
+    if (response.ok) window.location.href = data.checkoutUrl;
+    else toastStore.showToast(data.message, "error");
+  } catch (error) {
+    toastStore.showToast("Lỗi kết nối máy chủ", "error");
+  } finally {
+    isProcessingPayment.value = false;
+  }
+};
+
 onMounted(() => {
   fetchOrderdata();
   if (!authStore.user) {
     const userString = localStorage.getItem('user');
     if (userString) authStore.user = JSON.parse(userString);
   }
-  window.scrollTo(0, 0); // Đảm bảo luôn cuộn lên top khi vào trang
+  window.scrollTo(0, 0); 
+  timerInterval = setInterval(() => { now.value = Date.now(); }, 1000);
 });
+
+onUnmounted(() => { clearInterval(timerInterval); });
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-
 .font-headline { font-family: 'Space Grotesk', sans-serif; }
 .font-body { font-family: 'Manrope', sans-serif; }
-
-.glass-panel {
-  background: rgba(28, 31, 43, 0.4);
-  backdrop-filter: blur(16px);
+.glass-panel { background: rgba(28, 31, 43, 0.4); backdrop-filter: blur(16px); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 </style>

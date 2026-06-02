@@ -988,11 +988,15 @@ const donhang_user = {
             const MaKH = result_kh[0].MaKH;
             
             const sql_donhang = `
-                SELECT DonHang.MaDH, MaDonHangHienThi, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note,
-                COALESCE(SUM(tt.SoTienGiaoDich), 0) AS DaThanhToan
+                SELECT 
+                    DonHang.MaDH, MaDonHangHienThi, TenNguoiNhan, SDTNguoiNhan, 
+                    DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note, TrangThaiThanhToan,
+                    COALESCE(SUM(tt.SoTienGiaoDich), 0) AS DaThanhToan, 
+                    GROUP_CONCAT(DISTINCT pttt.TenPhuongThuc SEPARATOR ', ') AS TenPhuongThuc
                 FROM DonHang
                 LEFT JOIN ThanhToan tt on DonHang.MaDH = tt.MaDH
-                WHERE DonHang.MaDH = ? AND MaKH = ?
+                LEFT JOIN PhuongThucThanhToan pttt on pttt.MaPT = tt.MaPT
+                WHERE DonHang.MaDH = ? AND DonHang.MaKH = ?
                 GROUP BY DonHang.MaDH
             `;
             const [donhang_info] = await db.query(sql_donhang, [MaDH, MaKH]);
