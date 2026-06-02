@@ -191,6 +191,11 @@
     visibleCount.value = itemsPerPage;
   });
 
+  const getImageUrl = (image) => {
+    if (!image) return 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg';
+    return image.startsWith('http') ? image : `${API_BASE_URL}/Images_news/${image}`;
+  };
+
   const formatTitle = (rawTitle) => {
     if (!rawTitle) return '';
     if (rawTitle.includes(':')) {
@@ -224,7 +229,7 @@
           category: item.TheLoai,
           date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),        
           readTime: Math.max(1, parseInt(item.ThoiGianDoc) || 1), 
-          image: (item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_news/${item.AnhDaiDien}`,
+          image: getImageUrl(item.AnhDaiDien),
           tags: item.Tags || ''
         }));
         // KHU VỰC 1 (HERO): Bốc bài viết MỚI NHẤT (vị trí số 0) để đưa lên Banner to nhất
@@ -240,7 +245,7 @@
           id: item.MaTT,
           title: item.TieuDe,
           category: item.TheLoai,
-          image: (item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_news/${item.AnhDaiDien}`
+          image: getImageUrl(item.AnhDaiDien)
         }));
 
         // KHU VỰC 4 (POPULAR): Gắn vào sidebar Đọc nhiều nhất

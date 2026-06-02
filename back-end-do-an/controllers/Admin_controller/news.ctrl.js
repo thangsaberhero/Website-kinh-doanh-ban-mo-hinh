@@ -340,11 +340,11 @@ const newsController = {
             const newsId = req.params.id;
             const MaTK = req.user.id;
             const [check] = await connection.query(`Select TieuDe from TinTuc where MaTT = ?`, [newsId]);
-            if(check.length > 0){
+            if(check.length === 0){
                 await connection.rollback();
                 return res.status(404).json({
                     success: false,
-                    message: "Không tìm thấy tin tức cần sửa!"
+                    message: "Không tìm thấy tin tức cần xóa!"
                 })
             }
             const TieuDe = check[0].TieuDe;

@@ -331,7 +331,9 @@
             status: item.TrangThai === 'Đã duyệt' ? 'Đã xuất bản' : item.TrangThai,
             views: item.LuotXem,
             comments: 0,
-            thumbnail: (item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_news/${item.AnhDaiDien}`
+            thumbnail: item.AnhDaiDien 
+                      ? (item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_news/${item.AnhDaiDien}`) 
+                      : 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg'
         }));
 
         // Cập nhật cục Phân trang
