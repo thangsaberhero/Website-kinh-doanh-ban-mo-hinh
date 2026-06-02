@@ -1494,11 +1494,15 @@ const donhang_user = {
     // THANH TOÁN ZALOPAY
     // ==============================================
     tao_link_zalopay_mock: async (req, res) => {
+        console.log("===== [ZALOPAY CREATE] START =====");
         try {
             const { MaDH, HinhThuc } = req.body;
+            console.log("Mã đơn hàng:", MaDH);
+            
             let soTienCanThanhToan = 0;
             let maHienThi = "";
 
+            // 1. Giữ nguyên logic tính tiền MySQL của bạn
             if (HinhThuc === 'Thanh toán toàn bộ') {
                 const sql_tong_tien = `SELECT ThanhTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
                 const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
@@ -1518,76 +1522,91 @@ const donhang_user = {
                 maHienThi = result_tien_coc[0].MaDonHangHienThi || MaDH.toString();
             }
 
-            // Dùng .env cho ZaloPay
+            const amount = Math.max(1000, Math.round(Number(soTienCanThanhToan)));
+            console.log("Số tiền thanh toán:", amount);
+
+            // 2. Lấy Env và cấu hình (Giống bạn kia)
             const DOMAIN_BACKEND = process.env.DOMAIN_BACKEND; 
             const DOMAIN_FRONTEND = process.env.DOMAIN_FRONTEND;
             const config = {
-                app_id: Number(process.env.ZALO_APP_ID),
+                app_id: process.env.ZALO_APP_ID, 
                 key1: process.env.ZALO_KEY1,
-                endpoint: "sb-openapi.zalopay.vn",
-                path: "/v2/create"
+                apiUrl: "https://sb-openapi.zalopay.vn/v2/create"
             };
 
+            // 3. Tạo app_trans_id ngẫu nhiên giống bạn kia
             const date = new Date();
             const yy = date.getFullYear().toString().slice(-2);
             const mm = ('0' + (date.getMonth() + 1)).slice(-2);
             const dd = ('0' + date.getDate()).slice(-2);
             const prefixDate = `${yy}${mm}${dd}`; 
             
-            const shortTimestamp = date.getTime().toString().slice(-6);
-            const app_trans_id = `${prefixDate}_${MaDH}_${shortTimestamp}`; 
+            const transID = Math.floor(Math.random() * 1000000);
+            const app_trans_id = `${prefixDate}_${MaDH}_${transID}`; 
+            console.log("app_trans_id:", app_trans_id);
             
-            const embed_data = { 
+            const embed_data = JSON.stringify({ 
                 redirecturl: `${DOMAIN_FRONTEND}/ordersuccess?maDH=${MaDH}`,
                 hinhThuc: HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit',
                 maDonHangHienThi: maHienThi
-            };
+            });
 
+            const item = JSON.stringify([{}]); // Bắt chước mảng rỗng của bạn kia
+
+            // 4. Tạo Body chuẩn
             const order = {
                 app_id: config.app_id,
                 app_trans_id: app_trans_id,
                 app_user: "KhachHang",
                 app_time: date.getTime(), 
                 expire_duration_seconds: 900,
-                item: JSON.stringify([]),
-                embed_data: JSON.stringify(embed_data),
-                amount: Math.max(1000, Number(soTienCanThanhToan)), 
+                item: item,
+                embed_data: embed_data,
+                amount: amount, 
                 description: `Thanh toan don hang ${maHienThi}`,
-                bank_code: "zalopayapp", 
+                bank_code: "", // ĐỂ TRỐNG ĐỂ HIỆN QR CODE LÊN WEB
                 callback_url: `${DOMAIN_BACKEND}/api/don_hang/payment/zalopay/ipn`
             };
 
-            const data = config.app_id + "|" + order.app_trans_id + "|" + order.app_user + "|" + order.amount + "|" + order.app_time + "|" + order.embed_data + "|" + order.item;
-            order.mac = crypto.createHmac('sha256', config.key1).update(data).digest('hex');
+            const dataToMac = [
+                config.app_id,
+                order.app_trans_id,
+                order.app_user,
+                order.amount,
+                order.app_time,
+                order.embed_data,
+                order.item
+            ].join("|");
 
-            const postData = JSON.stringify(order);
-            const options = {
-                hostname: config.endpoint,
-                port: 443,
-                path: config.path,
+            order.mac = crypto.createHmac('sha256', config.key1).update(dataToMac).digest('hex');
+
+            // ... (Phần trên giữ nguyên đến đoạn tạo xong biến order)
+
+            console.log("Request gửi ZaloPay:", order);
+
+            // 5. Gửi request bằng FETCH thuần và URLSearchParams (Không cần cài thêm thư viện)
+            const response = await fetch(config.apiUrl, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(postData) 
-                }
-            };
-
-            const reqZalo = https.request(options, resZalo => {
-                let body = '';
-                resZalo.on('data', chunk => { body += chunk; });
-                resZalo.on('end', () => {
-                    const response = JSON.parse(body);
-                    if (response.return_code === 1) {
-                        res.status(200).json({ message: "Tạo link ZaloPay thành công!", checkoutUrl: response.order_url });
-                    } else {
-                        res.status(400).json({ message: "Lỗi từ ZaloPay", data: response });
-                    }
-                });
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                // URLSearchParams tự động ép object order thành chuỗi định dạng x-www-form-urlencoded chuẩn
+                body: new URLSearchParams(order).toString() 
             });
 
-            reqZalo.on('error', (e) => res.status(500).json({ message: "Không thể kết nối đến ZaloPay" }));
-            reqZalo.write(postData);
-            reqZalo.end();
+            // Parse kết quả trả về thành JSON
+            const dataResult = await response.json();
+
+            console.log("Response từ ZaloPay:", dataResult);
+
+            // 6. Xử lý phản hồi
+            if (dataResult.return_code === 1) {
+                console.log("===== [ZALOPAY CREATE SUCCESS] =====");
+                res.status(200).json({ message: "Tạo link ZaloPay thành công!", checkoutUrl: dataResult.order_url });
+            } else {
+                console.log("===== [ZALOPAY CREATE FAIL] =====");
+                res.status(400).json({ message: "Lỗi từ ZaloPay", data: dataResult });
+            }
 
         } catch (error) {
             console.error("Lỗi Controller ZaloPay:", error);
