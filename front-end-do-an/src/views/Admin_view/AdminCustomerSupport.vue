@@ -360,11 +360,14 @@
   
 <script setup>
   import { ref, computed, onMounted, watch } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from '../../stores/toast';
   import { useLayoutStore } from '../../stores/layout';
 
+  const route = useRoute();
+  const router = useRouter();
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
 
@@ -527,14 +530,9 @@
     }
   };
 
-  onMounted(() => {
-      fetchAdminReviews();
-      fetchAdminContacts();
-  });
-
   watch([filterStar, filterUnreplied], () => {
-      currentPage.value = 1;
-      fetchAdminReviews();
+    currentPage.value = 1;
+    fetchAdminReviews();
   });
 
   let searchTimeout;
@@ -679,6 +677,21 @@
       const date = new Date(dateString);
       return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} ngày ${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
   };
+
+  
+  const checkTabFromUrl = () => {
+    if (route.query.tab === 'contacts') {
+      activeTab.value = 'contacts';
+      // Tùy chọn: Xóa tham số URL sau khi chuyển tab để F5 không bị kẹt
+      router.replace({ query: {} }); 
+    }
+  };
+
+  onMounted(() => {
+    fetchAdminReviews();
+    fetchAdminContacts();
+    checkTabFromUrl();
+  });
 </script>
   
 <style scoped>

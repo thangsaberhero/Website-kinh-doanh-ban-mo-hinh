@@ -158,7 +158,7 @@ const donhang_admin = {
                 const [resKho] = await connection.query(`UPDATE PhanLoai SET SoLuong = SoLuong - ? WHERE MaPhanLoai = ? AND SoLuong >= ?`, [kho[0], kho[1], kho[0]]);
                 if (resKho.affectedRows === 0) throw new Error("Cập nhật tồn kho thất bại");
 
-                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
+                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai, MaMoHinh FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
                 if (checkStock.length > 0 && checkStock[0].SoLuong <= 3) {
                     await connection.query(`
                         INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
@@ -167,7 +167,7 @@ const donhang_admin = {
                         "Cảnh báo kho (Đơn tại quầy)", 
                         `Sản phẩm "${checkStock[0].ChiTietPhanLoai}" chỉ còn ${checkStock[0].SoLuong} cái sau khi xuất bán.`, 
                         "KhoHang", 
-                        "/admin/inventory"
+                        `/admin/inventory?productId=${checkStock[0].MaMoHinh}`
                     ]);
                 }
             }
@@ -203,7 +203,7 @@ const donhang_admin = {
                 `Đơn hàng tại quầy #${maDH_moi}`, 
                 `Nhân viên vừa xuất một đơn hàng ngoài hệ thống trị giá ${tongTienThanhToan.toLocaleString('vi-VN')}đ.`, 
                 "DonHang", 
-                `/admin/orders`
+                `/admin/orders?viewOrderId=${maDH_moi}`
             ]);
 
             await connection.commit();
@@ -853,7 +853,7 @@ const donhang_admin = {
                 `Hoàn trả đơn hàng #${MaDH}`, 
                 `Đơn hàng mã ${maHienThi} vừa được xác nhận hoàn trả và nhập lại kho. Lý do: ${LyDoHoan}`, 
                 "DonHang", 
-                `/admin/orders/${MaDH}`
+                `/admin/orders?viewOrderId=${MaDH}`
             ]);
 
             await connection.commit();

@@ -852,11 +852,14 @@
   
 <script setup>
   import { ref, onMounted, watch} from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from "../../stores/toast";
   import { useLayoutStore } from '../../stores/layout';
   
+  const route = useRoute();
+  const router = useRouter();
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
   const fileInputRef = ref(null);
@@ -1046,13 +1049,6 @@
       isLoading.value = false;
     }
   };
-
-   // Gọi API ngay khi Load trang
-  onMounted(() => {
-    fetchProducts();
-    fetchBrands();
-    fetchCategories();
-  });
 
   watch(activeFilter, () => {
     currentPage.value = 1;
@@ -1628,6 +1624,34 @@
     }
   };
 
+  const checkAndOpenInventoryFromUrl = async () => {
+    if (route.query.productId) {
+      const pId = parseInt(route.query.productId);
+      const targetProduct = products.value.find(p => p.id === pId);
+      
+      if (targetProduct) {
+        openEditModal(targetProduct);
+      } 
+      else {
+        openEditModal({ id: pId });
+      }
+    }
+  };
+
+  watch(isEditModalOpen, (isOpen) => {
+    if (!isOpen && route.query.productId) {
+      const query = { ...route.query };
+      delete query.productId;
+      router.replace({ query });
+    }
+  });
+
+  onMounted(async () => {
+    fetchBrands();
+    fetchCategories();
+    await fetchProducts();
+    checkAndOpenInventoryFromUrl(); 
+  });
 </script>
 <style scoped>
   .custom-scrollbar::-webkit-scrollbar { width: 6px; }

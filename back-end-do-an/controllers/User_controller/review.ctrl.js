@@ -67,7 +67,7 @@ const reviewController = {
                 tittleReview, 
                 `Sản phẩm (Mã MH: ${MaMoHinh}) vừa nhận được một đánh giá từ khách hàng.`, 
                 "HeThong", 
-                `/admin/support`
+                `/admin/support?tab=reviews`
             ]);
 
             await connection.commit();
