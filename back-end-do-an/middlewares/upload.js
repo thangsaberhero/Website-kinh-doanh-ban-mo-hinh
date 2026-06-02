@@ -46,7 +46,7 @@ const createUploader = (folderName) => {
     if (MulterStorageCloudinary.CloudinaryStorage) {
         // Cú pháp dành cho thư viện phiên bản mới (v4+)
         storage = new MulterStorageCloudinary.CloudinaryStorage({
-            cloudinary: cloudinary.v2,
+            cloudinary: cloudinary,
             params: {
                 folder: `FigureCollect/${folderName}`,
                 allowedFormats: ['jpg', 'png', 'jpeg', 'webp']
@@ -55,7 +55,7 @@ const createUploader = (folderName) => {
     } else {
         // Cú pháp dành cho thư viện phiên bản cũ (v2)
         storage = MulterStorageCloudinary({
-            cloudinary: cloudinary.v2,
+            cloudinary: cloudinary,
             folder: `FigureCollect/${folderName}`,
             allowedFormats: ['jpg', 'png', 'jpeg', 'webp']
         });
