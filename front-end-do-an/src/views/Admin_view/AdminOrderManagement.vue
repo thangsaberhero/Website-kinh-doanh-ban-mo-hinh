@@ -703,12 +703,15 @@
   
 <script setup>
   import { ref, computed, watch } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { onMounted } from 'vue';
   import { useToastStore } from "../../stores/toast";
   import { useLayoutStore } from '../../stores/layout';
 
+  const route = useRoute();
+  const router = useRouter();
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
 
@@ -1034,8 +1037,6 @@ const exportExcelReport = async () => {
     }
   };
 
-  // Tự động tải khi mở trang & đổi Tab
-  onMounted(() => fetchOrders());
   // --- KỸ THUẬT DEBOUNCE & GỘP WATCHER TỐI ƯU ---
   let fetchTimeout = null;
 
@@ -1067,7 +1068,6 @@ const exportExcelReport = async () => {
   const viewOrderDetails = async (order) => {
     try {
       const token = localStorage.getItem('token');
-      console.log("Đang gọi API lấy chi tiết mã đơn:", order.id); // Log ra để kiểm tra
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/${order.id}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -1076,13 +1076,13 @@ const exportExcelReport = async () => {
       if (result.success) {
         const info = result.data.ThongTinGiaoHang;
         const productsList = result.data.DanhSachHang;
+        const orderDateObj = new Date(info.NgayLapDon || new Date());
         
         viewingOrder.value = {
           id: order.id,
-          code: order.code,
-          time: order.time,
-          date: order.date,
-          // Dùng toán tử (||) để chống lỗi nếu tên cột DB của bạn khác
+          code: order.code || `#FC-${order.id}`,
+          time: order.time || orderDateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+          date: order.date || orderDateObj.toLocaleDateString('vi-VN'),
           customer: info.TenNguoiNhan || info.TenKH || 'Khách hàng',
           phone: info.SDTNguoiNhan || info.SDT || 'Chưa cập nhật',
           address: info.DiaChiGiao || info.DiaChi || 'Chưa cập nhật',
@@ -1103,11 +1103,12 @@ const exportExcelReport = async () => {
           }))
         };
         isViewOrderDrawerOpen.value = true;
-      } else {
-        // NẾU BACKEND LỖI, BẬT CẢNH BÁO LÊN MÀN HÌNH NGAY
+      } 
+      else {
         alert("Lỗi từ CSDL: " + result.message);
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Lỗi gọi chi tiết đơn:", error);
       alert("Lỗi mạng: Không thể kết nối tới Server. Hãy bật F12 xem Console.");
     }
@@ -1354,6 +1355,32 @@ const exportExcelReport = async () => {
       toastStore.showToast('Lỗi kết nối máy chủ', 'error');
     }
   };
+
+  // Hàm xử lý mở modal tự động từ URL
+  const checkAndOpenOrderFromUrl = () => {
+    if (route.query.viewOrderId) {
+      viewOrderDetails({ id: parseInt(route.query.viewOrderId) });
+    }
+  };
+
+  watch(() => route.query.viewOrderId, (newVal) => {
+    if (newVal) {
+      viewOrderDetails({ id: parseInt(newVal) });
+    }
+  });
+
+  watch(isViewOrderDrawerOpen, (isOpen) => {
+    if (!isOpen && route.query.viewOrderId) {
+      const query = { ...route.query };
+      delete query.viewOrderId;
+      router.replace({ query });
+    }
+  });
+
+  onMounted(() => {
+    fetchOrders();
+    checkAndOpenOrderFromUrl(); 
+  });
 </script>
   
 <style scoped>

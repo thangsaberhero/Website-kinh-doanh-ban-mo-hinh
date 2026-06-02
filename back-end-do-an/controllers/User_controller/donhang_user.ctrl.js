@@ -775,7 +775,7 @@ const donhang_user = {
                         message: "Sản phẩm bạn chọn vừa có người mua hết hoặc vượt tồn kho! Vui lòng làm mới giỏ hàng." });
                 }
 
-                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
+                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai, MaMoHinh FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
                 if (checkStock.length > 0 && checkStock[0].SoLuong <= 5) {
                     await connection.query(`
                         INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
@@ -784,7 +784,7 @@ const donhang_user = {
                         "Cảnh báo sắp hết hàng", 
                         `Phân loại "${checkStock[0].ChiTietPhanLoai}" chỉ còn lại ${checkStock[0].SoLuong} sản phẩm trong kho.`, 
                         "KhoHang", 
-                        "/admin/inventory"
+                        `/admin/inventory?productId=${checkStock[0].MaMoHinh}`
                     ]);
                 }
             }
@@ -847,7 +847,7 @@ const donhang_user = {
                 `Đơn hàng mới #${maDH_moi}`, 
                 `Khách hàng ${TenNguoiNhan} vừa đặt một đơn hàng trị giá ${formatTien}đ.`, 
                 "DonHang", 
-                `/admin/orders`
+                `/admin/orders?viewOrderId=${maDH_moi}`
             ]);
             await connection.commit();
             res.status(200).json({ 
@@ -1165,7 +1165,7 @@ const donhang_user = {
                 `Đơn hàng bị hủy #${MaDH}`, 
                 `Khách hàng vừa tự hủy đơn hàng mang mã ${maHienThi}.`, 
                 "DonHang", 
-                `/admin/orders`
+                `/admin/orders?viewOrderId=${MaDH}`
             ]);
 
             await connection.commit();

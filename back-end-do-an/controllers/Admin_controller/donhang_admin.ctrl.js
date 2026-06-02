@@ -158,7 +158,7 @@ const donhang_admin = {
                 const [resKho] = await connection.query(`UPDATE PhanLoai SET SoLuong = SoLuong - ? WHERE MaPhanLoai = ? AND SoLuong >= ?`, [kho[0], kho[1], kho[0]]);
                 if (resKho.affectedRows === 0) throw new Error("Cập nhật tồn kho thất bại");
 
-                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
+                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai, MaMoHinh FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
                 if (checkStock.length > 0 && checkStock[0].SoLuong <= 3) {
                     await connection.query(`
                         INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
@@ -167,7 +167,7 @@ const donhang_admin = {
                         "Cảnh báo kho (Đơn tại quầy)", 
                         `Sản phẩm "${checkStock[0].ChiTietPhanLoai}" chỉ còn ${checkStock[0].SoLuong} cái sau khi xuất bán.`, 
                         "KhoHang", 
-                        "/admin/inventory"
+                        `/admin/inventory?productId=${checkStock[0].MaMoHinh}`
                     ]);
                 }
             }
@@ -203,7 +203,7 @@ const donhang_admin = {
                 `Đơn hàng tại quầy #${maDH_moi}`, 
                 `Nhân viên vừa xuất một đơn hàng ngoài hệ thống trị giá ${tongTienThanhToan.toLocaleString('vi-VN')}đ.`, 
                 "DonHang", 
-                `/admin/orders`
+                `/admin/orders?viewOrderId=${maDH_moi}`
             ]);
 
             await connection.commit();
@@ -683,7 +683,7 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try{
             await connection.beginTransaction();
-            const { MaDH } = req.body;
+            const { MaDH, TrangThai } = req.body;
             const MaTK = req.user.id;
 
             const sql_lay_trang_thai = `
@@ -696,34 +696,30 @@ const donhang_admin = {
             `;
             const [trangthai] = await connection.query(sql_lay_trang_thai, [MaDH]);
 
-            if (trangthai_cu.length === 0) {
+            if (trangthai.length === 0) {
                 await connection.rollback();
                 return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!"});
             }
             
             const matrangthai = trangthai[0].MaTrangThai;
-            // 2. FIX: Gọi đúng tên biến trangthai
             const maHienThi = trangthai[0].MaDonHangHienThi; 
 
-            // 3. LOGIC NGHIỆP VỤ: Chỉ cho phép "Next Step" nếu đang ở bước 1, 2, 3
             if(matrangthai >= 4){
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
-                    message: "Đơn hàng đã hoàn tất, đã hủy hoặc đang hoàn trả! Không thể tự động chuyển bước tiếp theo."
+                    message: "Đơn hàng đã hoàn tất, đã hủy hoặc đang hoàn trả! Không thể cập nhật trạng thái."
                 });
             }
 
-            const trangThaiMoi = matrangthai + 1;
+            const trangThaiMoi = TrangThai ? parseInt(TrangThai) : (matrangthai + 1);
 
             const update_trang_thai = `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, ?, NOW())`;
             await connection.query(update_trang_thai, [MaDH, trangThaiMoi]);
             
-            // Lấy tên trạng thái để ghi log và báo về Frontend
             const [tentrangthai] = await connection.query(`SELECT TenTrangThai FROM TrangThai WHERE MaTrangThai = ?`, [trangThaiMoi]);
             const ChiTietTrangThai = tentrangthai[0].TenTrangThai;
 
-            // 5. GHI LOG HOẠT ĐỘNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -746,7 +742,6 @@ const donhang_admin = {
             res.status(500).json({ success: false, message: "Lỗi server khi cập nhật trạng thái!"});
         }
         finally{
-            if (connection) connection.release();
             if (connection) connection.release();
         }
     },
@@ -853,7 +848,7 @@ const donhang_admin = {
                 `Hoàn trả đơn hàng #${MaDH}`, 
                 `Đơn hàng mã ${maHienThi} vừa được xác nhận hoàn trả và nhập lại kho. Lý do: ${LyDoHoan}`, 
                 "DonHang", 
-                `/admin/orders/${MaDH}`
+                `/admin/orders?viewOrderId=${MaDH}`
             ]);
 
             await connection.commit();

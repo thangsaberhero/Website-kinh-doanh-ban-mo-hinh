@@ -18,7 +18,7 @@ const contactController = {
                 `Tin nhắn liên hệ mới`, 
                 `Khách hàng ${name} (${email}) vừa gửi một yêu cầu hỗ trợ.`, 
                 "HeThong", 
-                `/admin/support`
+                `/admin/support?tab=contacts`
             ]);
 
             res.status(200).json({ 

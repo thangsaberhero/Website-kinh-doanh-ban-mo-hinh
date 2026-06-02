@@ -104,7 +104,7 @@ const account_admin = {
                     "Nhân sự mới", 
                     `Tài khoản ${roleText} mang tên đăng nhập "@${TenDN}" vừa được cấp vào hệ thống.`, 
                     "HeThong", 
-                    "/admin/user"
+                    `/admin/users?userId=${MaTK}`
                 ]);
             }
 
@@ -705,7 +705,7 @@ const account_admin = {
                 "Cảnh báo bảo mật", 
                 `Mật khẩu của tài khoản "@${targetName}" vừa bị Quản trị viên đặt lại về mặc định.`, 
                 "HeThong", 
-                "/admin/user"
+                `/admin/users?userId=${MaTK}`
             ]);
 
             await connection.commit();

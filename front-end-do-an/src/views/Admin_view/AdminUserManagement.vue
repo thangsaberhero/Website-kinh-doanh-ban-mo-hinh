@@ -627,11 +627,12 @@
   import { ref } from 'vue';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
-  import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast';
   import { useLayoutStore } from '../../stores/layout';
   import { onMounted, watch, computed } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   
+  const route = useRoute();
   const router = useRouter();
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
@@ -853,12 +854,6 @@
     allLogsPagination.value.currentPage = page;
     fetchAllLogs();
   };
-
-  onMounted(() => {
-    fetchUsers();
-    fetchUserStats();
-    fetchSecurityLogs();
-  });
 
   const isAddUserModalOpen = ref(false);
   const newUser = ref({
@@ -1208,6 +1203,27 @@
     
     return loginDate.toLocaleDateString('vi-VN');
   };
+
+  const checkAndOpenUserFromUrl = () => {
+    if (route.query.userId) {
+      viewUser(parseInt(route.query.userId));
+    }
+  };
+
+  watch(isViewUserDrawerOpen, (isOpen) => {
+    if (!isOpen && route.query.userId) {
+      const query = { ...route.query };
+      delete query.userId;
+      router.replace({ query });
+    }
+  });
+
+  onMounted(() => {
+    fetchUsers();
+    fetchUserStats();
+    fetchSecurityLogs();
+    checkAndOpenUserFromUrl();
+  });
 </script>
   
 <style scoped>
