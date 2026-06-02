@@ -45,7 +45,7 @@
 
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col flex-1 min-h-[500px]">
               <Editor
-                api-key="m7ecn07md9z34y1l3o6ekspbur4e52910tsvii43ieymhdx1"
+                api-key="t3mjumsl1aee2vu9ta3164zxe4nnguyn0k3c3s4bryu06dkw"
                 v-model="postData.content"
                 :init="editorConfig"
               />     
