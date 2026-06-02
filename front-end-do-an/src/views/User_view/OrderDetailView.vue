@@ -63,27 +63,41 @@
             </h3>
             
             <div class="relative flex justify-between items-start">
+              <!-- Đường line nền -->
               <div class="absolute top-5 left-0 w-full h-[2px] bg-surface-container-highest z-0">
-                <div class="h-full bg-primary shadow-[0_0_10px_rgba(255,143,115,0.5)] transition-all duration-1000" :style="{ width: progressWidth }"></div>
+                <div :class="['h-full transition-all duration-1000', currentOrderStatus === 'Đã hủy' ? 'bg-error shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-primary shadow-[0_0_10px_rgba(255,143,115,0.5)]']" :style="{ width: progressWidth }"></div>
               </div>
 
-              <div v-for="(step, index) in timeline" :key="index" class="relative z-10 flex flex-col items-center text-center w-24">
+              <div v-for="(step, index) in timeline" :key="index" class="relative z-10 flex flex-col items-center text-center flex-1">
+                
+                <!-- ICON ĐÃ HOÀN THÀNH -->
                 <div v-if="step.status === 'completed'" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary-fixed mb-3 shadow-[0_0_15px_rgba(255,143,115,0.4)]">
                   <span class="material-symbols-outlined text-lg font-bold">check</span>
                 </div>
-                <!-- 🔥 ĐÃ SỬA: Cập nhật biến currentOrderStatus cho Lộ trình -->
-                <div v-else-if="step.status === 'active' && currentOrderStatus === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)]">
-                  <span class="material-symbols-outlined text-xl">cancel</span>
+                
+                <!-- ICON ĐANG ACTIVE (MÀU ĐỎ KHI HỦY) -->
+                <div v-else-if="step.status === 'active' && step.name === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)] animate-pulse">
+                  <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
+
+                <!-- ICON ĐANG ACTIVE (MÀU CAM KHI HOÀN HÀNG) -->
+                <div v-else-if="step.status === 'active' && step.name.includes('hoàn hàng')" class="w-12 h-12 -mt-1 rounded-full bg-orange-500 border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-pulse">
+                  <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
+                </div>
+                
+                <!-- ICON ĐANG ACTIVE (BÌNH THƯỜNG) -->
                 <div v-else-if="step.status === 'active'" class="w-12 h-12 -mt-1 rounded-full bg-primary-container border-4 border-surface flex items-center justify-center text-on-primary-fixed mb-2 shadow-[0_0_20px_rgba(255,120,86,0.6)] animate-pulse">
                   <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
+                
+                <!-- ICON PENDING (CHƯA TỚI) -->
                 <div v-else class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center text-outline mb-3">
                   <span class="material-symbols-outlined text-lg">{{ step.icon }}</span>
                 </div>
 
-                <span :class="['text-[11px] font-bold uppercase tracking-tighter', step.status === 'active' ? (currentOrderStatus === 'Đã hủy' ? 'text-error' : 'text-primary') : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
-                  {{ currentOrderStatus === 'Đã hủy' && step.status === 'active' ? 'Đã hủy' : step.name }}
+                <!-- MÀU SẮC TEXT TƯƠNG ỨNG -->
+                <span :class="['text-[11px] font-bold uppercase tracking-tighter whitespace-nowrap', step.status === 'active' ? (step.name === 'Đã hủy' ? 'text-error' : (step.name.includes('hoàn hàng') ? 'text-orange-400' : 'text-primary')) : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
+                  {{ step.name }}
                 </span>
                 <span v-if="step.time" class="text-[10px] text-outline mt-1">{{ step.time }}</span>
               </div>
