@@ -252,8 +252,33 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useLayoutStore } from '../../stores/layout';
 import { useToastStore } from '../../stores/toast';
+import { onMounted} from 'vue';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const scrollToTopCustom = (duration = 1000) => {
+    const startPosition = window.scrollY;
+    const startTime = performance.now();
+
+    const animateScroll = (currentTime) => {
+      const timeElapsed = currentTime - startTime;
+      let progress = Math.min(timeElapsed / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+      // Thực hiện cuộn
+      window.scrollTo(0, startPosition * (1 - easeProgress));
+
+      // Nếu chưa hết thời gian thì tiếp tục gọi animation
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animateScroll);
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
+  };
+
+  onMounted(() => {
+    scrollToTopCustom();
+  });
 export default {
   name: "AdminBlockchain",
   components: {

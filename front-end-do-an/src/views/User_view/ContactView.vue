@@ -150,9 +150,34 @@
 </template>
   
 <script setup>
-    import { ref } from 'vue';
+    import { ref, onMounted } from 'vue';
     import TheHeader from '../../components/TheHeader.vue';
     import { useToastStore } from '../../stores/toast'
+
+    const scrollToTopCustom = (duration = 1000) => {
+        const startPosition = window.scrollY;
+        const startTime = performance.now();
+
+        const animateScroll = (currentTime) => {
+        const timeElapsed = currentTime - startTime;
+        let progress = Math.min(timeElapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+        // Thực hiện cuộn
+        window.scrollTo(0, startPosition * (1 - easeProgress));
+
+        // Nếu chưa hết thời gian thì tiếp tục gọi animation
+        if (timeElapsed < duration) {
+            requestAnimationFrame(animateScroll);
+        }
+        };
+
+        requestAnimationFrame(animateScroll);
+    };
+
+    onMounted(() => {
+        scrollToTopCustom();
+    });
 
     const toastStore = useToastStore();
     const form = ref({
