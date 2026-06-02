@@ -213,7 +213,7 @@ const newsController = {
             const newNewsId = result.insertId;
 
             if(file){
-                const imageUrl = file.filename;
+                const imageUrl = file.path;
                 const sqlInsertImage = `INSERT INTO AnhTinTuc (MaTT, LinkAnh) VALUES (?, ?)`;
                 await connection.query(sqlInsertImage, [newNewsId, imageUrl]);
             }
@@ -293,7 +293,7 @@ const newsController = {
 
             // 4. CẬP NHẬT ẢNH (NẾU CÓ)
             if(file){
-                const imageUrl = file.filename; 
+                const imageUrl = file.path; 
                 
                 const [checkImage] = await connection.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
                 if(checkImage.length > 0){
