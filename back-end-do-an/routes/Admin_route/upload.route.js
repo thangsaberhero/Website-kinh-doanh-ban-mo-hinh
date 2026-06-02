@@ -6,7 +6,7 @@ router.post('/', uploadNews.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "Không có file nào được tải lên" });
   }
-  const imageUrl = `http://localhost:3000/Images_news/${req.file.filename}`;
+  const imageUrl = req.file.path;
   res.json({ location: imageUrl }); 
 });
 
