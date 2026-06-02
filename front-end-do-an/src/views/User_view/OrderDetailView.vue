@@ -20,14 +20,14 @@
         </div>
         <div class="flex flex-wrap gap-4">
           
-          <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán' && !isExpired(orderInfo.NgayLapDon)"
+          <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && !isExpired(orderInfo.NgayLapDon)"
                   @click="showPaymentModal = true" 
                   class="px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
             <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
             Thanh toán ngay ({{ formatCountdown(orderInfo.NgayLapDon) }})
           </button>
           
-          <button v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán' && isExpired(orderInfo.NgayLapDon)"
+          <button v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && isExpired(orderInfo.NgayLapDon)"
                   disabled
                   class="px-6 py-3 bg-surface-container-high text-outline text-sm font-bold rounded-lg flex items-center gap-2 border border-outline-variant/20 cursor-not-allowed">
             <span class="material-symbols-outlined text-lg">hourglass_empty</span>
@@ -35,7 +35,7 @@
           </button>
 
           <!-- 🔥 ĐÃ SỬA: Thay orderInfo.TrangThaiDonHang thành currentOrderStatus -->
-          <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán'"
+          <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa thanh toán'"
                   @click="showCancelModal = true"
                   class="px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center gap-2 transition-all active:scale-95">
             <span class="material-symbols-outlined text-lg">cancel</span>
