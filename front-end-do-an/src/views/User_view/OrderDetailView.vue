@@ -20,18 +20,25 @@
         </div>
         <div class="flex flex-wrap gap-4">
           
-          <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && !isExpired(orderInfo.NgayLapDon)"
+          <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán' && !isExpired(orderInfo.NgayLapDon)"
                   @click="showPaymentModal = true" 
                   class="px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
             <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
             Thanh toán ngay ({{ formatCountdown(orderInfo.NgayLapDon) }})
           </button>
           
-          <button v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && isExpired(orderInfo.NgayLapDon)"
+          <button v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán' && isExpired(orderInfo.NgayLapDon)"
                   disabled
                   class="px-6 py-3 bg-surface-container-high text-outline text-sm font-bold rounded-lg flex items-center gap-2 border border-outline-variant/20 cursor-not-allowed">
             <span class="material-symbols-outlined text-lg">hourglass_empty</span>
             Đang xử lý hủy
+          </button>
+
+          <button v-if="orderInfo.TrangThaiDonHang === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa Thanh Toán'"
+                  @click="showCancelModal = true"
+                  class="px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center gap-2 transition-all active:scale-95">
+            <span class="material-symbols-outlined text-lg">cancel</span>
+            Hủy đơn hàng
           </button>
 
           <button v-else class="px-6 py-3 bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-bold rounded-lg flex items-center gap-2 transition-all border border-outline-variant/15">
@@ -46,7 +53,6 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
         <div class="lg:col-span-8 space-y-8">
           
           <section class="glass-panel rounded-xl p-8 border border-outline-variant/10 shadow-xl">
@@ -61,21 +67,21 @@
               </div>
 
               <div v-for="(step, index) in timeline" :key="index" class="relative z-10 flex flex-col items-center text-center w-24">
-                
                 <div v-if="step.status === 'completed'" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary-fixed mb-3 shadow-[0_0_15px_rgba(255,143,115,0.4)]">
                   <span class="material-symbols-outlined text-lg font-bold">check</span>
                 </div>
-                
+                <div v-else-if="step.status === 'active' && orderInfo.TrangThaiDonHang === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)]">
+                  <span class="material-symbols-outlined text-xl">cancel</span>
+                </div>
                 <div v-else-if="step.status === 'active'" class="w-12 h-12 -mt-1 rounded-full bg-primary-container border-4 border-surface flex items-center justify-center text-on-primary-fixed mb-2 shadow-[0_0_20px_rgba(255,120,86,0.6)] animate-pulse">
                   <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
-                
                 <div v-else class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center text-outline mb-3">
                   <span class="material-symbols-outlined text-lg">{{ step.icon }}</span>
                 </div>
 
-                <span :class="['text-[11px] font-bold uppercase tracking-tighter', step.status === 'active' ? 'text-primary' : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
-                  {{ step.name }}
+                <span :class="['text-[11px] font-bold uppercase tracking-tighter', step.status === 'active' ? (orderInfo.TrangThaiDonHang === 'Đã hủy' ? 'text-error' : 'text-primary') : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
+                  {{ orderInfo.TrangThaiDonHang === 'Đã hủy' && step.status === 'active' ? 'Đã hủy' : step.name }}
                 </span>
                 <span v-if="step.time" class="text-[10px] text-outline mt-1">{{ step.time }}</span>
               </div>
@@ -118,7 +124,6 @@
         </div>
 
         <div class="lg:col-span-4 space-y-8 sticky top-24">
-          
           <section class="glass-panel rounded-xl p-6 border border-outline-variant/10 shadow-xl">
             <div class="flex items-center gap-3 mb-6 border-b border-outline-variant/10 pb-4">
               <div class="w-10 h-10 rounded-lg bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
@@ -202,7 +207,6 @@
               </div>
             </div>
           </section>
-          
         </div>
       </div>
     </main>
@@ -248,6 +252,28 @@
       </div>
     </div>
 
+    <div v-if="showCancelModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div class="bg-surface-container-high border border-error/30 rounded-3xl p-8 max-w-md w-full shadow-[0_0_50px_rgba(244,63,94,0.15)] animate-[fadeIn_0.2s_ease-out]">
+        <div class="flex flex-col items-center text-center mb-6">
+          <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center text-error mb-4 border border-error/20">
+            <span class="material-symbols-outlined text-3xl">warning</span>
+          </div>
+          <h3 class="font-headline text-2xl font-bold text-white mb-2">Hủy đơn hàng?</h3>
+          <p class="text-sm text-on-surface-variant">Bạn có chắc chắn muốn hủy đơn hàng <span class="font-bold text-white">{{ orderInfo.MaDonHangHienThi || route.params.id }}</span> không? Hành động này không thể hoàn tác.</p>
+        </div>
+        
+        <div class="flex gap-3">
+          <button @click="showCancelModal = false" class="flex-1 py-3.5 bg-surface-container text-sm font-bold uppercase tracking-widest text-outline hover:text-white rounded-xl transition-colors">
+            Quay lại
+          </button>
+          <button @click="confirmCancelOrder" :disabled="isCanceling" class="flex-1 py-3.5 bg-error text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2 shadow-lg shadow-error/20 disabled:opacity-50">
+            <span v-if="isCanceling" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
+            Đồng ý hủy
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -277,6 +303,10 @@ const showPaymentModal = ref(false);
 const repayMethod = ref('Thanh toán toàn bộ');
 const paymentGateway = ref('momo'); 
 const isProcessingPayment = ref(false);
+
+// QUẢN LÝ HỦY ĐƠN HÀNG (MỚI)
+const showCancelModal = ref(false);
+const isCanceling = ref(false);
 
 // Đồng hồ đếm ngược
 const now = ref(Date.now());
@@ -388,6 +418,39 @@ const handleRepay = async () => {
     toastStore.showToast("Lỗi kết nối máy chủ", "error");
   } finally {
     isProcessingPayment.value = false;
+  }
+};
+
+// HÀM XÁC NHẬN HỦY ĐƠN HÀNG (MỚI)
+const confirmCancelOrder = async () => {
+  isCanceling.value = true;
+  try {
+    const token = localStorage.getItem('token');
+    
+    // Gọi API /cancel bằng phương thức PUT
+    const response = await fetch(`${API_BASE_URL}/api/don_hang/cancel`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ MaDH: route.params.id }) 
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      toastStore.showToast("Đã hủy đơn hàng thành công!", "success");
+      showCancelModal.value = false;
+      fetchOrderdata(); // Load lại data để cập nhật giao diện
+    } else {
+      toastStore.showToast(data.message, "error");
+    }
+  } catch (error) {
+    console.error("Lỗi khi hủy đơn:", error);
+    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+  } finally {
+    isCanceling.value = false;
   }
 };
 

@@ -1059,11 +1059,11 @@ const donhang_user = {
         try {
             await connection.beginTransaction();
             const { MaDH } = req.body;
-            const MaTK = req.user.id; // Lấy từ Token để xác thực
+            const MaTK = req.user.id;
 
-            // 1. Kiểm tra đơn hàng có tồn tại và CÓ PHẢI CỦA NGƯỜI NÀY KHÔNG
+            // 1. Kiểm tra đơn hàng có tồn tại, CÓ PHẢI CỦA NGƯỜI NÀY KHÔNG, và LẤY TRẠNG THÁI THANH TOÁN
             const sql_kiemtra_tt = `
-                SELECT cttt.MaTrangThai, dh.MaKH, dh.MaDonHangHienThi
+                SELECT cttt.MaTrangThai, dh.MaKH, dh.MaDonHangHienThi, dh.TrangThaiThanhToan
                 FROM DonHang dh
                 LEFT JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
                 INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH
@@ -1079,21 +1079,38 @@ const donhang_user = {
 
             const currentStatus = don_hang[0].MaTrangThai;
             const maHienThi = don_hang[0].MaDonHangHienThi;
+            const trangThaiThanhToan = don_hang[0].TrangThaiThanhToan;
 
-            // 2. NGHIỆP VỤ: Khách chỉ được hủy khi đơn đang "Chờ duyệt" (Mã 1)
-            // (Mã 2: Đang đóng gói, 3: Đang vận chuyển, 4: Đã giao... thì không được hủy online)
+            // 2. NGHIỆP VỤ 1: Chỉ được hủy khi đơn đang "Chờ duyệt"
             if(currentStatus !== 1){
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
-                    message: "Không thể huỷ! Đơn hàng của bạn đã được Shop tiếp nhận xử lý hoặc đã giao cho đơn vị vận chuyển, vui lòng liên hệ nhân viên để có hướng xử lý."
+                    message: "Không thể huỷ! Đơn hàng đã được Shop tiếp nhận xử lý hoặc đang vận chuyển."
                 });
             }
+
+            // 🔥 NGHIỆP VỤ 2 (CHỐT CHẶN MẤT TIỀN): Không cho tự hủy nếu đã nạp tiền
+            if(trangThaiThanhToan === 'Đã thanh toán' || trangThaiThanhToan === 'Đã cọc') {
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Đơn hàng này đã được thanh toán/đặt cọc. Vui lòng liên hệ bộ phận CSKH để được hỗ trợ hủy đơn và hoàn tiền an toàn!"
+                });
+            }
+
+            // 🔥 BỔ SUNG: Cập nhật thẳng vào bảng DonHang để Vue.js đọc được
+            await connection.query(`
+                UPDATE DonHang 
+                SET TrangThaiThanhToan = 'Đã hủy', 
+                    Note = CONCAT(IFNULL(Note, ''), '\n[Hệ thống] Khách hàng tự bấm hủy đơn.') 
+                WHERE MaDH = ?
+            `, [MaDH]);
 
             // 3. THÊM TRẠNG THÁI HỦY (Mã 5)
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, [MaDH]);
 
-            // 4. Lấy chi tiết đơn hàng (Gom nhóm số lượng theo Phân Loại để tránh cộng đúp)
+            // 4. Lấy chi tiết đơn hàng
             const sql_lay_chi_tiet = `
                 SELECT MaPhanLoai, SUM(SoLuong) AS TongSoLuong 
                 FROM ChiTietDonHang 
@@ -1109,25 +1126,13 @@ const donhang_user = {
                 `, [item.TongSoLuong, item.MaPhanLoai]);
             }
 
-            // 6. HOÀN TRẢ KHUYẾN MÃI (Flash Sale)
-            const sql_lay_khuyen_mai = `SELECT MaKM, MaKH, SoTienDaGiam FROM LogSuDungKhuyenMai WHERE MaDH = ?`;
-            const [log_km] = await connection.query(sql_lay_khuyen_mai, [MaDH]);
-            
-            for (let km of log_km) {
-                // Hoàn lại số lượng dựa trên số lượng hàng khuyến mãi trong ChiTietDonHang
-                const [hang_km] = await connection.query(`
-                    SELECT SoLuong FROM ChiTietDonHang 
-                    WHERE MaDH = ? AND LaHangKhuyenMai = 1
-                `, [MaDH]);
-                
-                if(hang_km.length > 0) {
-                    await connection.query(`
-                        UPDATE ChiTietKhuyenMai SET SoLuongDaDung = GREATEST(0, SoLuongDaDung - ?) 
-                        WHERE MaKM = ?
-                    `, [hang_km[0].SoLuong, km.MaKM]);
-                }
-            }
-            // Xóa log dùng khuyến mãi để sau này tính toán báo cáo không bị sai
+            // 6. TỐI ƯU HÓA: HOÀN TRẢ KHUYẾN MÃI (Dùng chung logic đỉnh cao của Cronjob)
+            await connection.query(`
+                UPDATE ChiTietKhuyenMai ctkm
+                INNER JOIN ChiTietDonHang ctdh ON ctkm.MaPhanLoai = ctdh.MaPhanLoai
+                SET ctkm.SoLuongDaDung = GREATEST(0, ctkm.SoLuongDaDung - ctdh.SoLuong)
+                WHERE ctdh.MaDH = ? AND ctdh.LaHangKhuyenMai = 1
+            `, [MaDH]);
             await connection.query(`DELETE FROM LogSuDungKhuyenMai WHERE MaDH = ?`, [MaDH]);
 
             // 7. HOÀN TRẢ MÃ GIẢM GIÁ (VOUCHER)
@@ -1140,7 +1145,6 @@ const donhang_user = {
                     WHERE MaGG = ?
                 `, [log_voucher[0].MaGG]);
                 
-                // Xóa log dùng voucher để khách có thể áp mã lại cho đơn sau
                 await connection.query(`DELETE FROM LogSuDungMaGiamGia WHERE MaDH = ?`, [MaDH]);
             }
 
@@ -1167,7 +1171,7 @@ const donhang_user = {
             await connection.commit();
             res.status(200).json({
                 success: true,
-                message: "Huỷ đơn hàng thành công! Số lượng và mã giảm giá đã được hoàn trả."
+                message: "Huỷ đơn hàng thành công! Kho hàng và voucher đã được hoàn trả hệ thống."
             });
         }
         catch (error) {
