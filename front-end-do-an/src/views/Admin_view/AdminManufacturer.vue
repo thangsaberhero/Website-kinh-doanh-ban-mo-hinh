@@ -351,6 +351,11 @@
   // Gọi API ngay khi mở trang
   import { onMounted, watch } from 'vue';
   onMounted(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
     fetchManufacturers();
     fetchStats();
   });

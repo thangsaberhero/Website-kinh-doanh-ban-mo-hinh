@@ -181,6 +181,11 @@
   });
 
   onMounted(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
     if (!authStore.user && !localStorage.getItem('token')) {
       router.push('/login');
     }

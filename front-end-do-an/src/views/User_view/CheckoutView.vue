@@ -419,6 +419,11 @@ const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency
 // HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
 // ===============================================
 onMounted(async () => {
+  window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
   window.scroll(0,0);
   const token = localStorage.getItem('token');
   const userString = localStorage.getItem('user');

@@ -299,6 +299,11 @@
   });
 
   onMounted(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
     document.title = "Tin tức & Đánh giá Mô hình | FigureCollect";
     fetchNewsData().then(() => {
       if (route.query.tag) {

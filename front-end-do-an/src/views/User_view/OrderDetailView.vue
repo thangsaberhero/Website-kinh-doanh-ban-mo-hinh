@@ -604,6 +604,11 @@ const confirmCancelOrder = async () => {
 };
 
 onMounted(() => {
+  window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
   fetchOrderdata();
   if (!authStore.user) {
     const userString = localStorage.getItem('user');

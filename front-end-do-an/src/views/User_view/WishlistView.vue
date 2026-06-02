@@ -244,7 +244,11 @@
   };
 
   onMounted(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
     fetchWishlist(); // Tải lần đầu
     pollingInterval = setInterval(() => {
       fetchWishlist(true); // Tải ngầm
