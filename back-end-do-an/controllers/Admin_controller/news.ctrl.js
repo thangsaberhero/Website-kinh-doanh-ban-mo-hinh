@@ -293,7 +293,7 @@ const newsController = {
 
             // 4. CẬP NHẬT ẢNH (NẾU CÓ)
             if(file){
-                const imageUrl = file.path; 
+                const imageUrl = file.path || file.secure_url || file.url || file.filename; 
                 
                 const [checkImage] = await connection.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
                 if(checkImage.length > 0){
