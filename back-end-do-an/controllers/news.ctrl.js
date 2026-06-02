@@ -1,0 +1,287 @@
+const db = require('../config/db');
+
+const newsController = {
+    getAllNews: async (req, res) => {
+        try{
+            const sqlLatest = `SELECT t.MaTT, t.TieuDe, t.TomTat, t.TheLoai, t.NgayDang, t.LuotXem,
+                                nv.TenNV AS TacGia,
+                                (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
+                                FROM TinTuc t
+                                LEFT JOIN NhanVien nv ON t.MaNV = nv.MaNV
+                                WHERE t.TrangThai = 'Đã duyệt'
+                                ORDER BY t.NgayDang DESC`;
+            const sqlTrending = `SELECT t.MaTT, t.TieuDe, t.TheLoai, t.NgayDang, t.LuotXem,
+                                (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
+                                FROM TinTuc t
+                                WHERE t.TrangThai = 'Đã duyệt' 
+                                AND t.NgayDang >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                                ORDER BY t.LuotXem DESC
+                                LIMIT 4`;
+            const sqlPopular = `SELECT t.MaTT, t.TieuDe, t.NgayDang, t.LuotXem
+                                FROM TinTuc t
+                                WHERE t.TrangThai = 'Đã duyệt'
+                                ORDER BY t.LuotXem DESC
+                                LIMIT 3`;
+            const [[latestList], [trendingList], [popularList]] = await Promise.all([db.query(sqlLatest), db.query(sqlTrending), db.query(sqlPopular)]);
+            
+            res.status(200).json({
+                message: "Tải dữ liệu tin tức thành công",
+                latestList: latestList,
+                trendingList: trendingList,
+                popularList: popularList
+            })
+        } catch(error){
+            console.error("Lỗi API getAllNews: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ nội bộ",
+                error: error.message
+            })
+        }
+    },
+    getNewsById: async(req, res) =>{
+        try{
+            const newsId = req.params.id;
+        
+            const sql = `SELECT t.*, a.LinkAnh AS AnhTinTuc, nv.TenNV AS TacGia
+                        FROM TinTuc t
+                        INNER JOIN AnhTinTuc a ON a.MaTT = t.MaTT
+                        INNER JOIN NhanVien nv ON nv.MaNV = t.MaNV
+                        WHERE t.MaTT = ?
+                        LIMIT 1`;
+            const [rows] = await db.query(sql, [newsId]);
+            if(rows.length === 0){
+                return res.status(404).json({
+                    message: "Không tìm thấy bài viết"
+                });
+            }
+            res.status(200).json({
+                message: "Tải dữ liệu tin tức thành công",
+                data: rows[0]
+            })
+        }
+        catch(error){
+            console.error("Lỗi API getNewsById: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ",
+                error: error.message
+            })
+        }
+    },
+    getRelatedNews: async(req, res) => {
+        try{
+            const newsId = req.params.id;
+            const sql = `SELECT t.*, (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
+                        FROM TinTuc t
+                        WHERE t.TheLoai = (SELECT TheLoai FROM TinTuc WHERE MaTT = ?)
+                        AND MaTT != ? AND t.TrangThai = 'Đã duyệt'
+                        ORDER BY t.NgayDang DESC
+                        LIMIT 3`;
+            const [rows] = await db.query(sql, [newsId, newsId]);
+            if(rows.length === 0){
+                return res.status(404).json({
+                    message: "Không tìm thấy bài viết"
+                });
+            }
+            res.status(200).json({
+                message: "Tải tin tức liên quan thành công",
+                data: rows
+            })
+        }
+        catch(error){
+            console.error("Lỗi API getRelatedNews: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ khi lấy tin tức liên quan",
+                error: error.message
+            })
+        }
+    },
+    getAdminNews: async(req, res) =>{
+        try{
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 5;
+            const offset = (page - 1) * limit;
+            const search = req.query.search || '';
+            const status = req.query.status || '';
+            
+            let whereClause = 'WHERE 1=1';
+            let queryParams = [];
+
+            if(search){
+                whereClause += ' AND t.TieuDe LIKE ?';
+                queryParams.push(`%${search}%`);
+            }
+            if(status){
+                whereClause += ' AND t.TrangThai = ?';
+                queryParams.push(status);
+            }
+
+            const sqlData = `SELECT t.*, nv.TenNV as TacGia, (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
+                             FROM TinTuc t
+                             INNER JOIN NhanVien nv ON nv.MaNV = t.MaNV
+                             ${whereClause}
+                             ORDER BY NgayDang DESC
+                             LIMIT ? OFFSET ?`;
+            const dataParams = [...queryParams, limit, offset];
+            const sqlCount = `SELECT COUNT(MaTT) AS TotalCount FROM TinTuc t ${whereClause}`;
+
+            const [[dataRows], [countRows]] = await Promise.all([
+                db.query(sqlData, dataParams),
+                db.query(sqlCount, queryParams)
+            ]);
+            const totalItems = countRows[0].TotalCount;
+            res.status(200).json({
+                data: dataRows,
+                pagination: {
+                    totalItems: totalItems,
+                    totalPages: Math.ceil(totalItems / limit),
+                    currentPage: page,
+                    limit: limit
+                }
+            })
+        }
+        catch(error){
+            console.error("Lỗi API getAdminNews: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ",
+                error: error.message
+            })
+        }
+    },
+    getAdminStats: async(req, res) =>{
+        try{
+            const sql = `SELECT COUNT(MaTT) AS TotalCount,
+                        SUM(CASE WHEN TrangThai = 'Đã duyệt' THEN 1 ELSE 0 END) AS PublishedCount,
+                        SUM(CASE WHEN TrangThai = 'Bản nháp' THEN 1 ELSE 0 END) AS DraftCount,
+                        SUM(LuotXem) AS TotalViews
+                        FROM TinTuc`;
+            const [row] = await db.query(sql);
+            const data = row[0];
+
+            res.status(200).json({
+                total: data.TotalCount || 0,
+                published: data.PublishedCount || 0,
+                drafts: data.DraftCount || 0,
+                views: data.TotalViews || 0
+            })
+        }
+        catch(error){
+            console.error("Lỗi API getAdminStats", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ",
+                error: error.message
+            })
+        }
+    },
+    createNews: async(req, res) =>{
+        try{
+            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV } = req.body;
+            const file = req.file;
+
+            const sqlInsertNews = `INSERT INTO TinTuc (TieuDe, NoiDung, TheLoai, TomTat, TrangThai, NgayDang, LuotXem, MaNV)
+                                    VALUES (?, ?, ?, ?, ?, Now(), 0, ?)`;
+            const [result] = await db.query(sqlInsertNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV]);
+            const newNewsId = result.insertId;
+
+            if(file){
+                const imageUrl = `http://localhost:3000/Images_news/${file.filename}`;
+                const sqlInsertImage = `INSERT INTO AnhTinTuc (MaTT, LinkAnh) VALUES (?, ?)`;
+                await db.query(sqlInsertImage, [newNewsId, imageUrl]);
+            }
+            res.status(200).json({
+                message: "Tạo bài viết thành công",
+                dataId: newNewsId
+            });
+        }catch(error){
+            console.error("Lỗi API createNews: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ khi tạo bài viết",
+                error: error.message
+            })
+        }
+    },
+    updateNews: async(req, res) => {
+        try{
+            const newsId = req.params.id;
+            const { TieuDe, NoiDung, TheLoai, TomTat, TrangThai } = req.body;
+            const file = req.file;
+
+            const sqlUpdateNews = `UPDATE TinTuc
+                                    SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?
+                                    WHERE MaTT = ?`;
+            await db.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, newsId]);
+
+            if(file){
+                const imageUrl = `http://localhost:3000/Images_news/${file.filename}`;
+                const [checkImage] = await db.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
+
+                if(checkImage.length > 0){
+                    await db.query(`UPDATE AnhTinTuc SET LinkAnh = ? WHERE MaTT = ?`, [imageUrl, newsId]);
+                }
+                else{
+                    await db.query(`INSERT INTO AnhTinTuc(MaTT, LinkAnh) VALUES (?, ?)`, [newsId, imageUrl]);
+                }
+            }
+            res.status(200).json({
+                message: "Cập nhật tin tức thành công"
+            });
+        }
+        catch(error){
+            console.error("Lỗi API updateNews: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ khi cập nhật bài viết",
+                error: error.message
+            })
+        }
+    },
+    deleteNews: async(req, res) => {
+        try{
+            const newsId = req.params.id;
+
+            const sqlDeleteImage = `DELETE FROM AnhTinTuc WHERE MaTT = ?`;
+            await db.query(sqlDeleteImage, [newsId]);
+
+            const sqlDeleteNews = `DELETE FROM TinTuc WHERE MaTT = ?`;
+            const [result] = await db.query(sqlDeleteNews, [newsId]);
+
+            if(result.affectedRows == 0){
+                return res.status(404).json({
+                    message: "Không tìm thấy bài viết để xóa"
+                });
+            }
+            res.status(200).json({
+                message: "Xóa bài viết thành công"
+            });
+        }
+        catch(error){
+            console.error("Lỗi API deleteNews: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ khi xóa bài viết",
+                error: error.message
+            })
+        }
+    },
+    incrementView: async(req, res) => {
+        try{
+            const newsId = req.params.id;
+            const sql = `UPDATE TinTuc SET LuotXem = LuotXem + 1 WHERE MaTT = ?`;
+            const [result] = await db.query(sql, [newsId]);
+
+            if(result.affectedRows === 0){
+                return res.status(404).json({
+                    message: "Không tìm thấy bài viết"
+                });
+            }
+            res.status(200).json({
+                message: "Đã tăng lượt xem"
+            });
+        }
+        catch(error){
+            console.error("Lỗi API increaseView: ", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ khi tăng lượt xem",
+                error: error.message
+            })
+        }
+    }
+}
+module.exports = newsController;
