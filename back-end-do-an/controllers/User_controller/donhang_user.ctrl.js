@@ -775,7 +775,7 @@ const donhang_user = {
                         message: "Sản phẩm bạn chọn vừa có người mua hết hoặc vượt tồn kho! Vui lòng làm mới giỏ hàng." });
                 }
 
-                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai, MaMoHinh FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
+                const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
                 if (checkStock.length > 0 && checkStock[0].SoLuong <= 5) {
                     await connection.query(`
                         INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
@@ -784,7 +784,7 @@ const donhang_user = {
                         "Cảnh báo sắp hết hàng", 
                         `Phân loại "${checkStock[0].ChiTietPhanLoai}" chỉ còn lại ${checkStock[0].SoLuong} sản phẩm trong kho.`, 
                         "KhoHang", 
-                        `/admin/inventory?productId=${checkStock[0].MaMoHinh}`
+                        "/admin/inventory"
                     ]);
                 }
             }
@@ -847,7 +847,7 @@ const donhang_user = {
                 `Đơn hàng mới #${maDH_moi}`, 
                 `Khách hàng ${TenNguoiNhan} vừa đặt một đơn hàng trị giá ${formatTien}đ.`, 
                 "DonHang", 
-                `/admin/orders?viewOrderId=${maDH_moi}`
+                `/admin/orders`
             ]);
             await connection.commit();
             res.status(200).json({ 
@@ -1165,7 +1165,7 @@ const donhang_user = {
                 `Đơn hàng bị hủy #${MaDH}`, 
                 `Khách hàng vừa tự hủy đơn hàng mang mã ${maHienThi}.`, 
                 "DonHang", 
-                `/admin/orders?viewOrderId=${MaDH}`
+                `/admin/orders`
             ]);
 
             await connection.commit();
@@ -1287,7 +1287,7 @@ const donhang_user = {
                     gg.LoaiGiamGia, 
                     gg.ChietKhau, 
                     gg.GiaTriGiamToiDa, 
-                    gg.GiaTriDonToiThieu, 
+                    gg.MucGiaToiThieu, 
                     gg.ThoiGianKT
                 FROM MaGiamGia gg
                 LEFT JOIN ChiTietMaGiamGia ctgg ON ctgg.MaGG = gg.MaGG
@@ -1524,7 +1524,8 @@ const donhang_user = {
             const config = {
                 app_id: Number(process.env.ZALO_APP_ID),
                 key1: process.env.ZALO_KEY1,
-                apiUrl: "https://sb-openapi.zalopay.vn/v2/create",
+                endpoint: "sb-openapi.zalopay.vn",
+                path: "/v2/create"
             };
 
             const date = new Date();
@@ -1550,9 +1551,9 @@ const donhang_user = {
                 expire_duration_seconds: 900,
                 item: JSON.stringify([]),
                 embed_data: JSON.stringify(embed_data),
-                amount: Math.max(1000, Math.round(Number(soTienCanThanhToan))), 
+                amount: Math.max(1000, Number(soTienCanThanhToan)), 
                 description: `Thanh toan don hang ${maHienThi}`,
-                bank_code: "", 
+                bank_code: "zalopayapp", 
                 callback_url: `${DOMAIN_BACKEND}/api/don_hang/payment/zalopay/ipn`
             };
 
