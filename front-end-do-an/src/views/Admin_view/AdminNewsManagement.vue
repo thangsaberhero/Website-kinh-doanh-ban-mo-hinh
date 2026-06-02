@@ -330,8 +330,10 @@
             date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),
             status: item.TrangThai === 'Đã duyệt' ? 'Đã xuất bản' : item.TrangThai,
             views: item.LuotXem,
-            comments: 0, // Tính năng cmt tính sau
-            thumbnail: item.AnhDaiDien || 'https://via.placeholder.com/200'
+            comments: 0,
+            thumbnail: item.AnhDaiDien 
+                      ? (item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_news/${item.AnhDaiDien}`) 
+                      : 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg'
         }));
 
         // Cập nhật cục Phân trang

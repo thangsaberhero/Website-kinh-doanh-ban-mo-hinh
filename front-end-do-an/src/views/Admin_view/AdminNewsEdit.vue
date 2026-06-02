@@ -248,7 +248,7 @@
                 content: article.NoiDung,
                 category: article.TheLoai,
                 summary: article.TomTat,
-                thumbnail: article.AnhTinTuc,
+                thumbnail: article.AnhTinTuc ? (article.AnhTinTuc.startsWith('http') ? article.AnhTinTuc : `${API_BASE_URL}/Images_news/${article.AnhTinTuc}`) : null,
                 tags: article.Tags || ''
             };
         }
