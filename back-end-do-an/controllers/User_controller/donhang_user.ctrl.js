@@ -1189,14 +1189,21 @@ const donhang_user = {
         try {
             await connection.beginTransaction();
             const { MaDH, sdt, hoten, diachi } = req.body;
-            const MaTK = req.user.id; // ID tài khoản của chính khách hàng đang đăng nhập
+            const MaTK = req.user.id; 
 
             if (!MaDH || !sdt || !hoten || !diachi) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Thông tin không được để trống!" });
             }
 
-            // RÀNG BUỘC BẢO MẬT: Phải INNER JOIN với KhachHang để chắc chắn đơn này do MaTK này đặt
+            // 🛡️ NÂNG CẤP 1: Validate Số điện thoại chuẩn Việt Nam
+            const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+            if (!phoneRegex.test(sdt)) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Số điện thoại không hợp lệ!" });
+            }
+
+            // RÀNG BUỘC BẢO MẬT: Chắc chắn đơn này do MaTK này đặt
             const sql_check_owner = `
                 SELECT cttt.MaTrangThai, dh.MaDonHangHienThi
                 FROM DonHang dh
@@ -1213,23 +1220,46 @@ const donhang_user = {
             }
 
             const currentStatus = don_hang[0].MaTrangThai;
+            const maHienThi = don_hang[0].MaDonHangHienThi;
 
-            // RÀNG BUỘC NGHIỆP VỤ: Khách hàng CHỈ được sửa khi trạng thái là "Chờ duyệt" (Mã 1)
+            // RÀNG BUỘC NGHIỆP VỤ: Chỉ được sửa khi "Chờ duyệt" 
             if (currentStatus !== 1) {
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
-                    message: "Không thể tự sửa thông tin! Đơn hàng đã được tiếp nhận đóng gói hoặc vận chuyển. Vui lòng liên hệ Hotline shop để được hỗ trợ thủ công."
+                    message: "Không thể tự sửa thông tin! Đơn hàng đã được tiếp nhận đóng gói hoặc vận chuyển. Vui lòng liên hệ Hotline shop để được hỗ trợ."
                 });
             }
 
-            // Tiến hành cập nhật địa chỉ mới
+            // 🔥 NÂNG CẤP 2: Cập nhật địa chỉ & Tự động ghi chú thêm vào cột Note
             const sql_update = `
                 UPDATE DonHang 
-                SET TenNguoiNhan = ?, SDTNguoiNhan = ?, DiaChiGiao = ? 
+                SET TenNguoiNhan = ?, 
+                    SDTNguoiNhan = ?, 
+                    DiaChiGiao = ?,
+                    Note = CONCAT(IFNULL(Note, ''), '\n[Hệ thống] Khách tự cập nhật thông tin giao hàng lúc ', DATE_FORMAT(NOW(), '%d/%m/%Y %H:%i'))
                 WHERE MaDH = ?
             `;
             await connection.query(sql_update, [hoten, sdt, diachi, MaDH]);
+
+            // 🔥 NÂNG CẤP 3: Bắn thông báo cho Admin & Ghi Log
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'UPDATE_ORDER_INFO', ?, ?, NOW())
+            `, [MaTK, `Khách cập nhật địa chỉ đơn #${MaDH}`, userIp]);
+
+            await connection.query(`
+                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                VALUES (?, ?, ?, ?)
+            `, [
+                `Khách thay đổi địa chỉ đơn #${MaDH}`, 
+                `Khách hàng vừa cập nhật lại SĐT/Địa chỉ giao hàng cho đơn mã ${maHienThi}. Hãy kiểm tra lại phiếu gửi!`, 
+                "DonHang", 
+                `/admin/orders`
+            ]);
 
             await connection.commit();
             res.status(200).json({

@@ -34,7 +34,6 @@
             Đang xử lý hủy
           </button>
 
-          <!-- 🔥 ĐÃ SỬA: Thay orderInfo.TrangThaiDonHang thành currentOrderStatus -->
           <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa thanh toán'"
                   @click="showCancelModal = true"
                   class="px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center gap-2 transition-all active:scale-95">
@@ -63,39 +62,31 @@
             </h3>
             
             <div class="relative flex justify-between items-start">
-              <!-- Đường line nền -->
               <div class="absolute top-5 left-0 w-full h-[2px] bg-surface-container-highest z-0">
                 <div :class="['h-full transition-all duration-1000', currentOrderStatus === 'Đã hủy' ? 'bg-error shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-primary shadow-[0_0_10px_rgba(255,143,115,0.5)]']" :style="{ width: progressWidth }"></div>
               </div>
 
               <div v-for="(step, index) in timeline" :key="index" class="relative z-10 flex flex-col items-center text-center flex-1">
-                
-                <!-- ICON ĐÃ HOÀN THÀNH -->
                 <div v-if="step.status === 'completed'" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary-fixed mb-3 shadow-[0_0_15px_rgba(255,143,115,0.4)]">
                   <span class="material-symbols-outlined text-lg font-bold">check</span>
                 </div>
                 
-                <!-- ICON ĐANG ACTIVE (MÀU ĐỎ KHI HỦY) -->
                 <div v-else-if="step.status === 'active' && step.name === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)] animate-pulse">
                   <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
 
-                <!-- ICON ĐANG ACTIVE (MÀU CAM KHI HOÀN HÀNG) -->
                 <div v-else-if="step.status === 'active' && step.name.includes('hoàn hàng')" class="w-12 h-12 -mt-1 rounded-full bg-orange-500 border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-pulse">
                   <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
                 
-                <!-- ICON ĐANG ACTIVE (BÌNH THƯỜNG) -->
                 <div v-else-if="step.status === 'active'" class="w-12 h-12 -mt-1 rounded-full bg-primary-container border-4 border-surface flex items-center justify-center text-on-primary-fixed mb-2 shadow-[0_0_20px_rgba(255,120,86,0.6)] animate-pulse">
                   <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
                 
-                <!-- ICON PENDING (CHƯA TỚI) -->
                 <div v-else class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center text-outline mb-3">
                   <span class="material-symbols-outlined text-lg">{{ step.icon }}</span>
                 </div>
 
-                <!-- MÀU SẮC TEXT TƯƠNG ỨNG -->
                 <span :class="['text-[11px] font-bold uppercase tracking-tighter whitespace-nowrap', step.status === 'active' ? (step.name === 'Đã hủy' ? 'text-error' : (step.name.includes('hoàn hàng') ? 'text-orange-400' : 'text-primary')) : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
                   {{ step.name }}
                 </span>
@@ -141,14 +132,23 @@
 
         <div class="lg:col-span-4 space-y-8 sticky top-24">
           <section class="glass-panel rounded-xl p-6 border border-outline-variant/10 shadow-xl">
-            <div class="flex items-center gap-3 mb-6 border-b border-outline-variant/10 pb-4">
-              <div class="w-10 h-10 rounded-lg bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
-                <span class="material-symbols-outlined text-primary">person_pin_circle</span>
+            
+            <!-- 🔥 ĐÃ BỔ SUNG NÚT SỬA THÔNG TIN -->
+            <div class="flex items-center justify-between gap-3 mb-6 border-b border-outline-variant/10 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-primary">person_pin_circle</span>
+                </div>
+                <div>
+                  <h3 class="font-headline font-bold text-white leading-none">Người Nhận</h3>
+                  <p class="text-[10px] text-outline uppercase tracking-widest mt-1">Thông tin giao hàng</p>
+                </div>
               </div>
-              <div>
-                <h3 class="font-headline font-bold text-white leading-none">Người Nhận</h3>
-                <p class="text-[10px] text-outline uppercase tracking-widest mt-1">Thông tin giao hàng</p>
-              </div>
+              <button v-if="currentOrderStatus === 'Chờ duyệt'" 
+                      @click="openEditAddressModal" 
+                      class="text-[11px] font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/30">
+                <span class="material-symbols-outlined text-[14px]">edit</span> Sửa
+              </button>
             </div>
             
             <div class="space-y-4">
@@ -227,6 +227,7 @@
       </div>
     </main>
 
+    <!-- MODAL THANH TOÁN -->
     <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
         <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
@@ -268,6 +269,7 @@
       </div>
     </div>
 
+    <!-- MODAL HỦY ĐƠN HÀNG -->
     <div v-if="showCancelModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div class="bg-surface-container-high border border-error/30 rounded-3xl p-8 max-w-md w-full shadow-[0_0_50px_rgba(244,63,94,0.15)] animate-[fadeIn_0.2s_ease-out]">
         <div class="flex flex-col items-center text-center mb-6">
@@ -285,6 +287,43 @@
           <button @click="confirmCancelOrder" :disabled="isCanceling" class="flex-1 py-3.5 bg-error text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2 shadow-lg shadow-error/20 disabled:opacity-50">
             <span v-if="isCanceling" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
             Đồng ý hủy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔥 ĐÃ BỔ SUNG: MODAL SỬA THÔNG TIN ĐỊA CHỈ -->
+    <div v-if="showEditAddressModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-headline text-xl font-bold text-white uppercase tracking-widest">Sửa địa chỉ giao hàng</h3>
+          <button @click="showEditAddressModal = false" class="text-outline hover:text-error transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        
+        <div class="space-y-4 mb-8">
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Họ và tên người nhận</label>
+            <input v-model="editAddressForm.hoten" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập họ và tên" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Số điện thoại</label>
+            <input v-model="editAddressForm.sdt" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập số điện thoại (VD: 098...)" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Địa chỉ chi tiết</label>
+            <textarea v-model="editAddressForm.diachi" rows="3" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors resize-none" placeholder="Nhập số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button @click="showEditAddressModal = false" class="flex-1 py-3.5 bg-surface-container text-sm font-bold uppercase tracking-widest text-outline hover:text-white rounded-xl transition-colors">
+            Hủy
+          </button>
+          <button @click="submitUpdateAddress" :disabled="isUpdatingAddress" class="flex-[2] py-3.5 bg-primary text-on-primary-fixed rounded-xl font-bold text-sm uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50">
+            <span v-if="isUpdatingAddress" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
+            Lưu thay đổi
           </button>
         </div>
       </div>
@@ -320,11 +359,19 @@ const repayMethod = ref('Thanh toán toàn bộ');
 const paymentGateway = ref('momo'); 
 const isProcessingPayment = ref(false);
 
-// QUẢN LÝ HỦY ĐƠN HÀNG (MỚI)
+// QUẢN LÝ HỦY ĐƠN HÀNG
 const showCancelModal = ref(false);
 const isCanceling = ref(false);
 
-// 🔥 ĐÃ BỔ SUNG: Computed tự động nhặt trạng thái mới nhất từ Lộ trình (Timeline)
+// 🔥 ĐÃ BỔ SUNG: QUẢN LÝ SỬA ĐỊA CHỈ
+const showEditAddressModal = ref(false);
+const isUpdatingAddress = ref(false);
+const editAddressForm = ref({
+  hoten: '',
+  sdt: '',
+  diachi: ''
+});
+
 const currentOrderStatus = computed(() => {
   if (orderStatus.value && orderStatus.value.length > 0) {
     return orderStatus.value[orderStatus.value.length - 1].TenTrangThai;
@@ -332,7 +379,6 @@ const currentOrderStatus = computed(() => {
   return '';
 });
 
-// Đồng hồ đếm ngược
 const now = ref(Date.now());
 let timerInterval;
 
@@ -365,10 +411,10 @@ const isExpired = (dateString) => {
   return getRemainingTime(dateString) <= 0;
 };
 
+// Lộ trình động (Dynamic Timeline)
 const dynamicSteps = computed(() => {
   const status = currentOrderStatus.value;
   
-  // Nếu đơn bị hủy: Cắt ngắn lộ trình, chỉ để lại Chờ duyệt và Đã hủy
   if (status === 'Đã hủy') {
     return [
       { name: 'Chờ duyệt', icon: 'receipt_long' },
@@ -376,7 +422,6 @@ const dynamicSteps = computed(() => {
     ];
   }
   
-  // Nếu đơn bị hoàn: Rẽ nhánh sang quy trình hoàn hàng
   if (status === 'Đang hoàn hàng' || status === 'Đã hoàn hàng') {
     return [
       { name: 'Chờ duyệt', icon: 'receipt_long' },
@@ -386,7 +431,6 @@ const dynamicSteps = computed(() => {
     ];
   }
 
-  // Mặc định: Luồng đi chuẩn của một đơn hàng thành công
   return [
     { name: 'Chờ duyệt', icon: 'receipt_long' },
     { name: 'Đang đóng gói', icon: 'inventory_2' },
@@ -395,14 +439,12 @@ const dynamicSteps = computed(() => {
   ];
 });
 
-// Cập nhật lại timeline để map theo dynamicSteps thay vì baseSteps
 const timeline = computed(() => {
   const latestStepName = currentOrderStatus.value;
 
   return dynamicSteps.value.map((step) => {
     const safeOrderStatus = orderStatus.value || [];
     const dbRecord = safeOrderStatus.find(s => s.TenTrangThai === step.name);
-    
     let currentStatus = 'pending';
     let timeString = null;
     
@@ -411,7 +453,6 @@ const timeline = computed(() => {
       currentStatus = (step.name === latestStepName) ? 'active' : 'completed';
     }
     
-    // Đảm bảo thanh bar chạy mượt mà đến bước Đã hủy
     if (latestStepName === 'Đã hủy' && step.name === 'Chờ duyệt') {
        currentStatus = 'completed';
     }
@@ -420,12 +461,10 @@ const timeline = computed(() => {
   });
 });
 
-// Cập nhật lại thanh tiến trình (progress width)
 const progressWidth = computed(() => {
   if (!orderStatus.value || orderStatus.value.length === 0) return '0%';
   const latestStepName = currentOrderStatus.value;
   let currentIndex = dynamicSteps.value.findIndex(s => s.name === latestStepName);
-  
   if (currentIndex === -1) currentIndex = 0;
   return `${(currentIndex / (dynamicSteps.value.length - 1)) * 100}%`;
 });
@@ -457,6 +496,62 @@ const fetchOrderdata = async () => {
     console.error("Lỗi khi tải thông tin đơn hàng:", error);
   }
 }
+
+// 🔥 ĐÃ BỔ SUNG: HÀM MỞ MODAL & COPY DATA CŨ
+const openEditAddressModal = () => {
+  editAddressForm.value = {
+    hoten: orderInfo.value.TenNguoiNhan,
+    sdt: orderInfo.value.SDTNguoiNhan,
+    diachi: orderInfo.value.DiaChiGiao
+  };
+  showEditAddressModal.value = true;
+};
+
+// 🔥 ĐÃ BỔ SUNG: HÀM GỬI YÊU CẦU CẬP NHẬT ĐỊA CHỈ
+const submitUpdateAddress = async () => {
+  // Validate cơ bản
+  if (!editAddressForm.value.hoten.trim() || !editAddressForm.value.sdt.trim() || !editAddressForm.value.diachi.trim()) {
+    return toastStore.showToast("Vui lòng điền đầy đủ thông tin!", "error");
+  }
+  
+  const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+  if (!phoneRegex.test(editAddressForm.value.sdt.trim())) {
+    return toastStore.showToast("Số điện thoại không hợp lệ!", "error");
+  }
+
+  isUpdatingAddress.value = true;
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/don_hang/fix`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ 
+        MaDH: route.params.id,
+        hoten: editAddressForm.value.hoten,
+        sdt: editAddressForm.value.sdt,
+        diachi: editAddressForm.value.diachi
+      }) 
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      toastStore.showToast("Đã cập nhật thông tin giao hàng!", "success");
+      showEditAddressModal.value = false;
+      fetchOrderdata(); // Load lại data để giao diện cập nhật tên/địa chỉ mới
+    } else {
+      toastStore.showToast(data.message, "error");
+    }
+  } catch (error) {
+    console.error("Lỗi khi cập nhật địa chỉ:", error);
+    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+  } finally {
+    isUpdatingAddress.value = false;
+  }
+};
 
 const handleRepay = async () => {
   const token = localStorage.getItem('token');
