@@ -248,7 +248,6 @@
   };
 
   const clickNotification = async (notif) => {
-    isNotificationOpen.value = false;
     if (notif.DaDoc === 0) {
       await fetch(`${API_BASE_URL}/api/thong_bao_admin/read/${notif.MaTB}`, { 
         method: 'PUT',
