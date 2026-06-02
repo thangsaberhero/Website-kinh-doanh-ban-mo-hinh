@@ -365,35 +365,69 @@ const isExpired = (dateString) => {
   return getRemainingTime(dateString) <= 0;
 };
 
-const baseSteps = [
-  { name: 'Chờ duyệt', icon: 'receipt_long' },
-  { name: 'Đang đóng gói', icon: 'inventory_2' },
-  { name: 'Đang vận chuyển', icon: 'local_shipping' },
-  { name: 'Đã giao', icon: 'check_circle' }
-];
+const dynamicSteps = computed(() => {
+  const status = currentOrderStatus.value;
+  
+  // Nếu đơn bị hủy: Cắt ngắn lộ trình, chỉ để lại Chờ duyệt và Đã hủy
+  if (status === 'Đã hủy') {
+    return [
+      { name: 'Chờ duyệt', icon: 'receipt_long' },
+      { name: 'Đã hủy', icon: 'cancel' }
+    ];
+  }
+  
+  // Nếu đơn bị hoàn: Rẽ nhánh sang quy trình hoàn hàng
+  if (status === 'Đang hoàn hàng' || status === 'Đã hoàn hàng') {
+    return [
+      { name: 'Chờ duyệt', icon: 'receipt_long' },
+      { name: 'Đang vận chuyển', icon: 'local_shipping' },
+      { name: 'Đang hoàn hàng', icon: 'assignment_return' },
+      { name: 'Đã hoàn hàng', icon: 'keyboard_return' }
+    ];
+  }
 
+  // Mặc định: Luồng đi chuẩn của một đơn hàng thành công
+  return [
+    { name: 'Chờ duyệt', icon: 'receipt_long' },
+    { name: 'Đang đóng gói', icon: 'inventory_2' },
+    { name: 'Đang vận chuyển', icon: 'local_shipping' },
+    { name: 'Đã giao', icon: 'check_circle' }
+  ];
+});
+
+// Cập nhật lại timeline để map theo dynamicSteps thay vì baseSteps
 const timeline = computed(() => {
   const latestStepName = currentOrderStatus.value;
 
-  return baseSteps.map((step) => {
+  return dynamicSteps.value.map((step) => {
     const safeOrderStatus = orderStatus.value || [];
     const dbRecord = safeOrderStatus.find(s => s.TenTrangThai === step.name);
+    
     let currentStatus = 'pending';
     let timeString = null;
+    
     if (dbRecord) {
       timeString = formatTime(dbRecord.ThoiGian);
       currentStatus = (step.name === latestStepName) ? 'active' : 'completed';
     }
+    
+    // Đảm bảo thanh bar chạy mượt mà đến bước Đã hủy
+    if (latestStepName === 'Đã hủy' && step.name === 'Chờ duyệt') {
+       currentStatus = 'completed';
+    }
+    
     return { ...step, status: currentStatus, time: timeString };
   });
 });
 
+// Cập nhật lại thanh tiến trình (progress width)
 const progressWidth = computed(() => {
   if (!orderStatus.value || orderStatus.value.length === 0) return '0%';
   const latestStepName = currentOrderStatus.value;
-  let currentIndex = baseSteps.findIndex(s => s.name === latestStepName);
+  let currentIndex = dynamicSteps.value.findIndex(s => s.name === latestStepName);
+  
   if (currentIndex === -1) currentIndex = 0;
-  return `${(currentIndex / (baseSteps.length - 1)) * 100}%`;
+  return `${(currentIndex / (dynamicSteps.value.length - 1)) * 100}%`;
 });
 
 const fetchOrderdata = async () => {
