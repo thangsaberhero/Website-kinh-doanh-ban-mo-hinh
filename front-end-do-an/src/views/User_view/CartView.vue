@@ -317,29 +317,26 @@
   };
 
   // Hàm cuộn trang mượt mà có kiểm soát thời gian
-const scrollToTopCustom = (duration = 1000) => {
-  const startPosition = window.scrollY;
-  const startTime = performance.now();
+  const scrollToTopCustom = (duration = 1000) => {
+    const startPosition = window.scrollY;
+    const startTime = performance.now();
 
-  const animateScroll = (currentTime) => {
-    const timeElapsed = currentTime - startTime;
-    // Tính toán tiến trình từ 0 đến 1
-    let progress = Math.min(timeElapsed / duration, 1);
+    const animateScroll = (currentTime) => {
+      const timeElapsed = currentTime - startTime;
+      let progress = Math.min(timeElapsed / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
 
-    // Hiệu ứng Ease-Out (Chậm dần khi về cuối để tạo cảm giác mượt mà)
-    const easeProgress = 1 - Math.pow(1 - progress, 3);
+      // Thực hiện cuộn
+      window.scrollTo(0, startPosition * (1 - easeProgress));
 
-    // Thực hiện cuộn
-    window.scrollTo(0, startPosition * (1 - easeProgress));
+      // Nếu chưa hết thời gian thì tiếp tục gọi animation
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animateScroll);
+      }
+    };
 
-    // Nếu chưa hết thời gian thì tiếp tục gọi animation
-    if (timeElapsed < duration) {
-      requestAnimationFrame(animateScroll);
-    }
+    requestAnimationFrame(animateScroll);
   };
-
-  requestAnimationFrame(animateScroll);
-};
 
   onMounted(() => {
     // window.scrollTo({
@@ -347,7 +344,7 @@ const scrollToTopCustom = (duration = 1000) => {
     //   left: 0,
     //   behavior: 'smooth'
     // });
-    scrollToTopCustom(1500);
+    scrollToTopCustom(1000);
     fetchCartData();
     fetchSuggestions();
     pollingInterval = setInterval(() => {
