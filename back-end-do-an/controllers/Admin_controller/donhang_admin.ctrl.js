@@ -315,7 +315,7 @@ const donhang_admin = {
 
             // 1. Kiểm tra đơn hàng có tồn tại và CÓ PHẢI CỦA NGƯỜI NÀY KHÔNG
             const sql_kiemtra_tt = `
-                SELECT cttt.MaTrangThai, dh.MaDonHangHienThi
+                SELECT cttt.MaTrangThai, dh.MaDonHangHienThi, dh.TrangThaiThanhToan
                 FROM DonHang dh
                 LEFT JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
                 WHERE dh.MaDH = ?
@@ -392,6 +392,20 @@ const donhang_admin = {
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'ORDER_CANCEL', ?, ?, NOW())
             `, [MaTK, noiDungLog, userIp]);
+
+            // XỬ LÝ TRẠNG THÁI THANH TOÁN KHI HỦY
+            if (don_hang[0].TrangThaiThanhToan && don_hang[0].TrangThaiThanhToan.includes('Đã thanh toán')) {
+                await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = 'Chờ hoàn tiền' WHERE MaDH = ?`, [MaDH]);
+            } else {
+                await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = 'Đã hủy' WHERE MaDH = ?`, [MaDH]);
+            }
+
+            const sql_update_note_huy = `
+                UPDATE DonHang 
+                SET Note = CONCAT(COALESCE(Note, ''), '\n[HỦY ĐƠN] Lý do: ', ?) 
+                WHERE MaDH = ?
+            `;
+            await connection.query(sql_update_note_huy, [finalLyDoHuy, MaDH]);
 
             await connection.commit();
             res.status(200).json({
@@ -488,9 +502,7 @@ const donhang_admin = {
 
             const offset = (page - 1) * limit;
 
-            const { 
-                trangthai, ngaybatdau, ngayketthuc, timkiem, sapxep
-            } = req.query;
+            const { trangthai, ngaybatdau, ngayketthuc, timkiem, sapxep, trangthaitt, minPrice, maxPrice } = req.query;
 
             let conditions = [];
             let whereValues = [];
@@ -509,6 +521,23 @@ const donhang_admin = {
             if (ngayketthuc) {
                 conditions.push("dh.NgayLapDon <= ?");
                 whereValues.push(`${ngayketthuc} 23:59:59`);
+            }
+            if (trangthaitt) {
+                if (trangthaitt === 'Chưa thanh toán') {
+                    conditions.push("(dh.TrangThaiThanhToan IS NULL OR dh.TrangThaiThanhToan NOT LIKE '%Đã thanh toán%')");
+                } 
+                else {
+                    conditions.push("dh.TrangThaiThanhToan LIKE ?");
+                    whereValues.push(`%${trangthaitt}%`);
+                }
+            }
+            if (minPrice && !isNaN(minPrice)) {
+                conditions.push("dh.ThanhTien >= ?");
+                whereValues.push(Number(minPrice));
+            }
+            if (maxPrice && !isNaN(maxPrice)) {
+                conditions.push("dh.ThanhTien <= ?");
+                whereValues.push(Number(maxPrice));
             }
             let condition_clause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
@@ -761,7 +790,7 @@ const donhang_admin = {
 
             // 1. Lấy trạng thái mới nhất của đơn hàng
             const sql_kiemtra_tt = `
-                SELECT cttt.MaTrangThai, dh.MaDonHangHienThi
+                SELECT cttt.MaTrangThai, dh.MaDonHangHienThi, dh.TrangThaiThanhToan
                 FROM ChiTietTrangThai cttt
                 INNER JOIN DonHang dh ON cttt.MaDH = dh.MaDH
                 WHERE dh.MaDH = ?
@@ -850,6 +879,18 @@ const donhang_admin = {
                 "DonHang", 
                 `/admin/orders?viewOrderId=${MaDH}`
             ]);
+
+            // XỬ LÝ TRẠNG THÁI THANH TOÁN KHI HOÀN HÀNG
+            if (trang_thai[0].TrangThaiThanhToan && trang_thai[0].TrangThaiThanhToan.includes('Đã thanh toán')) {
+                await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = 'Chờ hoàn tiền' WHERE MaDH = ?`, [MaDH]);
+            }
+
+            const sql_update_note_hoan = `
+                UPDATE DonHang 
+                SET Note = CONCAT(COALESCE(Note, ''), '\n[HOÀN HÀNG] Lý do: ', ?) 
+                WHERE MaDH = ?
+            `;
+            await connection.query(sql_update_note_hoan, [LyDoHoan.trim(), MaDH]);
 
             await connection.commit();
             res.status(200).json({
@@ -1030,14 +1071,16 @@ const donhang_admin = {
                         </tr>
                     </table>
 
+                    <p style="text-align: center; margin-top: 20px; margin-bottom: 30px; font-size: 12px; font-style: italic; color: #555;">
+                        🎉 Cảm ơn quý khách đã ủng hộ siêu phẩm của FigureCollect! 🎉
+                    </p>
+
                     <table class="footer-sign">
                         <tr>
                             <td>Người mua hàng<br><span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span></td>
                             <td>Người lập phiếu<br><span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span></td>
                         </tr>
                     </table>
-                    
-                    <p style="text-align: center; margin-top: 50px; font-size: 11px; font-style: italic; color: #777;">🎉 Cảm ơn quý khách đã ủng hộ siêu phẩm của FigureCollect! 🎉</p>
                 </div>
 
                 <script>
@@ -1062,7 +1105,7 @@ const donhang_admin = {
 
     xuatExcelDonHang: async (req, res) => {
         try {
-            const { NgayBatDau, NgayKetThuc, timkiem } = req.query;
+            const { NgayBatDau, NgayKetThuc, timkiem, trangthaitt, minPrice, maxPrice } = req.query;
             
             let conditions = [];
             let values = [];
@@ -1078,6 +1121,22 @@ const donhang_admin = {
             if (timkiem) {
                 conditions.push("(dh.MaDH LIKE ? OR dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ?)");
                 values.push(`%${timkiem}%`, `%${timkiem}%`);
+            }
+            if (trangthaitt) {
+                if (trangthaitt === 'Chưa thanh toán') {
+                    conditions.push("(dh.TrangThaiThanhToan IS NULL OR dh.TrangThaiThanhToan NOT LIKE '%Đã thanh toán%')");
+                } else {
+                    conditions.push("dh.TrangThaiThanhToan LIKE ?");
+                    values.push(`%${trangthaitt}%`);
+                }
+            }
+            if (minPrice && !isNaN(minPrice)) {
+                conditions.push("dh.ThanhTien >= ?");
+                values.push(Number(minPrice));
+            }
+            if (maxPrice && !isNaN(maxPrice)) {
+                conditions.push("dh.ThanhTien <= ?");
+                values.push(Number(maxPrice));
             }
             
             let whereClause = conditions.length > 0 ? " WHERE " + conditions.join(" AND ") : "";
@@ -1155,7 +1214,16 @@ const donhang_admin = {
             ws1.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' } };
             ws1.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
 
-            const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${NgayBatDau} đến ${NgayKetThuc}` : 'Tất cả thời gian';
+            let filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${NgayBatDau} đến ${NgayKetThuc}` : 'Tất cả thời gian';
+            if (trangthaitt) {
+                filterText += ` | Thanh toán: ${trangthaitt}`;
+            }
+            if (minPrice || maxPrice) {
+                const min = minPrice ? new Intl.NumberFormat('vi-VN').format(minPrice) : '0';
+                const max = maxPrice ? new Intl.NumberFormat('vi-VN').format(maxPrice) : 'Không giới hạn';
+                filterText += ` | Giá trị đơn: ${min}đ - ${max}đ`;
+            }
+
             ws1.mergeCells('A6:E6');
             ws1.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')} | Dữ liệu: ${filterText}`;
             ws1.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' } };
@@ -1276,6 +1344,144 @@ const donhang_admin = {
         } catch (error) {
             console.error("Lỗi xuất Excel quản lý đơn hàng:", error);
             res.status(500).json({ success: false, message: "Lỗi hệ thống khi tạo file Excel" });
+        }
+    },
+
+    xac_nhan_thanh_toan: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const { MaDH } = req.body;
+            const MaTK = req.user.id;
+
+            // 1. Kiểm tra đơn hàng có tồn tại không và LẤY TRẠNG THÁI ĐƠN HÀNG HIỆN TẠI
+            const sql_check = `
+                SELECT dh.MaDH, dh.MaDonHangHienThi, dh.ThanhTien, dh.TrangThaiThanhToan,
+                       (SELECT MaTrangThai FROM ChiTietTrangThai cttt WHERE cttt.MaDH = dh.MaDH ORDER BY Thoigian DESC LIMIT 1) AS TrangThaiHienTai
+                FROM DonHang dh
+                WHERE dh.MaDH = ? FOR UPDATE
+            `;
+            const [don_hang] = await connection.query(sql_check, [MaDH]);
+
+            if (don_hang.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
+            }
+
+            const dh = don_hang[0];
+
+            // NẾU ĐƠN HÀNG ĐÃ BỊ HỦY HOẶC ĐANG HOÀN HÀNG THÌ KHÔNG CHO THANH TOÁN
+            if (dh.TrangThaiHienTai === 5 || dh.TrangThaiHienTai === 6) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Không thể thu tiền cho đơn hàng đã bị Hủy hoặc Hoàn trả!" });
+            }
+
+            // 2. Chặn nếu đơn đã thanh toán rồi
+            if (dh.TrangThaiThanhToan && dh.TrangThaiThanhToan.includes('Đã thanh toán')) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Đơn hàng này đã được thanh toán từ trước!" });
+            }
+
+            // 3. Cập nhật trạng thái ở bảng DonHang
+            const trangThaiMoi = 'Đã thanh toán (Thu hộ COD)';
+            await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
+
+            // 4. Ghi nhận giao dịch vào bảng ThanhToan
+            const sql_check_tt = `SELECT MaTT FROM ThanhToan WHERE MaDH = ?`;
+            const [check_tt] = await connection.query(sql_check_tt, [MaDH]);
+
+            if (check_tt.length > 0) {
+                // Nếu lúc tạo đơn có insert sẵn thì update lại
+                await connection.query(`
+                    UPDATE ThanhToan 
+                    SET TrangThaiGiaoDich = 'Thành công', NgayThanhToan = NOW(), SoTienGiaoDich = ? 
+                    WHERE MaDH = ?
+                `, [dh.ThanhTien, MaDH]);
+            } else {
+                // Nếu chưa có thì chèn dòng giao dịch mới
+                await connection.query(`
+                    INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
+                    VALUES (3, ?, NOW(), ?, 'Thanh toán toàn bộ', 'Thành công')
+                `, [MaDH, dh.ThanhTien]);
+            }
+
+            // 5. Ghi Log Hoạt động
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Xác nhận đã thu tiền thành công cho đơn hàng #${MaDH} (${dh.MaDonHangHienThi}). Số tiền: ${dh.ThanhTien.toLocaleString('vi-VN')} đ`;
+            
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'PAYMENT_CONFIRM', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            await connection.commit();
+            res.status(200).json({
+                success: true,
+                message: "Xác nhận thu tiền thành công!",
+                TrangThaiThanhToan: trangThaiMoi
+            });
+
+        } 
+        catch (error) {
+            await connection.rollback();
+            console.error("Lỗi khi xác nhận thanh toán:", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi xác nhận thanh toán!" });
+        } 
+        finally {
+            if (connection) connection.release();
+        }
+    },
+    xac_nhan_hoan_tien: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const { MaDH } = req.body;
+            const MaTK = req.user.id;
+
+            const sql_check = `SELECT MaDonHangHienThi, ThanhTien, TrangThaiThanhToan FROM DonHang WHERE MaDH = ? FOR UPDATE`;
+            const [don_hang] = await connection.query(sql_check, [MaDH]);
+
+            if (don_hang.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
+            }
+
+            const dh = don_hang[0];
+
+            if (dh.TrangThaiThanhToan !== 'Chờ hoàn tiền') {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Đơn hàng này không ở trạng thái cần hoàn tiền!" });
+            }
+
+            // 1. Cập nhật bảng DonHang
+            const trangThaiMoi = 'Đã hoàn tiền';
+            await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
+
+            // 2. Ghi một giao dịch ÂM (Hoàn tiền) vào bảng ThanhToan để đối soát
+            await connection.query(`
+                INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
+                VALUES (4, ?, NOW(), ?, 'Hoàn tiền cho khách', 'Thành công')
+            `, [MaDH, -dh.ThanhTien]);
+
+            // 3. Ghi Log
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Xác nhận Đã hoàn tiền cho đơn hàng #${MaDH} (${dh.MaDonHangHienThi}). Số tiền hoàn: ${dh.ThanhTien.toLocaleString('vi-VN')} đ`;
+            await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'PAYMENT_REFUND', ?, ?, NOW())`, [MaTK, noiDungLog, userIp]);
+
+            await connection.commit();
+            res.status(200).json({ success: true, message: "Xác nhận hoàn tiền thành công!", TrangThaiThanhToan: trangThaiMoi });
+        } 
+        catch (error) {
+            await connection.rollback();
+            console.error("Lỗi khi hoàn tiền:", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi xác nhận hoàn tiền!" });
+        } 
+        finally {
+            if (connection) connection.release();
         }
     }
 }

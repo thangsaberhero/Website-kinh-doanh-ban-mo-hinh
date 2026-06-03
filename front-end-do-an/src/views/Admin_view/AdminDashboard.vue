@@ -315,8 +315,8 @@
           </div>
           <div class="p-4 bg-slate-50/50">
             <p class="text-slate-400 font-medium mb-1">Trạng thái đơn</p>
-            <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.Trang_thai_don_hang?.[0]?.TenTrangThai).class}`">
-              {{ getOrderStatusBadge(selectedOrder.Trang_thai_don_hang?.[0]?.TenTrangThai).text }}
+            <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).class}`">
+              {{ getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).text }}
             </span>
           </div>
           <div class="p-4 bg-slate-50/50">
@@ -369,7 +369,7 @@
             <table class="w-full text-left text-sm">
               <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                 <tr>
-                  <th class="p-4">Sản phẩm</th>
+                  <th class="p-4 text-center">Sản phẩm</th>
                   <th class="p-4">Phân loại</th>
                   <th class="p-4 text-right">Đơn giá</th>
                   <th class="p-4 text-center">SL</th>
@@ -378,7 +378,23 @@
               </thead>
               <tbody class="divide-y divide-slate-100">
                 <tr v-for="(item, index) in selectedOrder.DanhSachHang" :key="item.MaMH || index" class="text-slate-700 font-medium">
-                  <td class="p-4 font-bold text-slate-900">{{ item.TenMH }}</td>
+                  <td class="p-4">
+                    <div class="flex items-center gap-4">
+                      <img v-if="item.AnhDaiDien" 
+                          :src="`${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
+                          class="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm shrink-0 bg-slate-50" 
+                          alt="Product Thumbnail" />
+                      
+                      <div v-else class="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200 shadow-sm shrink-0 flex items-center justify-center text-slate-400">
+                        <span class="material-symbols-outlined text-xl">image_not_supported</span>
+                      </div>
+                      
+                      <div class="flex flex-col">
+                        <p class="font-bold text-slate-900 leading-snug">{{ item.TenMH }}</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Mã MH: #{{ item.MaMoHinh }}</p>
+                      </div>
+                    </div>
+                  </td>
                   <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">{{ item.ChiTietPhanLoai || 'Tiêu chuẩn' }}</span></td>
                   <td class="p-4 text-right">{{ formatPrice(item.DonGiaBan) }}</td>
                   <td class="p-4 text-center font-bold">{{ item.SoLuong }}</td>
@@ -405,15 +421,14 @@
           <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn này
         </button>
         <div class="flex gap-2">
-          <button @click="handleOrderAction('print', order.id)" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
+          <button @click="handleOrderAction('print', selectedOrder.MaDH)" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
             <span class="material-symbols-outlined text-[18px]">print</span> In hóa đơn
           </button>
-          <button @click="updateStatusValue = selectedOrder.TrangThaiDonHang; isUpdateModalOpen = true" class="px-4 py-2 bg-[#ff8f73] hover:bg-[#ff7352] text-white text-sm font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
+          <button @click="updateStatusValue = String(getCurrentStatusCode()); isUpdateModalOpen = true" class="px-4 py-2 bg-[#ff8f73] hover:bg-[#ff7352] text-white text-sm font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
             <span class="material-symbols-outlined text-[18px]">edit_document</span> Đổi trạng thái
           </button>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -456,47 +471,6 @@
         <button @click="isCancelModalOpen = false" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Không hủy nữa</button>
         <button @click="submitCancelOrder" class="px-5 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm">Đồng ý hủy đơn</button>
       </div>
-    </div>
-  </div>
-
-  <div v-if="selectedOrder" class="hidden print:block print-container p-10 font-sans text-slate-900">
-    <div class="text-center border-b-2 border-slate-900 pb-4 mb-6">
-      <h1 class="text-2xl font-bold uppercase tracking-wider">Hóa Đơn Bán Hàng FigureCollect</h1>
-      <p class="text-xs mt-1">Đơn vị chuyên mô hình Anime & Hobby chính hãng</p>
-      <p class="text-sm font-bold mt-2">Mã Đơn Hàng: #{{ selectedOrder.MaDH }}</p>
-    </div>
-    
-    <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-      <div>
-        <p><span class="font-bold">Khách hàng:</span> {{ selectedOrder.ThongTinGiaoHang?.TenNguoiNhan }}</p>
-        <p><span class="font-bold">Số điện thoại:</span> {{ selectedOrder.ThongTinGiaoHang?.SDTNguoiNhan }}</p>
-      </div>
-      <div>
-        <p><span class="font-bold">Ngày lập:</span> {{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
-        <p><span class="font-bold">Địa chỉ:</span> {{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao }}</p>
-      </div>
-    </div>
-
-    <table class="w-full text-left border-collapse border border-slate-400 text-sm mb-6">
-      <tbody>
-        <tr v-for="(item, index) in selectedOrder.DanhSachHang" :key="item.MaMH || index">
-          <td class="p-2 border border-slate-400 font-bold">{{ item.TenMH }}</td>
-          <td class="p-2 border border-slate-400 text-right">{{ formatPrice(item.DonGiaBan) }}</td>
-          <td class="p-2 border border-slate-400 text-center font-bold">{{ item.SoLuong }}</td>
-          <td class="p-2 border border-slate-400 text-right font-bold">{{ formatPrice(item.DonGiaBan * item.SoLuong) }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="flex justify-end text-sm">
-      <div class="w-64 space-y-2 border-t border-slate-900 pt-2">
-        <div class="flex justify-between"><span>Tiền hàng:</span><span>{{ formatPrice(selectedOrder.ThongTinGiaoHang?.TongTien) }}</span></div>
-        <div class="flex justify-between font-bold text-base border-t border-dashed pt-1"><span>Thành tiền:</span><span>{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</span></div>
-      </div>
-    </div>
-    
-    <div class="text-center text-xs italic mt-20 border-t border-slate-200 pt-4">
-      Cảm ơn bạn đã ủng hộ FigureCollect! Chúc bạn có những phút giây trải nghiệm mô hình tuyệt vời.
     </div>
   </div>
 </template>
@@ -575,7 +549,7 @@
       isDetailModalOpen.value = true;
     } 
     else if (action === 'update') {
-      updateStatusValue.value = currentStatus; 
+      updateStatusValue.value = String(getCurrentStatusCode());
       isUpdateModalOpen.value = true;
     } 
     else if (action === 'cancel') {
@@ -583,9 +557,42 @@
       isCancelModalOpen.value = true;
     } 
     else if (action === 'print') {
-      setTimeout(() => {
-        window.print();
-      }, 300);
+      handlePrintInvoice(id);
+    }
+  };
+
+  const handlePrintInvoice = async (maDH) => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        toastStore.showToast("⚠️ Vui lòng đăng nhập lại!", "error");
+        return;
+    }
+
+    toastStore.showToast("Đang tạo hóa đơn, vui lòng đợi giây lát...", "info");
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/invoice_admin/print/${maDH}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error("Không thể tải hóa đơn từ máy chủ");
+
+        const htmlInvoice = await res.text();
+        const printWindow = window.open('', '_blank', 'width=800,height=800');
+        
+        if (printWindow) {
+            printWindow.document.open();
+            printWindow.document.write(htmlInvoice);
+            printWindow.document.close();
+        } else {
+            toastStore.showToast("⚠️ Trình duyệt chặn Popup. Hãy cấp quyền mở Popup cho trang web!", "error");
+        }
+    } 
+    catch (error) {
+        console.error("Lỗi khi in hóa đơn:", error);
+        toastStore.showToast("Có lỗi xảy ra khi lấy dữ liệu in!", "error");
     }
   };
 
@@ -628,7 +635,7 @@
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -1049,51 +1056,16 @@
     }
   };
 
-  const viewOrder = (id) => {
-    router.push(`/admin/orders/${id}`);
-  };
-
-  const cancelOrder = async (id) => {
-    if (!confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${id} không? Hành động này không thể hoàn tác.`)) {
-      return;
-    }
-    
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
-        body: JSON.stringify({ MaDH: id }) 
-      });
-      
-      const result = await response.json();
-      
-      if (response.ok && result.success) {
-        toastStore.showToast('Đã hủy đơn hàng thành công', 'success');
-        fetchRecentOrders();
-      } 
-      else {
-        toastStore.showToast(result.message || "Lỗi khi hủy đơn hàng!", 'error');
-      }
-    } 
-    catch (error) {
-      console.error("Lỗi hủy đơn:", error);
-      toastStore.showToast("Không thể kết nối đến máy chủ.", 'error');
-    }
-  };
-
   const getOrderStatusBadge = (status) => {
-    const s = status?.toUpperCase() || '';
+    const s = status?.toUpperCase() || '';    
+    if (s.includes('ĐÃ GIAO') || s.includes('HOÀN THÀNH')) return { class: 'bg-emerald-50 text-emerald-600 border-emerald-100', text: 'ĐÃ GIAO' };
+    if (s.includes('CHỜ DUYỆT')) return { class: 'bg-amber-50 text-amber-600 border-amber-100', text: 'CHỜ DUYỆT' };
+    if (s.includes('ĐÓNG GÓI')) return { class: 'bg-indigo-50 text-indigo-600 border-indigo-100', text: 'ĐÓNG GÓI' };
+    if (s.includes('VẬN CHUYỂN') || s.includes('ĐANG GIAO')) return { class: 'bg-sky-50 text-sky-600 border-sky-100', text: 'ĐANG GIAO' };
+    if (s.includes('HỦY')) return { class: 'bg-rose-50 text-rose-600 border-rose-100', text: 'ĐÃ HỦY' };
+    if (s.includes('HOÀN')) return { class: 'bg-purple-50 text-purple-600 border-purple-100', text: 'ĐÃ HOÀN HÀNG' };
     
-    if (s === 'ĐÃ GIAO') return { class: 'bg-emerald-50 text-emerald-600 border-emerald-100', text: 'ĐÃ GIAO' };
-    if (s === 'CHỜ DUYỆT' || s === 'ĐANG ĐÓNG GÓI') return { class: 'bg-amber-50 text-amber-600 border-amber-100', text: 'ĐANG XỬ LÝ' };
-    if (s === 'ĐANG VẬN CHUYỂN') return { class: 'bg-sky-50 text-sky-600 border-sky-100', text: 'ĐANG GIAO' };
-    if (s === 'ĐÃ HỦY') return { class: 'bg-rose-50 text-rose-600 border-rose-100', text: 'ĐÃ HỦY' };
-    
-    return { class: 'bg-slate-50 text-slate-600 border-slate-100', text: status };
+    return { class: 'bg-slate-50 text-slate-600 border-slate-100', text: status || 'CHỜ XỬ LÝ' };
   };
 
   const getCurrentStatusCode = () => {
