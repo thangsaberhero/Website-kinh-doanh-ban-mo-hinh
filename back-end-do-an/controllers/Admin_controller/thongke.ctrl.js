@@ -320,14 +320,10 @@ const thongke = {
                         LIMIT 10`;
 
             const [data] = await db.query(sql, values);
-            const formattedData = data.map(item => ({
-                ...item,
-                image: item.image ? `http://localhost:3000/Images_product/${item.image}` : 'https://via.placeholder.com/150'
-            }));
 
             res.status(200).json({
                 success: true,
-                data: formattedData
+                data: data
             });
 
         } catch (error) {
