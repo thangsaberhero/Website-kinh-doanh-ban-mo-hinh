@@ -45,98 +45,158 @@
         </div>
 
         <div class="w-full lg:w-2/5 p-8 md:p-10 lg:p-12 bg-surface/20 backdrop-blur-md flex flex-col justify-center overflow-y-auto custom-scrollbar">
-          <div class="w-full max-w-md mx-auto">
+          <div class="w-full max-w-md mx-auto relative min-h-[500px] flex flex-col justify-center">
             
-            <div class="lg:hidden flex items-center gap-2 mb-10">
+            <div class="lg:hidden flex items-center gap-2 mb-10 absolute top-0 left-0">
               <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
               <span class="font-headline text-xl font-bold tracking-tight">FigureCollect</span>
             </div>
 
-            <div class="mb-8 text-center">
-              <h2 class="font-headline text-3xl font-bold text-on-surface mb-2">Đăng ký</h2>
-              <p class="text-on-surface-variant text-sm">Tạo tài khoản mới hoàn toàn miễn phí.</p>
+            <div class="w-full max-w-xs mx-auto mb-10 relative hidden sm:block">
+              <div class="absolute left-0 top-4 -translate-y-1/2 w-full h-1 bg-white/20 rounded-full z-0"></div>
+              <div class="absolute left-0 top-4 -translate-y-1/2 h-1 bg-primary rounded-full z-0 transition-all duration-500 ease-out" :style="{ width: ((step - 1) / 2) * 100 + '%' }"></div>
+              
+              <div class="flex justify-between relative z-10">
+                <div v-for="i in 3" :key="i" class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 border-2"
+                     :class="step >= i ? 'bg-primary border-primary text-on-primary shadow-[0_0_15px_rgba(255,143,115,0.4)]' : 'bg-surface/80 border-outline/30 text-on-surface-variant backdrop-blur-md'">
+                  <span v-if="step > i" class="material-symbols-outlined text-base">check</span>
+                  <span v-else>{{ i }}</span>
+                </div>
+              </div>
+              
+              <div class="flex justify-between mt-2 text-[10px] font-medium text-on-surface-variant uppercase tracking-wider">
+                <span :class="step >= 1 ? 'text-primary' : ''">Thông tin</span>
+                <span :class="step >= 2 ? 'text-primary' : ''" class="ml-2">Xác thực</span>
+                <span :class="step >= 3 ? 'text-primary' : ''">Hoàn tất</span>
+              </div>
             </div>
 
-            <form @submit.prevent="handleRegister" class="space-y-4">
-              
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-on-surface-variant ml-1">Tên đăng nhập</label>
-                <div class="relative group">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">person</span>
-                  <input 
-                    v-model="form.username" 
-                    type="text" 
-                    required
-                    placeholder="VD: gundam_hunter" 
-                    class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-4 text-sm text-on-surface transition-all input-focus-glow"
-                  />
+            <transition name="fade-slide" mode="out-in">              
+              <div v-if="step === 1" key="step1">
+                <div class="mb-8 text-center">
+                  <h2 class="font-headline text-3xl font-bold text-on-surface mb-2">Đăng ký</h2>
+                  <p class="text-on-surface-variant text-sm">Tạo tài khoản mới hoàn toàn miễn phí.</p>
                 </div>
-              </div>
 
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-on-surface-variant ml-1">Email</label>
-                <div class="relative group">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">alternate_email</span>
-                    <input 
-                    v-model="form.email" 
-                    type="email" 
-                    required
-                    placeholder="name@example.com" 
-                    class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-4 text-sm text-on-surface transition-all input-focus-glow"
-                  />
-                </div>
-              </div>
+                <form @submit.prevent="handlePreRegister" class="space-y-4">
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-medium text-on-surface-variant ml-1">Tên đăng nhập</label>
+                    <div class="relative group">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">person</span>
+                      <input v-model="form.username" type="text" required placeholder="VD: gundam_hunter" class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-4 text-sm text-on-surface transition-all input-focus-glow" />
+                    </div>
+                  </div>
 
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-on-surface-variant ml-1">Mật khẩu</label>
-                <div class="relative group">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">lock</span>
-                  <input 
-                    v-model="form.password" 
-                    :type="showPassword ? 'text' : 'password'" 
-                    required
-                    placeholder="••••••••" 
-                    class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-11 text-sm text-on-surface transition-all input-focus-glow"
-                  />
-                  <button 
-                    type="button" 
-                    @click="showPassword = !showPassword"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
-                  >
-                    <span class="material-symbols-outlined text-lg">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-medium text-on-surface-variant ml-1">Email</label>
+                    <div class="relative group">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">alternate_email</span>
+                      <input v-model="form.email" type="email" required placeholder="name@example.com" class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-4 text-sm text-on-surface transition-all input-focus-glow" />
+                    </div>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-medium text-on-surface-variant ml-1">Mật khẩu</label>
+                    <div class="relative group">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">lock</span>
+                      <input v-model="form.password" :type="showPassword ? 'text' : 'password'" required placeholder="••••••••" class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-11 text-sm text-on-surface transition-all input-focus-glow" />
+                      <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors">
+                        <span class="material-symbols-outlined text-lg">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-medium text-on-surface-variant ml-1">Xác nhận mật khẩu</label>
+                    <div class="relative group">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">verified_user</span>
+                      <input v-model="form.confirmPassword" :type="showPassword ? 'text' : 'password'" required placeholder="••••••••" class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-4 text-sm text-on-surface transition-all input-focus-glow" />
+                    </div>
+                  </div>
+
+                  <button type="submit" :disabled="isLoading" class="w-full mt-6 py-3.5 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 group">
+                    <span v-if="isLoading" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                    <span>{{ isLoading ? 'Đang gửi mã...' : 'Tiếp tục' }}</span>
+                    <span v-if="!isLoading" class="material-symbols-outlined group-hover:translate-x-1 transition-transform text-lg">arrow_forward</span>
                   </button>
-                </div>
+                </form>
+
+                <p class="mt-8 text-center text-on-surface-variant text-xs">
+                  Đã có tài khoản? 
+                  <router-link to="/login" class="text-tertiary font-bold hover:underline decoration-2 underline-offset-4 transition-all">
+                    Đăng nhập ngay
+                  </router-link>
+                </p>
               </div>
 
-              <div class="space-y-1.5">
-                <label class="text-xs font-medium text-on-surface-variant ml-1">Xác nhận mật khẩu</label>
-                <div class="relative group">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">verified_user</span>
-                  <input 
-                    v-model="form.confirmPassword" 
-                    :type="showPassword ? 'text' : 'password'" 
-                    required
-                    placeholder="••••••••" 
-                    class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-3 pl-11 pr-4 text-sm text-on-surface transition-all input-focus-glow"
-                  />
+              <div v-else-if="step === 2" key="step2">
+                <div class="mb-10 text-center">
+                  <h2 class="font-headline text-3xl font-bold text-on-surface mb-3">Xác nhận Email</h2>
+                  <p class="text-on-surface-variant text-sm mb-4">
+                    Mã xác thực gồm 6 chữ số đã được gửi tới <br>
+                    <strong class="text-primary">{{ form.email }}</strong>
+                    <button type="button" @click="step = 1" class="text-xs text-outline hover:text-white underline ml-2">Sửa Email</button>
+                  </p>
+                  
+                  <div class="inline-flex items-center justify-center py-2 px-4 rounded-full bg-surface-container/50 border border-white/5">
+                    <div v-if="countdown > 0" class="flex items-center gap-2 text-sm">
+                      <span class="material-symbols-outlined text-tertiary text-lg animate-pulse">timer</span>
+                      <span class="text-on-surface-variant">Mã hết hạn sau:</span>
+                      <span class="font-bold text-tertiary font-mono text-base tracking-widest">{{ formattedTime }}</span>
+                    </div>
+                    <div v-else class="flex items-center gap-2 text-sm">
+                      <span class="material-symbols-outlined text-error text-lg">error</span>
+                      <span class="text-error font-medium">Mã OTP đã hết hạn!</span>
+                      <button 
+                        type="button" 
+                        @click="handleResendOTP" 
+                        :disabled="isLoading"
+                        class="ml-2 font-bold text-primary hover:underline underline-offset-2 transition-all disabled:opacity-50"
+                      >
+                        Gửi lại mã
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
+                <form @submit.prevent="handleRegister" class="space-y-6">
+                  <div class="space-y-1.5">
+                    <div class="relative group">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">password</span>
+                      <input 
+                        v-model="otpCode"
+                        @input="otpCode = otpCode.replace(/\D/g, '')"
+                        inputmode="numeric" 
+                        type="text" 
+                        maxlength="6" 
+                        required 
+                        :disabled="countdown === 0"
+                        placeholder="••••••" 
+                        class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-4 pl-12 pr-4 text-on-surface text-center text-2xl tracking-[1em] transition-all input-focus-glow font-bold disabled:opacity-50" 
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" :disabled="isLoading || countdown === 0" class="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2 group">
+                    <span v-if="isLoading" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+                    <span>{{ isLoading ? 'Đang xử lý...' : 'Xác thực & Tạo tài khoản' }}</span>
+                  </button>
+                </form>
               </div>
 
-              <button 
-                type="submit" 
-                :disabled="isLoading"
-                class="w-full mt-4 py-3.5 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary text-sm font-bold rounded-xl shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
-              >
-                {{ isLoading ? 'Đang xử lý...' : 'Tạo tài khoản' }}
-              </button>
-            </form>
-
-            <p class="mt-8 text-center text-on-surface-variant text-xs">
-              Đã có tài khoản? 
-              <router-link to="/login" class="text-tertiary font-bold hover:underline decoration-2 underline-offset-4 transition-all">
-                Đăng nhập ngay
-              </router-link>
-            </p>
+              <div v-else-if="step === 3" key="step3" class="text-center">
+                <div class="w-20 h-20 bg-green-500/10 border border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+                  <span class="material-symbols-outlined text-green-500 text-4xl">check_circle</span>
+                </div>
+                <h2 class="font-headline text-3xl font-bold text-on-surface mb-3">Tạo tài khoản thành công!</h2>
+                <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
+                  Chào mừng <strong>{{ form.username }}</strong> gia nhập cộng đồng FigureCollect.
+                </p>
+                <div class="flex items-center justify-center gap-2 text-primary font-bold text-sm animate-pulse">
+                  <span class="material-symbols-outlined text-lg">sync</span>
+                  Đang tự động chuyển về trang Đăng nhập...
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
       </div>
@@ -145,14 +205,17 @@
 </template>
 
 <script setup>
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, computed, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast.js';
 
   const router = useRouter();
   const toastStore = useToastStore();
 
-  // Dữ liệu Form
+  const step = ref(1); // 1: Info, 2: OTP, 3: Success
+  const registerToken = ref(''); 
+  const otpCode = ref(''); 
+
   const form = reactive({
     username: '',
     email: '',
@@ -164,26 +227,99 @@
   const isLoading = ref(false);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  // Hàm xử lý Đăng ký chính
-  const handleRegister = async () => {
+  const countdown = ref(0); 
+  let timerInterval = null;
+
+  // Format thời gian từ giây sang dạng MM:SS (VD: 04:59)
+  const formattedTime = computed(() => {
+    const minutes = Math.floor(countdown.value / 60).toString().padStart(2, '0');
+    const seconds = (countdown.value % 60).toString().padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  });
+
+  // Hàm bắt đầu đếm ngược 5 phút (300 giây)
+  const startTimer = () => {
+    countdown.value = 300; 
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+      if (countdown.value > 0) {
+        countdown.value--;
+      } else {
+        clearInterval(timerInterval);
+      }
+    }, 1000);
+  };
+
+  // Hủy bộ đếm khi rời khỏi trang để tránh rò rỉ bộ nhớ
+  onUnmounted(() => {
+    if (timerInterval) clearInterval(timerInterval);
+  });
+
+  // BƯỚC 1: Lấy mã OTP
+  const handlePreRegister = async () => {
     if (form.password !== form.confirmPassword) {
       toastStore.showToast('Mật khẩu xác nhận không khớp!', 'warning', 3500, 'top-right');
       return;
     }
+    if (form.password.length < 6) {
+      toastStore.showToast("Mật khẩu phải dài ít nhất 6 ký tự!", 'warning', 3500, 'top-right');
+      return;
+    }
+    
     isLoading.value = true;
+    try {
+      const payload = {
+        TenDN: form.username,
+        email: form.email
+      };
 
+      const response = await fetch(`${API_BASE_URL}/api/auth/pre-register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi kiểm tra từ Server!');
+      }
+
+      registerToken.value = data.registerToken;
+      toastStore.showToast('Mã OTP đã được gửi!', 'success', 3000, 'top-right');
+      step.value = 2;
+      startTimer();      
+    } 
+    catch (error) {
+      console.error("Lỗi đăng ký B1:", error);
+      toastStore.showToast(error.message || 'Lỗi kết nối, vui lòng thử lại.', 'error', 4000, 'top-right');
+    } 
+    finally {
+      isLoading.value = false;
+    }
+  };
+
+  // BƯỚC 2: Xác thực & Tạo tài khoản
+  const handleRegister = async () => {
+    if (!otpCode.value || otpCode.value.length !== 6) {
+        toastStore.showToast('Vui lòng nhập đủ 6 số OTP!', 'warning', 3000, 'top-right');
+        return;
+    }
+
+    isLoading.value = true;
     try {
       const payload = {
         TenDN: form.username,
         email: form.email,
-        MatKhau: form.password
+        MatKhau: form.password,
+        otp: otpCode.value,
+        registerToken: registerToken.value
       };
 
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -192,16 +328,55 @@
       if (!response.ok) {
         throw new Error(data.message || 'Lỗi đăng ký từ Server!');
       }
-      toastStore.showToast('Đăng ký thành công! Đang chuyển hướng...', 'success', 2000, 'top-right');
       
+      step.value = 3; // Chuyển sang màn hình "Thành công"
+      
+      // Chờ 3 giây rồi chuyển trang
       setTimeout(() => {
         router.push('/login');
-      }, 2000);
+      }, 3000);
 
     } 
     catch (error) {
-      console.error("Lỗi đăng ký:", error);
-      toastStore.showToast(error.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.', 'error', 4000, 'top-right');
+      console.error("Lỗi đăng ký B2:", error);
+      toastStore.showToast(error.message || 'Mã OTP không đúng hoặc đã hết hạn.', 'error', 4000, 'top-right');
+    } 
+    finally {
+      isLoading.value = false;
+    }
+  };
+  // Hàm xử lý khi bấm nút "Gửi lại mã"
+  const handleResendOTP = async () => {
+    isLoading.value = true;
+    try {
+      const payload = {
+        TenDN: form.username,
+        email: form.email
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/pre-register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Lỗi hệ thống khi gửi lại mã!');
+      }
+
+      // Cập nhật lại Token mới và reset ô nhập
+      registerToken.value = data.registerToken;
+      otpCode.value = '';
+      
+      toastStore.showToast('Đã gửi lại mã OTP mới!', 'success', 3000, 'top-right');
+      startTimer(); // Khởi động lại bộ đếm 5 phút
+      
+    } 
+    catch (error) {
+      console.error("Lỗi gửi lại mã:", error);
+      toastStore.showToast(error.message, 'error', 4000, 'top-right');
     } 
     finally {
       isLoading.value = false;
@@ -224,5 +399,19 @@
 
   .input-focus-glow:focus {
     box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
+  }
+
+  /* CSS cho hiệu ứng chuyển bước (Transition) */
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .fade-slide-enter-from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  .fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-15px);
   }
 </style>

@@ -18,50 +18,120 @@ const transporter = nodemailer.createTransport({
 
 const authController = {
     // 1. ĐĂNG KÝ
-    register: async (req, res) => {
+    preRegister: async (req, res) => {
         const connection = await db.getConnection();
         try {
-            await connection.beginTransaction();
-            const { TenDN, email, MatKhau} = req.body;
-            // Kiểm tra xem Tên đăng nhập đã tồn tại chưa
+            const { TenDN, email } = req.body;
+            
+            // Kiểm tra xem Tên đăng nhập hoặc Email đã tồn tại chưa
             const [checkUser] = await connection.query('SELECT * FROM TaiKhoan WHERE TenDN = ? or email = ?', [TenDN, email]);
             if (checkUser.length > 0) {
                 return res.status(400).json({ message: "Tên đăng nhập hoặc email đã tồn tại!" });
             }
+
+            // Tạo mã OTP ngẫu nhiên 6 số
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // Gửi Email OTP
+            const mailOptions = {
+                from: `"FigureCollect Shop" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: 'Mã xác thực đăng ký tài khoản (OTP)',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #333; background-color: #0c0e17; color: #fff;">
+                        <h2 style="color: #ff3d00; text-align: center;">FIGURECOLLECT</h2>
+                        <p>Xin chào ${TenDN},</p>
+                        <p>Bạn đang thực hiện đăng ký tài khoản mới. Dưới đây là mã xác thực OTP của bạn:</p>
+                        <h1 style="text-align: center; letter-spacing: 5px; color: #ff3d00; background: #222532; padding: 10px; border-radius: 8px;">${otp}</h1>
+                        <p style="color: #aaa; font-size: 12px; text-align: center;">Mã này sẽ hết hạn sau 5 phút. Vui lòng không chia sẻ cho bất kỳ ai.</p>
+                    </div>
+                `
+            };
+            await transporter.sendMail(mailOptions);
+
+            // Tạo JWT chứa OTP và Email với thời hạn 5 phút (Không lưu vào DB)
+            const registerToken = jwt.sign(
+                { email: email, otp: otp },
+                process.env.JWT_SECRET,
+                { expiresIn: '5m' }
+            );
+
+            res.status(200).json({
+                success: true,
+                message: "Mã OTP đã được gửi đến email của bạn!",
+                registerToken: registerToken // Trả token về cho Frontend giữ
+            });
+        } 
+        catch (error) {
+            console.error("Lỗi gửi OTP đăng ký: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi gửi OTP" });
+        } 
+        finally {
+            connection.release();
+        }
+    },
+
+    register: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            const { TenDN, email, MatKhau, otp, registerToken } = req.body;
+
+            if (!registerToken || !otp) {
+                return res.status(400).json({ message: "Thiếu mã xác thực!" });
+            }
+
+            // 1. Giải mã và kiểm tra hạn sử dụng của Token
+            let decoded;
+            try {
+                decoded = jwt.verify(registerToken, process.env.JWT_SECRET);
+            } catch (err) {
+                return res.status(400).json({ message: "Mã OTP đã hết hạn (quá 5 phút) hoặc không hợp lệ. Vui lòng đăng ký lại!" });
+            }
+
+            // 2. So sánh mã OTP người dùng nhập với OTP gốc trong Token
+            if (decoded.email !== email || decoded.otp !== otp) {
+                return res.status(400).json({ message: "Mã OTP không chính xác!" });
+            }
+
+            // 3. Nếu đúng hết, bắt đầu lưu vào Database
+            await connection.beginTransaction();
+            
+            // (Nên check trùng lại 1 lần nữa cho an toàn tuyệt đối)
+            const [checkUser] = await connection.query('SELECT * FROM TaiKhoan WHERE TenDN = ? or email = ?', [TenDN, email]);
+            if (checkUser.length > 0) {
+                return res.status(400).json({ message: "Tên đăng nhập hoặc email đã tồn tại!" });
+            }
+
             // Mã hóa mật khẩu
             const salt = await bcrypt.genSalt(10);
             const hashedPass = await bcrypt.hash(MatKhau, salt);
 
-            // Lưu vào Database (MaQuyen = 3 là Khách hàng bình thường)
+            // Lưu bảng TaiKhoan
             const sqltk = 'INSERT INTO TaiKhoan (TenDN, MatKhau, Email, MaQuyen) VALUES (?, ?, ?, 3)';
             const [resultTK] = await connection.query(sqltk, [TenDN, hashedPass, email]);
-            
             const maTK = resultTK.insertId;
 
+            // Lưu bảng KhachHang
             const sqlkh = 'INSERT INTO KhachHang (TenKH, MaTK) VALUES(?,?)';
-            const [resultKH] = await connection.query(sqlkh, [TenDN,maTK]);
-
+            const [resultKH] = await connection.query(sqlkh, [TenDN, maTK]);
             const maKH = resultKH.insertId;
 
-            const sql_giohang = 'INSERT INTO GioHang (MaKH) VALUES (?)';
-            await connection.query(sql_giohang, [maKH]);
-
-            const sql_danhmucyeuthich = `Insert into DanhMucYeuThich (MaKH) Values (?)`;
-            await connection.query(sql_danhmucyeuthich, [maKH]);
+            // Tạo Giỏ hàng & Yêu thích
+            await connection.query('INSERT INTO GioHang (MaKH) VALUES (?)', [maKH]);
+            await connection.query('INSERT INTO DanhMucYeuThich (MaKH) VALUES (?)', [maKH]);
 
             await connection.commit();
             res.status(201).json({
                 success: true,
-                message: "Đăng ký thành công!" 
+                message: "Đăng ký tài khoản thành công!" 
             });
-        } catch (error) {
+        } 
+        catch (error) {
             await connection.rollback();
             console.error("Lỗi khi đăng ký: ", error);
-            res.status(500).json({ 
-                success: false,
-                message: "Lỗi server khi đăng ký" });
-        }
-        finally{
+            res.status(500).json({ success: false, message: "Lỗi server khi đăng ký" });
+        } 
+        finally {
             connection.release();
         }
     },
@@ -146,18 +216,14 @@ const authController = {
             // Kiểm tra email có tồn tại không
             const [users] = await db.query('SELECT * FROM TaiKhoan WHERE Email = ?', [email]);
             if (users.length === 0) {
-                // Trả về lỗi ẩn danh để bảo mật
-                return res.status(200).json({ message: "Nếu email tồn tại, OTP sẽ được gửi." });
+                // Trả về thông báo ẩn danh để bảo mật hệ thống, tránh bị dò quét email
+                return res.status(200).json({ success: true, message: "Nếu email tồn tại, OTP sẽ được gửi." });
             }
 
             const user = users[0];
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            const expires = new Date(Date.now() + 5 * 60 * 1000);
 
-            // Lưu OTP vào DB
-            await db.query('UPDATE TaiKhoan SET ResetOTP = ?, OTPExpires = ? WHERE MaTK = ?', [otp, expires, user.MaTK]);
-
-            // Gửi Email
+            // Gửi Email chứa OTP
             const mailOptions = {
                 from: `"FigureCollect Shop" <${process.env.EMAIL_USER}>`,
                 to: email,
@@ -173,63 +239,103 @@ const authController = {
                 `
             };
             await transporter.sendMail(mailOptions);
-            res.status(200).json({ message: "OTP đã được gửi thành công!" });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Lỗi máy chủ khi gửi OTP" });
+
+            // Gói thông tin email và mã OTP vào Token tạm thời thời hạn 5 phút
+            const forgotToken = jwt.sign(
+                { email: email, otp: otp },
+                process.env.JWT_SECRET,
+                { expiresIn: '5m' }
+            );
+
+            res.status(200).json({ 
+                success: true,
+                message: "OTP đã được gửi thành công!",
+                forgotToken: forgotToken // Frontend nhận và lưu lại chuỗi mã hóa này
+            });
+        } 
+        catch (error) {
+            console.error("Lỗi gửi OTP quên mật khẩu:", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi gửi OTP" });
         }
     },
-    // 2. API: Xác thực OTP
+
+    // 2. API: Xác thực mã OTP
     verifyOTP: async (req, res) => {
         try {
-            const { email, otp } = req.body;
+            const { email, otp, forgotToken } = req.body;
 
-            const [users] = await db.query('SELECT * FROM TaiKhoan WHERE Email = ? AND ResetOTP = ?', [email, otp]);
-            
-            if (users.length === 0) {
-                return res.status(400).json({ message: "Mã OTP không hợp lệ hoặc sai email!" });
+            if (!forgotToken || !otp) {
+                return res.status(400).json({ success: false, message: "Thiếu thông tin xác thực mã!" });
             }
 
-            const user = users[0];
-
-            // Kiểm tra xem OTP đã quá hạn 5 phút chưa
-            if (new Date() > new Date(user.OTPExpires)) {
-                return res.status(400).json({ message: "Mã OTP đã hết hạn. Vui lòng gửi lại yêu cầu!" });
+            // 1. Giải mã kiểm tra tính hợp lệ và thời hạn của Token mã hóa
+            let decoded;
+            try {
+                decoded = jwt.verify(forgotToken, process.env.JWT_SECRET);
+            } catch (err) {
+                return res.status(400).json({ success: false, message: "Mã OTP đã hết hạn (quá 5 phút). Vui lòng gửi lại yêu cầu!" });
             }
 
-            res.status(200).json({ message: "Xác thực OTP thành công!" });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Lỗi máy chủ khi xác thực OTP" });
+            // 2. Đối chiếu Email và OTP khách nhập với thông tin giải mã từ Token
+            if (decoded.email !== email || decoded.otp !== otp) {
+                return res.status(400).json({ success: false, message: "Mã OTP không chính xác!" });
+            }
+
+            // 3. OTP đúng -> Ký một Token chứng nhận đã xác thực thành công (hạn 5 phút) giao cho khách chuyển sang màn hình đổi Pass
+            const resetToken = jwt.sign(
+                { email: email, isVerified: true },
+                process.env.JWT_SECRET,
+                { expiresIn: '5m' }
+            );
+
+            res.status(200).json({ 
+                success: true,
+                message: "Xác thực OTP thành công!",
+                resetToken: resetToken 
+            });
+        } 
+        catch (error) {
+            console.error("Lỗi xác thực OTP:", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi xác thực OTP" });
         }
     },
 
-    // 3. API: Đổi mật khẩu mới
+    // 3. API: Thiết lập mật khẩu mới
     resetPassword: async (req, res) => {
         try {
-            const { email, otp, newPassword } = req.body;
+            const { email, resetToken, newPassword } = req.body;
 
-            // Kiểm tra lại lần cuối để đảm bảo an toàn tuyệt đối
-            const [users] = await db.query('SELECT * FROM TaiKhoan WHERE Email = ? AND ResetOTP = ?', [email, otp]);
-            
-            if (users.length === 0 || new Date() > new Date(users[0].OTPExpires)) {
-                return res.status(400).json({ message: "Phiên xác thực không hợp lệ. Vui lòng thử lại!" });
+            if (!resetToken) {
+                return res.status(400).json({ success: false, message: "Phiên làm việc không hợp lệ!" });
             }
 
-            // Mã hóa mật khẩu mới
+            // 1. Xác thực Token chứng nhận đổi pass xem còn hạn hay không
+            let decoded;
+            try {
+                decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+            } catch (err) {
+                return res.status(400).json({ success: false, message: "Phiên xác thực đổi mật khẩu đã hết hạn. Vui lòng xác thực lại OTP!" });
+            }
+
+            // 2. Kiểm tra tính chính danh của Token quyền đổi pass
+            if (decoded.email !== email || !decoded.isVerified) {
+                return res.status(400).json({ success: false, message: "Yêu cầu thay đổi mật khẩu bị từ chối!" });
+            }
+
+            // 3. Mã hóa mật khẩu mới và cập nhật duy nhất trường mật khẩu trong DB
             const salt = await bcrypt.genSalt(10);
             const hashedPass = await bcrypt.hash(newPassword, salt);
 
-            // Cập nhật pass mới và XÓA SẠCH mã OTP đi (để không bị dùng lại)
             await db.query(
-                'UPDATE TaiKhoan SET MatKhau = ?, ResetOTP = NULL, OTPExpires = NULL WHERE Email = ?', 
+                'UPDATE TaiKhoan SET MatKhau = ? WHERE Email = ?', 
                 [hashedPass, email]
             );
 
-            res.status(200).json({ message: "Đổi mật khẩu thành công!" });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Lỗi máy chủ khi đổi mật khẩu" });
+            res.status(200).json({ success: true, message: "Đổi mật khẩu tài khoản thành công!" });
+        } 
+        catch (error) {
+            console.error("Lỗi cập nhật mật khẩu mới:", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi đổi mật khẩu" });
         }
     },
     // 4. Đổi mật khẩu bình thường
