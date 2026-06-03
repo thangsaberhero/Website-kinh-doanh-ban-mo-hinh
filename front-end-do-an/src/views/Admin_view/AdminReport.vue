@@ -215,7 +215,7 @@
                   <tr v-for="item in inventoryWarnings" :key="item.MaPhanLoai" class="hover:bg-slate-50/80 transition-colors">
                     <td class="p-3">
                       <div class="flex items-center gap-3">
-                        <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : '${API_BASE_URL}/Images_product/' + item.AnhDaiDien" alt="IMG">
+                        <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : '${API_BASE_URL}/Images_product/' + item.AnhDaiDien" class="w-10 h-10 rounded object-cover border border-slate-200 shadow-sm" alt="IMG">
                         <p class="font-bold text-slate-900 text-xs line-clamp-2 max-w-[200px]" :title="item.TenMH">{{ item.TenMH }}</p>
                       </div>
                     </td>
