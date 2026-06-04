@@ -226,7 +226,7 @@ const newsController = {
                 "Bài viết mới", 
                 `Bài viết "${TieuDe}" vừa được tạo thành công trên hệ thống.`, 
                 "HeThong", 
-                "/admin/news/edit/${newNewsId}"
+                `/admin/news/edit/${newNewsId}`
             ]);
             
             await connection.commit();
