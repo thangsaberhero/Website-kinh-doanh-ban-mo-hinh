@@ -177,7 +177,7 @@
           <div v-for="brand in brands" :key="`b-${brand.MaHSX}`"
               @click="goToBrand(brand.TenHSX)"
               class="flex-shrink-0 w-44 h-24 bg-surface-container-low border border-outline-variant/20 rounded-2xl flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-surface-bright transition-all p-4 shadow-sm">
-            <img v-if="brand.Logo" loading="lazy" :src="`${API_BASE_URL}/Images_brand/${brand.Logo}`" class="max-w-full max-h-full object-contain" />
+            <img v-if="brand.Logo" loading="lazy" :src="brand.Logo" />
             <span v-else class="font-headline font-black text-outline-variant text-lg uppercase italic">{{ brand.TenHSX }}</span>
           </div>
         </div>
