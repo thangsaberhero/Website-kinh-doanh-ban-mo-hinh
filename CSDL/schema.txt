@@ -18,8 +18,6 @@ CREATE TABLE TaiKhoan (
     Email VARCHAR(100),
     MaQuyen INT,
     AnhDaiDien VARCHAR(255),
-	ResetOTP VARCHAR(10) NULL,
-	OTPExpires DATETIME NULL,
 	Bi_khoa TINYINT default 0,
 	NgayTao DATETIME DEFAULT CURRENT_TIMESTAMP,
 	DangNhapCuoi DATETIME NULL,
@@ -70,7 +68,9 @@ CREATE TABLE HangSanXuat (
 CREATE TABLE DanhMuc (
     MaDM INT PRIMARY KEY AUTO_INCREMENT,
     TenDM VARCHAR(100) NOT NULL,
-    MoTa TEXT
+    MoTa TEXT,
+    DanhSachAnh TEXT NOT NULL,
+    DanhMucNoiBat TinyINT DEFAULT 1
 );
 
 -- 7. Bảng Chi tiết Danh mục
@@ -312,33 +312,8 @@ CREATE TABLE TinTuc (
     NgayDang DATETIME DEFAULT CURRENT_TIMESTAMP,
     LuotXem INT DEFAULT 0,
     Tags Varchar(255),
+    AnhThumbnail Varchar(255),
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
-);
-
--- 22. Bảng Ảnh tin tức
-CREATE TABLE AnhTinTuc (
-    MaAnh INT PRIMARY KEY AUTO_INCREMENT,
-    LinkAnh VARCHAR(255),
-    MaTT INT,
-    FOREIGN KEY (MaTT) REFERENCES TinTuc(MaTT)
-);
-
--- 23. Bảng Bảo hành
-CREATE TABLE BaoHanh (
-    MaPBH INT PRIMARY KEY AUTO_INCREMENT,
-    MaDH INT,
-    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
-);
-
--- 24. Bảng Chi tiết bảo hành
-CREATE TABLE ChiTietBaoHanh (
-    MaPBH INT,
-    MaMoHinh INT,
-    NgayBatDau DATE,
-    NgayKetThuc DATE,
-    PRIMARY KEY (MaPBH, MaMoHinh),
-    FOREIGN KEY (MaPBH) REFERENCES BaoHanh(MaPBH),
-    FOREIGN KEY (MaMoHinh) REFERENCES PhanLoai(MaPhanLoai)
 );
 
 -- 25. Bảng Đánh giá
@@ -372,17 +347,6 @@ CREATE TABLE LienHe (
     NgayXuLy DATETIME NULL,
     PhanHoiShop TEXT NULL,
     FOREIGN KEY (MaNV_XuLy) REFERENCES NhanVien(MaNV)
-);
-
--- 26. Bảng Vận chuyển
-CREATE TABLE VanChuyen (
-    MaVC INT PRIMARY KEY AUTO_INCREMENT,
-    MaDH INT,
-    ThongTinVC VARCHAR(255),
-    DonViVC VARCHAR(100),
-    PhiVanChuyen DECIMAL(12,2) CHECK (PhiVanChuyen >= 0),
-    GhiChu TEXT,
-    FOREIGN KEY (MaDH) REFERENCES DonHang(MaDH)
 );
 
 CREATE TABLE ThongBaoAdmin (

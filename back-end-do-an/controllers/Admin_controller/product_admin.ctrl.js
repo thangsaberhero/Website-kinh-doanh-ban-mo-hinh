@@ -9,31 +9,45 @@ const product_admin = {
 
         try {
             await connection.beginTransaction();
-            const { TenDM, MoTa, ChiTiet } = req.body;
+            const { TenDM, MoTa, ChiTiet, DanhMucNoiBat } = req.body;
             const MaTK = req.user.id;
 
-            // 1. VALIDATION
+            // Xử lý biến DanhMucNoiBat (Đảm bảo giá trị luôn là 1 hoặc 0)
+            const isNoiBat = (DanhMucNoiBat == 1 || DanhMucNoiBat === 'true') ? 1 : 0;
+
+            // 2. XỬ LÝ MẢNG ẢNH TỪ MULTER (CỰC KỲ QUAN TRỌNG)
+            // Nếu có up ảnh thì req.files sẽ là mảng chứa các file, nếu không có thì gán mảng rỗng []
+            const uploadedFiles = req.files || [];
+            
+            // Map qua mảng file để lấy đường dẫn (path/url). 
+            // Lưu ý: Nếu bạn dùng Cloudinary, đường dẫn thường nằm ở file.path
+            const arrUrlAnh = uploadedFiles.map(file => file.path);
+            
+            // Ép mảng URL thành chuỗi JSON (VD: '["url1", "url2"]') để lưu vào cột TEXT
+            const jsonDanhSachAnh = JSON.stringify(arrUrlAnh);
+
+            // 3. VALIDATION
             if (!TenDM || TenDM.trim() === '') {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Tên danh mục không được để trống!" });
             }
 
-            // 2. KIỂM TRA TRÙNG LẶP
+            // 4. KIỂM TRA TRÙNG LẶP
             const sql_check = `SELECT MaDM FROM DanhMuc WHERE TenDM = ?`;
             const [check] = await connection.query(sql_check, [TenDM]);
             
             if (check.length > 0) {
-                // FIX: Phải rollback trước khi return, KHÔNG tự ý release ở đây
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Đã tồn tại danh mục này!" });
             }
             
-            // 3. THÊM DANH MỤC CHA
-            const sql_insert_dm = `INSERT INTO DanhMuc(TenDM, MoTa) VALUES (?, ?)`;
-            const [result_dm] = await connection.query(sql_insert_dm, [TenDM, MoTa]);
+            // 5. THÊM DANH MỤC CHA (ĐÃ UPDATE CÂU SQL)
+            // Thêm DanhSachAnh và DanhMucNoiBat vào câu lệnh INSERT
+            const sql_insert_dm = `INSERT INTO DanhMuc(TenDM, MoTa, DanhSachAnh, DanhMucNoiBat) VALUES (?, ?, ?, ?)`;
+            const [result_dm] = await connection.query(sql_insert_dm, [TenDM, MoTa, jsonDanhSachAnh, isNoiBat]);
             const ma_DM_moi = result_dm.insertId;
 
-            // 4. THÊM DANH MỤC CON (TỐI ƯU BULK INSERT)
+            // 6. THÊM DANH MỤC CON (TỐI ƯU BULK INSERT)
             if (ChiTiet && ChiTiet !== 'undefined') {
                 const cates = typeof ChiTiet === 'string' ? JSON.parse(ChiTiet) : ChiTiet;
                 
@@ -47,7 +61,7 @@ const product_admin = {
                 }
             }
             
-            // 5. GHI LOG HOẠT ĐỘNG
+            // 7. GHI LOG HOẠT ĐỘNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -66,7 +80,6 @@ const product_admin = {
         }
         catch (error) {
             await connection.rollback();
-            // FIX: Nối thêm error để dễ debug
             console.error("Lỗi khi thêm danh mục mới: ", error); 
             res.status(500).json({ success: false, message: "Lỗi server khi thao tác thêm danh mục!"});
         }
@@ -79,44 +92,61 @@ const product_admin = {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
-            const MaDM = req.params.id; // Lấy ID từ URL
-            const { TenDM, MoTa , ChiTiet} = req.body;
+            const MaDM = req.params.id; 
+            
+            const { TenDM, MoTa , ChiTiet, DanhMucNoiBat } = req.body;
             const MaTK = req.user.id;
+            
+            // Xử lý biến DanhMucNoiBat (Đảm bảo giá trị luôn là 1 hoặc 0)
+            const isNoiBat = (DanhMucNoiBat == 1 || DanhMucNoiBat === 'true') ? 1 : 0;
 
             if (!TenDM || TenDM.trim() === '') {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Tên danh mục không được để trống!" });
             }
 
-            const [kiemtra] = await connection.query(`Select MaDM from DanhMuc where MaDM = ?`,[MaDM]);
-            if(kiemtra.length === 0)
-            {
+            const [kiemtra] = await connection.query(`SELECT MaDM FROM DanhMuc WHERE MaDM = ?`,[MaDM]);
+            if(kiemtra.length === 0) {
                 await connection.rollback();
-                return res.status(400).json({
-                    success: false,
-                    message: `Không tìm thấy danh mục cần sửa!`
-                });
+                return res.status(400).json({ success: false, message: `Không tìm thấy danh mục cần sửa!` });
             }
 
-            // Kiểm tra xem tên mới gõ có bị trùng với một hãng KHÁC trong DB không
+            // Kiểm tra trùng lặp tên
             const sql_check = `SELECT * FROM DanhMuc WHERE TenDM = ? AND MaDM != ?`;
             const [check] = await connection.query(sql_check, [TenDM, MaDM]);
             
             if(check.length > 0){
-                await connection.rollback()
-                return res.status(400).json({
-                    success: false,
-                    message: `Tên danh mục này đã được sử dụng!`
-                });
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: `Tên danh mục này đã được sử dụng!` });
             }
 
-            const sql = `UPDATE DanhMuc SET TenDM=?, MoTa=? WHERE MaDM=?`;
-            await connection.query(sql, [TenDM, MoTa || null, MaDM]);
-            if(ChiTiet && ChiTiet !== 'undefined')
-            {
+            // 2. XỬ LÝ LOGIC CẬP NHẬT ẢNH THÔNG MINH
+            let updateImageQuery = "";
+            let queryParams = [TenDM, MoTa || null, isNoiBat];
+
+            // Nếu Admin có chọn tải lên file ảnh mới
+            if (req.files && req.files.length > 0) {
+                const arrUrlAnh = req.files.map(file => file.path); // Lấy url từ Cloudinary
+                const jsonDanhSachAnh = JSON.stringify(arrUrlAnh);
+                
+                updateImageQuery = ", DanhSachAnh = ?"; // Thêm câu lệnh cập nhật ảnh
+                queryParams.push(jsonDanhSachAnh);      // Nhét giá trị ảnh vào mảng tham số
+            }
+            
+            // Cuối cùng mới đẩy MaDM vào mảng tham số để dùng cho WHERE
+            queryParams.push(MaDM); 
+
+            // 3. CẬP NHẬT DANH MỤC CHA
+            // SQL sẽ tự động co giãn tùy thuộc vào việc updateImageQuery có nội dung hay không
+            const sql = `UPDATE DanhMuc SET TenDM=?, MoTa=?, DanhMucNoiBat=? ${updateImageQuery} WHERE MaDM=?`;
+            await connection.query(sql, queryParams);
+
+            // 4. CẬP NHẬT DANH MỤC CON (Giữ nguyên logic của bạn)
+            if(ChiTiet && ChiTiet !== 'undefined') {
                 const cates = typeof ChiTiet === 'string' ? JSON.parse(ChiTiet) : ChiTiet;
-                const sql_sua_chi_tiet = `Update ChiTietDanhMuc set TenChiTietDM = ?, MoTa = ? where MaChiTietDM = ?`
+                const sql_sua_chi_tiet = `UPDATE ChiTietDanhMuc SET TenChiTietDM = ?, MoTa = ? WHERE MaChiTietDM = ?`;
                 const sql_insert_chitiet = `INSERT INTO ChiTietDanhMuc(MaDM, TenChiTietDM, MoTa) VALUES (?, ?, ?)`;
+                
                 for (let cate of cates) {
                     if(cate.id)
                         await connection.query(sql_sua_chi_tiet, [cate.name, cate.description, cate.id]);
@@ -124,6 +154,8 @@ const product_admin = {
                         await connection.query(sql_insert_chitiet, [MaDM, cate.name, cate.description]);
                 }
             }
+
+            // 5. GHI LOG HOẠT ĐỘNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -132,6 +164,7 @@ const product_admin = {
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'CATEGORY_UPDATE', ?, ?, NOW())
             `, [MaTK, noiDungLog, userIp]);
+            
             await connection.commit();
             res.status(200).json({
                 success: true,
@@ -140,11 +173,11 @@ const product_admin = {
         }
         catch (error) {
             await connection.rollback();
-            console.error("Lỗi khi sửa HSX: ", error);
+            console.error("Lỗi khi sửa danh mục: ", error); // Đã fix thông báo console
             res.status(500).json({ success: false, message: "Lỗi server khi cập nhật danh mục!"});
         }
         finally{
-            connection.release()
+            if (connection) connection.release();
         }
     },
 
@@ -1333,19 +1366,20 @@ const product_admin = {
         }
     },
 
-    liet_ke_danh_muc: async(req, res)=>{
+    liet_ke_danh_muc: async(req, res) => {
         try {
             const isGetAll = req.query.getAll === 'true';
 
             if (isGetAll) {
-                // Lấy tất cả danh mục cha
-                const [cates] = await db.query(`SELECT MaDM, TenDM FROM DanhMuc ORDER BY TenDM ASC`);
-                // Lấy tất cả danh mục con
+                // 🔥 SỬA: Lấy thêm DanhSachAnh và DanhMucNoiBat
+                const [cates] = await db.query(`SELECT MaDM, TenDM, MoTa, DanhSachAnh, DanhMucNoiBat FROM DanhMuc ORDER BY TenDM ASC`);
                 const [subCates] = await db.query(`SELECT MaChiTietDM, TenChiTietDM, MaDM FROM ChiTietDanhMuc`);
                 
-                // Gộp danh mục con vào danh mục cha tương ứng
+                // Gộp danh mục con và ÉP KIỂU MẢNG ẢNH
                 const finalCates = cates.map(cate => ({
                     ...cate,
+                    // 🔥 THÊM: Ép chuỗi TEXT thành mảng Array để Vue.js dễ render
+                    DanhSachAnh: cate.DanhSachAnh ? JSON.parse(cate.DanhSachAnh) : [],
                     DanhSachDanhMucCon: subCates.filter(sub => sub.MaDM === cate.MaDM)
                 }));
 
@@ -1372,7 +1406,8 @@ const product_admin = {
                 filter = "ORDER BY dm.TenDM DESC";
             }
     
-            const sql_core = `SELECT dm.MaDM, dm.TenDM, dm.MoTa, 
+            // 🔥 SỬA: Bổ sung dm.DanhSachAnh và dm.DanhMucNoiBat vào câu SELECT core
+            const sql_core = `SELECT dm.MaDM, dm.TenDM, dm.MoTa, dm.DanhSachAnh, dm.DanhMucNoiBat,
                                 (
                                     SELECT count(*)
                                     FROM ChiTietDanhMuc ctdm
@@ -1398,6 +1433,7 @@ const product_admin = {
 
             let finalCates = cates; 
             
+            // Xử lý danh mục con và ép kiểu dữ liệu ảnh
             if (cates.length > 0) {
                 const arrMaDM = cates.map(c => c.MaDM);
 
@@ -1409,9 +1445,17 @@ const product_admin = {
                 finalCates = cates.map(cate => {
                     return {
                         ...cate,
+                        // 🔥 THÊM: Ép chuỗi TEXT thành mảng Array (Bắt lỗi rỗng)
+                        DanhSachAnh: cate.DanhSachAnh ? JSON.parse(cate.DanhSachAnh) : [],
                         DanhSachDanhMucCon: subCates.filter(sub => sub.MaDM === cate.MaDM)
                     };
                 });
+            } else {
+                // Trong trường hợp không có danh mục con, vẫn phải ép kiểu ảnh cho mảng cates gốc
+                finalCates = cates.map(cate => ({
+                    ...cate,
+                    DanhSachAnh: cate.DanhSachAnh ? JSON.parse(cate.DanhSachAnh) : []
+                }));
             }
 
             res.status(200).json({

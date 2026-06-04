@@ -70,5 +70,6 @@ module.exports = {
     uploadReview: createUploader('Images_review'),
     uploadBrand: createUploader('Images_brand'),
     uploadProduct: createUploader('Images_product'),
-    uploadUser: createUploader('Images_user')
+    uploadUser: createUploader('Images_user'),
+    uploadCategory: createUploader('Image_category')
 };
