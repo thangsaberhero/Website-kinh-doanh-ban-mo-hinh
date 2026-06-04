@@ -93,22 +93,24 @@
       </div>
       
       <div v-if="featuredCategories.length > 0" class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
+        
         <div v-for="(cat, index) in featuredCategories" :key="cat.MaDM"
-             @click="router.push(`/category/${cat.MaDM}`)" 
+             @click="router.push(`/category/${cat.MaDM}`)"
+             @mouseenter="startHoverSlide(cat)" 
+             @mouseleave="stopHoverSlide(cat)"
              class="group relative overflow-hidden rounded-xl bg-surface-container-high cursor-pointer"
              :class="{
-               'md:col-span-2 md:row-span-2 h-[300px] md:h-full': index === 0, /* Ô to nhất */
-               'md:col-span-2 h-[200px] md:h-full': index === 1,               /* Ô ngang vừa */
-               'h-[200px] md:h-full': index > 1                                /* 2 Ô nhỏ */
+               'md:col-span-2 md:row-span-2 h-[300px] md:h-full': index === 0, 
+               'md:col-span-2 h-[200px] md:h-full': index === 1,               
+               'h-[200px] md:h-full': index > 1                                
              }">
           
-          <!-- Lớp ảnh nền có hiệu ứng Slide Fade -->
           <transition name="fade">
             <img loading="lazy" 
-                 :key="imageTick % (cat.DanhSachAnh?.length || 1)"
+                 :key="cat.currentIndex"
                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                  :alt="cat.TenDM" 
-                 :src="cat.DanhSachAnh && cat.DanhSachAnh.length > 0 ? cat.DanhSachAnh[imageTick % cat.DanhSachAnh.length] : 'https://placehold.co/600x400/1c1f2b/fff?text=No+Image'"/>
+                 :src="cat.DanhSachAnh && cat.DanhSachAnh.length > 0 ? cat.DanhSachAnh[cat.currentIndex] : 'https://placehold.co/600x400/1c1f2b/fff?text=No+Image'"/>
           </transition>
 
           <!-- Lớp phủ Gradient làm nổi bật chữ -->
@@ -234,8 +236,6 @@
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const featuredCategories = ref([]);
-  const imageTick = ref(0);
-  let categoryTimer = null;
 
   // 2. Hàm lấy danh mục từ API
   const fetchCategories = async () => {
@@ -244,15 +244,41 @@
       const dataJSON = await res.json();
       
       if (res.ok) {
-        // Lọc ra các danh mục có bật Nổi Bật (DanhMucNoiBat === 1) 
-        // và dùng .slice(0, 4) để chỉ lấy tối đa 4 cái lấp đầy lưới Bento.
         featuredCategories.value = dataJSON.data
           .filter(cat => cat.DanhMucNoiBat === 1)
-          .slice(0, 4);
+          .slice(0, 4)
+          // 🔥 THÊM ĐOẠN MAP NÀY: Khởi tạo bộ đếm và đồng hồ riêng cho từng danh mục
+          .map(cat => ({
+            ...cat,
+            currentIndex: 0,
+            hoverTimer: null
+          }));
       }
     } catch (error) {
       console.error("Lỗi lấy danh mục nổi bật:", error);
     }
+  };
+
+  const startHoverSlide = (cat) => {
+    // Bỏ qua nếu danh mục không có ảnh hoặc chỉ có 1 ảnh
+    if (!cat.DanhSachAnh || cat.DanhSachAnh.length <= 1) return;
+    
+    // Xóa đồng hồ cũ (nếu có) để tránh lỗi chạy nhanh dần do lướt chuột nhiều lần
+    if (cat.hoverTimer) clearInterval(cat.hoverTimer);
+    
+    // Tự động chuyển ảnh mỗi 1.2 giây (Nên để nhanh hơn so với auto để khách thấy hiệu ứng ngay)
+    cat.hoverTimer = setInterval(() => {
+      cat.currentIndex = (cat.currentIndex + 1) % cat.DanhSachAnh.length;
+    }, 1200); 
+  };
+
+  const stopHoverSlide = (cat) => {
+    if (cat.hoverTimer) {
+      clearInterval(cat.hoverTimer);
+      cat.hoverTimer = null;
+    }
+    // Tùy chọn: Đưa ảnh về lại tấm đầu tiên khi khách rút chuột ra
+    cat.currentIndex = 0; 
   };
 
   const heroSlides = [
