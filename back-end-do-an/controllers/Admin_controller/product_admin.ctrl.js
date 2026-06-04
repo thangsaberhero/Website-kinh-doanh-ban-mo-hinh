@@ -229,7 +229,7 @@ const product_admin = {
             }
             let logoFileName = null;
             if (req.file) {
-                logoFileName = req.file.filename;
+                logoFileName = req.file.path || req.file.secure_url || req.file.url;
             }
             const sql_check = `Select * from HangSanXuat where TenHSX = ?`
             const [check] = await connection.query(sql_check, [TenHSX]);
@@ -293,7 +293,7 @@ const product_admin = {
             let values = [TenHSX, MoTa || null];
             if (req.file) {
                 sql += `, Logo=?`;
-                values.push(req.file.filename);
+                values.push(req.file.path || req.file.secure_url || req.file.url);
             }
             sql += ` WHERE MaHSX=?`;
             values.push(MaHSX);
@@ -316,6 +316,9 @@ const product_admin = {
             await connection.rollback();
             console.error("Lỗi khi sửa HSX: ", error);
             res.status(500).json({ success: false, message: "Lỗi server khi cập nhật HSX!"});
+        }
+        finally{
+            connection.release();
         }
     },
 
