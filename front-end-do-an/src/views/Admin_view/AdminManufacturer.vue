@@ -99,7 +99,7 @@
                   <td class="px-8 py-4">
                     <div class="flex items-center gap-4">
                       <div class="w-12 h-12 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center overflow-hidden">
-                        <img v-if="mfr.logo" :src="`${API_BASE_URL}/Images_brand/${mfr.logo}`" class="w-full h-full object-contain p-1" />
+                        <img v-if="mfr.logo" :src="(mfr.logo && mfr.logo.startsWith('http')) ? mfr.logo : '${API_BASE_URL}/Images_brand/' + mfr.logo" class="w-full h-full object-contain p-1" />
                         <span v-else class="text-lg font-black text-[#ff8f73]">{{ mfr.code }}</span>
                       </div>
                       <div class="flex flex-col">
