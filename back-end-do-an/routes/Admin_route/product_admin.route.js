@@ -27,7 +27,7 @@ router.post('/add_cate',
 router.post('/add_product_variant', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_phan_loai_cho_san_pham);
 
 // 2. Sửa từ upload.fields thành uploadProduct.fields
-router.put('/fix_info/:id', authMiddleware.verifyToken, authMiddleware.verify, Admin uploadProduct.fields([
+router.put('/fix_info/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, uploadProduct.fields([
     { name: 'AnhDaiDien', maxCount: 1 },
     { name: 'BoSuuTapAnhMoi', maxCount: 10 }
 ]), product_Controller.sua_thong_tin_mat_hang);
