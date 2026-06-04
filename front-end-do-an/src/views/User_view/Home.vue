@@ -346,28 +346,10 @@
   onMounted(async () => {
   scrollToTopCustom();
   heroTimer = setInterval(nextHeroSlide, 7000); 
-  categoryTimer = setInterval(() => {
-    imageTick.value++;
-  }, 3500);
-
-  await Promise.all([
-    fetchBrands(),
-    fetchCategories(),
-    (async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/products?limit=12`);
-        const dataJSON = await response.json(); 
-        if (response.ok) productList.value = dataJSON.data; 
-      } catch (error) {
-        console.error("Lỗi lấy sản phẩm:", error);
-      }
-    })()
-  ]);
 });
 
   onUnmounted(() => {
     if (heroTimer) clearInterval(heroTimer);
-    if (categoryTimer) clearInterval(categoryTimer);
   });
 
   const fetchBrands = async () => {
