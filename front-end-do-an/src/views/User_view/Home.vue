@@ -92,38 +92,52 @@
         </a>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
-        <div @click="router.push('/category/1')" class="md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[300px] md:h-full cursor-pointer">
-          <img loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gundam" :src="'FIGURE-148979_01.jpg'"/>
-          <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent opacity-90"></div>
-          <div class="absolute bottom-8 left-8">
-            <h3 class="font-headline text-4xl font-bold mb-2 text-on-surface">Mô hình chính hãng</h3>
-            <p class="text-on-surface-variant mb-6 text-sm">Scale, Game Prize, Chibi, ....</p>
-            <span class="px-6 py-2 bg-primary text-on-primary text-sm font-bold rounded-lg group-hover:bg-primary-container transition-colors shadow-lg shadow-primary/20">Xem ngay</span>
+      <div v-if="featuredCategories.length > 0" class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[600px]">
+        <div v-for="(cat, index) in featuredCategories" :key="cat.MaDM"
+             @click="router.push(`/category/${cat.MaDM}`)" 
+             class="group relative overflow-hidden rounded-xl bg-surface-container-high cursor-pointer"
+             :class="{
+               'md:col-span-2 md:row-span-2 h-[300px] md:h-full': index === 0, /* Ô to nhất */
+               'md:col-span-2 h-[200px] md:h-full': index === 1,               /* Ô ngang vừa */
+               'h-[200px] md:h-full': index > 1                                /* 2 Ô nhỏ */
+             }">
+          
+          <!-- Lớp ảnh nền có hiệu ứng Slide Fade -->
+          <transition name="fade">
+            <img loading="lazy" 
+                 :key="imageTick % (cat.DanhSachAnh?.length || 1)"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                 :alt="cat.TenDM" 
+                 :src="cat.DanhSachAnh && cat.DanhSachAnh.length > 0 ? cat.DanhSachAnh[imageTick % cat.DanhSachAnh.length] : 'https://placehold.co/600x400/1c1f2b/fff?text=No+Image'"/>
+          </transition>
+
+          <!-- Lớp phủ Gradient làm nổi bật chữ -->
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent opacity-90 z-10 pointer-events-none"></div>
+          
+          <!-- Nội dung Text tùy chỉnh theo vị trí Grid -->
+          <div class="relative z-20" :class="index === 0 ? 'absolute bottom-8 left-8' : 'absolute bottom-6 left-6'">
+            <h3 class="font-headline font-bold text-on-surface"
+                :class="index === 0 ? 'text-4xl mb-2' : (index === 1 ? 'text-2xl mb-1' : 'text-xl')">
+              {{ cat.TenDM }}
+            </h3>
+            
+            <!-- Style riêng cho Ô số 1 (To nhất) -->
+            <template v-if="index === 0">
+              <p class="text-on-surface-variant mb-6 text-sm max-w-xs">{{ cat.MoTa || 'Khám phá bộ sưu tập độc đáo' }}</p>
+              <span class="px-6 py-2 bg-primary text-on-primary text-sm font-bold rounded-lg group-hover:bg-primary-container transition-colors shadow-lg shadow-primary/20 inline-block">Xem ngay</span>
+            </template>
+            
+            <!-- Style riêng cho Ô số 2 (Ngang) -->
+            <template v-else-if="index === 1">
+              <span class="text-sm font-bold text-primary group-hover:underline underline-offset-4">Khám phá</span>
+            </template>
           </div>
         </div>
-        <div @click="router.push('/category/2')" class="md:col-span-2 group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img loading="lazy" class="w-full h-full object-cover object-[60%_20%] transition-transform duration-700 group-hover:scale-110" alt="Anime Figures" :src="'FIGURE-158151_01.jpg'"/>
-          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
-          <div class="absolute bottom-6 left-6">
-            <h3 class="font-headline text-2xl font-bold mb-1 text-on-surface">Nendoroid</h3>
-            <span class="text-sm font-bold text-primary group-hover:underline underline-offset-4">Khám phá</span>
-          </div>
-        </div>
-        <div @click="router.push('/category/3')" class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Limited Edition" :src="'kaka.jpg'"/>
-          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
-          <div class="absolute bottom-4 left-4">
-            <h3 class="font-headline text-xl font-bold text-on-surface">Gundam</h3>
-          </div>
-        </div>
-        <div @click="router.push('/category/4')" class="group relative overflow-hidden rounded-xl bg-surface-container-high h-[200px] md:h-full cursor-pointer">
-          <img loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Accessories" :src="'S8020b122c9894d9ab24aa152e7d15a24A.jpg'"/>
-          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-90"></div>
-          <div class="absolute bottom-4 left-4">
-            <h3 class="font-headline text-xl font-bold text-on-surface">Pre order</h3>
-          </div>
-        </div>
+      </div>
+      
+      <!-- Khung chờ nếu chưa có dữ liệu -->
+      <div v-else class="flex justify-center items-center h-[400px] text-on-surface-variant italic">
+        Đang tải danh mục nổi bật...
       </div>
     </section>
 
@@ -219,6 +233,28 @@
   const brands = ref([]);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+  const featuredCategories = ref([]);
+  const imageTick = ref(0);
+  let categoryTimer = null;
+
+  // 2. Hàm lấy danh mục từ API
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
+      const dataJSON = await res.json();
+      
+      if (res.ok) {
+        // Lọc ra các danh mục có bật Nổi Bật (DanhMucNoiBat === 1) 
+        // và dùng .slice(0, 4) để chỉ lấy tối đa 4 cái lấp đầy lưới Bento.
+        featuredCategories.value = dataJSON.data
+          .filter(cat => cat.DanhMucNoiBat === 1)
+          .slice(0, 4);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy danh mục nổi bật:", error);
+    }
+  };
+
   const heroSlides = [
     {
       id: 1,
@@ -281,13 +317,31 @@
     requestAnimationFrame(animateScroll);
   };
 
-  onMounted(() => {
-    scrollToTopCustom();
-    heroTimer = setInterval(nextHeroSlide, 7000); 
-  });
+  onMounted(async () => {
+  scrollToTopCustom();
+  heroTimer = setInterval(nextHeroSlide, 7000); 
+  categoryTimer = setInterval(() => {
+    imageTick.value++;
+  }, 3500);
+
+  await Promise.all([
+    fetchBrands(),
+    fetchCategories(),
+    (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/products?limit=12`);
+        const dataJSON = await response.json(); 
+        if (response.ok) productList.value = dataJSON.data; 
+      } catch (error) {
+        console.error("Lỗi lấy sản phẩm:", error);
+      }
+    })()
+  ]);
+});
 
   onUnmounted(() => {
     if (heroTimer) clearInterval(heroTimer);
+    if (categoryTimer) clearInterval(categoryTimer);
   });
 
   const fetchBrands = async () => {
@@ -462,5 +516,19 @@
     100% {
       transform: translateX(-50%);
     }
+  }
+
+  /* Hiệu ứng mờ dần (Cross-fade) cực mượt giữa các bức ảnh danh mục */
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 1s ease-in-out;
+  }
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+  .fade-leave-active {
+    /* position: absolute giúp ảnh cũ và ảnh mới đè lên nhau trong lúc chuyển đổi */
+    position: absolute; 
   }
 </style>

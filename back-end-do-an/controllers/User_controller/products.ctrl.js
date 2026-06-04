@@ -304,9 +304,16 @@ const product_view = {
             const sql = 'SELECT * FROM DanhMuc';
             const [products] = await db.query(sql);
 
+            // CHỈ THÊM ĐOẠN NÀY: Giữ nguyên mọi dữ liệu cũ, chỉ chuyển chuỗi ảnh thành Mảng
+            const formattedProducts = products.map(item => ({
+                ...item,
+                // Parse chuỗi thành mảng, nếu cột rỗng (null) thì trả về mảng rỗng []
+                DanhSachAnh: item.DanhSachAnh ? JSON.parse(item.DanhSachAnh) : []
+            }));
+
             res.status(200).json({
                 message: "Lấy danh sách danh mục thành công",
-                data: products
+                data: formattedProducts 
             });
         }
         catch (error){
