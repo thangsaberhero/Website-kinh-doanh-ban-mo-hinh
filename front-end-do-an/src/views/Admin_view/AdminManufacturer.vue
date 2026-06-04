@@ -412,7 +412,7 @@
     editingId.value = mfr.id;
     formManufacturer.value = { id: mfr.id, name: mfr.name, description: mfr.description };
     logoFile.value = null; 
-    logoPreview.value = mfr.logo ? `${API_BASE_URL}/Images_brand/${mfr.logo}` : null;
+    logoPreview.value = mfr.logo;
     if (logoInput.value) logoInput.value.value = '';
     isModalOpen.value = true;
   };
