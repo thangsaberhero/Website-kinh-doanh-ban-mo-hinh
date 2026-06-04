@@ -229,7 +229,7 @@
           category: item.TheLoai,
           date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),        
           readTime: Math.max(1, parseInt(item.ThoiGianDoc) || 1), 
-          image: getImageUrl(item.AnhDaiDien),
+          image: getImageUrl(item.AnhThumbnail),
           tags: item.Tags || ''
         }));
         // KHU VỰC 1 (HERO): Bốc bài viết MỚI NHẤT (vị trí số 0) để đưa lên Banner to nhất
@@ -245,7 +245,7 @@
           id: item.MaTT,
           title: item.TieuDe,
           category: item.TheLoai,
-          image: getImageUrl(item.AnhDaiDien)
+          image: getImageUrl(item.AnhThumbnail)
         }));
 
         // KHU VỰC 4 (POPULAR): Gắn vào sidebar Đọc nhiều nhất

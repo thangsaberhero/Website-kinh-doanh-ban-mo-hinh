@@ -44,11 +44,11 @@
           </div>
           
           <div class="bg-white p-6 rounded-2xl border-l-4 border-l-purple-400 border-y border-r border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Lượt xem tháng này</p>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng lượt xem</p>
             <div class="flex items-end gap-3">
               <h3 class="text-3xl font-brand font-bold text-slate-900">{{formatNumber(stats.views)}}</h3>
-              <span class="text-emerald-500 text-xs font-bold pb-1.5 flex items-center gap-0.5">
-                <span class="material-symbols-outlined text-[14px]">trending_up</span> +5%
+              <span class="text-slate-400 text-xs font-medium pb-1.5 flex items-center gap-0.5">
+                <span class="material-symbols-outlined text-[14px]">bar_chart</span>
               </span>
             </div>
           </div>
@@ -69,9 +69,6 @@
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
                 <input v-model="searchQuery" @input="handleSearch" type="text" placeholder="Tìm tiêu đề, tác giả..." class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
               </div>
-              <button class="flex items-center gap-2 bg-white text-slate-600 text-xs font-bold px-3 py-2 rounded-xl border border-slate-200 hover:border-[#ff8f73] hover:text-[#ff8f73] transition-all shadow-sm shrink-0">
-                <span class="material-symbols-outlined text-sm">filter_list</span> Bộ lọc
-              </button>
             </div>
           </div>
 
@@ -136,7 +133,6 @@
                     <td class="px-6 py-4 text-center">
                       <div class="flex items-center justify-center gap-3 text-xs font-bold text-slate-500">
                         <span class="flex items-center gap-1 hover:text-sky-500 cursor-pointer" title="Lượt xem"><span class="material-symbols-outlined text-[14px]">visibility</span> {{ post.views }}</span>
-                        <span class="flex items-center gap-1 hover:text-[#ff8f73] cursor-pointer" title="Bình luận"><span class="material-symbols-outlined text-[14px]">chat_bubble</span> {{ post.comments }}</span>
                       </div>
                     </td>
 
@@ -330,10 +326,9 @@
             date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),
             status: item.TrangThai === 'Đã duyệt' ? 'Đã xuất bản' : item.TrangThai,
             views: item.LuotXem,
-            comments: 0,
-            thumbnail: item.AnhDaiDien 
-                      ? (item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_news/${item.AnhDaiDien}`) 
-                      : 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg'
+            thumbnail: item.AnhThumbnail 
+                    ? (item.AnhThumbnail.startsWith('http') ? item.AnhThumbnail : `${API_BASE_URL}/Images_news/${item.AnhThumbnail}`) 
+                    : 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg'
         }));
 
         // Cập nhật cục Phân trang

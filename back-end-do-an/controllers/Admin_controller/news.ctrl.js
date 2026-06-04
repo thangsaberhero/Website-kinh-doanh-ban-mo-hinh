@@ -6,13 +6,12 @@ const newsController = {
             const sqlLatest = `SELECT t.MaTT, t.TieuDe, t.TomTat, t.TheLoai, t.Tags, t.NgayDang, t.LuotXem, 
                                 nv.TenNV AS TacGia, 
                                 CEIL((LENGTH(t.NoiDung) - LENGTH(REPLACE(REPLACE(t.NoiDung, '&nbsp;', ' '), ' ', '')) + 1) / 200) AS ThoiGianDoc,
-                                (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
+                                t.AnhThumbnail
                                 FROM TinTuc t
                                 LEFT JOIN NhanVien nv ON t.MaNV = nv.MaNV
                                 WHERE t.TrangThai = 'Đã duyệt'
                                 ORDER BY t.NgayDang DESC`;
-            const sqlTrending = `SELECT t.MaTT, t.TieuDe, t.TheLoai, t.NgayDang, t.LuotXem,
-                                (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
+            const sqlTrending = `SELECT t.MaTT, t.TieuDe, t.TheLoai, t.NgayDang, t.LuotXem, t.AnhThumbnail
                                 FROM TinTuc t
                                 WHERE t.TrangThai = 'Đã duyệt' 
                                 AND t.NgayDang >= DATE_SUB(NOW(), INTERVAL 30 DAY)
@@ -45,9 +44,8 @@ const newsController = {
         try{
             const newsId = req.params.id;
         
-            const sql = `SELECT t.*, a.LinkAnh AS AnhTinTuc, nv.TenNV AS TacGia
+            const sql = `SELECT t.*, nv.TenNV AS TacGia
                         FROM TinTuc t
-                        INNER JOIN AnhTinTuc a ON a.MaTT = t.MaTT
                         INNER JOIN NhanVien nv ON nv.MaNV = t.MaNV
                         WHERE t.MaTT = ?
                         LIMIT 1`;
@@ -75,7 +73,7 @@ const newsController = {
     getRelatedNews: async(req, res) => {
         try{
             const newsId = req.params.id;
-            const sql = `SELECT t.*, (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
+            const sql = `SELECT t.*
                         FROM TinTuc t
                         WHERE t.TheLoai = (SELECT TheLoai FROM TinTuc WHERE MaTT = ?)
                         AND MaTT != ? AND t.TrangThai = 'Đã duyệt'
@@ -115,20 +113,20 @@ const newsController = {
             let queryParams = [];
 
             if(search){
-                whereClause += ' AND t.TieuDe LIKE ?';
-                queryParams.push(`%${search}%`);
+                whereClause += ' AND (t.TieuDe LIKE ? OR nv.TenNV LIKE ?)';
+                queryParams.push(`%${search}%`, `%${search}%`);
             }
             if(status){
                 whereClause += ' AND t.TrangThai = ?';
                 queryParams.push(status);
             }
 
-            const sqlData = `SELECT t.*, nv.TenNV as TacGia, (SELECT LinkAnh FROM AnhTinTuc a WHERE a.MaTT = t.MaTT LIMIT 1) AS AnhDaiDien
-                             FROM TinTuc t
-                             INNER JOIN NhanVien nv ON nv.MaNV = t.MaNV
-                             ${whereClause}
-                             ORDER BY NgayDang DESC
-                             LIMIT ? OFFSET ?`;
+            const sqlData = `SELECT t.*, nv.TenNV as TacGia
+                            FROM TinTuc t
+                            INNER JOIN NhanVien nv ON nv.MaNV = t.MaNV
+                            ${whereClause}
+                            ORDER BY NgayDang DESC
+                            LIMIT ? OFFSET ?`;
             const dataParams = [...queryParams, limit, offset];
             const sqlCount = `SELECT COUNT(MaTT) AS TotalCount FROM TinTuc t ${whereClause}`;
 
@@ -207,16 +205,12 @@ const newsController = {
                 })
             }
 
-            const sqlInsertNews = `INSERT INTO TinTuc (TieuDe, NoiDung, TheLoai, TomTat, TrangThai, NgayDang, LuotXem, MaNV, Tags)
-                                    VALUES (?, ?, ?, ?, ?, Now(), 0, ?, ?)`;
-            const [result] = await connection.query(sqlInsertNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV, Tags]);
+            const imageUrl = file ? (file.path || file.secure_url || file.url || file.filename) : null;
+            const sqlInsertNews = `INSERT INTO TinTuc (TieuDe, NoiDung, TheLoai, TomTat, TrangThai, NgayDang, LuotXem, MaNV, Tags, AnhThumbnail)
+                                    VALUES (?, ?, ?, ?, ?, Now(), 0, ?, ?, ?)`;
+            const [result] = await connection.query(sqlInsertNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, MaNV, Tags, imageUrl]);
             const newNewsId = result.insertId;
 
-            if(file){
-                const imageUrl = file.path || file.secure_url || file.url || file.filename;
-                const sqlInsertImage = `INSERT INTO AnhTinTuc (MaTT, LinkAnh) VALUES (?, ?)`;
-                await connection.query(sqlInsertImage, [newNewsId, imageUrl]);
-            }
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
             const noiDungLog = `Tạo tin tức mới #${newNewsId} tiêu đề: ${TieuDe}"`;
@@ -232,7 +226,7 @@ const newsController = {
                 "Bài viết mới", 
                 `Bài viết "${TieuDe}" vừa được tạo thành công trên hệ thống.`, 
                 "HeThong", 
-                "/admin/news"
+                "/admin/news/edit/${newNewsId}"
             ]);
             
             await connection.commit();
@@ -241,7 +235,8 @@ const newsController = {
                 message: "Tạo bài viết thành công!",
                 dataId: newNewsId
             });
-        }catch(error){
+        }
+        catch(error){
             console.error("Lỗi API createNews: ", error);
             res.status(500).json({
                 success: false,
@@ -283,25 +278,18 @@ const newsController = {
                 });
             }
 
-            // 3. CẬP NHẬT THÔNG TIN CHÍNH
-            const sqlUpdateNews = `
-                UPDATE TinTuc
-                SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?, Tags = ?
-                WHERE MaTT = ?
-            `;
-            await connection.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags, newsId]);
-
-            // 4. CẬP NHẬT ẢNH (NẾU CÓ)
-            if(file){
+            if (file) {
                 const imageUrl = file.path || file.secure_url || file.url || file.filename; 
-                
-                const [checkImage] = await connection.query(`SELECT * FROM AnhTinTuc WHERE MaTT = ?`, [newsId]);
-                if(checkImage.length > 0){
-                    await connection.query(`UPDATE AnhTinTuc SET LinkAnh = ? WHERE MaTT = ?`, [imageUrl, newsId]);
-                }
-                else {
-                    await connection.query(`INSERT INTO AnhTinTuc(MaTT, LinkAnh) VALUES (?, ?)`, [newsId, imageUrl]);
-                }
+                const sqlUpdateNews = `UPDATE TinTuc
+                                        SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?, Tags = ?, AnhThumbnail = ?
+                                        WHERE MaTT = ?`;
+                await connection.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags, imageUrl, newsId]);
+            } 
+            else {
+                const sqlUpdateNews = `UPDATE TinTuc
+                                        SET TieuDe = ?, NoiDung = ?, TheLoai = ?, TomTat = ?, TrangThai = ?, Tags = ?
+                                        WHERE MaTT = ?`;
+                await connection.query(sqlUpdateNews, [TieuDe, NoiDung, TheLoai, TomTat, TrangThai, Tags, newsId]);
             }
 
             // 5. GHI LOG HỆ THỐNG
@@ -348,9 +336,6 @@ const newsController = {
                 })
             }
             const TieuDe = check[0].TieuDe;
-
-            const sqlDeleteImage = `DELETE FROM AnhTinTuc WHERE MaTT = ?`;
-            await connection.query(sqlDeleteImage, [newsId]);
 
             const sqlDeleteNews = `DELETE FROM TinTuc WHERE MaTT = ?`;
             const [result] = await connection.query(sqlDeleteNews, [newsId]);
