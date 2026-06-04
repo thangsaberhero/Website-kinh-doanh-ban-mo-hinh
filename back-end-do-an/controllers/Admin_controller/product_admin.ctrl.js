@@ -18,10 +18,11 @@ const product_admin = {
             // 2. XỬ LÝ MẢNG ẢNH TỪ MULTER (CỰC KỲ QUAN TRỌNG)
             // Nếu có up ảnh thì req.files sẽ là mảng chứa các file, nếu không có thì gán mảng rỗng []
             const uploadedFiles = req.files || [];
+            console.log("📦 Dữ liệu file từ Cloudinary:", uploadedFiles);
             
             // Map qua mảng file để lấy đường dẫn (path/url). 
             // Lưu ý: Nếu bạn dùng Cloudinary, đường dẫn thường nằm ở file.path
-            const arrUrlAnh = uploadedFiles.map(file => file.path);
+            const arrUrlAnh = uploadedFiles.map(file => file.path || file.secure_url || file.url);
             
             // Ép mảng URL thành chuỗi JSON (VD: '["url1", "url2"]') để lưu vào cột TEXT
             const jsonDanhSachAnh = JSON.stringify(arrUrlAnh);
