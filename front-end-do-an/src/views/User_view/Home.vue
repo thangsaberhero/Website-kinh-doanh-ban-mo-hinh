@@ -344,9 +344,21 @@
   };
 
   onMounted(async () => {
-  scrollToTopCustom();
-  heroTimer = setInterval(nextHeroSlide, 7000); 
-});
+    scrollToTopCustom();
+    heroTimer = setInterval(nextHeroSlide, 7000); 
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/products?limit=12`);
+      const dataJSON = await response.json(); 
+      
+      if (response.ok) {
+        productList.value = dataJSON.data; 
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+    }
+    await fetchBrands();
+    await fetchCategories();
+  });
 
   onUnmounted(() => {
     if (heroTimer) clearInterval(heroTimer);
