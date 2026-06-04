@@ -113,25 +113,39 @@
                  :src="cat.DanhSachAnh && cat.DanhSachAnh.length > 0 ? cat.DanhSachAnh[cat.currentIndex] : 'https://placehold.co/600x400/1c1f2b/fff?text=No+Image'"/>
           </transition>
 
-          <!-- Lớp phủ Gradient làm nổi bật chữ -->
-          <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent opacity-90 z-10 pointer-events-none"></div>
+          <!-- 1. LỚP PHỦ GRADIENT (Kỹ thuật Scrim) -->
+          <!-- Dùng màu đen (slate-900) với độ trong suốt giảm dần từ đáy (90%) lên trên (0%) -->
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/30 to-transparent opacity-90 z-10 pointer-events-none transition-opacity duration-500 group-hover:opacity-100"></div>
           
-          <!-- Nội dung Text tùy chỉnh theo vị trí Grid -->
-          <div class="relative z-20" :class="index === 0 ? 'absolute bottom-8 left-8' : 'absolute bottom-6 left-6'">
-            <h3 class="font-headline font-bold text-on-surface"
-                :class="index === 0 ? 'text-4xl mb-2' : (index === 1 ? 'text-2xl mb-1' : 'text-xl')">
+          <!-- 2. KHỐI TEXT ĐƯỢC NEO CHẶT XUỐNG ĐÁY (bottom-0) -->
+          <div class="absolute bottom-0 left-0 w-full z-20 p-6 flex flex-col justify-end"
+               :class="index === 0 ? 'md:p-8' : ''">
+            
+            <!-- Tên danh mục: Ép màu Trắng + Đổ bóng chữ (Drop-shadow) -->
+            <h3 class="font-headline font-bold text-white drop-shadow-lg tracking-wide"
+                :class="index === 0 ? 'text-3xl md:text-4xl mb-3' : (index === 1 ? 'text-2xl mb-1' : 'text-xl')">
               {{ cat.TenDM }}
             </h3>
             
             <!-- Style riêng cho Ô số 1 (To nhất) -->
             <template v-if="index === 0">
-              <p class="text-on-surface-variant mb-6 text-sm max-w-xs">{{ cat.MoTa || 'Khám phá bộ sưu tập độc đáo' }}</p>
-              <span class="px-6 py-2 bg-primary text-on-primary text-sm font-bold rounded-lg group-hover:bg-primary-container transition-colors shadow-lg shadow-primary/20 inline-block">Xem ngay</span>
+              <!-- Giới hạn 2 dòng (line-clamp-2) và đổi chữ xám sáng (slate-200) để phân cấp thông tin -->
+              <p class="text-slate-200 mb-6 text-sm max-w-sm line-clamp-2 leading-relaxed drop-shadow-md">
+                {{ cat.MoTa && cat.MoTa !== 'Chưa có mô tả' ? cat.MoTa : 'Khám phá bộ sưu tập mô hình độc quyền, cập nhật những phiên bản giới hạn mới nhất.' }}
+              </p>
+              <div>
+                <span class="px-7 py-3 bg-[#ff8f73] text-white text-sm font-bold rounded-xl group-hover:bg-[#ff3d00] transition-colors shadow-lg shadow-[#ff8f73]/30 inline-flex items-center gap-2">
+                  Xem ngay
+                  <span class="material-symbols-outlined text-[18px]">arrow_right_alt</span>
+                </span>
+              </div>
             </template>
             
             <!-- Style riêng cho Ô số 2 (Ngang) -->
             <template v-else-if="index === 1">
-              <span class="text-sm font-bold text-primary group-hover:underline underline-offset-4">Khám phá</span>
+              <span class="text-sm font-bold text-[#ff8f73] group-hover:text-white transition-colors flex items-center gap-1 drop-shadow-md w-fit">
+                Khám phá ngay <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </span>
             </template>
           </div>
         </div>
