@@ -149,7 +149,7 @@
                     <td class="py-4 px-6">
                       <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden shrink-0">
-                          <img v-if="sp.AnhDaiDien" :src="`${API_BASE_URL}/Images_product/${sp.AnhDaiDien}`" class="w-full h-full object-cover"/>
+                          <img v-if="sp.AnhDaiDien" :src="sp.AnhDaiDien" class="w-full h-full object-cover"/>
                           <span v-else class="material-symbols-outlined text-slate-300 flex items-center justify-center h-full">image</span>
                         </div>
                         <div class="flex flex-col min-w-0">
@@ -323,7 +323,7 @@
                 </div>
 
                 <div class="w-10 h-10 bg-slate-100 rounded-md overflow-hidden shrink-0 border border-slate-200">
-                  <img v-if="prod.AnhDaiDien" :src="`${API_BASE_URL}/Images_product/${prod.AnhDaiDien}`" class="w-full h-full object-cover"/>
+                  <img v-if="prod.AnhDaiDien" :src="prod.AnhDaiDien" class="w-full h-full object-cover"/>
                   <span v-else class="material-symbols-outlined text-slate-300 flex items-center justify-center h-full">image</span>
                 </div>
 
