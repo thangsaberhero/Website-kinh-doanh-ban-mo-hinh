@@ -142,7 +142,7 @@
         
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
           <div>
-            <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý kho hàng</h1>
+            <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý sản phẩm</h1>
             <p class="text-slate-500 text-sm font-medium">Theo dõi và cập nhật số lượng mô hình sưu tầm trong hệ thống.</p>
           </div>
           
