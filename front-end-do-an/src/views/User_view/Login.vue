@@ -230,11 +230,16 @@ const isLoading = ref(false);
 const currentBgIndex = ref(0);
 let bgTimer = null;
 
-onMounted(() => {
-  // Cài đặt đồng hồ chuyển ảnh mỗi 4 giây (chỉ chạy khi mảng có ảnh)
+onMounted(async () => {
+  // 1. KÍCH HOẠT GỌI API NGAY KHI MỞ TRANG ĐĂNG NHẬP
+  await systemStore.fetchSettings();
+
+  // 2. Cài đặt đồng hồ chuyển ảnh mỗi 4 giây
   bgTimer = setInterval(() => {
     const bgArray = systemStore.settings?.login_bg;
-    if (bgArray && bgArray.length > 0) {
+    
+    // ĐÃ SỬA: Chỉ kích hoạt hiệu ứng trượt nếu có từ 2 ảnh trở lên
+    if (bgArray && bgArray.length > 1) {
       currentBgIndex.value = (currentBgIndex.value + 1) % bgArray.length;
     }
   }, 4000); 
