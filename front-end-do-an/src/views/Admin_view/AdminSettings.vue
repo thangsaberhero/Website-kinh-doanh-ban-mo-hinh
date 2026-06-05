@@ -197,8 +197,31 @@
                     <input v-model="slide.link" type="text" placeholder="VD: /category" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white">
                   </div>
                   <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tiêu đề chính</label>
-                    <input v-model="slide.title" type="text" placeholder="VD: GUNDAM" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none font-bold bg-white text-slate-800">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+                      Link chuyển hướng
+                      <span class="text-[9px] text-[#ff8f73] font-normal normal-case italic">* Click đúp để chọn</span>
+                    </label>
+                    
+                    <input 
+                      v-model="slide.link" 
+                      list="link-suggestions" 
+                      type="text" 
+                      placeholder="Chọn hoặc nhập link..." 
+                      class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white transition-all"
+                    >
+                    
+                    <datalist id="link-suggestions">
+                      <option value="/category">Tất cả sản phẩm</option>
+                      <option value="/news">Trang Tin tức</option>
+                      
+                      <option v-for="cat in categoriesList" :key="'cat'+cat.MaDM" :value="`/category/${cat.MaDM}`">
+                        Danh mục: {{ cat.TenDM }}
+                      </option>
+                      
+                      <option v-for="brand in brandsList" :key="'brand'+brand.MaHSX" :value="`/category?brand=${brand.TenHSX}`">
+                        Hãng: {{ brand.TenHSX }}
+                      </option>
+                    </datalist>
                   </div>
                   <div class="space-y-1.5">
                     <label class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest">Chữ nhấn mạnh (Màu Cam)</label>
@@ -256,6 +279,25 @@ import { useLayoutStore } from '../../stores/layout';
 const toastStore = useToastStore();
 const layoutStore = useLayoutStore();
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const categoriesList = ref([]);
+const brandsList = ref([]);
+
+// Hàm tải dữ liệu Danh mục & Hãng để làm gợi ý Link
+const fetchDropdownData = async () => {
+  try {
+    // 1. Lấy danh mục
+    const resCat = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
+    const catData = await resCat.json();
+    if (resCat.ok) categoriesList.value = catData.data;
+
+    // 2. Lấy hãng sản xuất
+    const resBrand = await fetch(`${API_BASE_URL}/api/products/hsx`);
+    const brandData = await resBrand.json();
+    if (resBrand.ok) brandsList.value = brandData.data;
+  } catch (error) {
+    console.error("Lỗi lấy dữ liệu gợi ý link:", error);
+  }
+};
 
 // State lưu trữ dữ liệu
 const formText = ref({
@@ -333,6 +375,7 @@ const fetchSettings = async () => {
 
 onMounted(() => {
   fetchSettings();
+  fetchDropdownData();
 });
 
 // --- 2. CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
