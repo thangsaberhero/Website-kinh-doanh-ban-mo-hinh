@@ -1344,9 +1344,9 @@ const donhang_user = {
 
             // 1. Tính toán số tiền
             if (HinhThuc === 'Thanh toán toàn bộ') {
-                const sql_tong_tien = `SELECT TongTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
+                const sql_tong_tien = `SELECT ThanhTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
                 const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
-                soTienCanThanhToan = result_tong[0].TongTien;
+                soTienCanThanhToan = result_tong[0].ThanhTien;
                 maHienThi = result_tong[0].MaDonHangHienThi || MaDH.toString();
             } else {
                 const sql_tinh_tien_coc = `
