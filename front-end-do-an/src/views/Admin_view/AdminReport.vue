@@ -19,7 +19,7 @@
             <p class="text-slate-500 text-sm font-medium">Phân tích chi tiết hiệu suất kinh doanh và chiến dịch marketing.</p>
           </div>
           
-          <button @click="exportExcelReport" class="w-full xl:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 text-sm">
+          <button @click="isExportModalOpen = true" class="w-full xl:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 text-sm">
             <span class="material-symbols-outlined text-[20px]">file_download</span>
             Xuất Excel Báo Cáo
           </button>
@@ -399,6 +399,47 @@
       </main>
     </div>
   </div>
+  <div v-if="isExportModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="font-bold text-lg text-slate-900">Tùy chọn xuất dữ liệu</h3>
+          <p class="text-xs text-slate-500 font-medium">Chọn các trang (sheet) bạn muốn đưa vào báo cáo</p>
+        </div>
+        <button @click="isExportModalOpen = false" class="text-slate-400 hover:text-slate-600 transition-colors bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-3">
+        <label v-for="option in reportOptions" :key="option.id" 
+              class="flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all"
+              :class="selectedReports.includes(option.id) ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-200 hover:border-emerald-300'">
+          
+          <input type="checkbox" :value="option.id" v-model="selectedReports" 
+                class="mt-1 w-5 h-5 text-emerald-500 rounded border-slate-300 focus:ring-emerald-500" />
+          
+          <div class="flex-1">
+            <p class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px] text-slate-400">{{ option.icon }}</span>
+              {{ option.label }}
+            </p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ option.desc }}</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <button @click="isExportModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+          Hủy bỏ
+        </button>
+        <button @click="exportExcelReport" class="px-5 py-2.5 text-sm font-bold text-white bg-emerald-500 rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+          Bắt đầu xuất
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -482,6 +523,17 @@
       loadReportsData();
     }
   };
+
+  // Các state quản lý Modal xuất file
+  const isExportModalOpen = ref(false);
+  const selectedReports = ref(['doanhthu', 'sanpham', 'marketing', 'tonkho']);
+
+  const reportOptions = [
+    { id: 'doanhthu', label: 'Tổng quan & Tài chính', icon: 'payments', desc: 'Bao gồm KPI doanh thu, lợi nhuận và biểu đồ.' },
+    { id: 'sanpham', label: 'Danh mục & Thương hiệu', icon: 'category', desc: 'Sản lượng và cơ cấu sinh lời theo danh mục/hãng.' },
+    { id: 'marketing', label: 'Hiệu quả Marketing', icon: 'campaign', desc: 'Thống kê hiệu quả chiến dịch và mã giảm giá.' },
+    { id: 'tonkho', label: 'Cảnh báo vận hành', icon: 'inventory_2', desc: 'Cảnh báo tồn kho thấp và sản phẩm yêu thích.' }
+  ];
 
   const chartType = computed(() => {
     if (filterMode.value === 'year') {
@@ -666,30 +718,46 @@
   };
 
   const exportExcelReport = async () => {
+    if (selectedReports.value.length === 0) {
+      toastStore.showToast("Vui lòng chọn ít nhất một loại báo cáo để xuất!", "warning");
+      return;
+    }
+
     try {
+      toastStore.showToast("Đang tạo file Excel, vui lòng đợi...", "info"); // Có thể thêm trạng thái loading
       const token = localStorage.getItem('token');
+      
+      // Gắn thời gian
       let query = '';
       if (startDate.value && endDate.value) {
-        query = `?NgayBatDau=${startDate.value}&NgayKetThuc=${endDate.value}`;
+        query = `NgayBatDau=${startDate.value}&NgayKetThuc=${endDate.value}&`;
       }
       
-      const response = await fetch(`${API_BASE_URL}/api/thongke/xuatExcelDoanhThu${query}`, {
+      // Nối các loại báo cáo thành chuỗi (vd: types=doanhthu,marketing)
+      const typesParam = selectedReports.value.join(',');
+      query += `types=${typesParam}`;
+
+      const response = await fetch(`${API_BASE_URL}/api/thongke/xuat-excel-tuy-chinh?${query}`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
       if (!response.ok) throw new Error("Thất bại");
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Bao_Cao_Sau_Thong_Ke_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
+      a.download = `Bao_Cao_TBC_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      
       toastStore.showToast("Đã tải tệp Excel báo cáo thành công!", "success");
-    } catch (error) {
+      isExportModalOpen.value = false; 
+    } 
+    catch (error) {
       toastStore.showToast("Gặp sự cố khi kết nối server xuất file!", "error");
     }
   };
