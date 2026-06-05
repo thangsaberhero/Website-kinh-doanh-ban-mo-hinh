@@ -6,48 +6,83 @@
       <span class="text-sm font-bold text-white/90 tracking-wide">Quay lại</span>
     </router-link>
 
+    <!-- NỀN MỜ PHÍA SAU (Đồng bộ với Slider) -->
     <div class="fixed inset-0 z-0 pointer-events-none">
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-tertiary/5"></div>
-      <img alt="Background mecha" class="w-full h-full object-cover opacity-20 grayscale blur-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ4syu3OaAgN3MlEWk5NTPIpnOEp9ocEhE581faqIp_5iHa3mje_hmFlZuBaM4m3KknzD-9VyZvgRJiTWZ-H6kPhtp7B7c1zkOohdn-4x4_AXZzuQ09GIQBc81CrKBl4eBReD2G4swAZ-f419IAJcsBQbno8kCqLCBjKV4YQcFuh41jzT9R8PJH5v6We2egwtvj5PB3J2kHkuklsTI6Xghx8n7auZvc-8qDLMbiQXXqF2AlrT6Lum7qXxDIxj8wlsVRIScgb8Bt-jX"/>
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-tertiary/5 z-10"></div>
+      <transition name="fade">
+        <img 
+          v-if="systemStore.settings.login_bg && systemStore.settings.login_bg.length > 0"
+          :key="currentBgIndex"
+          class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale blur-sm" 
+          :src="systemStore.settings.login_bg[currentBgIndex]" 
+        />
+        <img 
+          v-else
+          class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale blur-sm" 
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ4syu3OaAgN3MlEWk5NTPIpnOEp9ocEhE581faqIp_5iHa3mje_hmFlZuBaM4m3KknzD-9VyZvgRJiTWZ-H6kPhtp7B7c1zkOohdn-4x4_AXZzuQ09GIQBc81CrKBl4eBReD2G4swAZ-f419IAJcsBQbno8kCqLCBjKV4YQcFuh41jzT9R8PJH5v6We2egwtvj5PB3J2kHkuklsTI6Xghx8n7auZvc-8qDLMbiQXXqF2AlrT6Lum7qXxDIxj8wlsVRIScgb8Bt-jX"
+        />
+      </transition>
     </div>
 
     <main class="relative z-10 w-full max-w-6xl p-4 md:p-8">
       <div class="animate-slide-up glass-panel w-full overflow-hidden rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row min-h-[750px]">
         
-        <div class="hidden lg:flex lg:w-3/5 relative min-h-[600px] border-r border-white/5">
+        <!-- NỬA TRÁI: SLIDER ẢNH NỀN -->
+        <div class="hidden lg:flex lg:w-3/5 relative min-h-[600px] border-r border-white/5 overflow-hidden">
           <div class="absolute inset-0 z-0">
-            <img alt="Cinematic Gundam" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ4syu3OaAgN3MlEWk5NTPIpnOEp9ocEhE581faqIp_5iHa3mje_hmFlZuBaM4m3KknzD-9VyZvgRJiTWZ-H6kPhtp7B7c1zkOohdn-4x4_AXZzuQ09GIQBc81CrKBl4eBReD2G4swAZ-f419IAJcsBQbno8kCqLCBjKV4YQcFuh41jzT9R8PJH5v6We2egwtvj5PB3J2kHkuklsTI6Xghx8n7auZvc-8qDLMbiQXXqF2AlrT6Lum7qXxDIxj8wlsVRIScgb8Bt-jX"/>
+            <!-- Khối luân phiên ảnh -->
+            <transition name="fade">
+              <img 
+                v-if="systemStore.settings.login_bg && systemStore.settings.login_bg.length > 0"
+                :key="currentBgIndex" 
+                :src="systemStore.settings.login_bg[currentBgIndex]" 
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-105"
+              />
+              <img 
+                v-else 
+                class="absolute inset-0 w-full h-full object-cover" 
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ4syu3OaAgN3MlEWk5NTPIpnOEp9ocEhE581faqIp_5iHa3mje_hmFlZuBaM4m3KknzD-9VyZvgRJiTWZ-H6kPhtp7B7c1zkOohdn-4x4_AXZzuQ09GIQBc81CrKBl4eBReD2G4swAZ-f419IAJcsBQbno8kCqLCBjKV4YQcFuh41jzT9R8PJH5v6We2egwtvj5PB3J2kHkuklsTI6Xghx8n7auZvc-8qDLMbiQXXqF2AlrT6Lum7qXxDIxj8wlsVRIScgb8Bt-jX"
+              />
+            </transition>
+            <!-- Lớp phủ cho dễ đọc chữ -->
             <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30"></div>
           </div>
+          
           <div class="relative z-10 w-full p-12 flex flex-col justify-between">
             <div>
               <router-link to="/" class="inline-flex items-center gap-2 group transition-all">
+                <!-- Tự động load Logo Header nếu có, không có thì dùng Icon mặc định -->
                 <div class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
-                  <span class="font-headline text-2xl font-bold tracking-tight text-white">FigureCollect</span>
+                  <img v-if="systemStore.settings.logo_header" :src="systemStore.settings.logo_header" class="h-8 object-contain" alt="Logo"/>
+                  <template v-else>
+                    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
+                    <span class="font-headline text-2xl font-bold tracking-tight text-white">{{ systemStore.settings.shop_name || 'FigureCollect' }}</span>
+                  </template>
                 </div>
               </router-link>
             </div>
             
             <div class="max-w-xl">
-              <h1 class="font-headline text-6xl font-bold text-white leading-tight mb-6 -ml-1">
-                Khôi phục quyền truy cập vào <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-container">FigureCollect</span>
+              <h1 class="font-headline text-6xl font-bold text-white leading-tight mb-6 -ml-1 drop-shadow-md">
+                Khôi phục quyền truy cập vào <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-container">{{ systemStore.settings.shop_name || 'FigureCollect' }}</span>
               </h1>
-              <p class="text-on-surface-variant text-lg max-w-md font-light leading-relaxed">
+              <p class="text-on-surface-variant text-lg max-w-md font-light leading-relaxed drop-shadow-sm">
                 Đừng để bộ sưu tập của bạn bị đóng bụi. Hãy lấy lại quyền truy cập và tiếp tục hành trình săn tìm những tạo tác quý hiếm.
               </p>
             </div>
           </div>
         </div>
 
+        <!-- NỬA PHẢI: FORM KHÔI PHỤC MẬT KHẨU -->
         <div class="w-full lg:w-2/5 p-8 md:p-12 lg:p-14 bg-surface/20 backdrop-blur-md flex flex-col justify-center overflow-y-auto">
           <div class="w-full max-w-md mx-auto relative min-h-[450px] flex flex-col justify-center">
             
+            <!-- Hiển thị Tên thương hiệu động ở bản Mobile -->
             <div class="lg:hidden flex items-center justify-between mb-12 absolute top-0 left-0 w-full">
               <router-link to="/login" class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-on-surface/80">arrow_back</span>
                 <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
-                <span class="font-headline text-xl font-bold tracking-tight">FigureCollect</span>
+                <span class="font-headline text-xl font-bold tracking-tight">{{ systemStore.settings.shop_name || 'FigureCollect' }}</span>
               </router-link>
             </div>
 
@@ -220,12 +255,14 @@
 </template>
 
 <script setup>
-  import { ref, reactive, computed, onUnmounted } from 'vue';
+  import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useToastStore } from '../../stores/toast.js';
+  import { useSystemStore } from '../../stores/system.js';
 
   const router = useRouter();
   const toastStore = useToastStore();
+  const systemStore = useSystemStore();
 
   const step = ref(1);
   const isSubmitting = ref(false);
@@ -238,6 +275,10 @@
   // Quản lý đồng hồ đếm ngược
   const countdown = ref(0);
   let timerInterval = null;
+  
+  // Quản lý Slider ảnh nền
+  const currentBgIndex = ref(0);
+  let bgTimer = null;
 
   const form = reactive({
     email: '',
@@ -246,6 +287,19 @@
     confirmPassword: ''
   });
   const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api/auth';
+
+  onMounted(async () => {
+    // Gọi API lấy dữ liệu hệ thống
+    await systemStore.fetchSettings();
+
+    // Cài đặt đồng hồ chuyển ảnh
+    bgTimer = setInterval(() => {
+      const bgArray = systemStore.settings?.login_bg;
+      if (bgArray && bgArray.length > 1) {
+        currentBgIndex.value = (currentBgIndex.value + 1) % bgArray.length;
+      }
+    }, 4000); 
+  });
 
   // Định dạng hiển thị thời gian MM:SS
   const formattedTime = computed(() => {
@@ -269,6 +323,7 @@
 
   onUnmounted(() => {
     if (timerInterval) clearInterval(timerInterval);
+    if (bgTimer) clearInterval(bgTimer);
   });
 
   // Xử lý Bước 1: Yêu cầu gửi OTP
@@ -414,6 +469,19 @@
 
   .input-focus-glow:focus {
     box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
+  }
+
+  /* Kỹ thuật CSS Fade cho ảnh cực mượt */
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 1.5s ease-in-out;
+  }
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+  .fade-leave-active {
+    position: absolute;
   }
 
   .fade-slide-enter-active,
