@@ -247,14 +247,14 @@
                   <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-surface-container-low rounded-full"></div>
                   
                   <h4 class="text-sm font-bold text-white mb-1 leading-tight">{{ formatVoucherDesc(v) }}</h4>
-                  <p class="text-[11px] font-medium text-outline mb-2">Đơn tối thiểu {{ formatPrice(v.GiaTriDonToiThieu) }}</p>
+                  <p class="text-[11px] font-medium text-outline mb-2">Đơn tối thiểu {{ formatPrice(v.MucGiaToiThieu) }}</p>
                   
                   <div class="flex justify-between items-end mt-3">
                     <span class="text-[10px] text-error font-semibold flex items-center gap-1">
                       <span class="material-symbols-outlined text-[12px]">schedule</span> HSD: {{ formatDate(v.ThoiGianKT) }}
                     </span>
                     
-                    <span v-if="!isEligible(v)" class="text-[10px] font-bold text-error">Mua thêm {{ formatPrice(v.GiaTriDonToiThieu - cartSummary.totalPrice) }}</span>
+                    <span v-if="!isEligible(v)" class="text-[10px] font-bold text-error">Mua thêm {{ formatPrice(v.MucGiaToiThieu - cartSummary.totalPrice) }}</span>
                     <button v-else-if="selectedVoucher?.MaGG === v.MaGG" class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary-fixed">
                       <span class="material-symbols-outlined text-[16px]">check</span>
                     </button>
@@ -348,7 +348,7 @@ const fetchVouchers = async () => {
 // 3. Hàm kiểm tra điều kiện (Đơn tối thiểu)
 const isEligible = (voucher) => {
   // cartSummary.totalPrice ở đây chính là (Tiền Hàng - Tiền Flash Sale)
-  return cartSummary.value.totalPrice >= voucher.GiaTriDonToiThieu;
+  return cartSummary.value.totalPrice >= voucher.MucGiaToiThieu;
 };
 
 // 4. Bấm "Chọn" ở List
@@ -368,7 +368,7 @@ const applyVoucherByCode = () => {
       selectVoucherFromList(found);
       voucherInputCode.value = '';
     } else {
-      toastStore.showToast(`Đơn hàng chưa đạt tối thiểu ${formatPrice(found.GiaTriDonToiThieu)} để dùng mã này!`, "error");
+      toastStore.showToast(`Đơn hàng chưa đạt tối thiểu ${formatPrice(found.MucGiaToiThieu)} để dùng mã này!`, "error");
     }
   } else {
     toastStore.showToast("Mã voucher không tồn tại hoặc đã hết hạn!", "error");
@@ -387,7 +387,7 @@ const voucherDiscountAmount = computed(() => {
   const v = selectedVoucher.value;
   const currentTotal = cartSummary.value.totalPrice; 
 
-  if (currentTotal < v.GiaTriDonToiThieu) return 0; // Đề phòng
+  if (currentTotal < v.MucGiaToiThieu) return 0; // Đề phòng
 
   if (v.LoaiGiamGia === 'TienMat') {
     return Number(v.ChietKhau);
