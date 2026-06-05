@@ -233,16 +233,18 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue';
+  import { ref, computed, onMounted, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '../../stores/auth.js';
   import { useToastStore } from '../../stores/toast';
+  import { useSystemStore } from '../../stores/system.js'; // Đã thêm System Store
   import TheHeader from '../../components/TheHeader.vue';
   import ProductCard from '../../components/ProductCard.vue';
 
   const router = useRouter();
   const authStore = useAuthStore();
   const toastStore = useToastStore();
+  const systemStore = useSystemStore(); // Khởi tạo Store cấu hình
 
   const productList = ref([]);
   const productSlider = ref(null);
@@ -251,7 +253,7 @@
 
   const featuredCategories = ref([]);
 
-  // 2. Hàm lấy danh mục từ API
+  // Hàm lấy danh mục từ API
   const fetchCategories = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
@@ -261,7 +263,6 @@
         featuredCategories.value = dataJSON.data
           .filter(cat => cat.DanhMucNoiBat === 1)
           .slice(0, 4)
-          // 🔥 THÊM ĐOẠN MAP NÀY: Khởi tạo bộ đếm và đồng hồ riêng cho từng danh mục
           .map(cat => ({
             ...cat,
             currentIndex: 0,
@@ -274,13 +275,8 @@
   };
 
   const startHoverSlide = (cat) => {
-    // Bỏ qua nếu danh mục không có ảnh hoặc chỉ có 1 ảnh
     if (!cat.DanhSachAnh || cat.DanhSachAnh.length <= 1) return;
-    
-    // Xóa đồng hồ cũ (nếu có) để tránh lỗi chạy nhanh dần do lướt chuột nhiều lần
     if (cat.hoverTimer) clearInterval(cat.hoverTimer);
-    
-    // Tự động chuyển ảnh mỗi 1.2 giây (Nên để nhanh hơn so với auto để khách thấy hiệu ứng ngay)
     cat.hoverTimer = setInterval(() => {
       cat.currentIndex = (cat.currentIndex + 1) % cat.DanhSachAnh.length;
     }, 1200); 
@@ -291,49 +287,50 @@
       clearInterval(cat.hoverTimer);
       cat.hoverTimer = null;
     }
-    // Tùy chọn: Đưa ảnh về lại tấm đầu tiên khi khách rút chuột ra
     cat.currentIndex = 0; 
   };
 
-  const heroSlides = [
-    {
-      id: 1,
-      tag: "PREMIUM ARTIFACTS",
-      title: "FIGURE",
-      titleAccent: "COLLECT",
-      desc: "Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn từ các studio hàng đầu thế giới.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCGfQ6Typ978uv1QahrmCG7PbPFg5_MLWN4K6DDmh69N5IlhPUhPKmdIfvIvZrQ_rFT9xyW1urq37KsPg2Topn02qR3hXUA9h7RKAdw21cNNpg8-yJQ6L0mjub5hU8TJtnUbmNtH8CjWKlWU8MxvHE6W3LhxEOF4NzXIHMRv8vtmkqkPsfFUx4xRlv2TAaL2OMN0YNVoCa7_nDFZbJA-PHZBV_Hn6rkXodnc9YmQHIGun8C0b2cmKxBFeAEweP0SjPODlAbMN4Gzr-E",
-      link: "/category"
-    },
-    {
-      id: 2,
-      tag: "LIMITED EDITION",
-      title: "GUNDAM",
-      titleAccent: "EXCLUSIVE",
-      desc: "Khám phá dòng Gundam hiếm nhất, chỉ dành cho những Collector thực thụ.",
-      image: "https://images.microcms-assets.io/assets/5694fd90407444338a64d654e407cc0e/6fac664357d64040a70393697bc5755f/2_figure_banner_vol1.png",
-      link: "/category"
-    },
-    {
-      id: 3,
-      tag: "MEMBER BENEFITS",
-      title: "THÀNH VIÊN",
-      titleAccent: "ƯU ĐÃI",
-      desc: "Gia nhập biệt đội Collector để nhận voucher 100k và ưu tiên đặt trước sản phẩm hot.",
-      image: "https://cdn.oneesports.gg/wp-content/uploads/2025/03/HonkaiStarRail_v3_2_KV-1024x576.jpg",
-      link: "/login"
+  // 🔥 BIẾN MẢNG CỨNG THÀNH COMPUTED TỰ ĐỘNG LẤY TỪ ADMIN
+  const heroSlides = computed(() => {
+    const banners = systemStore.settings?.home_banner;
+
+    // Dự phòng: Nếu Admin chưa up ảnh nào
+    if (!banners || banners.length === 0) {
+      return [{
+        id: 1, tag: "PREMIUM ARTIFACTS", title: "FIGURE", titleAccent: "COLLECT",
+        desc: "Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn.",
+        image: "https://images.unsplash.com/photo-1612036782180-6f0b6ce846ce?q=80&w=2070",
+        link: "/category"
+      }];
     }
-  ];
+
+    // Đổ dữ liệu thật vào Slider
+    return banners.map((item, index) => {
+      // Đề phòng trường hợp lỗi mạng trả về dạng chuỗi
+      if (typeof item === 'string') {
+        return { 
+          id: index, image: item, tag: 'HOT', title: 'SẢN PHẨM', 
+          titleAccent: 'MỚI', desc: 'Khám phá ngay', link: '/category' 
+        };
+      }
+      return { id: index, ...item };
+    });
+  });
 
   const currentHeroIndex = ref(0);
   let heroTimer = null;
 
+  // Cập nhật hàm next/prev dùng .value.length
   const nextHeroSlide = () => {
-    currentHeroIndex.value = (currentHeroIndex.value + 1) % heroSlides.length;
+    if(heroSlides.value.length > 0) {
+      currentHeroIndex.value = (currentHeroIndex.value + 1) % heroSlides.value.length;
+    }
   };
 
   const prevHeroSlide = () => {
-    currentHeroIndex.value = (currentHeroIndex.value - 1 + heroSlides.length) % heroSlides.length;
+    if(heroSlides.value.length > 0) {
+      currentHeroIndex.value = (currentHeroIndex.value - 1 + heroSlides.value.length) % heroSlides.value.length;
+    }
   };
 
   const scrollToTopCustom = (duration = 1000) => {
@@ -344,32 +341,36 @@
       const timeElapsed = currentTime - startTime;
       let progress = Math.min(timeElapsed / duration, 1);
       const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-      // Thực hiện cuộn
       window.scrollTo(0, startPosition * (1 - easeProgress));
-
-      // Nếu chưa hết thời gian thì tiếp tục gọi animation
       if (timeElapsed < duration) {
         requestAnimationFrame(animateScroll);
       }
     };
-
     requestAnimationFrame(animateScroll);
   };
 
+  // 🔥 ĐÃ GỘP TẤT CẢ VÀO 1 ONMOUNTED DUY NHẤT
   onMounted(async () => {
     scrollToTopCustom();
+
+    // 1. Lấy cấu hình Slider từ CSDL
+    await systemStore.fetchSettings();
+
+    // 2. Kích hoạt đồng hồ Slider
     heroTimer = setInterval(nextHeroSlide, 7000); 
+
+    // 3. Tải danh sách Hàng mới cập bến
     try {
       const response = await fetch(`${API_BASE_URL}/api/products?limit=12`);
       const dataJSON = await response.json(); 
-      
       if (response.ok) {
         productList.value = dataJSON.data; 
       }
     } catch (error) {
       console.error("Lỗi:", error);
     }
+
+    // 4. Tải Hãng & Danh mục
     await fetchBrands();
     await fetchCategories();
   });
@@ -465,20 +466,6 @@
       toastStore.showToast("Có lỗi mạng xảy ra khi thêm vào giỏ!", "error");
     }
   };
-
-  onMounted(async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/products?limit=12`);
-      const dataJSON = await response.json(); 
-      
-      if (response.ok) {
-        productList.value = dataJSON.data; 
-      }
-    } catch (error) {
-      console.error("Lỗi:", error);
-    }
-    await fetchBrands();
-  });
 </script>
 
 <style scoped>
