@@ -71,5 +71,10 @@ module.exports = {
     uploadBrand: createUploader('Images_brand'),
     uploadProduct: createUploader('Images_product'),
     uploadUser: createUploader('Images_user'),
-    uploadCategory: createUploader('Image_category')
+    uploadCategory: createUploader('Image_category'),
+    uploadHomeSlider: createUploader('Image_home'),
+    uploadLoginSlider: createUploader('Image_login'),
+    uploadRegisterSlider: createUploader('Image_slider'),
+    uploadLogo: createUploader('Image_logo'),
+    uploadLogoHeader: createUploader('Image_logo_header')
 };

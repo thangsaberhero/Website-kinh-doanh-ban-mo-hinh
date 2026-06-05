@@ -190,6 +190,5 @@ app.use('/api/thongke', thongkeRouter);
 const thongbaoRouter = require('./routes/Admin_route/thongbao.route.js'); 
 app.use('/api/thong_bao_admin', thongbaoRouter);
 
-// //Báo cáo thống kê
-// const bao_cao_route = require('./routes/Admin_route/thong_ke.route.js');
-// app.use('/api/thong_ke/admin', bao_cao_route);
+const setting_route = require('./routes/Admin_route/setting.route.js');
+app.use('/api/setting/admin', setting_route);

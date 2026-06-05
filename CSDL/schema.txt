@@ -359,6 +359,13 @@ CREATE TABLE ThongBaoAdmin (
     NgayTao DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE CaiDatHeThong (
+    MaCaiDat INT PRIMARY KEY AUTO_INCREMENT,
+    KhoaCaiDat VARCHAR(50) NOT NULL UNIQUE,
+    GiaTri TEXT,
+    MoTa VARCHAR(255)
+);
+
 -- Dữ liệu cơ bản--
 
 INSERT INTO Quyen (TenQuyen) VALUES ('Quản lý'), ('Nhân viên bán hàng'), ('Khách hàng');
