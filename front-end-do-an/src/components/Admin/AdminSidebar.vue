@@ -86,9 +86,9 @@ defineProps({
 const mainMenuItems = [
   { name: 'Bảng điều khiển', path: '/admin', icon: 'dashboard' },
   { name: 'Quản lý sản phẩm', path: '/admin/inventory', icon: 'inventory_2' },
-  { name: 'Quản lý Blockchain', path: '/admin/blockchain', icon: 'link' },
-  { name: 'Quản lý hãng sản xuất', path: '/admin/manufacturers', icon: 'factory' },
   { name: 'Danh mục sản phẩm', path: '/admin/categories', icon: 'category' },
+  { name: 'Quản lý hãng sản xuất', path: '/admin/manufacturers', icon: 'factory' },
+  { name: 'Quản lý Blockchain', path: '/admin/blockchain', icon: 'link' },
   { name: 'Quản lý đơn hàng', path: '/admin/orders', icon: 'local_shipping' },
   { name: 'Hỗ trợ khách hàng', path: '/admin/support', icon: 'support_agent' },
   { name: 'Quản lý người dùng', path: '/admin/users', icon: 'group' },

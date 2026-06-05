@@ -104,22 +104,52 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
+          <!-- KHỐI 3: SLIDER ẢNH NỀN ĐĂNG NHẬP -->
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#ff8f73]">wallpaper</span>
-                Ảnh nền Trang Đăng nhập
-              </h2>
-              <p class="text-xs text-slate-500 mt-1">Ảnh kích thước lớn che phủ nửa màn hình Login.</p>
-            </div>
-            <div class="p-6">
-              <div class="w-full h-48 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 relative group mb-4">
-                <img v-if="previews.login_bg" :src="previews.login_bg" class="w-full h-full object-cover" />
-                <span v-else class="material-symbols-outlined text-4xl text-slate-300">image</span>
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#ff8f73]">wallpaper</span>
+                  Slider nền Đăng nhập
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Danh sách các ảnh nền luân phiên ở trang Login.</p>
               </div>
-              <div class="flex items-center justify-between gap-4">
-                <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'login_bg')" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer">
-                <button v-if="files.login_bg" @click="saveSingleImage('login_bg', '/update_login_bg')" class="shrink-0 bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all">Lưu ảnh này</button>
+              <button @click="saveLoginBanners" class="bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Lưu Slider
+              </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                
+                <!-- Ảnh cũ từ Server -->
+                <div v-for="(url, idx) in existingLoginBanners" :key="'old_login'+idx" class="relative group h-28 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                  <img :src="url" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button @click="removeExistingLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
+                      <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  </div>
+                  <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm">Hiện tại</span>
+                </div>
+
+                <!-- Ảnh mới vừa chọn -->
+                <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group h-28 rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+                  <img :src="preview" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button @click="removeNewLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Bỏ chọn">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                  <span class="absolute top-2 left-2 bg-[#ff8f73] text-white text-[10px] px-2 py-0.5 rounded font-bold shadow-sm">Mới tải lên</span>
+                </div>
+
+                <!-- Nút Upload File ẩn -->
+                <label class="h-28 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
+                  <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73]">add_photo_alternate</span>
+                  <span class="text-xs font-bold text-slate-500 mt-2 group-hover:text-[#ff8f73]">Thêm ảnh mới</span>
+                  <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
+                </label>
               </div>
             </div>
           </div>
@@ -198,18 +228,19 @@ const formText = ref({
 const files = ref({
   logo_header: null,
   logo_favicon: null,
-  login_bg: null,
+  login_bg: [],
   home_banner: [] // Chứa các File object thật
 });
 
 const previews = ref({
   logo_header: null,
   logo_favicon: null,
-  login_bg: null,
+  login_bg: [],
   home_banner: [] // Chứa blob URL để preview ảnh mới
 });
 
-const existingBanners = ref([]); // Chứa link URL của banner cũ từ DB
+const existingBanners = ref([]); 
+const existingLoginBanners = ref([]);
 const isSavingText = ref(false);
 
 // --- 1. LẤY TOÀN BỘ CÀI ĐẶT TỪ DB KHI LOAD TRANG ---
@@ -229,10 +260,10 @@ const fetchSettings = async () => {
       // Gán dữ liệu Hình ảnh hiện tại vào Preview
       previews.value.logo_header = data.logo_header || null;
       previews.value.logo_favicon = data.logo_favicon || null;
-      previews.value.login_bg = data.login_bg || null;
       
       // Mảng Banner
-      existingBanners.value = data.home_banner || [];
+      existingLoginBanners.value = Array.isArray(data.login_bg) ? data.login_bg : [];
+      existingBanners.value = Array.isArray(data.home_banner) ? data.home_banner : [];
     }
   } catch (error) {
     console.error("Lỗi khi tải cài đặt:", error);
@@ -331,6 +362,58 @@ const removeExistingBanner = (index) => {
 const removeNewBanner = (index) => {
   files.value.home_banner.splice(index, 1);
   previews.value.home_banner.splice(index, 1);
+};
+
+const handleLoginBannerFiles = (event) => {
+  const selectedFiles = Array.from(event.target.files);
+  selectedFiles.forEach(file => {
+    files.value.login_bg.push(file);
+    previews.value.login_bg.push(URL.createObjectURL(file));
+  });
+  event.target.value = ''; 
+};
+
+const removeExistingLoginBanner = (index) => {
+  existingLoginBanners.value.splice(index, 1);
+};
+
+const removeNewLoginBanner = (index) => {
+  files.value.login_bg.splice(index, 1);
+  previews.value.login_bg.splice(index, 1);
+};
+
+const saveLoginBanners = async () => {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  
+  formData.append('keyCaiDat', 'login_bg');
+  formData.append('oldImages', JSON.stringify(existingLoginBanners.value));
+  
+  files.value.login_bg.forEach(file => {
+    // Chú ý: Tên append phải khớp với tên trong uploadLoginSlider.array('login_bg', 5)
+    formData.append('login_bg', file); 
+  });
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/setting/admin/update_login_bg`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      toastStore.showToast("Cập nhật Slider Đăng nhập thành công!", "success");
+      existingLoginBanners.value = result.data; 
+      files.value.login_bg = [];
+      previews.value.login_bg = [];
+    } else {
+      toastStore.showToast(result.message || "Lỗi cập nhật slider!", "error");
+    }
+  } catch (error) {
+    console.error("Lỗi cập nhật slider login:", error);
+    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+  }
 };
 
 const saveHomeBanners = async () => {
