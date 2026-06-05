@@ -1,42 +1,78 @@
 <template>
   <div class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen flex items-center justify-center relative overflow-hidden">
     
-    <router-link to = "/" class="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
+    <router-link to="/" class="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
       <span class="material-symbols-outlined text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
       <span class="text-sm font-bold text-white/90 tracking-wide">Quay lại</span>
     </router-link>
 
+    <!-- NỀN MỜ PHÍA SAU (Đồng bộ với Slider) -->
     <div class="fixed inset-0 z-0 pointer-events-none">
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-tertiary/5"></div>
-      <img alt="Background mecha" class="w-full h-full object-cover opacity-20 grayscale blur-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKf1uyglHyXkQBW-2-LahZoQyoz3Qi3nEZzvwq-FOxvD4Z-gNtdOuPxD7tvMCzMyg-ui0V4E1CJsK-fSHvdn2NeuSORcQ_wLq9bmAMrgcjodXeDo1JuGE9ldHXfE4AXEqLYvYvaKdQZaoowZ8aa8tfHWqvpsXH34aojQsfdcsBxkC6MhnXsCT-bE2yCsF1BXnZ5HRgL2ACyTGYkNkShodcqRdg_ltBu17--OpduokAyeAl2yeNcoCUSpTxwGJDbESYOUZKqKBaZASm"/>
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-tertiary/5 z-10"></div>
+      <transition name="fade">
+        <img 
+          v-if="systemStore.settings.login_bg && systemStore.settings.login_bg.length > 0"
+          :key="currentBgIndex"
+          class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale blur-sm" 
+          :src="systemStore.settings.login_bg[currentBgIndex]" 
+        />
+        <img 
+          v-else
+          class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale blur-sm" 
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKf1uyglHyXkQBW-2-LahZoQyoz3Qi3nEZzvwq-FOxvD4Z-gNtdOuPxD7tvMCzMyg-ui0V4E1CJsK-fSHvdn2NeuSORcQ_wLq9bmAMrgcjodXeDo1JuGE9ldHXfE4AXEqLYvYvaKdQZaoowZ8aa8tfHWqvpsXH34aojQsfdcsBxkC6MhnXsCT-bE2yCsF1BXnZ5HRgL2ACyTGYkNkShodcqRdg_ltBu17--OpduokAyeAl2yeNcoCUSpTxwGJDbESYOUZKqKBaZASm"
+        />
+      </transition>
     </div>
 
     <main class="relative z-10 w-full max-w-6xl p-4 md:p-8">
       <div class="animate-slide-up glass-panel w-full overflow-hidden rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row min-h-[750px]">
         
-        <div class="hidden lg:flex lg:w-3/5 relative min-h-[600px] border-r border-white/5">
+        <!-- NỬA TRÁI: SLIDER ẢNH NỀN -->
+        <div class="hidden lg:flex lg:w-3/5 relative min-h-[600px] border-r border-white/5 overflow-hidden">
           <div class="absolute inset-0 z-0">
-            <img alt="High-end collectible mecha figure" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKf1uyglHyXkQBW-2-LahZoQyoz3Qi3nEZzvwq-FOxvD4Z-gNtdOuPxD7tvMCzMyg-ui0V4E1CJsK-fSHvdn2NeuSORcQ_wLq9bmAMrgcjodXeDo1JuGE9ldHXfE4AXEqLYvYvaKdQZaoowZ8aa8tfHWqvpsXH34aojQsfdcsBxkC6MhnXsCT-bE2yCsF1BXnZ5HRgL2ACyTGYkNkShodcqRdg_ltBu17--OpduokAyeAl2yeNcoCUSpTxwGJDbESYOUZKqKBaZASm"/>
+            <!-- Khối luân phiên ảnh -->
+            <transition name="fade">
+              <img 
+                v-if="systemStore.settings.login_bg && systemStore.settings.login_bg.length > 0"
+                :key="currentBgIndex" 
+                :src="systemStore.settings.login_bg[currentBgIndex]" 
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 scale-105"
+              />
+              <img 
+                v-else 
+                class="absolute inset-0 w-full h-full object-cover" 
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKf1uyglHyXkQBW-2-LahZoQyoz3Qi3nEZzvwq-FOxvD4Z-gNtdOuPxD7tvMCzMyg-ui0V4E1CJsK-fSHvdn2NeuSORcQ_wLq9bmAMrgcjodXeDo1JuGE9ldHXfE4AXEqLYvYvaKdQZaoowZ8aa8tfHWqvpsXH34aojQsfdcsBxkC6MhnXsCT-bE2yCsF1BXnZ5HRgL2ACyTGYkNkShodcqRdg_ltBu17--OpduokAyeAl2yeNcoCUSpTxwGJDbESYOUZKqKBaZASm"
+              />
+            </transition>
+            <!-- Lớp phủ cho dễ đọc chữ -->
             <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30"></div>
           </div>
+
           <div class="relative z-10 w-full p-12 flex flex-col justify-between">
             <div>
-              <a class="inline-flex items-center gap-2 group transition-all" href="#">
+              <router-link to="/" class="inline-flex items-center gap-2 group transition-all">
+                <!-- Tự động load Logo Header nếu có, không có thì dùng Icon mặc định -->
                 <div class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
-                  <span class="font-headline text-2xl font-bold tracking-tight text-white">FigureCollect</span>
+                  <img v-if="systemStore.settings.logo_header" :src="systemStore.settings.logo_header" class="h-8 object-contain" alt="Logo"/>
+                  <template v-else>
+                    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
+                    <span class="font-headline text-2xl font-bold tracking-tight text-white">{{ systemStore.settings.shop_name || 'FigureCollect' }}</span>
+                  </template>
                 </div>
-              </a>
+              </router-link>
             </div>
+            
             <div class="max-w-xl">
-              <span class="inline-block px-3 py-1 rounded-full bg-tertiary-container/20 text-tertiary text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-tertiary/30">Limited Edition</span>
-              <h1 class="font-headline text-6xl font-bold text-white leading-tight mb-6 -ml-1">
-                Chào mừng bạn đến với <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-container">FigureCollect</span> 
+              <span class="inline-block px-3 py-1 rounded-full bg-tertiary-container/20 text-tertiary text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md border border-tertiary/30 shadow-sm">Limited Edition</span>
+              <h1 class="font-headline text-6xl font-bold text-white leading-tight mb-6 -ml-1 drop-shadow-md">
+                Chào mừng bạn đến với <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-container">{{ systemStore.settings.shop_name || 'FigureCollect' }}</span> 
               </h1>
-              <p class="text-white/90 text-lg font-medium leading-[1.8] max-w-md">
+              <p class="text-white/90 text-lg font-medium leading-[1.8] max-w-md drop-shadow-sm">
                 Nâng tầm bộ sưu tập của bạn với những tạo tác cơ khí tinh xảo nhất từ các studio hàng đầu thế giới.
               </p>
             </div>
+
             <div class="flex items-center gap-12 border-t border-white/10 pt-8">
               <div>
                 <div class="text-xs text-white/70 uppercase tracking-widest mb-1 font-semibold">Authenticity</div>
@@ -50,15 +86,16 @@
           </div>
         </div>
 
+        <!-- NỬA PHẢI: FORM ĐĂNG NHẬP -->
         <div class="w-full lg:w-2/5 p-8 md:p-12 lg:p-14 bg-surface/20 backdrop-blur-md flex flex-col justify-center overflow-y-auto">
           <div class="w-full max-w-md mx-auto">
             
             <div class="lg:hidden flex items-center justify-between mb-12">
-              <a class="flex items-center gap-2" href="#">
+              <router-link to="/" class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-on-surface/80">arrow_back</span>
                 <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
-                <span class="font-headline text-xl font-bold tracking-tight">FigureCollect</span>
-              </a>
+                <span class="font-headline text-xl font-bold tracking-tight">{{ systemStore.settings.shop_name || 'FigureCollect' }}</span>
+              </router-link>
             </div>
 
             <div class="mb-10 text-center">
@@ -67,7 +104,6 @@
             </div>
 
             <form @submit.prevent="handleLogin" class="space-y-6">
-              
               <div class="space-y-1.5">
                 <label class="text-sm font-medium text-on-surface-variant ml-1" for="identity">Email hoặc tên đăng nhập</label>
                 <div class="relative group">
@@ -86,7 +122,7 @@
               <div class="space-y-1.5">
                 <div class="flex justify-between items-center ml-1">
                   <label class="text-sm font-medium text-on-surface-variant" for="password">Mật khẩu</label>
-                  <router-link to = "/forgot-password" class="text-xs font-semibold text-primary hover:text-primary-fixed transition-colors">Quên mật khẩu?</router-link>
+                  <router-link to="/forgot-password" class="text-xs font-semibold text-primary hover:text-primary-fixed transition-colors">Quên mật khẩu?</router-link>
                 </div>
                 <div class="relative group">
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">lock</span>
@@ -153,7 +189,7 @@
             </p>
             
             <footer class="mt-12 pt-6 border-t border-white/5 text-[10px] text-outline/60 w-full flex justify-between items-center">
-              <span>© 2024 FigureCollect Hub. All rights reserved.</span>
+              <span>© 2026 {{ systemStore.settings.shop_name || 'FigureCollect' }} Hub. All rights reserved.</span>
               <div class="flex gap-4">
                 <a class="hover:text-on-surface-variant transition-colors" href="#">Điều khoản</a>
                 <a class="hover:text-on-surface-variant transition-colors" href="#">Bảo mật</a>
@@ -167,19 +203,20 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.js';
 import { useToastStore } from '../../stores/toast.js';
+import { useSystemStore } from '../../stores/system.js'; 
 import { googleTokenLogin } from 'vue3-google-login';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const toastStore = useToastStore();
+const systemStore = useSystemStore(); 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// 1. Khai báo các biến
 const form = reactive({
   identity: '',
   password: '', 
@@ -189,7 +226,25 @@ const form = reactive({
 const showPassword = ref(false); 
 const isLoading = ref(false);    
 
-// 2. Hàm xử lý khi bấm nút Đăng Nhập
+// Khai báo biến đếm và Timer để chuyển đổi ảnh Slider
+const currentBgIndex = ref(0);
+let bgTimer = null;
+
+onMounted(() => {
+  // Cài đặt đồng hồ chuyển ảnh mỗi 4 giây (chỉ chạy khi mảng có ảnh)
+  bgTimer = setInterval(() => {
+    const bgArray = systemStore.settings?.login_bg;
+    if (bgArray && bgArray.length > 0) {
+      currentBgIndex.value = (currentBgIndex.value + 1) % bgArray.length;
+    }
+  }, 4000); 
+});
+
+onUnmounted(() => {
+  // Xóa timer khi chuyển trang để không làm nặng trình duyệt
+  if (bgTimer) clearInterval(bgTimer);
+});
+
 const handleLogin = async () => {
   isLoading.value = true;  
   try {
@@ -198,8 +253,6 @@ const handleLogin = async () => {
     if (isSuccess) {
       toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
       const userRole = authStore.user?.role || authStore.user?.MaQuyen;
-      console.log("Dữ liệu user từ Store:", authStore.user); // Thêm dòng này
-      console.log("Quyền hiện tại là:", userRole);           // Thêm dòng này
       
       setTimeout(() => {
         if (Number(userRole) === 1 || Number(userRole) === 2) {
@@ -269,9 +322,6 @@ const handleFacebookLogin = () => {
         isLoading.value = false;
       }
     } 
-    else {
-      console.log('User cancelled login or did not fully authorize.');
-    }
   }, { scope: 'public_profile,email' });
 };
 
@@ -304,5 +354,18 @@ const handleSuccessfulLogin = (data) => {
 
   .input-focus-glow:focus {
     box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
+  }
+
+  /* Kỹ thuật CSS Fade cho ảnh cực mượt */
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 1.5s ease-in-out;
+  }
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+  .fade-leave-active {
+    position: absolute; /* Quan trọng: giúp 2 ảnh đè lên nhau lúc chuyển đổi */
   }
 </style>
