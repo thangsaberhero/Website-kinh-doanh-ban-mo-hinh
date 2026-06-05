@@ -410,7 +410,7 @@
                       <td class="p-4">
                         <div class="flex items-center gap-4">
                           <img v-if="item.AnhDaiDien" 
-                              :src="`${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
+                              :src="item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
                               class="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm shrink-0 bg-slate-50" 
                               alt="Thumbnail" />
                           <div v-else class="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200 shadow-sm shrink-0 flex items-center justify-center text-slate-400">

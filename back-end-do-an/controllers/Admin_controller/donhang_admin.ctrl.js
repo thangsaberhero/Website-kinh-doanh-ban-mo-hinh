@@ -952,6 +952,17 @@ const donhang_admin = {
                 return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
             };
 
+            const fs = require('fs');
+            let logoBase64 = '';
+            try {
+                const logoPath = path.join(__dirname, '../../public/logo.png');
+                const logoBuffer = fs.readFileSync(logoPath);
+                logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+            } 
+            catch (error) {
+                console.log("Không thể đọc file logo cho hóa đơn in:", error.message);
+            }
+
             // 3. TẠO BLUEPRINT GIAO DIỆN HÓA ĐƠN BẰNG CHUỖI HTML & CSS INLINE
             let inputRows = '';
             let tongTienGiamCacMon = 0;
@@ -993,14 +1004,14 @@ const donhang_admin = {
                     .header h2 { margin: 5px 0; text-transform: uppercase; font-size: 20px; }
                     .header p { margin: 3px 0; font-size: 12px; color: #555; }
                     .divider { border-top: 2px solid #000; margin: 15px 0; }
-                    .info-table { wIdth: 100%; margin-bottom: 15px; }
+                    .info-table { width: 100%; margin-bottom: 15px; }
                     .info-table td { padding: 3px 0; vertical-align: top; }
-                    .data-table { wIdth: 100%; border-collapse: collapse; margin-top: 10px; }
+                    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
                     .data-table th { border-bottom: 2px solid #000; padding: 6px 0; font-weight: bold; font-size: 12px; }
-                    .summary-table { wIdth: 100%; margin-top: 15px; font-size: 13px; }
+                    .summary-table { width: 100%; margin-top: 15px; font-size: 13px; }
                     .summary-table td { padding: 4px 0; }
-                    .footer-sign { wIdth: 100%; margin-top: 40px; text-align: center; }
-                    .footer-sign td { wIdth: 50%; font-weight: bold; }
+                    .footer-sign { width: 100%; margin-top: 40px; text-align: center; }
+                    .footer-sign td { width: 50%; font-weight: bold; }
                     
                     /* CSS ĐẶC BIỆT KHI BẤM IN: Tự kích hoạt ẩn các thành phần thừa và tự mở hộp thoại in */
                     @media print {
@@ -1012,6 +1023,7 @@ const donhang_admin = {
             <body>
                 <div class="invoice-box">
                     <div class="header">
+                        ${logoBase64 ? `<img src="${logoBase64}" width="90" style="display: block; margin: 0 auto 10px auto; object-fit: contain;">` : ''}
                         <h2>FIGURECOLLECT SHOP</h2>
                         <p>Địa chỉ: Lạch Tray, Ngô Quyền, Hải Phòng</p>
                         <p>Hotline: 0123.456.789</p>
@@ -1022,8 +1034,8 @@ const donhang_admin = {
 
                     <table class="info-table">
                         <tr>
-                            <td style="wIdth: 40%"><strong>Ngày lập đơn:</strong> ${formatDate(dh.NgayLapDon)}</td>
-                            <td style="wIdth: 60%"><strong>Khách hàng:</strong> ${dh.TenNguoiNhan}</td>
+                            <td style="width: 40%"><strong>Ngày lập đơn:</strong> ${formatDate(dh.NgayLapDon)}</td>
+                            <td style="width: 60%"><strong>Khách hàng:</strong> ${dh.TenNguoiNhan}</td>
                         </tr>
                         <tr>
                             <td><strong>Trạng thái:</strong> ${dh.TrangThaiThanhToan}</td>
@@ -1038,11 +1050,11 @@ const donhang_admin = {
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th style="wIdth: 8%; text-align: center;">STT</th>
+                                <th style="width: 8%; text-align: center;">STT</th>
                                 <th style="text-align: left;">Tên mô hình / Phân loại</th>
-                                <th style="wIdth: 10%; text-align: center;">SL</th>
-                                <th style="wIdth: 20%; text-align: right;">Đơn giá</th>
-                                <th style="wIdth: 22%; text-align: right;">Thành tiền</th>
+                                <th style="width: 10%; text-align: center;">SL</th>
+                                <th style="width: 20%; text-align: right;">Đơn giá</th>
+                                <th style="width: 22%; text-align: right;">Thành tiền</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1052,8 +1064,8 @@ const donhang_admin = {
 
                     <table class="summary-table">
                         <tr>
-                            <td style="text-align: right; wIdth: 70%;"><strong>Tổng tiền hàng:</strong></td>
-                            <td style="text-align: right; wIdth: 30%; font-weight: bold;">${formatMoney(dh.TongTien)}</td>
+                            <td style="text-align: right; width: 70%;"><strong>Tổng tiền hàng:</strong></td>
+                            <td style="text-align: right; width: 30%; font-weight: bold;">${formatMoney(dh.TongTien)}</td>
                         </tr>
                         ${tongGiamGiaThucTe > 0 ? `
                         <tr>
@@ -1071,16 +1083,28 @@ const donhang_admin = {
                         </tr>
                     </table>
 
-                    <p style="text-align: center; margin-top: 20px; margin-bottom: 30px; font-size: 12px; font-style: italic; color: #555;">
-                        🎉 Cảm ơn quý khách đã ủng hộ siêu phẩm của FigureCollect! 🎉
-                    </p>
-
                     <table class="footer-sign">
                         <tr>
-                            <td>Người mua hàng<br><span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span></td>
-                            <td>Người lập phiếu<br><span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span></td>
+                            <td></td>
+                            <td style="font-size: 12px; font-style: italic; font-weight: normal; padding-bottom: 5px;">
+                                Ngày ${new Date().getDate().toString().padStart(2, '0')} tháng ${(new Date().getMonth() + 1).toString().padStart(2, '0')} năm ${new Date().getFullYear()}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom: 70px;">
+                                Người mua hàng<br>
+                                <span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span>
+                            </td>
+                            <td style="padding-bottom: 70px;">
+                                Người lập phiếu<br>
+                                <span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span>
+                            </td>
                         </tr>
                     </table>
+
+                    <p style="text-align: center; margin-top: 10px; font-size: 12px; font-style: italic; color: #555;">
+                        🎉 Cảm ơn quý khách đã tin tưởng và ủng hộ FigureCollect! 🎉
+                    </p>
                 </div>
 
                 <script>
