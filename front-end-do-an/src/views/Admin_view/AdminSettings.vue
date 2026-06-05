@@ -193,10 +193,6 @@
                     <input v-model="slide.tag" type="text" placeholder="VD: LIMITED EDITION" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white">
                   </div>
                   <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Link chuyển hướng</label>
-                    <input v-model="slide.link" type="text" placeholder="VD: /category" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white">
-                  </div>
-                  <div class="space-y-1.5">
                     <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
                       Link chuyển hướng
                       <span class="text-[9px] text-[#ff8f73] font-normal normal-case italic">* Click đúp để chọn</span>
@@ -222,6 +218,10 @@
                         Hãng: {{ brand.TenHSX }}
                       </option>
                     </datalist>
+                  </div>
+                  <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tiêu đề chính</label>
+                    <input v-model="slide.title" type="text" placeholder="VD: GUNDAM" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none font-bold bg-white text-slate-800">
                   </div>
                   <div class="space-y-1.5">
                     <label class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest">Chữ nhấn mạnh (Màu Cam)</label>
