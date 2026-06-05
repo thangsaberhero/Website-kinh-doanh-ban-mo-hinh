@@ -44,7 +44,7 @@ router.put('/update_logo_favicon',
 router.put('/update_login_bg', 
     authMiddleware.verifyToken, 
     authMiddleware.verifyAdmin, 
-    uploadLoginSlider.single('login_bg', 5), 
+    uploadLoginSlider.array('login_bg', 5), 
     setting_Controller.cap_nhat_mang_file
 );
 
