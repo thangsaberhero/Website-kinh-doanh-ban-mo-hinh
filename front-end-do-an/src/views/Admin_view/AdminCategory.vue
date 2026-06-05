@@ -13,7 +13,7 @@
       <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
           <div>
-            <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý danh mục</h1>
+            <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Danh mục sản phẩm</h1>
             <p class="text-slate-500 text-sm font-medium">Tổ chức và phân loại bộ sưu tập sản phẩm của bạn.</p>
           </div>
           

@@ -15,7 +15,7 @@
         
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
           <div>
-            <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Hoàn tất đơn hàng</h1>
+            <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý đơn hàng</h1>
             <p class="text-slate-500 text-sm font-medium">Quản lý và xử lý quy trình vận chuyển cho các đơn hàng Figure.</p>
           </div>
           
