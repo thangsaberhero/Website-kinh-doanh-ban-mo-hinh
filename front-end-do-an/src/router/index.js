@@ -19,7 +19,7 @@ import NewsDetailView from '../views/User_view/NewsDetailView.vue';
 import ContactView from '../views/User_view/ContactView.vue';
 import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
 //Phần thanh toán có thể thay thế bằng payos sau này
-import checkout from '../views/User_view/MoMoMockView.vue';
+//import checkout from '../views/User_view/MoMoMockView.vue';
 import ProvenanceTracking from '../views/User_view/ProvenanceTracking.vue';
 import SupportView from '../views/User_view/SupportView.vue';
 
@@ -40,6 +40,7 @@ import AdminChangePassword from '../views/Admin_view/AdminChangePassword.vue';
 import AdminReport from '../views/Admin_view/AdminReport.vue';
 import AdminNotifications from '../views/Admin_view/AdminNotifications.vue';
 import AdminBlockchain from '../views/Admin_view/AdminBlockchain.vue';
+import AdminSettings from '../views/Admin_view/AdminSettings.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -84,8 +85,8 @@ const router = createRouter({
     { path: '/admin/blockchain', name: 'AdminBlockchain', component: AdminBlockchain, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý Blockchain | Admin - FigureCollect' } },
     { path: '/admin/news/edit/:id', name: 'NewsEdit', component: AdminNewsEdit, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/admin/promotion/:type/:id', name: 'AdminPromotionDetail', component: AdminPromotionDetail, meta: { requiresAuth: true, requiresAdmin: true } },
-    
-    { path: '/momo-payment', name: 'MoMoMock', component: checkout, meta: { requiresAuth: true, title: 'Cổng thanh toán MoMo' } },
+    { path: '/admin/settings', name: 'AdminSettings', component: AdminSettings, meta: { requiresAuth: true, requiresAdmin: true, title: 'Cài đặt hệ thống | Admin - FigureCollect' } },
+    // { path: '/momo-payment', name: 'MoMoMock', component: checkout, meta: { requiresAuth: true, title: 'Cổng thanh toán MoMo' } },
   ]
 });
 

@@ -1,0 +1,379 @@
+<template>
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+    <div 
+      v-show="layoutStore.isMobileMenuOpen" 
+      @click="layoutStore.isMobileMenuOpen = false" 
+      class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
+    ></div>
+
+    <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
+
+    <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
+      <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
+      
+      <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
+        
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
+          <div>
+            <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Cài đặt hệ thống</h1>
+            <p class="text-slate-500 text-sm font-medium">Quản lý nhận diện thương hiệu, thông tin liên hệ và giao diện hiển thị.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73]">info</span>
+                Thông tin chung
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">Tên website, hotline và email liên hệ.</p>
+            </div>
+            <div class="p-6 space-y-5 flex-1">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên thương hiệu (Shop Name)</label>
+                <input v-model="formText.shop_name" type="text" placeholder="VD: FigureCollect" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-slate-800">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hotline</label>
+                  <input v-model="formText.contact_phone" type="text" placeholder="VD: 0123456789" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Email hỗ trợ</label>
+                  <input v-model="formText.contact_email" type="email" placeholder="VD: hotro@shop.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800">
+                </div>
+              </div>
+            </div>
+            <div class="p-6 pt-0">
+              <button @click="saveTextSettings" :disabled="isSavingText" class="w-full py-3 rounded-xl font-bold text-white bg-slate-900 hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
+                <span v-if="isSavingText" class="material-symbols-outlined animate-spin">autorenew</span>
+                <span v-else class="material-symbols-outlined text-[18px]">save</span>
+                Lưu thông tin
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73]">branding_watermark</span>
+                Nhận diện thương hiệu
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">Cập nhật Logo hiển thị trên thanh điều hướng và Favicon.</p>
+            </div>
+            <div class="p-6 space-y-6 flex-1">
+              
+              <div class="flex items-start gap-6">
+                <div class="w-32 h-16 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-800 shrink-0 relative group">
+                  <img v-if="previews.logo_header" :src="previews.logo_header" class="max-w-full max-h-full object-contain p-2" />
+                  <span v-else class="text-xs font-medium text-slate-400">Trống</span>
+                </div>
+                <div class="flex-1">
+                  <label class="block text-sm font-bold text-slate-800 mb-1">Logo Header (Ngang)</label>
+                  <p class="text-[10px] text-slate-500 mb-3">Hiển thị ở góc trái thanh điều hướng. Khuyên dùng định dạng PNG không nền, chữ trắng/sáng.</p>
+                  <div class="flex gap-2">
+                    <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_header')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer">
+                    <button v-if="files.logo_header" @click="saveSingleImage('logo_header', '/update_logo_header')" class="shrink-0 bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Tải lên</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="h-px bg-slate-100 w-full"></div>
+
+              <div class="flex items-start gap-6">
+                <div class="w-16 h-16 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 shrink-0 relative group">
+                  <img v-if="previews.logo_favicon" :src="previews.logo_favicon" class="w-full h-full object-cover p-1" />
+                  <span v-else class="text-xs font-medium text-slate-400">Trống</span>
+                </div>
+                <div class="flex-1">
+                  <label class="block text-sm font-bold text-slate-800 mb-1">Logo Vuông (Favicon)</label>
+                  <p class="text-[10px] text-slate-500 mb-3">Dùng làm biểu tượng trên Tab trình duyệt hoặc Avatar.</p>
+                  <div class="flex gap-2">
+                    <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_favicon')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
+                    <button v-if="files.logo_favicon" @click="saveSingleImage('logo_favicon', '/update_logo_favicon')" class="shrink-0 bg-slate-800 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Tải lên</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73]">wallpaper</span>
+                Ảnh nền Trang Đăng nhập
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">Ảnh kích thước lớn che phủ nửa màn hình Login.</p>
+            </div>
+            <div class="p-6">
+              <div class="w-full h-48 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 relative group mb-4">
+                <img v-if="previews.login_bg" :src="previews.login_bg" class="w-full h-full object-cover" />
+                <span v-else class="material-symbols-outlined text-4xl text-slate-300">image</span>
+              </div>
+              <div class="flex items-center justify-between gap-4">
+                <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'login_bg')" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer">
+                <button v-if="files.login_bg" @click="saveSingleImage('login_bg', '/update_login_bg')" class="shrink-0 bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all">Lưu ảnh này</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#ff8f73]">view_carousel</span>
+                  Slider Banner Trang chủ
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Danh sách các banner cỡ lớn tự động trượt.</p>
+              </div>
+              <button @click="saveHomeBanners" class="bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Lưu toàn bộ Slider
+              </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                
+                <div v-for="(url, idx) in existingBanners" :key="'old'+idx" class="relative group h-28 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                  <img :src="url" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button @click="removeExistingBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
+                      <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  </div>
+                  <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm">Hiện tại</span>
+                </div>
+
+                <div v-for="(preview, idx) in previews.home_banner" :key="'new'+idx" class="relative group h-28 rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+                  <img :src="preview" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button @click="removeNewBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Bỏ chọn">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                  <span class="absolute top-2 left-2 bg-[#ff8f73] text-white text-[10px] px-2 py-0.5 rounded font-bold shadow-sm">Mới tải lên</span>
+                </div>
+
+                <label class="h-28 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
+                  <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73]">add_photo_alternate</span>
+                  <span class="text-xs font-bold text-slate-500 mt-2 group-hover:text-[#ff8f73]">Thêm ảnh mới</span>
+                  <input type="file" multiple accept="image/*" @change="handleHomeBannerFiles" class="hidden" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
+import AdminHeader from "../../components/Admin/AdminHeader.vue";
+import { useToastStore } from "../../stores/toast";
+import { useLayoutStore } from '../../stores/layout';
+
+const toastStore = useToastStore();
+const layoutStore = useLayoutStore();
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// State lưu trữ dữ liệu
+const formText = ref({
+  shop_name: '',
+  contact_phone: '',
+  contact_email: ''
+});
+
+// State cho File đang chờ Upload và File Preview hiển thị
+const files = ref({
+  logo_header: null,
+  logo_favicon: null,
+  login_bg: null,
+  home_banner: [] // Chứa các File object thật
+});
+
+const previews = ref({
+  logo_header: null,
+  logo_favicon: null,
+  login_bg: null,
+  home_banner: [] // Chứa blob URL để preview ảnh mới
+});
+
+const existingBanners = ref([]); // Chứa link URL của banner cũ từ DB
+const isSavingText = ref(false);
+
+// --- 1. LẤY TOÀN BỘ CÀI ĐẶT TỪ DB KHI LOAD TRANG ---
+const fetchSettings = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/setting/admin`);
+    const result = await response.json();
+    
+    if (result.success) {
+      const data = result.data;
+      
+      // Gán dữ liệu Văn bản
+      formText.value.shop_name = data.shop_name || '';
+      formText.value.contact_phone = data.contact_phone || '';
+      formText.value.contact_email = data.contact_email || '';
+
+      // Gán dữ liệu Hình ảnh hiện tại vào Preview
+      previews.value.logo_header = data.logo_header || null;
+      previews.value.logo_favicon = data.logo_favicon || null;
+      previews.value.login_bg = data.login_bg || null;
+      
+      // Mảng Banner
+      existingBanners.value = data.home_banner || [];
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải cài đặt:", error);
+    toastStore.showToast("Không thể kết nối đến máy chủ!", "error");
+  }
+};
+
+onMounted(() => {
+  fetchSettings();
+});
+
+// --- 2. CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
+const saveTextSettings = async () => {
+  isSavingText.value = true;
+  const token = localStorage.getItem('token');
+  
+  try {
+    // Vì API cap_nhat_van_ban nhận từng Key một, ta dùng Promise.all để gọi đồng thời
+    const updatePromises = Object.keys(formText.value).map(key => {
+      return fetch(`${API_BASE_URL}/api/setting/admin/update_text`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ keyCaiDat: key, giaTri: formText.value[key] })
+      });
+    });
+
+    await Promise.all(updatePromises);
+    toastStore.showToast("Đã lưu thông tin cơ bản thành công!", "success");
+    
+  } catch (error) {
+    console.error("Lỗi cập nhật văn bản:", error);
+    toastStore.showToast("Lỗi khi lưu thông tin!", "error");
+  } finally {
+    isSavingText.value = false;
+  }
+};
+
+// --- 3. XỬ LÝ ẢNH FILE ĐƠN ---
+const handleSingleFile = (event, fieldKey) => {
+  const file = event.target.files[0];
+  if (file) {
+    files.value[fieldKey] = file;
+    // Tạo link ảo để preview lập tức
+    previews.value[fieldKey] = URL.createObjectURL(file);
+  }
+};
+
+const saveSingleImage = async (fieldKey, endpoint) => {
+  if (!files.value[fieldKey]) return;
+  
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  formData.append('keyCaiDat', fieldKey);
+  formData.append(fieldKey, files.value[fieldKey]); // Tên trường file trùng với tên khai báo ở Backend Route
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/setting/admin${endpoint}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      toastStore.showToast("Đã cập nhật hình ảnh!", "success");
+      files.value[fieldKey] = null; // Xóa file bộ nhớ đệm đi để ẩn nút "Tải lên"
+    } else {
+      toastStore.showToast(result.message || "Lỗi cập nhật ảnh!", "error");
+    }
+  } catch (error) {
+    console.error("Lỗi cập nhật file:", error);
+    toastStore.showToast("Lỗi máy chủ!", "error");
+  }
+};
+
+// --- 4. XỬ LÝ MẢNG ẢNH BANNER TRANG CHỦ ---
+const handleHomeBannerFiles = (event) => {
+  const selectedFiles = Array.from(event.target.files);
+  
+  selectedFiles.forEach(file => {
+    files.value.home_banner.push(file);
+    previews.value.home_banner.push(URL.createObjectURL(file));
+  });
+  
+  // Xóa nội dung input để có thể chọn lại cùng 1 file nếu cần
+  event.target.value = ''; 
+};
+
+const removeExistingBanner = (index) => {
+  existingBanners.value.splice(index, 1);
+};
+
+const removeNewBanner = (index) => {
+  files.value.home_banner.splice(index, 1);
+  previews.value.home_banner.splice(index, 1);
+};
+
+const saveHomeBanners = async () => {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  
+  formData.append('keyCaiDat', 'home_banner');
+  // Ép mảng ảnh cũ còn giữ lại thành JSON
+  formData.append('oldImages', JSON.stringify(existingBanners.value));
+  
+  // Đính kèm các ảnh mới vừa chọn
+  files.value.home_banner.forEach(file => {
+    formData.append('home_banner', file);
+  });
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/setting/admin/update_home_banner`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      toastStore.showToast("Cập nhật toàn bộ Slider thành công!", "success");
+      
+      // Làm mới dữ liệu
+      existingBanners.value = result.data; // Gán lại mảng mới từ backend trả về
+      files.value.home_banner = [];
+      previews.value.home_banner = [];
+    } else {
+      toastStore.showToast(result.message || "Lỗi cập nhật slider!", "error");
+    }
+  } catch (error) {
+    console.error("Lỗi cập nhật slider:", error);
+    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+  }
+};
+</script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>

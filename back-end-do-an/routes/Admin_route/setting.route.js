@@ -45,7 +45,14 @@ router.put('/update_login_bg',
     authMiddleware.verifyToken, 
     authMiddleware.verifyAdmin, 
     uploadLoginSlider.single('login_bg'), 
-    setting_Controller.cap_nhat_file_don
+    setting_Controller.cap_nhat_mang_file
+);
+
+router.put('/update_register_bg', 
+    authMiddleware.verifyToken, 
+    authMiddleware.verifyAdmin, 
+    uploadLoginSlider.single('login_bg'), 
+    setting_Controller.cap_nhat_mang_file
 );
 
 // 6. Cập nhật BANNER TRANG CHỦ (Dạng mảng nhiều file - ví dụ tối đa 5 ảnh)
