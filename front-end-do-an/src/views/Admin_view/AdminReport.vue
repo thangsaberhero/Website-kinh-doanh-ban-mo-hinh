@@ -570,7 +570,12 @@
     dataLabels: { enabled: false },
     stroke: { show: true, width: 2, curve: 'smooth' },
     xaxis: { categories: [], labels: { style: { colors: '#94a3b8', fontWeight: 600 } } },
-    yaxis: { labels: { formatter: (val) => (val / 1000000).toFixed(1) + 'Tr', style: { colors: '#94a3b8', fontWeight: 600 } } },
+    yaxis: { 
+      labels: { 
+        formatter: (val) => new Intl.NumberFormat('vi-VN').format(Math.round(val)), 
+        style: { colors: '#94a3b8', fontWeight: 600 } 
+      } 
+    },   
     fill: { opacity: 1 },
     grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
     tooltip: { y: { formatter: (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val) } }
@@ -662,11 +667,11 @@
       if (dataChart.success && dataChart.data) {
         const categories = dataChart.data.map(item => item.Ngay);
         const revenues = dataChart.data.map(item => item.DoanhThuNgay);
-        const profits = dataChart.data.map(item => item.DoanhThuNgay * (profitMargin.value / 100));
+        const profits = dataChart.data.map(item => item.LoiNhuanNgay);
 
         chartFinanceSeries.value = [
           { name: 'Doanh thu', data: revenues },
-          { name: 'Lợi nhuận gộp ước tính', data: profits }
+          { name: 'Lợi nhuận gộp', data: profits }
         ];
         chartFinanceOptions.value = { ...chartFinanceOptions.value, xaxis: { categories } };
       }
