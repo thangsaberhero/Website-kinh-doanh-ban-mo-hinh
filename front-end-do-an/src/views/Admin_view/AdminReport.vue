@@ -1,5 +1,5 @@
 <template>
-  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 h-screen overflow-hidden font-body flex w-full text-slate-800 relative">
     <div 
       v-show="layoutStore.isMobileMenuOpen" 
       @click="layoutStore.isMobileMenuOpen = false" 
@@ -8,7 +8,7 @@
 
     <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
     
-    <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
+    <div class="flex-1 flex flex-col h-screen w-full relative">
       <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       
       <main class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar pb-24">
@@ -570,7 +570,12 @@
     dataLabels: { enabled: false },
     stroke: { show: true, width: 2, curve: 'smooth' },
     xaxis: { categories: [], labels: { style: { colors: '#94a3b8', fontWeight: 600 } } },
-    yaxis: { labels: { formatter: (val) => (val / 1000000).toFixed(1) + 'Tr', style: { colors: '#94a3b8', fontWeight: 600 } } },
+    yaxis: { 
+      labels: { 
+        formatter: (val) => new Intl.NumberFormat('vi-VN').format(Math.round(val)), 
+        style: { colors: '#94a3b8', fontWeight: 600 } 
+      } 
+    },   
     fill: { opacity: 1 },
     grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
     tooltip: { y: { formatter: (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val) } }
@@ -662,11 +667,11 @@
       if (dataChart.success && dataChart.data) {
         const categories = dataChart.data.map(item => item.Ngay);
         const revenues = dataChart.data.map(item => item.DoanhThuNgay);
-        const profits = dataChart.data.map(item => item.DoanhThuNgay * (profitMargin.value / 100));
+        const profits = dataChart.data.map(item => item.LoiNhuanNgay);
 
         chartFinanceSeries.value = [
           { name: 'Doanh thu', data: revenues },
-          { name: 'Lợi nhuận gộp ước tính', data: profits }
+          { name: 'Lợi nhuận gộp', data: profits }
         ];
         chartFinanceOptions.value = { ...chartFinanceOptions.value, xaxis: { categories } };
       }

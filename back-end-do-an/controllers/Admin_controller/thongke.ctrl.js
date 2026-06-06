@@ -348,7 +348,8 @@ const thongke = {
 
             // Nhóm theo từng ngày để vẽ biểu đồ
             const sql = `SELECT DATE_FORMAT(dh.NgayLapDon, '%d/%m') as Ngay,
-                    IFNULL(SUM(ctdh.DonGiaBan * ctdh.SoLuong), 0) as DoanhThuNgay
+                    IFNULL(SUM(ctdh.DonGiaBan * ctdh.SoLuong), 0) as DoanhThuNgay,
+                    IFNULL(SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong), 0) as LoiNhuanNgay
                     FROM DonHang dh
                     INNER JOIN ChiTietDonHang ctdh ON dh.MaDH = ctdh.MaDH
                     INNER JOIN ChiTietTrangThai cttt ON dh.MaDH = cttt.MaDH
