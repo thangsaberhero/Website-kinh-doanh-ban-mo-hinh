@@ -571,17 +571,47 @@ const donhang_admin = {
                     ORDER BY cttt.ThoiGian DESC 
                     LIMIT 1
                 ) AS TrangThai,
+
                 (
-                    Select Coalesce(Sum(tt.SoTienGiaoDich), 0))
-                    from ThanhToan tt
-                    where tt.MaDH = dh.MaDH
-                    group by tt.MaDH
-                ) AS SoTienDaThanhToan
+                    SELECT COALESCE(SUM(tt.SoTienGiaoDich), 0)
+                    FROM ThanhToan tt
+                    WHERE tt.MaDH = dh.MaDH
+                ) AS SoTienGiaoDich,
+
+                -- BỔ SUNG: Lấy Tên phương thức thanh toán mới nhất
+                (
+                    SELECT pt.TenPhuongThuc
+                    FROM ThanhToan tt
+                    INNER JOIN PhuongThucThanhToan pt ON tt.MaPT = pt.MaPT
+                    WHERE tt.MaDH = dh.MaDH
+                    ORDER BY tt.NgayThanhToan DESC
+                    LIMIT 1
+                ) AS TenPhuongThuc,
+
+                -- BỔ SUNG: Lấy Loại giao dịch (VD: Thanh toán toàn bộ, Cọc...)
+                (
+                    SELECT tt.LoaiGiaoDich
+                    FROM ThanhToan tt
+                    WHERE tt.MaDH = dh.MaDH
+                    ORDER BY tt.NgayThanhToan DESC
+                    LIMIT 1
+                ) AS LoaiGiaoDich,
+
+                -- BỔ SUNG: Lấy Ngày thanh toán
+                (
+                    SELECT tt.NgayThanhToan
+                    FROM ThanhToan tt
+                    WHERE tt.MaDH = dh.MaDH
+                    ORDER BY tt.NgayThanhToan DESC
+                    LIMIT 1
+                ) AS NgayThanhToan
+
                 FROM DonHang dh
                 LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
                 LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
-                GROUP BY dh.MaDH
+                
                 ${condition_clause}
+                GROUP BY dh.MaDH
                 ${having_clause}
             `;
 
