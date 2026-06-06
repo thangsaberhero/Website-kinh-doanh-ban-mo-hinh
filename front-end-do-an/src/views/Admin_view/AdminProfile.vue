@@ -1,5 +1,5 @@
 <template>
-  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 h-screen overflow-hidden font-body flex w-full text-slate-800 relative">
     <div 
       v-show="layoutStore.isMobileMenuOpen" 
       @click="layoutStore.isMobileMenuOpen = false" 
