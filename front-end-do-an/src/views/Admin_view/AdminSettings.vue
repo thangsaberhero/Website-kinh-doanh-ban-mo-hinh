@@ -507,7 +507,9 @@ const saveLoginBanners = async () => {
     const result = await response.json();
     if (result.success) {
       toastStore.showToast("Cập nhật Slider Đăng nhập thành công!", "success");
-      existingLoginBanners.value = result.data; 
+      existingLoginBanners.value = Array.isArray(result.data) 
+        ? result.data.map((url, i) => ({ id: 'login_' + i + '_' + Date.now(), url })) 
+        : [];
       files.value.login_bg = [];
       previews.value.login_bg = [];
     } else {
