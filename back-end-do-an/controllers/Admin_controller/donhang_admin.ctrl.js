@@ -226,7 +226,7 @@ const donhang_admin = {
 
     liet_ke_san_pham: async(req, res) => {
         try {
-            const keyword = req.query.search || '';
+            const keyword = req.query.keyword || '';
             const maDM = req.query.maDM || '';
             const maHSX = req.query.maHSX || '';
             const maKM = req.query.maKM || ''; 
