@@ -354,16 +354,16 @@
                 <table class="w-full text-left text-sm">
                   <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                     <tr>
-                      <th class="p-4">Mã tham chiếu</th>
-                      <th class="p-4">Đối tác</th>
-                      <th class="p-4 text-right">Số tiền</th>
+                      <th class="p-4">Mã Voucher</th>
+                      <th class="p-4">Đối tác/Phương thức</th>
+                      <th class="p-4 text-right">Tổng thanh toán</th>
                       <th class="p-4 text-center">Trạng thái</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-100">
                     <tr class="text-slate-700 font-medium">
                       <td class="p-4 text-slate-400">{{ selectedOrder.ThongTinGiaoHang?.MaVoucher || 'Không áp dụng mã' }}</td>
-                      <td class="p-4 font-bold text-blue-600">COD / BANKING</td>
+                      <td class="p-4 font-bold text-blue-600">Thanh toán theo đơn</td>
                       <td class="p-4 text-right font-bold">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</td>
                       <td class="p-4 text-center">
                         <div class="flex flex-col items-center gap-2">
@@ -373,7 +373,7 @@
                           </span>
                           
                           <button v-if="!selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan?.includes('Đã thanh toán') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HỦY') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HOÀN')"
-                                  @click="confirmPayment(selectedOrder.MaDH)"
+                                  @click="confirmPayment(selectedOrder)"
                                   class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
                             <span class="material-symbols-outlined text-[14px]">price_check</span>
                             Xác nhận thu tiền
@@ -472,7 +472,7 @@
 
       <footer class="absolute bottom-0 w-full bg-white border-t border-slate-200 flex justify-between items-center px-8 py-4 z-40">
         <div class="flex items-center gap-6">
-          <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">© 2024 FigureCollect. Phiên bản 2.4.0-Technical.</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">© 2026 FigureCollect. Phiên bản 2.4.0-Technical.</span>
         </div>
         <div class="flex items-center gap-4">
           <a href="#" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#ff8f73] transition-colors">Tài liệu kỹ thuật</a>
@@ -542,6 +542,7 @@
       <button @click="applyAdvancedFilter" class="flex-[2] py-3 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all text-sm">Áp dụng</button>
     </div>
   </div>
+  
   <div v-if="isCreateExternalOrderOpen" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-[fadeIn_0.2s_ease-out]">
         
@@ -571,6 +572,27 @@
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1.5">Địa chỉ giao hàng</label>
               <input v-model="externalOrderForm.DiaChiGiao" type="text" placeholder="Nhập địa chỉ chi tiết..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            </div>
+          </div>
+
+          <div class="space-y-4 pt-4 border-t border-slate-100">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Thanh toán</h4>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" v-model="externalOrderForm.ThuTienNgay" class="w-4 h-4 text-emerald-500 rounded border-slate-300 focus:ring-emerald-500">
+                <span class="text-sm font-bold text-slate-700">Khách thanh toán ngay</span>
+              </label>
+
+              <div v-if="externalOrderForm.ThuTienNgay" class="flex gap-3 animate-[fadeIn_0.2s_ease-out]">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="5" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
+                  <span class="text-xs font-bold text-slate-600">Tiền mặt</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="4" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
+                  <span class="text-xs font-bold text-slate-600">Chuyển khoản ngoài</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -654,6 +676,7 @@
 
       </div>
     </div>
+
     <div v-if="isCancelModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
         <div class="px-6 py-4 border-b border-rose-100 flex justify-between items-center bg-rose-50 shrink-0">
@@ -691,6 +714,7 @@
         </div>
       </div>
     </div>
+
     <div v-if="isUpdateModalOpen && selectedOrder" class="print:hidden fixed inset-0 z-[140] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-[#ff8f73] animate-[fadeIn_0.2s_ease-out]">
         <h3 class="text-lg font-bold text-slate-900 mb-2">Cập nhật tiến trình đơn hàng</h3>
@@ -712,6 +736,7 @@
         </div>
       </div>
     </div>
+
     <div v-if="isReturnModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
         <div class="px-6 py-4 border-b border-purple-100 flex justify-between items-center bg-purple-50 shrink-0">
@@ -774,23 +799,52 @@
         </div>
       </div>
     </div>
+
     <div v-if="isPaymentConfirmModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
         <div class="px-6 py-4 border-b border-emerald-100 flex justify-between items-center bg-emerald-50 shrink-0">
           <h3 class="text-lg font-bold text-emerald-600 flex items-center gap-2">
             <span class="material-symbols-outlined">price_check</span>
-            Xác nhận thu tiền mặt
+            Xác nhận thanh toán thủ công
           </h3>
           <button @click="isPaymentConfirmModalOpen = false" class="text-slate-400 hover:text-emerald-600 transition-colors">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div class="p-6 space-y-4">
-          <p class="text-sm text-slate-600 font-medium leading-relaxed">
-            Bạn xác nhận Kế toán đã thu đủ tiền mặt cho đơn hàng <span class="font-bold text-slate-900">#FC-{{ orderToPay }}</span>?<br>
-            <span class="text-emerald-500 font-bold text-xs">* Trạng thái thanh toán sẽ được cập nhật ngay lập tức.</span>
-          </p>
+        <div class="p-6 space-y-5">
+          <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+            <div class="flex justify-between mb-2 text-sm text-slate-600">
+              <span>Tổng giá trị đơn hàng:</span>
+              <span class="font-bold text-slate-900">{{ formatPrice(orderToPay?.ThongTinGiaoHang?.ThanhTien) }}</span>
+            </div>
+            <div class="flex justify-between mb-2 text-sm text-slate-600">
+              <span>Đã thanh toán (Cọc):</span>
+              <span class="font-bold text-slate-900">{{ formatPrice((orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - amountToCollect) }}</span>
+            </div>
+            <div class="flex justify-between items-center pt-3 border-t border-emerald-200/50 mt-2">
+              <span class="font-bold text-emerald-800">Số tiền cần thu thêm:</span>
+              <span class="text-xl font-black text-emerald-600">{{ formatPrice(amountToCollect) }}</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">Hình thức thu tiền</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label :class="collectionMethod === 5 ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'" class="border rounded-xl p-3 cursor-pointer transition-all flex items-center gap-2">
+                <input type="radio" v-model="collectionMethod" :value="5" class="hidden">
+                <span class="material-symbols-outlined text-[20px]">payments</span>
+                <span class="text-sm font-bold">Tiền mặt</span>
+              </label>
+              <label :class="collectionMethod === 4 ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'" class="border rounded-xl p-3 cursor-pointer transition-all flex items-center gap-2">
+                <input type="radio" v-model="collectionMethod" :value="4" class="hidden">
+                <span class="material-symbols-outlined text-[20px]">account_balance</span>
+                <span class="text-sm font-bold">Chuyển khoản</span>
+              </label>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-slate-500 italic leading-relaxed">* Hệ thống sẽ ghi nhận giao dịch cho mã đơn <span class="font-bold text-slate-700">#FC-{{ orderToPay?.MaDH }}</span> và cập nhật trạng thái đơn hàng thành "Đã thanh toán".</p>
         </div>
 
         <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
@@ -801,6 +855,7 @@
         </div>
       </div>
     </div>
+
     <div v-if="isRefundConfirmModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
         <div class="px-6 py-4 border-b border-purple-100 flex justify-between items-center bg-purple-50 shrink-0">
@@ -849,16 +904,15 @@
   // --- Quản lý Tìm kiếm & Lọc thời gian ---
   const searchQuery = ref('');
   const filterDate = ref({ from: '', to: '' });
-  const isFilterPanelOpen = ref(false); // Trạng thái mở Sidebar Lọc
-  const isSortMenuOpen = ref(false);    // Trạng thái mở Menu Sắp xếp
+  const isFilterPanelOpen = ref(false); 
+  const isSortMenuOpen = ref(false);    
 
   const totalOrders = ref(0); 
   const currentPage = ref(1);
   const itemsPerPage = ref(10);
-  const totalPages = ref(1); // Thêm biến tổng số trang
-  const summary = ref({});   // Hứng dữ liệu summary từ API
+  const totalPages = ref(1); 
+  const summary = ref({});   
 
-  // Sửa lại để không bị lỗi hiển thị "1 - 10 của 0" khi không có đơn nào
   const startItem = computed(() => totalOrders.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
   const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalOrders.value));
 
@@ -869,11 +923,7 @@ const exportExcelReport = async () => {
     isExporting.value = true;
     try {
       const token = localStorage.getItem('token');
-      
-      // Khởi tạo URL cơ bản
       let url = `${API_BASE_URL}/api/invoice_admin/export-excel`;
-
-      // Gắn thêm bộ lọc ngày tháng và tìm kiếm nếu Admin đang thao tác trên màn hình
       const params = new URLSearchParams();
       if (filterDate.value.from) params.append('NgayBatDau', filterDate.value.from);
       if (filterDate.value.to) params.append('NgayKetThuc', filterDate.value.to);
@@ -892,7 +942,6 @@ const exportExcelReport = async () => {
       const queryString = params.toString();
       if (queryString) url += `?${queryString}`;
 
-      // Gọi API
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -904,7 +953,6 @@ const exportExcelReport = async () => {
         throw new Error("Lỗi khi tải file từ Server");
       }
 
-      // Xử lý tải file Blob
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
       
@@ -926,7 +974,6 @@ const exportExcelReport = async () => {
     }
   };
 
-  // --- QUẢN LÝ MODAL HOÀN HÀNG ---
   const isReturnModalOpen = ref(false);
   const returnReason = ref('');
   const orderToReturn = ref(null);
@@ -946,7 +993,6 @@ const exportExcelReport = async () => {
 
     try {
       const token = localStorage.getItem('token');
-      // Chú ý: Route bạn viết là .put('/hoan_hang')
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/hoan_hang`, {
         method: 'PUT',
         headers: { 
@@ -974,7 +1020,6 @@ const exportExcelReport = async () => {
     }
   };
 
-  // --- QUẢN LÝ XỬ LÝ HÀNG LOẠT---
   const isBulkUpdateModalOpen = ref(false);
   const bulkUpdateStatusValue = ref('2');
   const isBulkUpdating = ref(false);
@@ -1047,7 +1092,6 @@ const exportExcelReport = async () => {
     }
   };
     
-  // --- QUẢN LÝ BỘ LỌC NÂNG CAO ---
   const advancedFilter = ref({
     paymentStatus: 'all',
     minPrice: null,
@@ -1070,32 +1114,13 @@ const exportExcelReport = async () => {
     fetchOrders();
   };
 
-  // --- QUẢN LÝ SẮP XẾP ---
   const sortBy = ref('date_desc');
 
   const setSort = (value) => {
     sortBy.value = value;
-    isSortMenuOpen.value = false; // Đóng menu sau khi chọn
-    // fetchOrders();
+    isSortMenuOpen.value = false; 
   };
   
-  /* const fetchOrders = async () => {
-    isLoading.value = true;
-    try {
-      // Gửi kèm tiêu chí sắp xếp và tìm kiếm lên server
-      const response = await fetch(`${API_BASE_URL}/api/orders?sort=${sortBy.value}&search=${searchQuery.value}`);
-      const data = await response.json();
-      orders.value = data; // Dữ liệu nhận về đã được server sắp xếp sẵn
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  // Theo dõi sự thay đổi của biến sortBy để gọi lại API
-  watch(sortBy, () => {
-    fetchOrders();
-  });*/
-  // --- Quản lý Tabs ---
   const tabs = [
     { id: 'all', name: 'Tất cả' },
     { id: 'pending', name: 'Chờ xác nhận' },
@@ -1118,23 +1143,19 @@ const exportExcelReport = async () => {
     return { class: 'bg-slate-50 text-slate-600 border-slate-100', text: status || 'CHỜ XỬ LÝ' };
   };
   
+  const selectedOrders = ref([]); 
   
-  // --- Logic Checkbox & Xử lý hàng loạt ---
-  const selectedOrders = ref([]); // Mảng chứa ID các đơn hàng đang được tick
-  
-  // Computed property để xử lý nút "Chọn tất cả"
   const selectAll = computed({
     get: () => orders.value.length > 0 && selectedOrders.value.length === orders.value.length,
     set: (value) => {
       if (value) {
-        selectedOrders.value = orders.value.map(o => o.id); // Chọn hết
+        selectedOrders.value = orders.value.map(o => o.id); 
       } else {
-        selectedOrders.value = []; // Bỏ chọn hết
+        selectedOrders.value = []; 
       }
     }
   });
   
-  // --- Hàm tạo màu động ---
   const getCarrierColor = (carrier) => {
     if (carrier.includes('Giao Hàng')) return 'text-orange-500';
     if (carrier.includes('Viettel')) return 'text-emerald-600';
@@ -1147,17 +1168,13 @@ const exportExcelReport = async () => {
     if (status.includes('COD')) return 'bg-amber-50 text-amber-600 border-amber-200';
     return 'bg-slate-50 text-slate-600 border-slate-200';
   };
-  // --- LOGIC MENU 3 CHẤM (DROPDOWN) ---
-  // Biến lưu trữ ID của đơn hàng đang được mở menu
+  
   const activeMenuId = ref(null);
 
-  // Hàm bật/tắt menu cho từng dòng
   const toggleOrderMenu = (id) => {
-    // Nếu bấm lại vào chính menu đang mở thì đóng nó đi, nếu bấm chỗ khác thì mở menu mới
     activeMenuId.value = activeMenuId.value === id ? null : id;
   };
 
-  // --- CÁC HÀM XỬ LÝ HÀNH ĐỘNG CỦA MENU ---
   const isDetailModalOpen = ref(false);
   const selectedOrder = ref(null);
 
@@ -1165,11 +1182,10 @@ const exportExcelReport = async () => {
     if (!value) return '0 đ';
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   };
-    // 1. GỌI API LẤY DANH SÁCH ĐƠN HÀNG
+  
   const fetchOrders = async () => {
     isLoading.value = true;
     try {
-      // Ánh xạ tab sang mã trạng thái
       let statusParam = '';
       if (activeTab.value === 'pending') statusParam = 1;
       else if (activeTab.value === 'packing') statusParam = 2;
@@ -1178,13 +1194,12 @@ const exportExcelReport = async () => {
       else if (activeTab.value === 'cancelled') statusParam = 5;
       else if (activeTab.value === 'returned') statusParam = 6; 
 
-      // Xây dựng URL với các tham số Tối ưu
       let url = `${API_BASE_URL}/api/invoice_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;      
       if (statusParam) url += `&trangthai=${statusParam}`;
       if (searchQuery.value) url += `&timkiem=${encodeURIComponent(searchQuery.value)}`; 
       if (filterDate.value.from) url += `&ngaybatdau=${filterDate.value.from}`;
       if (filterDate.value.to) url += `&ngayketthuc=${filterDate.value.to}`;
-      if (sortBy.value) url += `&sapxep=${sortBy.value}`; // Truyền thẳng biến: date_desc, total_asc...
+      if (sortBy.value) url += `&sapxep=${sortBy.value}`; 
 
       if (advancedFilter.value.paymentStatus !== 'all') {
         url += `&trangthaitt=${encodeURIComponent(advancedFilter.value.paymentStatus)}`;
@@ -1236,34 +1251,27 @@ const exportExcelReport = async () => {
     }
   };
 
-  // --- KỸ THUẬT DEBOUNCE & GỘP WATCHER TỐI ƯU ---
   let fetchTimeout = null;
 
   watch(
     [
-      activeTab,                   // Theo dõi thay đổi Tab (Tất cả, Chờ duyệt...)
-      searchQuery,                 // Theo dõi người dùng gõ tìm kiếm
-      () => filterDate.value.from, // Theo dõi ngày bắt đầu
-      () => filterDate.value.to,   // Theo dõi ngày kết thúc
-      sortBy                       // Theo dõi kiểu sắp xếp
+      activeTab,                   
+      searchQuery,                 
+      () => filterDate.value.from, 
+      () => filterDate.value.to,   
+      sortBy                       
     ], 
     () => {
-      // 1. Luôn reset về trang 1 mỗi khi thay đổi điều kiện lọc
       currentPage.value = 1;
-
-      // 2. Clear timeout cũ nếu người dùng vẫn đang gõ/click liên tục
       if (fetchTimeout) {
         clearTimeout(fetchTimeout);
       }
-
-      // 3. Đợi 500ms (0.5 giây) sau khi người dùng DỪNG thao tác thì mới gọi API
       fetchTimeout = setTimeout(() => {
         fetchOrders();
       }, 500); 
     }
   );
 
-  // 2. GỌI API XEM CHI TIẾT ĐƠN HÀNG
   const viewOrderDetails = async (order) => {
     try {
       const token = localStorage.getItem('token');
@@ -1274,7 +1282,6 @@ const exportExcelReport = async () => {
       
       if (result.success && result.data) {
         selectedOrder.value = result.data;
-        // Gán thêm Mã ĐH để dùng cho các nút Hủy / In ở modal
         selectedOrder.value.MaDH = order.id; 
         
         isDetailModalOpen.value = true;
@@ -1348,12 +1355,11 @@ const exportExcelReport = async () => {
 
   const cancelOrder = (id) => {
     orderToCancel.value = id;
-    cancelReason.value = ''; // Xóa trắng lý do cũ (nếu có)
+    cancelReason.value = ''; 
     isCancelModalOpen.value = true;
-    activeMenuId.value = null; // Đóng menu 3 chấm
+    activeMenuId.value = null; 
   };
 
-  // 4. GỌI API HỦY ĐƠN HÀNG
   const executeCancelOrder = async (id) => {
     try {
       const token = localStorage.getItem('token');
@@ -1391,12 +1397,9 @@ const exportExcelReport = async () => {
         return;
     }
 
-    // Hiển thị thông báo để nhân viên biết hệ thống đang xử lý
     toastStore.showToast("Đang tạo hóa đơn, vui lòng đợi giây lát...", "info");
 
     try {
-        // 1. Dùng Fetch để có thể đính kèm Token xác thực. 
-        // Đã sửa lại đường dẫn API chuẩn xác là /api/invoice_admin/print/
         const res = await fetch(`${API_BASE_URL}/api/invoice_admin/print/${maDH}`, {
             method: 'GET',
             headers: {
@@ -1408,20 +1411,13 @@ const exportExcelReport = async () => {
             throw new Error("Không thể tải hóa đơn từ máy chủ");
         }
 
-        // 2. Lấy nội dung chuỗi HTML thô do Backend (donhang_admin.ctrl.js) trả về
         const htmlInvoice = await res.text();
-
-        // 3. Mở một Tab/Popup mới (trống)
         const printWindow = window.open('', '_blank', 'width=800,height=800');
         
         if (printWindow) {
-            // 4. Nhúng mã HTML vào Tab mới
             printWindow.document.open();
             printWindow.document.write(htmlInvoice);
             printWindow.document.close();
-            
-            // LƯU Ý: Lệnh window.print() và window.close() 
-            // đã được bạn thiết lập sẵn trong thẻ <script> ở Backend nên nó sẽ tự động kích hoạt
         } else {
             toastStore.showToast("⚠️ Trình duyệt chặn Popup. Hãy cấp quyền mở Popup cho trang web!", "error");
         }
@@ -1440,7 +1436,9 @@ const exportExcelReport = async () => {
     DiaChiGiao: '',
     DanhSachSanPham: [],
     TongTien: 0,
-    ThanhTien: 0
+    ThanhTien: 0,
+    ThuTienNgay: false, // Thêm Cờ xác nhận thanh toán ngay
+    PhuongThucTT: 5     // Mặc định ID 5 là Tiền mặt
   });
 
   const searchProductQuery = ref('');
@@ -1448,7 +1446,6 @@ const exportExcelReport = async () => {
   const isSearchingProducts = ref(false);
   let searchProductTimeout = null;
 
-  // Hàm gọi API tìm sản phẩm (Cần Backend hoàn thiện)
   const fetchProductsForOrder = async () => {
     if (!searchProductQuery.value.trim()) {
       searchResults.value = [];
@@ -1458,7 +1455,6 @@ const exportExcelReport = async () => {
     isSearchingProducts.value = true;
     try {
       const token = localStorage.getItem('token');
-      // ĐÂY LÀ ROUTE BẠN CẦN CODE Ở BACKEND
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/search-products?keyword=${encodeURIComponent(searchProductQuery.value)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1475,26 +1471,21 @@ const exportExcelReport = async () => {
     }
   };
 
-  // Debounce tránh gọi API liên tục khi gõ
   const debounceSearchProduct = () => {
     clearTimeout(searchProductTimeout);
     searchProductTimeout = setTimeout(fetchProductsForOrder, 500);
   };
 
-  // Thêm sản phẩm vào mảng DanhSachSanPham
   const addVariantToOrder = (product, variant) => {
-    // Kiểm tra xem phân loại này đã có trong giỏ chưa
     const existingIndex = externalOrderForm.value.DanhSachSanPham.findIndex(item => item.MaPhanLoai === variant.MaPhanLoai);
     
     if (existingIndex > -1) {
-      // Đã có -> Tăng số lượng nếu còn kho
       if (externalOrderForm.value.DanhSachSanPham[existingIndex].SoLuong < variant.TonKho) {
         externalOrderForm.value.DanhSachSanPham[existingIndex].SoLuong++;
       } else {
         toastStore.showToast("Đã đạt giới hạn tồn kho!", "error");
       }
     } else {
-      // Chưa có -> Thêm mới
       externalOrderForm.value.DanhSachSanPham.push({
         MaMoHinh: product.MaMoHinh,
         TenMH: product.TenMH,
@@ -1507,19 +1498,13 @@ const exportExcelReport = async () => {
       });
     }
     recalculateOrderTotal();
-    
-    // Tùy chọn: Xóa ô tìm kiếm sau khi thêm xong để giỏ hàng gọn gàng
-    // searchProductQuery.value = '';
-    // searchResults.value = [];
   };
 
-  // Xóa sản phẩm khỏi mảng
   const removeVariantFromOrder = (index) => {
     externalOrderForm.value.DanhSachSanPham.splice(index, 1);
     recalculateOrderTotal();
   };
 
-  // Tăng giảm số lượng sản phẩm trong mảng
   const updateItemQuantity = (index, change) => {
     const item = externalOrderForm.value.DanhSachSanPham[index];
     const newQty = item.SoLuong + change;
@@ -1530,27 +1515,23 @@ const exportExcelReport = async () => {
     }
   };
 
-  // Tính toán lại tổng tiền
   const recalculateOrderTotal = () => {
     const total = externalOrderForm.value.DanhSachSanPham.reduce((sum, item) => {
       return sum + (item.DonGia * item.SoLuong);
     }, 0);
     externalOrderForm.value.TongTien = total;
-    externalOrderForm.value.ThanhTien = total; // Đơn ngoài tạm thời chưa tính mã giảm giá
+    externalOrderForm.value.ThanhTien = total; 
   };
 
-  // Reset Form mỗi khi đóng Modal
   watch(isCreateExternalOrderOpen, (newVal) => {
     if (!newVal) {
-      externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [], TongTien: 0, ThanhTien: 0 };
+      externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [], TongTien: 0, ThanhTien: 0, ThuTienNgay: false, PhuongThucTT: 5 };
       searchProductQuery.value = '';
       searchResults.value = [];
     }
   });
 
-  // --- Hàm Submit Gửi API ---
   const submitExternalOrder = async () => {
-    // Validate cơ bản
     if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan || !externalOrderForm.value.DiaChiGiao) {
       toastStore.showToast('Vui lòng nhập Tên, Số điện thoại và Địa chỉ của khách hàng!', 'error');
       return;
@@ -1563,7 +1544,10 @@ const exportExcelReport = async () => {
         Ten: externalOrderForm.value.TenNguoiNhan,
         SDT: externalOrderForm.value.SDTNguoiNhan,
         DiaChi: externalOrderForm.value.DiaChiGiao,
-        Note: "Đơn tạo thủ công tại quầy"
+        Note: "Đơn tạo thủ công tại quầy",
+        // Đính kèm cờ xác nhận thanh toán để Backend gọi hàm ghi nhận Giao dịch
+        ThuTienNgay: externalOrderForm.value.ThuTienNgay,
+        PhuongThucTT: externalOrderForm.value.PhuongThucTT
       };
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/add`, {
         method: 'POST',
@@ -1578,10 +1562,9 @@ const exportExcelReport = async () => {
       if (res.ok && result.success) {
         toastStore.showToast('Tạo đơn hàng ngoài thành công!', 'success');
         isCreateExternalOrderOpen.value = false;
-        fetchOrders(); // Load lại bảng danh sách
+        fetchOrders(); 
         
-        // Có thể reset lại form ở đây
-        externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [] };
+        externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [], ThuTienNgay: false, PhuongThucTT: 5 };
       } else {
         toastStore.showToast(result.message || 'Lỗi khi tạo đơn', 'error');
       }
@@ -1591,7 +1574,6 @@ const exportExcelReport = async () => {
     }
   };
 
-  // Hàm xử lý mở modal tự động từ URL
   const checkAndOpenOrderFromUrl = () => {
     if (route.query.viewOrderId) {
       viewOrderDetails({ id: parseInt(route.query.viewOrderId) });
@@ -1607,13 +1589,26 @@ const exportExcelReport = async () => {
   // --- QUẢN LÝ MODAL XÁC NHẬN THU TIỀN ---
   const isPaymentConfirmModalOpen = ref(false);
   const orderToPay = ref(null);
+  const amountToCollect = ref(0);
+  const collectionMethod = ref(5); // Mặc định thu Tiền mặt
 
-  const confirmPayment = (maDH) => {
-    orderToPay.value = maDH;
+  // ĐÃ SỬA: Hàm gọi Modal nhận vào toàn bộ Object Order để tính toán số tiền
+  const confirmPayment = (orderObj) => {
+    orderToPay.value = orderObj; 
+    
+    // Tìm giao dịch đã thanh toán trong mảng Orders (từ bảng ngoài)
+    const listOrder = orders.value.find(o => o.id === orderObj.MaDH);
+    const alreadyPaid = listOrder ? listOrder.transactionAmount : 0;
+    const totalAmount = orderObj.ThongTinGiaoHang?.ThanhTien || 0;
+
+    // Tính số tiền cần thu thêm
+    amountToCollect.value = totalAmount - alreadyPaid;
+    if (amountToCollect.value < 0) amountToCollect.value = 0; // Chống lỗi số âm
+
+    collectionMethod.value = 5; 
     isPaymentConfirmModalOpen.value = true;
   };
 
-  // Hàm gọi API khi bấm nút "Xác nhận đã thu" bên trong Modal
   const executeConfirmPayment = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -1623,7 +1618,12 @@ const exportExcelReport = async () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ MaDH: orderToPay.value })
+        // ĐÃ BỔ SUNG: Truyền thêm số tiền cần thu và phương thức để Backend xử lý
+        body: JSON.stringify({ 
+          MaDH: orderToPay.value.MaDH,
+          SoTienThu: amountToCollect.value,
+          PhuongThuc: collectionMethod.value
+        })
       });
 
       const result = await response.json();
@@ -1631,8 +1631,10 @@ const exportExcelReport = async () => {
       if (response.ok && result.success) {
         toastStore.showToast("Xác nhận thu tiền thành công!", "success");
         isPaymentConfirmModalOpen.value = false;
+        
+        // Cập nhật giao diện local
         if (selectedOrder.value && selectedOrder.value.ThongTinGiaoHang) {
-            selectedOrder.value.ThongTinGiaoHang.TrangThaiThanhToan = result.TrangThaiThanhToan;
+            selectedOrder.value.ThongTinGiaoHang.TrangThaiThanhToan = result.TrangThaiThanhToan || "Đã thanh toán";
         }
         fetchOrders(); 
       } 
@@ -1686,14 +1688,6 @@ const exportExcelReport = async () => {
     }
   };
 
-  // watch(isViewOrderDrawerOpen, (isOpen) => {
-  //   if (!isOpen && route.query.viewOrderId) {
-  //     const query = { ...route.query };
-  //     delete query.viewOrderId;
-  //     router.replace({ query });
-  //   }
-  // });
-
   const scrollToTopCustom = (duration = 1000) => {
     const startPosition = window.scrollY;
     const startTime = performance.now();
@@ -1703,10 +1697,8 @@ const exportExcelReport = async () => {
       let progress = Math.min(timeElapsed / duration, 1);
       const easeProgress = 1 - Math.pow(1 - progress, 3);
 
-      // Thực hiện cuộn
       window.scrollTo(0, startPosition * (1 - easeProgress));
 
-      // Nếu chưa hết thời gian thì tiếp tục gọi animation
       if (timeElapsed < duration) {
         requestAnimationFrame(animateScroll);
       }

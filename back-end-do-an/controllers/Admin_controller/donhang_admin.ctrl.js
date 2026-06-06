@@ -570,10 +570,17 @@ const donhang_admin = {
                     WHERE cttt.MaDH = dh.MaDH 
                     ORDER BY cttt.ThoiGian DESC 
                     LIMIT 1
-                ) AS TrangThai
+                ) AS TrangThai,
+                (
+                    Select Coalesce(Sum(tt.SoTienGiaoDich), 0))
+                    from ThanhToan tt
+                    where tt.MaDH = dh.MaDH
+                    group by tt.MaDH
+                ) AS SoTienDaThanhToan
                 FROM DonHang dh
                 LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
                 LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
+                GROUP BY dh.MaDH
                 ${condition_clause}
                 ${having_clause}
             `;
