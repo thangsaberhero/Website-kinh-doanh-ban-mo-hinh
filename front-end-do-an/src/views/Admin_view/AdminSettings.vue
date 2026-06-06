@@ -129,12 +129,12 @@
                   <draggable 
                     v-model="existingLoginBanners" 
                     item-key="id" 
-                    class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+                    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
                     animation="250"
                     ghost-class="opacity-40"
                   >
                     <template #item="{ element: banner, index: idx }">
-                      <div class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-colors">
+                      <div class="relative group w-full h-60 lg:h-72 rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-all">
                         <img :src="banner.url" class="w-full h-full object-cover" />
                         
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
@@ -150,14 +150,14 @@
 
                   <div class="border-t border-slate-200 pt-6">
                     <p class="text-sm font-bold text-slate-800 mb-3">Tải thêm ảnh mới</p>
-                    <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                      <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                      <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group w-full h-60 lg:h-72 rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
                         <img :src="preview" class="w-full h-full object-cover" />
                         <button @click="removeNewLoginBanner(idx)" class="absolute top-2 right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10"><span class="material-symbols-outlined text-[14px]">close</span></button>
                         <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-center text-white py-1">Chờ lưu</div>
                       </div>
 
-                      <label class="aspect-[9/16] rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
+                      <label class="w-full h-60 lg:h-72 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
                         <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73]">add_photo_alternate</span>
                         <span class="text-xs font-bold text-slate-500 mt-2 group-hover:text-[#ff8f73]">Chọn ảnh</span>
                         <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
