@@ -7,13 +7,13 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try {
             const MaTK  = req.user.id;
-            const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note } = req.body;
+            const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note, ThuTienNgay, PhuongThucTT, SoTienDaTra } = req.body;
             // DanhSachSanPham từ FE gửi lên phải có dạng: [{ MaPhanLoai: 1, SoLuong: 2 }, ...]
 
             if (!DanhSachSanPham || !Array.isArray(DanhSachSanPham) || DanhSachSanPham.length === 0) {
                 return res.status(400).json({ success: false, message: "Danh sách sản phẩm trống!" });
             }
-            if (!Ten || !SDT || !DiaChi) {
+            if (!Ten || !SDT) {
                 return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin!" });
             }
 
@@ -26,7 +26,7 @@ const donhang_admin = {
             // 2. Truy vấn DB lấy GIÁ THẬT và KHUYẾN MÃI của các mã vừa gửi lên
             const sql_get_items = `
                 SELECT 
-                    mh.TenMH, mh.GiaNhap,
+                    mh.TenMH, mh.GiaNhap, mh.LoaiHinhBan,
                     pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho,
                     km_info.MaKM,
                     COALESCE(km_info.MucGiam, 0) AS MucGiam,
@@ -58,6 +58,17 @@ const donhang_admin = {
                 return res.status(400).json({ success: false, message: "Có sản phẩm không tồn tại trong hệ thống!" });
             }
 
+            const coHangSan = db_items.some(item => item.LoaiHinhBan == 1 || item.LoaiHinhBan == 0 || item.LoaiHinhBan == null);
+            const coHangOrder = db_items.some(item => item.LoaiHinhBan > 1);
+
+            if (coHangSan && coHangOrder) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Không thể tạo chung đơn có cả Hàng sẵn và Pre-order. Vui lòng tách thành 2 đơn riêng biệt!" 
+                });
+            }
+
             let TongTienHang = 0;
             let TongTienKhuyenMai = 0;
             let arrChiTietDonHang = [];
@@ -71,7 +82,8 @@ const donhang_admin = {
 
                 if (soLuongYeuCau > item.TonKho) {
                     await connection.rollback();
-                    return res.status(400).json({ success: false, message: `Sản phẩm ${item.TenMH} (${item.ChiTietPhanLoai}) chỉ còn ${item.TonKho} cái!` });
+                    const kieuHang = item.LoaiHinhBan > 1 ? 'Slot Pre-order' : 'Hàng có sẵn';
+                    return res.status(400).json({ success: false, message: `Sản phẩm ${item.TenMH} (${item.ChiTietPhanLoai}) chỉ còn ${item.TonKho} ${kieuHang}!` });
                 }
 
                 const slSale = item.SoLuongKhuyenMaiConLai > 0 ? Math.min(soLuongYeuCau, item.SoLuongKhuyenMaiConLai) : 0;
@@ -133,19 +145,38 @@ const donhang_admin = {
             
             const maHienThi = taoMaDonHangHienThi();
 
+            let tienThucThu = Number(SoTienDaTra) || 0;
+            let trangThaiThanhToan = 'Chưa thanh toán';
+            let loaiGiaoDich = 'Thanh toán toàn bộ';
+
+            if (ThuTienNgay && tienThucThu > 0) {
+                if (tienThucThu >= tongTienThanhToan) {
+                    trangThaiThanhToan = 'Đã thanh toán';
+                    loaiGiaoDich = 'Thanh toán toàn bộ';
+                } else {
+                    trangThaiThanhToan = 'Đã đặt cọc';
+                    loaiGiaoDich = 'Đặt cọc';
+                }
+            }
+
             // 5. Insert Bảng DonHang
             const sql_tao_don = `
                 INSERT INTO DonHang (MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
-                VALUES (?, ?, ?, NOW(), 'Đơn hàng ngoài', ?, ?, ?, ?)
+                VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)
             `;
-            // Truyền biến maHienThi vào thay vì truyền tên hàm
-            const [tao_don] = await connection.query(sql_tao_don, [maHienThi, TongTienHang, tongTienThanhToan, Ten, SDT, DiaChi, Note]);
+            const [tao_don] = await connection.query(sql_tao_don, [maHienThi, TongTienHang, tongTienThanhToan, trangThaiThanhToan, Ten, SDT, DiaChi, Note]);
             const maDH_moi = tao_don.insertId;
 
-            // 6. Insert Trạng Thái
+            // Ghi nhận bảng thanh toán nếu có đưa tiền (Cọc hoặc Full)
+            if (ThuTienNgay && PhuongThucTT && tienThucThu > 0) {
+                await connection.query(`
+                    INSERT INTO ThanhToan (MaDH, MaPT, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, NgayThanhToan) 
+                    VALUES (?, ?, ?, ?, 'Thành công', NOW())
+                `, [maDH_moi, PhuongThucTT, tienThucThu, loaiGiaoDich]);
+            }
+
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 1, NOW())`, [maDH_moi]);
 
-            // 7. Insert Chi Tiết Đơn Hàng
             for (let detail of arrChiTietDonHang) {
                 await connection.query(`
                     INSERT INTO ChiTietDonHang (MaDH, MaPhanLoai, LaHangKhuyenMai, SoLuong, GiaNhapThucTe, DonGiaGoc, DonGiaBan)
@@ -153,7 +184,6 @@ const donhang_admin = {
                 `, [maDH_moi, ...detail]);
             }
 
-            // 8. Trừ Tồn Kho
             for (let kho of arrUpdateKho) {
                 const [resKho] = await connection.query(`UPDATE PhanLoai SET SoLuong = SoLuong - ? WHERE MaPhanLoai = ? AND SoLuong >= ?`, [kho[0], kho[1], kho[0]]);
                 if (resKho.affectedRows === 0) throw new Error("Cập nhật tồn kho thất bại");
@@ -172,7 +202,6 @@ const donhang_admin = {
                 }
             }
 
-            // 9. Cập nhật Số lượng khuyến mãi & Ghi Log Khuyến Mãi/Voucher
             for (let km of arrUpdateKhuyenMai) {
                 await connection.query(`UPDATE ChiTietKhuyenMai SET SoLuongDaDung = SoLuongDaDung + ? WHERE MaKM = ? AND MaPhanLoai = ?`, [km[0], km[1], km[2]]);
             }
@@ -184,11 +213,9 @@ const donhang_admin = {
                 await connection.query(`UPDATE MaGiamGia SET SoLuongDaDung = SoLuongDaDung + 1 WHERE MaGG = ?`, [MaGG]);
             }
 
-            // 10. Ghi Log Hoạt Động (Đã cải tiến nội dung)
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            // Lưu cả Mã nội bộ (maDH_moi) và Mã hiển thị (maHienThi) để sau này tiện tra cứu chéo
             const noiDungLog = `Tạo thành công đơn hàng ngoài: #${maDH_moi} (Mã tra cứu: ${maHienThi})`;
 
             await connection.query(`
@@ -210,8 +237,8 @@ const donhang_admin = {
             res.status(200).json({
                 success: true,
                 message: "Thêm đơn hàng ngoài thành công!",
-                MaDH: maDH_moi, // Mã gốc (Dành cho logic frontend/backend)
-                MaHienThi: maHienThi // Trả cả mã hiển thị về cho Frontend show lên thông báo
+                MaDH: maDH_moi, 
+                MaHienThi: maHienThi 
             });
         }
         catch (error) {

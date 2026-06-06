@@ -576,22 +576,40 @@
           </div>
 
           <div class="space-y-4 pt-4 border-t border-slate-100">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Thanh toán</h4>
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <label class="flex items-center gap-2 cursor-pointer">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Thanh toán & Đặt cọc</h4>
+            <div class="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              
+              <label class="flex items-center gap-2 cursor-pointer w-fit">
                 <input type="checkbox" v-model="externalOrderForm.ThuTienNgay" class="w-4 h-4 text-emerald-500 rounded border-slate-300 focus:ring-emerald-500">
-                <span class="text-sm font-bold text-slate-700">Khách thanh toán ngay</span>
+                <span class="text-sm font-bold text-slate-700">Khách thanh toán / Đặt cọc ngay</span>
               </label>
 
-              <div v-if="externalOrderForm.ThuTienNgay" class="flex gap-3 animate-[fadeIn_0.2s_ease-out]">
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="5" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
-                  <span class="text-xs font-bold text-slate-600">Tiền mặt</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="4" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
-                  <span class="text-xs font-bold text-slate-600">Chuyển khoản ngoài</span>
-                </label>
+              <div v-if="externalOrderForm.ThuTienNgay" class="flex flex-col gap-4 animate-[fadeIn_0.2s_ease-out] pt-3 border-t border-slate-200/60">
+                
+                <div class="flex gap-4">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="5" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
+                    <span class="text-sm font-bold text-slate-600">Tiền mặt</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="4" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
+                    <span class="text-sm font-bold text-slate-600">Chuyển khoản ngoài</span>
+                  </label>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-end mb-1.5">
+                    <label class="block text-xs font-bold text-slate-600">Số tiền khách đưa (VNĐ) <span class="text-rose-500">*</span></label>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.ThanhTien">Chọn thanh toán Full</span>
+                  </div>
+                  <input v-model="externalOrderForm.SoTienDaTra" type="number" min="0" placeholder="Nhập số tiền..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-bold text-slate-800">
+                  
+                  <p v-if="externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.ThanhTien" class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">info</span>
+                    Hệ thống sẽ ghi nhận đây là khoản ĐẶT CỌC.
+                  </p>
+                </div>
+
               </div>
             </div>
           </div>
@@ -1437,8 +1455,17 @@ const exportExcelReport = async () => {
     DanhSachSanPham: [],
     TongTien: 0,
     ThanhTien: 0,
-    ThuTienNgay: false, // Thêm Cờ xác nhận thanh toán ngay
-    PhuongThucTT: 5     // Mặc định ID 5 là Tiền mặt
+    ThuTienNgay: false,
+    PhuongThucTT: 5,
+    SoTienDaTra:0
+  });
+
+  watch(() => externalOrderForm.value.ThuTienNgay, (newVal) => {
+    if (newVal) {
+      externalOrderForm.value.SoTienDaTra = externalOrderForm.value.ThanhTien;
+    } else {
+      externalOrderForm.value.SoTienDaTra = 0;
+    }
   });
 
   const searchProductQuery = ref('');
@@ -1547,7 +1574,8 @@ const exportExcelReport = async () => {
         Note: "Đơn tạo thủ công tại quầy",
         // Đính kèm cờ xác nhận thanh toán để Backend gọi hàm ghi nhận Giao dịch
         ThuTienNgay: externalOrderForm.value.ThuTienNgay,
-        PhuongThucTT: externalOrderForm.value.PhuongThucTT
+        PhuongThucTT: externalOrderForm.value.PhuongThucTT,
+        SoTienDaTra: externalOrderForm.value.SoTienDaTra
       };
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/add`, {
         method: 'POST',
