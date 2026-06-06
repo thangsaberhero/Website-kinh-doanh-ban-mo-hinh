@@ -122,45 +122,44 @@
             <div class="p-6">
               <p class="text-sm font-bold text-slate-800 mb-4">Quản lý ảnh (Kéo thả để sắp xếp thứ tự)</p>
               
-              <div class="flex flex-wrap gap-4">
-                
-                <draggable 
-                  v-model="existingLoginBanners" 
-                  item-key="id" 
-                  class="flex flex-wrap gap-4"
-                  animation="250"
-                  ghost-class="opacity-40"
-                >
-                  <template #item="{ element: banner, index: idx }">
-                    <div class="relative group w-32 h-56 md:w-36 md:h-64 rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-all shrink-0">
-                      <img :src="banner.url" class="w-full h-full object-cover" />
-                      
-                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-3xl mb-2">drag_pan</span>
-                        <button @click.stop="removeExistingLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
-                          <span class="material-symbols-outlined text-sm">delete</span>
-                        </button>
-                      </div>
-                      <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm z-10">Slide {{ idx + 1 }}</span>
+              <draggable 
+                v-model="existingLoginBanners" 
+                item-key="id" 
+                class="flex flex-wrap gap-4"
+                animation="250"
+                ghost-class="opacity-40"
+              >
+                <template #item="{ element: banner, index: idx }">
+                  <div class="relative group w-32 h-56 md:w-36 md:h-64 rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-all shrink-0">
+                    <img :src="banner.url" class="w-full h-full object-cover" />
+                    
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                      <span class="material-symbols-outlined text-white text-3xl mb-2">drag_pan</span>
+                      <button @click.stop="removeExistingLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                      </button>
                     </div>
-                  </template>
-                </draggable>
+                    <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm z-10">Slide {{ idx + 1 }}</span>
+                  </div>
+                </template>
 
-                <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group w-32 h-56 md:w-36 md:h-64 rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm shrink-0">
-                  <img :src="preview" class="w-full h-full object-cover" />
-                  <button @click="removeNewLoginBanner(idx)" class="absolute top-2 right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10">
-                    <span class="material-symbols-outlined text-[14px]">close</span>
-                  </button>
-                  <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-center text-white py-1 font-medium">Chờ lưu</div>
-                </div>
+                <template #footer>
+                  <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group w-32 h-56 md:w-36 md:h-64 rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm shrink-0">
+                    <img :src="preview" class="w-full h-full object-cover" />
+                    <button @click="removeNewLoginBanner(idx)" class="absolute top-2 right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10">
+                      <span class="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                    <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-center text-white py-1 font-medium">Chờ lưu</div>
+                  </div>
 
-                <label class="w-32 h-56 md:w-36 md:h-64 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group shrink-0">
-                  <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73] mb-1">add_photo_alternate</span>
-                  <span class="text-xs font-bold text-slate-500 group-hover:text-[#ff8f73]">Thêm ảnh</span>
-                  <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
-                </label>
-                
-              </div>
+                  <label class="w-32 h-56 md:w-36 md:h-64 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group shrink-0">
+                    <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73] mb-1">add_photo_alternate</span>
+                    <span class="text-xs font-bold text-slate-500 group-hover:text-[#ff8f73]">Thêm ảnh</span>
+                    <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
+                  </label>
+                </template>
+
+              </draggable>
             </div>
           </div>
 
