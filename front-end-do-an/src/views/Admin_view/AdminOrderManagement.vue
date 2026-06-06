@@ -600,11 +600,20 @@
                 <div>
                   <div class="flex justify-between items-end mb-1.5">
                     <label class="block text-xs font-bold text-slate-600">Số tiền khách đưa (VNĐ) <span class="text-rose-500">*</span></label>
-                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.ThanhTien">Chọn thanh toán Full</span>
+                    <div class="flex gap-2">
+                      <span v-if="externalOrderForm.TongCocToiThieu > 0" class="text-[10px] font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 transition-colors px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.TongCocToiThieu">Gợi ý cọc tối thiểu</span>
+                      
+                      <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100 hover:bg-emerald-200 transition-colors px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.ThanhTien">Thu Full</span>
+                    </div>
                   </div>
                   <input v-model="externalOrderForm.SoTienDaTra" type="number" min="0" placeholder="Nhập số tiền..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-bold text-slate-800">
                   
-                  <p v-if="externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.ThanhTien" class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center gap-1">
+                  <p v-if="externalOrderForm.TongCocToiThieu > 0 && externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.TongCocToiThieu" class="text-[11px] text-rose-500 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
+                    <span class="material-symbols-outlined text-[14px]">warning</span>
+                    Chưa đạt mức cọc tối thiểu ({{ externalOrderForm.TongCocToiThieu.toLocaleString('vi-VN') }} ₫)!
+                  </p>
+                  
+                  <p v-else-if="externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.ThanhTien" class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
                     <span class="material-symbols-outlined text-[14px]">info</span>
                     Hệ thống sẽ ghi nhận đây là khoản ĐẶT CỌC.
                   </p>
@@ -631,6 +640,9 @@
                   </div>
                   <div class="flex-1">
                     <p class="text-sm font-bold text-slate-900 mb-2">{{ prod.TenMH }}</p>
+                    <p v-if="prod.TienCocToiThieu > 0" class="text-[10px] text-amber-600 font-bold mb-2 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[12px]">payments</span> Cọc tối thiểu: {{ prod.TienCocToiThieu?.toLocaleString('vi-VN') }} ₫
+                    </p>
                     <div class="space-y-1.5">
                       <div v-for="variant in prod.PhanLoai" :key="variant.MaPhanLoai" class="flex justify-between items-center bg-white px-3 py-1.5 rounded border border-slate-200">
                         <div>
@@ -1455,9 +1467,10 @@ const exportExcelReport = async () => {
     DanhSachSanPham: [],
     TongTien: 0,
     ThanhTien: 0,
-    ThuTienNgay: false,
+    TongCocToiThieu: 0,
+    ThuTienNgay: false, 
     PhuongThucTT: 5,
-    SoTienDaTra:0
+    SoTienDaTra: 0
   });
 
   watch(() => externalOrderForm.value.ThuTienNgay, (newVal) => {
@@ -1521,7 +1534,8 @@ const exportExcelReport = async () => {
         ChiTietPhanLoai: variant.ChiTietPhanLoai,
         DonGia: variant.DonGia,
         TonKho: variant.TonKho,
-        SoLuong: 1
+        SoLuong: 1,
+        TienCocToiThieu: product.TienCocToiThieu || 0
       });
     }
     recalculateOrderTotal();
@@ -1543,11 +1557,17 @@ const exportExcelReport = async () => {
   };
 
   const recalculateOrderTotal = () => {
-    const total = externalOrderForm.value.DanhSachSanPham.reduce((sum, item) => {
-      return sum + (item.DonGia * item.SoLuong);
-    }, 0);
+    let total = 0;
+    let totalCoc = 0;
+    
+    externalOrderForm.value.DanhSachSanPham.forEach(item => {
+      total += (item.DonGia * item.SoLuong);
+      totalCoc += (item.TienCocToiThieu * item.SoLuong);
+    });
+    
     externalOrderForm.value.TongTien = total;
     externalOrderForm.value.ThanhTien = total; 
+    externalOrderForm.value.TongCocToiThieu = totalCoc;
   };
 
   watch(isCreateExternalOrderOpen, (newVal) => {

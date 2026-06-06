@@ -254,39 +254,15 @@ const donhang_admin = {
     liet_ke_san_pham: async(req, res) => {
         try {
             const keyword = req.query.keyword || '';
-            const maDM = req.query.maDM || '';
-            const maHSX = req.query.maHSX || '';
-            const maKM = req.query.maKM || ''; 
-            const maGG = req.query.maGG || '';
 
             // BỔ SUNG: pl.SoLuong > 0 (Chỉ lấy hàng còn tồn kho) và mh.HienThi = 1
             let condition = ["(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?) AND pl.HienThi = 1 AND mh.HienThi = 1 AND pl.SoLuong > 0"];
             let value = [`%${keyword}%`, `%${keyword}%`];
 
-            if (maDM) {
-                condition.push("mh.MaDM = ?");
-                value.push(maDM);
-            }
-            
-            if (maHSX) {
-                condition.push("mh.MaHSX = ?");
-                value.push(maHSX);
-            }
-
-            if (maKM) {
-                condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietKhuyenMai WHERE MaKM = ?)`);
-                value.push(maKM);
-            }
-
-            if (maGG) {
-                condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?)`);
-                value.push(maGG);
-            }
-
             let whereClause = "WHERE " + condition.join(" AND ");
 
             // Đổi pl.SoLuong AS TonKho để khớp với Frontend
-            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX,
+            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX, mh.TienCocToiThieu,
                                 pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho
                         FROM MoHinh mh
                         INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
@@ -306,6 +282,7 @@ const donhang_admin = {
                         MaMoHinh: row.MaMoHinh,
                         TenMH: row.TenMH,
                         AnhDaiDien: row.AnhDaiDien,
+                        TienCocToiThieu: row.TienCocToiThieu,
                         PhanLoai: [] // Tạo mảng rỗng để chứa các phân loại
                     };
                     acc.push(model);
