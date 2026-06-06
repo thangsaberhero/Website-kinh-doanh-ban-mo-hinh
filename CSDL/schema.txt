@@ -175,6 +175,8 @@ CREATE TABLE DonHang (
     SDTNguoiNhan VARCHAR(15),
     DiaChiGiao VARCHAR(255),
 	Note Text,
+    MaVanDon VARCHAR(255),
+    HangVanChuyen VARCHAR(100),
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV)
 );
