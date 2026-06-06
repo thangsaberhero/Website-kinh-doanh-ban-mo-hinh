@@ -105,54 +105,48 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           <!-- KHỐI 3: SLIDER ẢNH NỀN ĐĂNG NHẬP -->
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <div>
-                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#ff8f73]">wallpaper</span>
-                  Slider nền Đăng nhập
-                </h2>
-                <p class="text-xs text-slate-500 mt-1">Danh sách các ảnh nền luân phiên ở trang Login.</p>
-              </div>
-              <button @click="saveLoginBanners" class="bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Lưu Slider
-              </button>
-            </div>
-            
-            <div class="p-6 space-y-4">
-              <div class="grid grid-cols-2 gap-4">
-                
-                <!-- Ảnh cũ từ Server -->
-                <div v-for="(url, idx) in existingLoginBanners" :key="'old_login'+idx" class="relative group h-28 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                  <img :src="url" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button @click="removeExistingLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
-                      <span class="material-symbols-outlined text-sm">delete</span>
-                    </button>
+          <div class="p-6 space-y-6">
+              <p class="text-sm font-bold text-slate-800 mb-2">Ảnh hiện tại (Kéo thả để sắp xếp thứ tự)</p>
+              
+              <draggable 
+                v-model="existingLoginBanners" 
+                item-key="id" 
+                class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+                animation="250"
+                ghost-class="opacity-40"
+              >
+                <template #item="{ element: banner, index: idx }">
+                  <div class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-colors">
+                    <img :src="banner.url" class="w-full h-full object-cover" />
+                    
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                      <span class="material-symbols-outlined text-white text-3xl mb-2">drag_pan</span>
+                      <button @click.stop="removeExistingLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
+                    <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm z-10">Slide {{ idx + 1 }}</span>
                   </div>
-                  <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm">Hiện tại</span>
-                </div>
+                </template>
+              </draggable>
 
-                <!-- Ảnh mới vừa chọn -->
-                <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group h-28 rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
-                  <img :src="preview" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button @click="removeNewLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Bỏ chọn">
-                      <span class="material-symbols-outlined text-sm">close</span>
-                    </button>
+              <div class="border-t border-slate-200 pt-6">
+                <p class="text-sm font-bold text-slate-800 mb-3">Tải thêm ảnh mới</p>
+                <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+                    <img :src="preview" class="w-full h-full object-cover" />
+                    <button @click="removeNewLoginBanner(idx)" class="absolute top-2 right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10"><span class="material-symbols-outlined text-[14px]">close</span></button>
+                    <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-center text-white py-1">Chờ lưu</div>
                   </div>
-                  <span class="absolute top-2 left-2 bg-[#ff8f73] text-white text-[10px] px-2 py-0.5 rounded font-bold shadow-sm">Mới tải lên</span>
-                </div>
 
-                <!-- Nút Upload File ẩn -->
-                <label class="h-28 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
-                  <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73]">add_photo_alternate</span>
-                  <span class="text-xs font-bold text-slate-500 mt-2 group-hover:text-[#ff8f73]">Thêm ảnh mới</span>
-                  <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
-                </label>
+                  <label class="aspect-[9/16] rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
+                    <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73]">add_photo_alternate</span>
+                    <span class="text-xs font-bold text-slate-500 mt-2 group-hover:text-[#ff8f73]">Chọn ảnh</span>
+                    <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
 
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col lg:col-span-2">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
@@ -171,68 +165,59 @@
             <div class="p-6 space-y-6">
               
               <!-- DANH SÁCH BANNER HIỆN TẠI ĐỂ SỬA TEXT -->
-              <div v-for="(slide, idx) in existingBanners" :key="'slide'+idx" class="flex flex-col md:flex-row gap-6 p-5 border border-slate-200 rounded-xl bg-slate-50/30 relative group transition-all hover:border-[#ff8f73]/40 hover:shadow-md">
-                
-                <!-- Nút xóa Slide -->
-                <button @click="removeExistingBanner(idx)" class="absolute -top-3 -right-3 w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-all">
-                  <span class="material-symbols-outlined text-[16px]">close</span>
-                </button>
-
-                <!-- Cột trái: Hiển thị Ảnh -->
-                <div class="w-full md:w-1/3 shrink-0">
-                  <div class="w-full h-40 rounded-xl overflow-hidden shadow-sm border border-slate-200 relative">
-                    <img :src="slide.image" class="w-full h-full object-cover" />
-                    <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm">Slide {{ idx + 1 }}</span>
-                  </div>
-                </div>
-
-                <!-- Cột phải: Form nhập liệu Text cho Slide đó -->
-                <div class="w-full md:w-2/3 grid grid-cols-2 gap-4">
-                  <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tag / Nhãn</label>
-                    <input v-model="slide.tag" type="text" placeholder="VD: LIMITED EDITION" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white">
-                  </div>
-                  <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
-                      Link chuyển hướng
-                      <span class="text-[9px] text-[#ff8f73] font-normal normal-case italic">* Click đúp để chọn</span>
-                    </label>
+              <p class="text-sm font-bold text-slate-800 mb-2">Sắp xếp thứ tự hiển thị bằng cách kéo thả biểu tượng <span class="material-symbols-outlined text-[14px] align-middle">drag_indicator</span></p>
+              
+              <draggable 
+                v-model="existingBanners" 
+                handle=".drag-handle" 
+                item-key="id" 
+                class="space-y-6"
+                animation="250"
+                ghost-class="opacity-50"
+              >
+                <template #item="{ element: slide, index: idx }">
+                  <div class="flex flex-col md:flex-row gap-6 p-5 border border-slate-200 rounded-xl bg-slate-50/30 relative group transition-all hover:border-[#ff8f73]/40 hover:shadow-md pl-10">
                     
-                    <input 
-                      v-model="slide.link" 
-                      list="link-suggestions" 
-                      type="text" 
-                      placeholder="Chọn hoặc nhập link..." 
-                      class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white transition-all"
-                    >
-                    
-                    <datalist id="link-suggestions">
-                      <option value="/category">Tất cả sản phẩm</option>
-                      <option value="/news">Trang Tin tức</option>
-                      
-                      <option v-for="cat in categoriesList" :key="'cat'+cat.MaDM" :value="`/category/${cat.MaDM}`">
-                        Danh mục: {{ cat.TenDM }}
-                      </option>
-                      
-                      <option v-for="brand in brandsList" :key="'brand'+brand.MaHSX" :value="`/category?brand=${brand.TenHSX}`">
-                        Hãng: {{ brand.TenHSX }}
-                      </option>
-                    </datalist>
+                    <div class="drag-handle absolute left-0 top-0 bottom-0 w-8 bg-slate-100 border-r border-slate-200 flex items-center justify-center cursor-move rounded-l-xl group-hover:bg-[#ff8f73]/20 transition-colors z-10" title="Kéo để đổi vị trí">
+                      <span class="material-symbols-outlined text-slate-400 group-hover:text-[#ff8f73]">drag_indicator</span>
+                    </div>
+
+                    <button @click="removeExistingBanner(idx)" class="absolute -top-3 -right-3 w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-all">
+                      <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+
+                    <div class="w-full md:w-1/3 shrink-0">
+                      <div class="w-full h-40 rounded-xl overflow-hidden shadow-sm border border-slate-200 relative">
+                        <img :src="slide.image" class="w-full h-full object-cover" />
+                        <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm">Slide {{ idx + 1 }}</span>
+                      </div>
+                    </div>
+
+                    <div class="w-full md:w-2/3 grid grid-cols-2 gap-4">
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tag / Nhãn</label>
+                        <input v-model="slide.tag" type="text" placeholder="VD: LIMITED EDITION" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] outline-none bg-white">
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">Link<span class="text-[9px] text-[#ff8f73] italic">* Đúp chuột</span></label>
+                        <input v-model="slide.link" list="link-suggestions" type="text" placeholder="Chọn link..." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] outline-none bg-white">
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tiêu đề chính</label>
+                        <input v-model="slide.title" type="text" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 font-bold bg-white text-slate-800">
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest">Chữ Cam</label>
+                        <input v-model="slide.titleAccent" type="text" class="w-full text-sm border border-[#ff8f73]/50 rounded-lg px-3 py-2 font-bold text-[#ff8f73] bg-white">
+                      </div>
+                      <div class="space-y-1.5 col-span-2">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mô tả ngắn</label>
+                        <textarea v-model="slide.desc" rows="2" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none bg-white"></textarea>
+                      </div>
+                    </div>
                   </div>
-                  <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tiêu đề chính</label>
-                    <input v-model="slide.title" type="text" placeholder="VD: GUNDAM" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none font-bold bg-white text-slate-800">
-                  </div>
-                  <div class="space-y-1.5">
-                    <label class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest">Chữ nhấn mạnh (Màu Cam)</label>
-                    <input v-model="slide.titleAccent" type="text" placeholder="VD: EXCLUSIVE" class="w-full text-sm border border-[#ff8f73]/50 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none font-bold text-[#ff8f73] bg-white">
-                  </div>
-                  <div class="space-y-1.5 col-span-2">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mô tả ngắn</label>
-                    <textarea v-model="slide.desc" rows="2" placeholder="Nhập mô tả cho banner..." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white custom-scrollbar"></textarea>
-                  </div>
-                </div>
-              </div>
+                </template>
+              </draggable>
 
               <!-- KHU VỰC THÊM ẢNH MỚI (TẢI TỪ MÁY TÍNH LÊN) -->
               <div class="border-t border-slate-200 pt-6">
@@ -271,6 +256,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import draggable from 'vuedraggable';
 import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
 import AdminHeader from "../../components/Admin/AdminHeader.vue";
 import { useToastStore } from "../../stores/toast";
@@ -327,21 +313,16 @@ const isSavingText = ref(false);
 
 const formatBanners = (rawArray) => {
   if (!Array.isArray(rawArray)) return [];
-  
-  return rawArray.map(item => {
-    // Nếu item chỉ là một chuỗi (URL ảnh do Backend mới trả về), tự bọc nó thành Object
+  return rawArray.map((item, idx) => {
+    const uniqueId = 'home_' + idx + '_' + Date.now();
     if (typeof item === 'string') {
       return { 
-        image: item, 
-        tag: 'NEW ARRIVAL', 
-        title: 'SẢN PHẨM', 
-        titleAccent: 'MỚI', 
-        desc: 'Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn.', 
-        link: '/category' 
+        id: uniqueId, image: item, tag: 'NEW ARRIVAL', 
+        title: 'SẢN PHẨM', titleAccent: 'MỚI', 
+        desc: 'Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn.', link: '/category' 
       };
     }
-    // Nếu đã là Object (do Admin đã lưu text từ trước), thì giữ nguyên
-    return item; 
+    return { id: item.id || uniqueId, ...item }; 
   });
 };
 
@@ -364,7 +345,9 @@ const fetchSettings = async () => {
       previews.value.logo_favicon = data.logo_favicon || null;
       
       // Mảng Banner
-      existingLoginBanners.value = Array.isArray(data.login_bg) ? data.login_bg : [];
+      existingLoginBanners.value = Array.isArray(data.login_bg) 
+        ? data.login_bg.map((url, i) => ({ id: 'login_' + i + '_' + Date.now(), url })) 
+        : [];
       existingBanners.value = formatBanners(data.home_banner);
     }
   } catch (error) {
@@ -490,7 +473,8 @@ const saveLoginBanners = async () => {
   const formData = new FormData();
   
   formData.append('keyCaiDat', 'login_bg');
-  formData.append('oldImages', JSON.stringify(existingLoginBanners.value));
+  const oldUrls = existingLoginBanners.value.map(item => item.url);
+  formData.append('oldImages', JSON.stringify(oldUrls));
   
   files.value.login_bg.forEach(file => {
     // Chú ý: Tên append phải khớp với tên trong uploadLoginSlider.array('login_bg', 5)
