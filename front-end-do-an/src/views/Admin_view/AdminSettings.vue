@@ -105,48 +105,69 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           <!-- KHỐI 3: SLIDER ẢNH NỀN ĐĂNG NHẬP -->
-          <div class="p-6 space-y-6">
-              <p class="text-sm font-bold text-slate-800 mb-2">Ảnh hiện tại (Kéo thả để sắp xếp thứ tự)</p>
-              
-              <draggable 
-                v-model="existingLoginBanners" 
-                item-key="id" 
-                class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-                animation="250"
-                ghost-class="opacity-40"
-              >
-                <template #item="{ element: banner, index: idx }">
-                  <div class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-colors">
-                    <img :src="banner.url" class="w-full h-full object-cover" />
-                    
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
-                      <span class="material-symbols-outlined text-white text-3xl mb-2">drag_pan</span>
-                      <button @click.stop="removeExistingLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
-                        <span class="material-symbols-outlined text-sm">delete</span>
-                      </button>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#ff8f73]">wallpaper</span>
+                  Slider nền Đăng nhập
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Danh sách các ảnh nền luân phiên ở trang Login.</p>
+              </div>
+              <button @click="saveLoginBanners" class="bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Lưu Slider
+              </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                
+                <!-- Ảnh cũ từ Server -->
+                <div class="p-6 space-y-6">
+                  <p class="text-sm font-bold text-slate-800 mb-2">Ảnh hiện tại (Kéo thả để sắp xếp thứ tự)</p>
+                  
+                  <draggable 
+                    v-model="existingLoginBanners" 
+                    item-key="id" 
+                    class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+                    animation="250"
+                    ghost-class="opacity-40"
+                  >
+                    <template #item="{ element: banner, index: idx }">
+                      <div class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-colors">
+                        <img :src="banner.url" class="w-full h-full object-cover" />
+                        
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                          <span class="material-symbols-outlined text-white text-3xl mb-2">drag_pan</span>
+                          <button @click.stop="removeExistingLoginBanner(idx)" class="bg-rose-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg" title="Xóa ảnh này">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                          </button>
+                        </div>
+                        <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm z-10">Slide {{ idx + 1 }}</span>
+                      </div>
+                    </template>
+                  </draggable>
+
+                  <div class="border-t border-slate-200 pt-6">
+                    <p class="text-sm font-bold text-slate-800 mb-3">Tải thêm ảnh mới</p>
+                    <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+                        <img :src="preview" class="w-full h-full object-cover" />
+                        <button @click="removeNewLoginBanner(idx)" class="absolute top-2 right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10"><span class="material-symbols-outlined text-[14px]">close</span></button>
+                        <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-center text-white py-1">Chờ lưu</div>
+                      </div>
+
+                      <label class="aspect-[9/16] rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
+                        <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73]">add_photo_alternate</span>
+                        <span class="text-xs font-bold text-slate-500 mt-2 group-hover:text-[#ff8f73]">Chọn ảnh</span>
+                        <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
+                      </label>
                     </div>
-                    <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm z-10">Slide {{ idx + 1 }}</span>
                   </div>
-                </template>
-              </draggable>
-
-              <div class="border-t border-slate-200 pt-6">
-                <p class="text-sm font-bold text-slate-800 mb-3">Tải thêm ảnh mới</p>
-                <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group aspect-[9/16] rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
-                    <img :src="preview" class="w-full h-full object-cover" />
-                    <button @click="removeNewLoginBanner(idx)" class="absolute top-2 right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10"><span class="material-symbols-outlined text-[14px]">close</span></button>
-                    <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-center text-white py-1">Chờ lưu</div>
-                  </div>
-
-                  <label class="aspect-[9/16] rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
-                    <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73]">add_photo_alternate</span>
-                    <span class="text-xs font-bold text-slate-500 mt-2 group-hover:text-[#ff8f73]">Chọn ảnh</span>
-                    <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
-                  </label>
                 </div>
               </div>
             </div>
+          </div>
 
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col lg:col-span-2">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
