@@ -255,10 +255,10 @@
                                 <span class="material-symbols-outlined text-[16px]">print</span> In hóa đơn
                               </button>
                               <div class="border-t border-slate-100 my-1"></div>
-                              <button @click="cancelOrder(order.id)" class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2">
+                              <button @click="cancelOrder(order)" class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">cancel</span> Hủy đơn
                               </button>
-                              <button @click="returnOrder(order.id)" class="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 font-medium flex items-center gap-2">
+                              <button @click="returnOrder(order)" class="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 font-medium flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">assignment_return</span> Hoàn hàng
                               </button>
                           </div>
@@ -311,7 +311,7 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col animate-[fadeIn_0.2s_ease-out]">         
           <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
             <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-              Chi tiết đơn hàng <span class="text-[#ff8f73]">#FC-{{ selectedOrder.MaDH }}</span>
+              Chi tiết đơn hàng <span class="text-[#ff8f73]">{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi }}</span>
             </h3>
             <button @click="isDetailModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-200 transition-colors">
               <span class="material-symbols-outlined">close</span>
@@ -379,7 +379,7 @@
                             Xác nhận thu tiền
                           </button>
                           <button v-if="selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan === 'Chờ hoàn tiền'"
-                                  @click="confirmRefund(selectedOrder.MaDH)"
+                                  @click="confirmRefund(selectedOrder.MaDH, selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi)"
                                   class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95 mt-1">
                             <span class="material-symbols-outlined text-[14px]">currency_exchange</span>
                             Xác nhận đã hoàn tiền
@@ -455,7 +455,7 @@
           </div>
 
           <div class="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
-            <button @click="cancelOrder(selectedOrder.MaDH)" class="px-4 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
+            <button @click="cancelOrder(selectedOrder)" class="px-4 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
               <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn này
             </button>
             <div class="flex gap-2">
@@ -721,7 +721,7 @@
 
         <div class="p-6 space-y-4">
           <p class="text-sm text-slate-600 font-medium">
-            Bạn có chắc chắn muốn hủy đơn hàng <span class="font-bold text-slate-900">#FC-{{ orderToCancel }}</span> không?<br>
+            Bạn có chắc chắn muốn hủy đơn hàng <span class="font-bold text-slate-900">{{ orderCodeToCancel }}</span> không?<br>
             <span class="text-rose-500 font-bold text-xs">* Tồn kho và khuyến mãi sẽ được hoàn lại tự động.</span>
           </p>
           
@@ -748,7 +748,7 @@
     <div v-if="isUpdateModalOpen && selectedOrder" class="print:hidden fixed inset-0 z-[140] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-[#ff8f73] animate-[fadeIn_0.2s_ease-out]">
         <h3 class="text-lg font-bold text-slate-900 mb-2">Cập nhật tiến trình đơn hàng</h3>
-        <p class="text-xs text-slate-400 mb-4 font-medium">Thay đổi trạng thái cho mã đơn: #FC-{{ selectedOrder.MaDH }}</p>
+        <p class="text-xs text-slate-400 mb-4 font-medium">Thay đổi trạng thái cho mã đơn: {{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi }}</p>
         
         <div class="mb-6">
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Chọn trạng thái mới</label>
@@ -781,7 +781,7 @@
 
         <div class="p-6 space-y-4">
           <p class="text-sm text-slate-600 font-medium">
-            Xác nhận hàng đã về kho và hoàn tiền cho đơn <span class="font-bold text-slate-900">#FC-{{ orderToReturn }}</span>?<br>
+            Xác nhận hàng đã về kho và hoàn tiền cho đơn <span class="font-bold text-slate-900">{{ orderCodeToReturn }}</span>?<br>
             <span class="text-purple-500 font-bold text-xs">* Tồn kho sẽ được cộng lại hệ thống ngay lập tức.</span>
           </p>
           
@@ -874,7 +874,7 @@
             </div>
           </div>
 
-          <p class="text-[11px] text-slate-500 italic leading-relaxed">* Hệ thống sẽ ghi nhận giao dịch cho mã đơn <span class="font-bold text-slate-700">#FC-{{ orderToPay?.MaDH }}</span> và cập nhật trạng thái đơn hàng thành "Đã thanh toán".</p>
+          <p class="text-[11px] text-slate-500 italic leading-relaxed">* Hệ thống sẽ ghi nhận giao dịch cho mã đơn <span class="font-bold text-slate-700">{{ orderCodeToPay }}</span> và cập nhật trạng thái đơn hàng thành "Đã thanh toán".</p>
         </div>
 
         <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
@@ -899,7 +899,7 @@
 
         <div class="p-6 space-y-4">
           <p class="text-sm text-slate-600 font-medium leading-relaxed">
-            Bạn xác nhận Kế toán đã chuyển khoản trả lại tiền cho đơn hàng <span class="font-bold text-slate-900">#FC-{{ orderToRefund }}</span>?<br>
+            Bạn xác nhận Kế toán đã chuyển khoản trả lại tiền cho đơn hàng <span class="font-bold text-slate-900">{{ orderCodeToRefund }}</span>?<br>
             <span class="text-purple-500 font-bold text-xs">* Trạng thái sẽ cập nhật thành "Đã hoàn tiền" và ghi nhận giao dịch âm.</span>
           </p>
         </div>
@@ -1008,8 +1008,10 @@ const exportExcelReport = async () => {
   const returnReason = ref('');
   const orderToReturn = ref(null);
 
-  const returnOrder = (id) => {
-    orderToReturn.value = id;
+  const orderCodeToReturn = ref('');
+  const returnOrder = (order) => {
+    orderToReturn.value = order.id;
+    orderCodeToReturn.value = order.code;
     returnReason.value = ''; 
     isReturnModalOpen.value = true;
     activeMenuId.value = null; 
@@ -1257,7 +1259,7 @@ const exportExcelReport = async () => {
           const d = new Date(item.NgayLapDon);
           return {
             id: item.MaDH,
-            code: `#FC-${item.MaDH}`,
+            code: item.MaDonHangHienThi || `#FC-${item.MaDH}`,
             carrier: 'Giao Hàng Nhanh',
             customer: item.TenNguoiNhan || `Khách hàng (Mã KH: ${item.MaKH})`,
             staffName: item.TenNV || 'Chưa phân công',
@@ -1383,11 +1385,13 @@ const exportExcelReport = async () => {
   const cancelReason = ref('');
   const orderToCancel = ref(null);
 
-  const cancelOrder = (id) => {
-    orderToCancel.value = id;
-    cancelReason.value = ''; 
+  const orderCodeToCancel = ref('');
+  const cancelOrder = (order) => {
+    orderToCancel.value = order.id || order.MaDH;
+    orderCodeToCancel.value = order.code || order.ThongTinGiaoHang?.MaDonHangHienThi;
+    cancelReason.value = '';
     isCancelModalOpen.value = true;
-    activeMenuId.value = null; 
+    activeMenuId.value = null;
   };
 
   const executeCancelOrder = async (id) => {
@@ -1640,14 +1644,15 @@ const exportExcelReport = async () => {
   const amountToCollect = ref(0);
   const collectionMethod = ref(5); // Mặc định thu Tiền mặt
 
-  // ĐÃ SỬA: Hàm gọi Modal nhận vào toàn bộ Object Order để tính toán số tiền
-  const confirmPayment = (orderObj) => {
-    orderToPay.value = orderObj; 
+  const orderCodeToPay = ref('');
+  const confirmPayment = (order) => {
+    orderToPay.value = order.MaDH;
+    orderCodeToPay.value = order.ThongTinGiaoHang?.MaDonHangHienThi;
     
     // Tìm giao dịch đã thanh toán trong mảng Orders (từ bảng ngoài)
-    const listOrder = orders.value.find(o => o.id === orderObj.MaDH);
+    const listOrder = orders.value.find(o => o.id === order.MaDH);
     const alreadyPaid = listOrder ? listOrder.transactionAmount : 0;
-    const totalAmount = orderObj.ThongTinGiaoHang?.ThanhTien || 0;
+    const totalAmount = order.ThongTinGiaoHang?.ThanhTien || 0;
 
     // Tính số tiền cần thu thêm
     amountToCollect.value = totalAmount - alreadyPaid;
@@ -1668,7 +1673,7 @@ const exportExcelReport = async () => {
         },
         // ĐÃ BỔ SUNG: Truyền thêm số tiền cần thu và phương thức để Backend xử lý
         body: JSON.stringify({ 
-          MaDH: orderToPay.value.MaDH,
+          MaDH: orderToPay.value,
           SoTienThu: amountToCollect.value,
           PhuongThuc: collectionMethod.value
         })
@@ -1700,8 +1705,10 @@ const exportExcelReport = async () => {
   const isRefundConfirmModalOpen = ref(false);
   const orderToRefund = ref(null);
 
-  const confirmRefund = (maDH) => {
+  const orderCodeToRefund = ref('');
+  const confirmRefund = (maDH, maHienThi) => {
     orderToRefund.value = maDH;
+    orderCodeToRefund.value = maHienThi;
     isRefundConfirmModalOpen.value = true;
   };
 
