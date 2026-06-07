@@ -3,8 +3,8 @@ const db = require('../../config/db');
 const reviewController = {
     getReviewsByProduct: async(req, res) => {
         try{
-            const { id } = req.params;
-            const parsedId = Number(id);
+            const { maMH } = req.params;
+            const parsedId = Number(maMH);
             if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
                 return res.status(400).json({
                     success: false,
