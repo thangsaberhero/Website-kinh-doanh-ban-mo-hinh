@@ -83,7 +83,7 @@ const reviewController = {
             let arrImages = [];
             if (req.files && req.files.length > 0) {
                 // Chỉ lấy file.filename thô để tránh dính dấu gạch chéo ngược "\" của hệ thống
-                arrImages = req.files.map(file => file.filename);
+                arrImages = req.files.map(file => file.path || file.secure_url || file.url);
             }
             
             // Ép mảng URL thành chuỗi JSON để lưu DB
