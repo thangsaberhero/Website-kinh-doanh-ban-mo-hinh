@@ -44,7 +44,7 @@
             </div>
             
             <div class="space-y-4">
-              <div :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'momo' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
+              <div v-if="isPaymentMethodEnabled('momo')" :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'momo' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
                 <label class="flex items-center gap-4 cursor-pointer p-6">
                   <input v-model="paymentMethod" value="momo" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
                   <span class="flex-grow font-bold text-white">Thanh toán qua Ví MoMo</span>
@@ -52,7 +52,7 @@
                 </label>
               </div>
 
-              <div :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'zalopay' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
+              <div v-if="isPaymentMethodEnabled('zalo')" :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'zalopay' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
                 <label class="flex items-center gap-4 cursor-pointer p-6">
                   <input v-model="paymentMethod" value="zalopay" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
                   <span class="flex-grow font-bold text-white">Thanh toán qua ZaloPay</span>
@@ -74,7 +74,7 @@
                   </div>
               </div>
 
-              <div :class="['border rounded-xl transition-all duration-300', paymentMethod === 'cod' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low', requiresDeposit ? 'opacity-50 cursor-not-allowed bg-surface-container-lowest' : 'hover:border-outline-variant']">
+              <div v-if="isPaymentMethodEnabled('cod')" :class="['border rounded-xl transition-all duration-300', paymentMethod === 'cod' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low', requiresDeposit ? 'opacity-50 cursor-not-allowed bg-surface-container-lowest' : 'hover:border-outline-variant']">
                 <label class="flex items-center gap-4 p-6" :class="requiresDeposit ? 'cursor-not-allowed' : 'cursor-pointer'">
                   <input v-model="paymentMethod" value="cod" :disabled="requiresDeposit" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5" type="radio" :class="requiresDeposit ? 'cursor-not-allowed' : 'cursor-pointer'"/>
                   <div class="flex-grow">
@@ -438,10 +438,28 @@ const scrollToTopCustom = (duration = 1000) => {
 
     requestAnimationFrame(animateScroll);
   };
+  const activePaymentMethods = ref([]);
+
+  const fetchActivePayments = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/setting/admin/public-payment-methods`);
+      const data = await res.json();
+      if (data.success) {
+        activePaymentMethods.value = data.data.filter(p => p.TrangThaiHoatDong === 1).map(p => p.TenPhuongThuc.toLowerCase());
+      }
+    } catch (error) {
+      console.error("Lỗi lấy cổng thanh toán:", error);
+    }
+  };
+
+  const isPaymentMethodEnabled = (keyword) => {
+    return activePaymentMethods.value.some(name => name.includes(keyword.toLowerCase()));
+  };
 
 onMounted(async () => {
   scrollToTopCustom();
   window.scroll(0,0);
+  await fetchActivePayments();
   const token = localStorage.getItem('token');
   const userString = localStorage.getItem('user');
 

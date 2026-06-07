@@ -125,6 +125,40 @@ const setting_Controller = {
         } finally {
             if (connection) connection.release();
         }
+    },
+
+    // 5. LẤY DANH SÁCH PHƯƠNG THỨC THANH TOÁN
+    lay_phuong_thuc_thanh_toan: async (req, res) => {
+        try {
+            // Lấy tất cả phương thức để hiện lên bảng Admin
+            const sql = `SELECT MaPT, TenPhuongThuc, TrangThaiHoatDong FROM PhuongThucThanhToan ORDER BY MaPT ASC`;
+            const [data] = await db.query(sql);
+            res.status(200).json({ success: true, data: data });
+        } catch (error) {
+            console.error("Lỗi lấy phương thức thanh toán:", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ!" });
+        }
+    },
+
+    // 6. BẬT/TẮT PHƯƠNG THỨC THANH TOÁN
+    toggle_phuong_thuc: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            const { MaPT, TrangThaiHoatDong } = req.body;
+            if (!MaPT) return res.status(400).json({ success: false, message: "Thiếu mã phương thức!" });
+
+            await connection.query(
+                `UPDATE PhuongThucThanhToan SET TrangThaiHoatDong = ? WHERE MaPT = ?`,
+                [TrangThaiHoatDong, MaPT]
+            );
+
+            res.status(200).json({ success: true, message: "Đã cập nhật trạng thái thanh toán!" });
+        } catch (error) {
+            console.error("Lỗi cập nhật phương thức:", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ!" });
+        } finally {
+            if (connection) connection.release();
+        }
     }
 };
 
