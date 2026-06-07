@@ -25,7 +25,8 @@
           </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          
           <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
             <div class="relative z-10">
               <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng số hãng</p>
@@ -45,6 +46,7 @@
               <span class="material-symbols-outlined text-[#ff3d00]">inventory_2</span>
             </div>
           </div>
+          
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
