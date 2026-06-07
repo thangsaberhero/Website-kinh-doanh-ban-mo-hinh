@@ -4,9 +4,10 @@ const reviewController = require('../../controllers/User_controller/review.ctrl.
 const authMiddleware = require('../../middlewares/auth.middleware.js');
 const { uploadReview } = require('../../middlewares/upload.js');
 
+
+router.get('/check-purchase-status', authMiddleware.verifyToken, reviewController.checkPurchaseStatus);
 router.get('/product/:id', reviewController.getReviewsByProduct);
 router.post('/create', authMiddleware.verifyToken, reviewController.createReview);
-router.get('/check-purchase-status', authMiddleware.verifyToken, reviewController.checkPurchaseStatus);
 
 router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 5), (req, res) => {
     try {
