@@ -7,7 +7,7 @@ const { uploadReview } = require('../../middlewares/upload.js');
 
 router.post('/create', 
     authMiddleware.verifyToken, 
-    uploadCloudinary.array('HinhAnh', 5), // 'HinhAnh' là key mà Frontend dùng để append file
+    uploadReview.array('HinhAnh', 5), // 'HinhAnh' là key mà Frontend dùng để append file
     reviewController.createReview
 );
 
