@@ -102,8 +102,7 @@
 
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">          
           <!-- KHỐI 3: SLIDER ẢNH NỀN ĐĂNG NHẬP -->
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
@@ -160,6 +159,39 @@
                 </template>
               </draggable>
               
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73]">payments</span>
+                Cổng thanh toán
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">Bật/Tắt các phương thức thanh toán hiển thị cho khách hàng.</p>
+            </div>
+            <div class="p-0">
+              <ul class="divide-y divide-slate-100">
+                <li v-for="method in paymentMethods" :key="method.MaPT" class="p-5 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center" 
+                        :class="method.TrangThaiHoatDong ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-100 text-slate-400'">
+                      <span class="material-symbols-outlined">{{ method.TenPhuongThuc.toLowerCase().includes('momo') ? 'account_balance_wallet' : (method.TenPhuongThuc.toLowerCase().includes('cod') ? 'local_shipping' : 'account_balance') }}</span>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-slate-800">{{ method.TenPhuongThuc }}</p>
+                      <p class="text-[10px] font-semibold mt-0.5" :class="method.TrangThaiHoatDong ? 'text-emerald-500' : 'text-slate-400'">
+                        {{ method.TrangThaiHoatDong ? 'Đang hoạt động' : 'Tạm khóa' }}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" :checked="method.TrangThaiHoatDong === 1" @change="togglePaymentMethod(method)">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </li>
+              </ul>
             </div>
           </div>
 
@@ -259,10 +291,8 @@
                   * Mẹo: Sau khi bạn chọn ảnh mới từ máy tính và bấm <strong>"Lưu cấu hình Slider"</strong>, bức ảnh sẽ được tải lên máy chủ và hiển thị ở danh sách bên trên để bạn điền Tiêu đề và Link.
                 </p>
               </div>
-
             </div>
           </div>
-
         </div>
       </main>
     </div>
@@ -370,11 +400,6 @@ const fetchSettings = async () => {
     toastStore.showToast("Không thể kết nối đến máy chủ!", "error");
   }
 };
-
-onMounted(() => {
-  fetchSettings();
-  fetchDropdownData();
-});
 
 // --- 2. CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
 const saveTextSettings = async () => {
@@ -556,6 +581,63 @@ const saveHomeBanners = async () => {
     toastStore.showToast("Lỗi kết nối máy chủ!", "error");
   }
 };
+
+// Khai báo state
+const paymentMethods = ref([]);
+
+// Hàm tải dữ liệu
+const fetchPaymentMethods = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/api/setting/admin/payment-methods`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      paymentMethods.value = data.data;
+    }
+  } catch (error) {
+    console.error("Lỗi lấy cổng TT:", error);
+  }
+};
+
+// Hàm gạt công tắc Bật/Tắt
+const togglePaymentMethod = async (method) => {
+  const newStatus = method.TrangThaiHoatDong === 1 ? 0 : 1;
+  const token = localStorage.getItem('token');
+  
+  // Tạm cập nhật UI cho mượt
+  method.TrangThaiHoatDong = newStatus;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/setting/admin/payment-methods/toggle`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ MaPT: method.MaPT, TrangThaiHoatDong: newStatus })
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      toastStore.showToast(`${newStatus ? 'Đã BẬT' : 'Đã TẮT'} ${method.TenPhuongThuc}`, "success");
+    } else {
+      // Rollback UI nếu lỗi
+      method.TrangThaiHoatDong = newStatus === 1 ? 0 : 1; 
+      toastStore.showToast("Cập nhật thất bại!", "error");
+    }
+  } catch (error) {
+    method.TrangThaiHoatDong = newStatus === 1 ? 0 : 1; 
+    toastStore.showToast("Lỗi mạng!", "error");
+  }
+};
+
+onMounted(() => {
+  fetchSettings();
+  fetchDropdownData();
+  fetchPaymentMethods();
+});
 </script>
 
 <style scoped>

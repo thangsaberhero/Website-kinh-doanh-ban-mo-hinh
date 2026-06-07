@@ -40,6 +40,7 @@ import AdminChangePassword from '../views/Admin_view/AdminChangePassword.vue';
 import AdminReport from '../views/Admin_view/AdminReport.vue';
 import AdminNotifications from '../views/Admin_view/AdminNotifications.vue';
 import AdminBlockchain from '../views/Admin_view/AdminBlockchain.vue';
+import AdminPaymentManagement from '../views/Admin_view/AdminPaymentManagement.vue';
 import AdminSettings from '../views/Admin_view/AdminSettings.vue';
 
 const router = createRouter({
@@ -85,6 +86,7 @@ const router = createRouter({
     { path: '/admin/blockchain', name: 'AdminBlockchain', component: AdminBlockchain, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý Blockchain | Admin - FigureCollect' } },
     { path: '/admin/news/edit/:id', name: 'NewsEdit', component: AdminNewsEdit, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/admin/promotion/:type/:id', name: 'AdminPromotionDetail', component: AdminPromotionDetail, meta: { requiresAuth: true, requiresAdmin: true } },
+    { path: '/admin/payment', name: 'AdminPaymentManagement', component: AdminPaymentManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý thanh toán | Admin - FigureCollect' } },
     { path: '/admin/settings', name: 'AdminSettings', component: AdminSettings, meta: { requiresAuth: true, requiresAdmin: true, title: 'Cài đặt hệ thống | Admin - FigureCollect' } },
     // { path: '/momo-payment', name: 'MoMoMock', component: checkout, meta: { requiresAuth: true, title: 'Cổng thanh toán MoMo' } },
   ]

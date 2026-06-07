@@ -557,7 +557,7 @@ const donhang_admin = {
             if (sapxep === 'total_asc') filter = ("ORDER BY dh.TongTien ASC");
 
             const sql_core = `
-                SELECT dh.MaDH, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
+                SELECT dh.MaDH, dh.MaDonHangHienThi, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan,
                 dh.ThanhTien, dh.TrangThaiThanhToan,
                 (
@@ -1547,6 +1547,279 @@ const donhang_admin = {
         } 
         finally {
             if (connection) connection.release();
+        }
+    },
+    liet_ke_giao_dich: async (req, res) => {
+        try {
+            let page = parseInt(req.query.page) || 1;
+            let limit = parseInt(req.query.limit) || 10;
+            if (page < 1) page = 1;
+            if (limit < 10) limit = 10;
+            if (limit > 50) limit = 50; // Giới hạn tối đa để tránh quá tải tải dữ liệu
+            const offset = (page - 1) * limit;
+
+            const { ngaybatdau, ngayketthuc, phuongthuc, loai, timkiem } = req.query;
+
+            let conditions = [];
+            let values = [];
+
+            // 1. Lọc theo thời gian giao dịch
+            if (ngaybatdau) {
+                conditions.push("tt.NgayThanhToan >= ?");
+                values.push(`${ngaybatdau} 00:00:00`);
+            }
+            if (ngayketthuc) {
+                conditions.push("tt.NgayThanhToan <= ?");
+                values.push(`${ngayketthuc} 23:59:59`);
+            }
+
+            // 2. Lọc theo phương thức thanh toán (ID của phương thức)
+            if (phuongthuc && phuongthuc !== 'all') {
+                conditions.push("tt.MaPT = ?");
+                values.push(parseInt(phuongthuc));
+            }
+
+            // 3. Lọc theo loại giao dịch (Thu tiền / Hoàn tiền)
+            if (loai && loai !== 'all') {
+                if (loai === 'thu') {
+                    conditions.push("tt.SoTienGiaoDich > 0");
+                } else if (loai === 'chi') {
+                    conditions.push("tt.SoTienGiaoDich < 0");
+                }
+            }
+
+            // 4. Tìm kiếm từ khóa (Mã đơn hiển thị hoặc Mã giao dịch đối tác)
+            if (timkiem) {
+                conditions.push("(dh.MaDonHangHienThi LIKE ? OR COALESCE(tt.MaGiaoDichCuaDoiTac, '') LIKE ?)");
+                values.push(`%${timkiem}%`, `%${timkiem}%`);
+            }
+
+            let whereClause = conditions.length > 0 ? " WHERE " + conditions.join(" AND ") : "";
+
+            // --- LUỒNG 1: TÍNH TOÁN KPI TỔNG QUAN THEO BỘ LỌC THỜI GIAN/TỪ KHÓA ---
+            const sql_kpi = `
+                SELECT 
+                    IFNULL(SUM(CASE WHEN tt.SoTienGiaoDich > 0 THEN tt.SoTienGiaoDich ELSE 0 END), 0) AS TongTienVao,
+                    IFNULL(SUM(CASE WHEN tt.SoTienGiaoDich < 0 THEN tt.SoTienGiaoDich ELSE 0 END), 0) AS TongTienRa,
+                    IFNULL(SUM(tt.SoTienGiaoDich), 0) AS DongTienThuan
+                FROM ThanhToan tt
+                INNER JOIN DonHang dh ON tt.MaDH = dh.MaDH
+                ${whereClause}
+            `;
+            const [kpiResult] = await db.query(sql_kpi, values);
+
+            // --- LUỒNG 2: ĐẾM TỔNG SỐ BẢN GHI ĐỂ PHÂN TRANG ---
+            const sql_count = `
+                SELECT COUNT(*) AS total 
+                FROM ThanhToan tt
+                INNER JOIN DonHang dh ON tt.MaDH = dh.MaDH
+                ${whereClause}
+            `;
+            const [countResult] = await db.query(sql_count, values);
+            const totalItems = countResult[0].total;
+            const totalPage = Math.ceil(totalItems / limit);
+
+            // --- LUỒNG 3: LẤY DANH SÁCH CHI TIẾT GIAO DỊCH PHÂN TRANG ---
+            const sql_data = `
+                SELECT 
+                    tt.MaTT, tt.NgayThanhToan, tt.SoTienGiaoDich, tt.LoaiGiaoDich, 
+                    tt.TrangThaiGiaoDich, tt.MaGiaoDichCuaDoiTac,
+                    dh.MaDH, dh.MaDonHangHienThi, dh.TenNguoiNhan,
+                    pt.TenPhuongThuc
+                FROM ThanhToan tt
+                INNER JOIN DonHang dh ON tt.MaDH = dh.MaDH
+                INNER JOIN PhuongThucThanhToan pt ON tt.MaPT = pt.MaPT
+                ${whereClause}
+                ORDER BY tt.NgayThanhToan DESC
+                LIMIT ? OFFSET ?
+            `;
+            
+            const [transactions] = await db.query(sql_data, [...values, limit, offset]);
+
+            res.status(200).json({
+                success: true,
+                message: "Lấy lịch sử dòng tiền tài chính thành công!",
+                kpi: kpiResult[0],
+                data: transactions,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage
+                }
+            });
+        } catch (error) {
+            console.error("Lỗi hệ thống khi kết xuất dòng tiền: ", error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ không thể lấy dữ liệu tài chính!" });
+        }
+    },
+    xuat_excel_giao_dich: async (req, res) => {
+        try {
+            const { ngaybatdau, ngayketthuc, phuongthuc, loai, timkiem } = req.query;
+            let conditions = [];
+            let values = [];
+
+            if (ngaybatdau) { conditions.push("tt.NgayThanhToan >= ?"); values.push(`${ngaybatdau} 00:00:00`); }
+            if (ngayketthuc) { conditions.push("tt.NgayThanhToan <= ?"); values.push(`${ngayketthuc} 23:59:59`); }
+            if (phuongthuc && phuongthuc !== 'all') { conditions.push("tt.MaPT = ?"); values.push(parseInt(phuongthuc)); }
+            if (loai && loai !== 'all') {
+                if (loai === 'thu') conditions.push("tt.SoTienGiaoDich > 0");
+                else if (loai === 'chi') conditions.push("tt.SoTienGiaoDich < 0");
+            }
+            if (timkiem) {
+                conditions.push("(dh.MaDonHangHienThi LIKE ? OR tt.MaGiaoDichCuaDoiTac LIKE ?)");
+                values.push(`%${timkiem}%`, `%${timkiem}%`);
+            }
+
+            let whereClause = conditions.length > 0 ? " WHERE " + conditions.join(" AND ") : "";
+
+            const sql_data = `
+                SELECT 
+                    tt.NgayThanhToan, tt.SoTienGiaoDich, tt.LoaiGiaoDich, 
+                    tt.TrangThaiGiaoDich, tt.MaGiaoDichCuaDoiTac,
+                    dh.MaDonHangHienThi, dh.TenNguoiNhan, pt.TenPhuongThuc
+                FROM ThanhToan tt
+                INNER JOIN DonHang dh ON tt.MaDH = dh.MaDH
+                INNER JOIN PhuongThucThanhToan pt ON tt.MaPT = pt.MaPT
+                ${whereClause}
+                ORDER BY tt.NgayThanhToan DESC
+            `;
+            const [transactions] = await db.query(sql_data, values);
+
+            const ExcelJS = require('exceljs');
+            const path = require('path');
+            const workbook = new ExcelJS.Workbook();
+            const ws = workbook.addWorksheet('Dữ liệu giao dịch');
+
+            // 1. ẨN GRIDLINES CHO SẠCH SẼ
+            ws.views = [{ showGridLines: false }];
+
+            // 2. CẤU HÌNH CỘT (Tương ứng từ A đến G)
+            ws.columns = [
+                { key: 'NgayThanhToan', width: 22 },
+                { key: 'MaDH', width: 18 },
+                { key: 'KhachHang', width: 25 },
+                { key: 'PhuongThuc', width: 20 },
+                { key: 'MaDoiSoat', width: 25 },
+                { key: 'LoaiGiaoDich', width: 25 },
+                { key: 'SoTien', width: 20 }
+            ];
+
+            // 3. TÔ NỀN TRẮNG KHU VỰC HEADER (Dòng 1-8, Cột 1-7)
+            for (let i = 1; i <= 8; i++) {
+                for (let j = 1; j <= 7; j++) {
+                    ws.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                }
+            }
+
+            // 4. CHÈN LOGO
+            try {
+                const logoPath = path.join(__dirname, '../../public/logo.png'); 
+                const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
+                ws.addImage(logoId, {
+                    tl: { col: 0, row: 0 },
+                    br: { col: 1, row: 3 }
+                });
+            } catch (err) {
+                console.log("Lỗi chèn ảnh Logo:", err.message);
+            }
+
+            // 5. HEADER THƯƠNG HIỆU & TIÊU ĐỀ
+            ws.mergeCells('B1:G1');
+            ws.getCell('B1').value = 'FIGURECOLLECT';
+            ws.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' } }; // Cam San Hô
+
+            ws.mergeCells('B2:G2');
+            ws.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            ws.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' } };
+
+            ws.mergeCells('A4:G4');
+            ws.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
+
+            ws.mergeCells('A5:G5');
+            ws.getCell('A5').value = 'BÁO CÁO GIAO DỊCH THANH TOÁN';
+            ws.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' } };
+            ws.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+
+            const filterText = (ngaybatdau && ngayketthuc) ? `Từ ${ngaybatdau} đến ${ngayketthuc}` : 'Tất cả thời gian';
+            ws.mergeCells('A6:G6');
+            ws.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')} | Kỳ dữ liệu: ${filterText}`;
+            ws.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' } };
+            ws.getCell('A6').alignment = { horizontal: 'center' };
+
+            // 6. HEADER BẢNG DỮ LIỆU
+            const headerRow = ws.getRow(9);
+            headerRow.values = ['Thời gian', 'Mã đơn hàng', 'Khách hàng', 'Phương thức', 'Mã đối soát (Bank/Ví)', 'Nghiệp vụ', 'Số tiền (VNĐ)'];
+            headerRow.height = 25;
+            
+            headerRow.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } }; // Nền cam
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 }; // Chữ trắng
+                cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+                    left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+                    bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+                    right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
+                };
+            });
+
+            ws.autoFilter = 'A9:G9';
+
+            // 7. ĐỔ DỮ LIỆU VỚI HIỆU ỨNG ZEBRA (Xen kẽ dòng) VÀ MÀU TÀI CHÍNH
+            transactions.forEach((tx, index) => {
+                const row = ws.addRow({
+                    NgayThanhToan: new Date(tx.NgayThanhToan).toLocaleString('vi-VN'),
+                    MaDH: tx.MaDonHangHienThi,
+                    KhachHang: tx.TenNguoiNhan || 'Khách vãng lai',
+                    PhuongThuc: tx.TenPhuongThuc,
+                    MaDoiSoat: tx.MaGiaoDichCuaDoiTac || '[Nội bộ / COD]',
+                    LoaiGiaoDich: tx.LoaiGiaoDich,
+                    SoTien: tx.SoTienGiaoDich
+                });
+                
+                // Trắng xen kẽ xám nhạt
+                const isEven = index % 2 === 0;
+                const rowFillColor = isEven ? 'FFFFFFFF' : 'FFF8F9FA'; 
+
+                row.eachCell((cell, colNumber) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFillColor } };
+                    cell.font = { size: 10, color: { argb: 'FF222532' } };
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                        left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                        bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                        right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+                    };
+                    
+                    if (colNumber === 1 || colNumber === 2 || colNumber === 4) {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    } else if (colNumber === 7) { // Cột Số Tiền
+                        cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                        cell.numFmt = '#,##0';
+                        
+                        // ĐIỂM NHẤN TÀI CHÍNH: Tiền dương màu Xanh, Tiền âm màu Đỏ
+                        if (tx.SoTienGiaoDich > 0) {
+                            cell.font = { size: 10, color: { argb: 'FF10B981' }, bold: true }; // Xanh lá Emerald
+                        } else {
+                            cell.font = { size: 10, color: { argb: 'FFE11D48' }, bold: true }; // Đỏ Rose
+                        }
+                    } else {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+                    }
+                });
+            });
+
+            // 8. XUẤT FILE
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=' + `Giao_Dich_Thanh_Toan_${Date.now()}.xlsx`);
+
+            await workbook.xlsx.write(res);
+            res.end();
+        } 
+        catch (error) {
+            console.error("Lỗi xuất Excel:", error);
+            res.status(500).json({ message: "Lỗi hệ thống khi tạo file Excel" });
         }
     }
 }

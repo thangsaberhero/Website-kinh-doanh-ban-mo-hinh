@@ -55,6 +55,9 @@ router.put('/update_home_banner',
     uploadHomeSlider.array('home_banner', 5), // Tên trường 'home_banner', nhận tối đa 5 file
     setting_Controller.cap_nhat_mang_file
 );
+router.get('/payment-methods', authMiddleware.verifyToken, authMiddleware.verifyAdmin, setting_Controller.lay_phuong_thuc_thanh_toan);
+router.put('/payment-methods/toggle', authMiddleware.verifyToken, authMiddleware.verifyAdmin, setting_Controller.toggle_phuong_thuc);
 
+router.get('/public-payment-methods', setting_Controller.lay_phuong_thuc_thanh_toan);
 // Xuất thẳng router ra ngoài
 module.exports = router;

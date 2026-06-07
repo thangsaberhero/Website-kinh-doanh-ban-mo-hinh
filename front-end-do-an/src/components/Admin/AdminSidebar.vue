@@ -90,6 +90,7 @@ const mainMenuItems = [
   { name: 'Quản lý hãng sản xuất', path: '/admin/manufacturers', icon: 'factory' },
   { name: 'Quản lý Blockchain', path: '/admin/blockchain', icon: 'link' },
   { name: 'Quản lý đơn hàng', path: '/admin/orders', icon: 'local_shipping' },
+  { name: 'Quản lý thanh toán', path: '/admin/payment', icon: 'payments' },
   { name: 'Hỗ trợ khách hàng', path: '/admin/support', icon: 'support_agent' },
   { name: 'Quản lý người dùng', path: '/admin/users', icon: 'group' },
   { name: 'Quản lý tin tức', path: '/admin/news', icon: 'newspaper' },
