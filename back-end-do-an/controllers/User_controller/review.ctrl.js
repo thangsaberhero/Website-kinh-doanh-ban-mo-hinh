@@ -83,7 +83,7 @@ const reviewController = {
             let arrImages = [];
             if (req.files && req.files.length > 0) {
                 // Tùy thuộc cấu hình Cloudinary/Multer, lấy link ảnh (path hoặc secure_url)
-                arrImages = req.files.map(file => file.filename);
+                arrImages = req.files.map(file => file.path || file.secure_url || file.url);
             }
             
             // Ép mảng URL thành chuỗi JSON để lưu DB
