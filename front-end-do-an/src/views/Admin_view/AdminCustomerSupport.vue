@@ -465,7 +465,7 @@
             return {
               id: item.MaDG,
               customerName: item.TenKH || 'Khách hàng', 
-              customerAvatar: item.AnhDaiDien ? `${API_BASE_URL}/Images_user/${item.AnhDaiDien}` : null,
+              customerAvatar: item.AnhDaiDien,
               date: `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`,
               productName: item.TenMH,
               variant: item.ChiTietPhanLoai,

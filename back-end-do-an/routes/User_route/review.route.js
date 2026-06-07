@@ -4,9 +4,13 @@ const reviewController = require('../../controllers/User_controller/review.ctrl.
 const authMiddleware = require('../../middlewares/auth.middleware.js');
 const { uploadReview } = require('../../middlewares/upload.js');
 
-router.get('/product/:maMH', reviewController.getReviewsByProduct);
-router.post('/create', authMiddleware.verifyToken, reviewController.createReview);
-router.get('/check-purchase-status', authMiddleware.verifyToken, reviewController.checkPurchaseStatus);
+
+router.post('/create', 
+    authMiddleware.verifyToken, 
+    uploadCloudinary.array('HinhAnh', 5), // 'HinhAnh' là key mà Frontend dùng để append file
+    reviewController.createReview
+);
+
 
 router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 5), (req, res) => {
     try {
@@ -19,4 +23,7 @@ router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 
         res.status(500).json({ message: "Lỗi máy chủ khi lưu ảnh" });
     }
 });
+
+router.get('/check-purchase-status', authMiddleware.verifyToken, reviewController.checkPurchaseStatus);
+router.get('/product/:maMH', reviewController.getReviewsByProduct);
 module.exports = router;

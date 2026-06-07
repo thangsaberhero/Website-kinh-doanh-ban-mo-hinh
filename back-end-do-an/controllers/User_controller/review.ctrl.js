@@ -38,24 +38,40 @@ const reviewController = {
         }
     },
     createReview: async(req, res) => {
+        // Chặn quyền Admin/Staff
         if (req.user && (req.user.role == 1 || req.user.role == 2)) {
             return res.status(403).json({ 
                 success: false, 
                 message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
             });
         }
+
         const connection = await db.getConnection();
-        try{
+        try {
             await connection.beginTransaction();
             const MaTK = req.user.id; 
             const [khachHang] = await connection.query('SELECT MaKH FROM KhachHang WHERE MaTK = ?', [MaTK]);
             
             if (khachHang.length === 0) {
-                return res.status(400).json({ message: "Lỗi: Không tìm thấy thông tin Khách hàng!" });
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi: Không tìm thấy thông tin Khách hàng!" });
             }
+            
             const MaKH = khachHang[0].MaKH;
-            const { MaMoHinh, MaPhanLoai, NoiDung, SoSao, HinhAnh } = req.body;
-            const imageJson = JSON.stringify(HinhAnh || []);
+            
+            // 🔴 CHỈ LẤY CÁC TRƯỜNG TEXT TỪ REQ.BODY
+            const { MaMoHinh, MaPhanLoai, NoiDung, SoSao } = req.body;
+            
+            // 🔴 XỬ LÝ MẢNG ẢNH TỪ REQ.FILES (MULTER)
+            let arrImages = [];
+            if (req.files && req.files.length > 0) {
+                // Tùy thuộc cấu hình Cloudinary/Multer, lấy link ảnh (path hoặc secure_url)
+                arrImages = req.files.map(file => file.path || file.secure_url || file.url);
+            }
+            
+            // Ép mảng URL thành chuỗi JSON để lưu DB
+            const imageJson = JSON.stringify(arrImages);
+            
             const sql = `INSERT INTO DanhGia(MaKH, MaMH, MaPhanLoai, NoiDung, SoSao, HinhAnh, TrangThai, ThoiGianDG) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`;
             await connection.query(sql, [MaKH, MaMoHinh, MaPhanLoai, NoiDung, SoSao, imageJson]);
 
@@ -76,19 +92,19 @@ const reviewController = {
                 message: "Tạo đánh giá thành công"
             });
         }
-        catch(error){
+        catch(error) {
             await connection.rollback();
             console.error("Lỗi API createReview: ", error);
             res.status(500).json({
                 success: false,
-                message:"Lỗi máy chủ khi tạo đánh giá",
+                message: "Lỗi máy chủ khi tạo đánh giá",
                 error: error.message
             });
         }
-        finally{
-            connection.release();
+        finally {
+            if (connection) connection.release();
         }
-    },  
+    },
     checkPurchaseStatus: async(req, res) => {
         if (req.user && (req.user.role == 1 || req.user.role == 2)) {
             return res.status(403).json({ 
