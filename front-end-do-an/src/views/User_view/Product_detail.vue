@@ -353,7 +353,7 @@
               <div class="flex justify-between items-start mb-4">
                 <div class="flex gap-4">
                   <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-white/10 flex items-center justify-center font-headline font-bold text-white">
-                    <img v-if="review.AnhDaiDien" :src="`${API_BASE_URL}/Images_user/` + review.AnhDaiDien" class="w-full h-full object-cover">
+                    <img v-if="review.AnhDaiDien" :src="review.AnhDaiDien" class="w-full h-full object-cover">
                     <span v-else class="material-symbols-outlined text-primary text-xl">person</span>
                   </div>
                   <div>
@@ -378,7 +378,7 @@
 
               <div v-if="review.HinhAnh && review.HinhAnh.length > 0" class="flex flex-wrap gap-3 pl-16 mb-5">
                 <div v-for="(img, idx) in review.HinhAnh" :key="idx" class="w-24 h-24 rounded-xl overflow-hidden border border-white/10 hover:border-primary transition-all cursor-zoom-in group/img relative">
-                  <img :src="`${API_BASE_URL}/Images_review/` + img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
+                  <img :src="img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
                 </div>
               </div>
 
