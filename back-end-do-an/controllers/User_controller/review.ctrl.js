@@ -19,9 +19,26 @@ const reviewController = {
                         WHERE dg.MaMH = ? AND dg.TrangThai = 1
                         ORDER BY dg.ThoiGianDG DESC`;
             const [result] = await db.query(sql, [parsedId]);
-            const processedReviews = result.map(item => ({
-                ...item, HinhAnh: item.HinhAnh ? JSON.parse(item.HinhAnh) : []
-            }));
+            const processedReviews = result.map(item => {
+                let hinhAnhArr = [];
+                try {
+                    if (item.HinhAnh) {
+                        hinhAnhArr = JSON.parse(item.HinhAnh);
+                        // Đề phòng trường hợp chuỗi bị stringify 2 lần
+                        if (typeof hinhAnhArr === 'string') {
+                            hinhAnhArr = JSON.parse(hinhAnhArr);
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Lỗi parse HinhAnh đơn ${item.MaDG}:`, e);
+                    hinhAnhArr = []; // Nếu lỗi thì trả về mảng rỗng, không làm sập cả API
+                }
+
+                return {
+                    ...item,
+                    HinhAnh: hinhAnhArr
+                };
+            });
             res.status(200).json({
                 success: true,
                 message: "Tải dữ liệu đánh giá thành công",
@@ -66,7 +83,7 @@ const reviewController = {
             let arrImages = [];
             if (req.files && req.files.length > 0) {
                 // Tùy thuộc cấu hình Cloudinary/Multer, lấy link ảnh (path hoặc secure_url)
-                arrImages = req.files.map(file => file.path || file.secure_url || file.url);
+                arrImages = req.files.map(file => file.filename);
             }
             
             // Ép mảng URL thành chuỗi JSON để lưu DB
