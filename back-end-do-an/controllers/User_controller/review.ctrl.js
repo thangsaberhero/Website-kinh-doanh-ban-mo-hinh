@@ -82,8 +82,8 @@ const reviewController = {
             // 🔴 XỬ LÝ MẢNG ẢNH TỪ REQ.FILES (MULTER)
             let arrImages = [];
             if (req.files && req.files.length > 0) {
-                // Tùy thuộc cấu hình Cloudinary/Multer, lấy link ảnh (path hoặc secure_url)
-                arrImages = req.files.map(file => file.path || file.secure_url || file.url);
+                // Chỉ lấy file.filename thô để tránh dính dấu gạch chéo ngược "\" của hệ thống
+                arrImages = req.files.map(file => file.filename);
             }
             
             // Ép mảng URL thành chuỗi JSON để lưu DB
