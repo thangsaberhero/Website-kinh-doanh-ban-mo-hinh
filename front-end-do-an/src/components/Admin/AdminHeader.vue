@@ -8,20 +8,6 @@
         >
           <span class="material-symbols-outlined">menu</span>
         </button>
-        
-        <div class="relative group">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-          <input 
-            @input="$emit('search', $event.target.value)"
-            class="bg-slate-50 border border-slate-200 text-sm pl-10 pr-12 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#ff8f73] focus:border-[#ff8f73] w-64 lg:w-96 transition-all placeholder:text-slate-400" 
-            placeholder="Tìm kiếm dữ liệu, chức năng..." 
-            type="text"
-          />
-          <div class="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center gap-1">
-            <kbd class="px-1.5 py-0.5 text-[10px] font-sans font-semibold text-slate-400 bg-white border border-slate-200 rounded">Ctrl</kbd>
-            <kbd class="px-1.5 py-0.5 text-[10px] font-sans font-semibold text-slate-400 bg-white border border-slate-200 rounded">K</kbd>
-          </div>
-        </div>
       </div>
       
       <div class="flex items-center gap-6">
@@ -74,44 +60,6 @@
               </div>
             </div>
           </div>
-          
-          <div class="relative group">
-            <button class="text-slate-500 hover:text-slate-900 hover:bg-slate-100 p-2 rounded-full transition-colors" title="Trợ giúp & Tài liệu">
-                <span class="material-symbols-outlined text-[20px]">help</span>
-            </button>
-
-            <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50 overflow-hidden cursor-default">
-                <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="text-sm font-bold text-slate-900">Trung tâm Hỗ trợ</h3>
-                </div>
-                
-                <div class="py-1">
-                <RouterLink to="/admin/help/docs" class="flex items-center justify-between px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73] transition-colors group/item">
-                    <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">menu_book</span> Tài liệu sử dụng
-                    </div>
-                    <span class="material-symbols-outlined text-[14px] opacity-0 group-hover/item:opacity-100 transition-opacity">open_in_new</span>
-                </RouterLink>
-                
-                <RouterLink to="/admin/help/faq" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73] transition-colors">
-                    <span class="material-symbols-outlined text-[18px]">quiz</span> Câu hỏi thường gặp
-                </RouterLink>
-
-                <button class="w-full flex items-center justify-between px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73] transition-colors">
-                    <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">keyboard</span> Phím tắt hệ thống
-                    </div>
-                    <kbd class="px-1.5 py-0.5 text-[9px] font-sans font-semibold text-slate-400 bg-white border border-slate-200 rounded">Ctrl + /</kbd>
-                </button>
-                </div>
-
-                <div class="py-1 border-t border-slate-100 bg-slate-50/50">
-                <RouterLink to="/admin/help/contact" class="flex items-center gap-2 px-4 py-2 text-sm text-[#ff8f73] hover:text-[#ff3d00] font-medium transition-colors">
-                    <span class="material-symbols-outlined text-[18px]">support_agent</span> Liên hệ hỗ trợ IT
-                </RouterLink>
-                </div>
-            </div>
-            </div>
         </div>
         
         <div class="h-8 w-[1px] bg-slate-200"></div>
