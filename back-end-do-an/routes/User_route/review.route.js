@@ -6,7 +6,7 @@ const { uploadReview } = require('../../middlewares/upload.js');
 
 
 router.get('/check-purchase-status', authMiddleware.verifyToken, reviewController.checkPurchaseStatus);
-router.get('/product/:id', reviewController.getReviewsByProduct);
+router.get('/product/:maMH', reviewController.getReviewsByProduct);
 router.post('/create', authMiddleware.verifyToken, reviewController.createReview);
 
 router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 5), (req, res) => {
