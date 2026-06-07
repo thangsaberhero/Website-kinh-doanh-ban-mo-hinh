@@ -25,7 +25,7 @@
           </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
           <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
             <div class="relative z-10">
               <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng số hãng</p>
@@ -35,26 +35,6 @@
               <span class="material-symbols-outlined text-slate-500">factory</span>
             </div>
           </div>
-          
-          <!-- <div class="bg-white p-6 rounded-2xl border border-sky-50 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
-            <div class="relative z-10">
-              <p class="text-[11px] text-sky-500 font-bold uppercase tracking-widest mb-2">Đang hợp tác</p>
-              <p class="text-3xl font-brand font-bold text-sky-600">38</p>
-            </div>
-            <div class="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center border border-sky-100 shadow-inner">
-              <span class="material-symbols-outlined text-sky-500">handshake</span>
-            </div>
-          </div>
-          
-          <div class="bg-white p-6 rounded-2xl border border-rose-50 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
-              <div class="relative z-10">
-                  <p class="text-[11px] text-rose-500 font-bold uppercase tracking-widest mb-2">Ngừng hợp tác</p>
-                  <p class="text-3xl font-brand font-bold text-rose-600">04</p>
-              </div>
-              <div class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center border border-rose-100 shadow-inner">
-                  <span class="material-symbols-outlined text-rose-500">block</span>
-              </div>
-          </div> -->
 
           <div class="bg-white p-6 rounded-2xl border border-[#ff8f73]/20 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
             <div class="relative z-10">
@@ -70,17 +50,9 @@
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           
           <div class="p-6 flex flex-col md:flex-row justify-between gap-4 items-center border-b border-slate-100">
-              <div class="relative w-full md:w-80">
+              <div class="relative w-full md:w-96">
                   <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-                  <input v-model="searchQuery" type="text" placeholder="Tìm kiếm tên hãng, mã số..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 shadow-sm">
-              </div>
-              
-              <div class="flex items-center gap-3 w-full md:w-auto">
-                  <select v-model="statusFilter" class="w-full md:w-48 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#ff8f73]/20 focus:border-[#ff8f73] transition-all cursor-pointer shadow-sm">
-                  <option value="all">Tất cả trạng thái</option>
-                  <option value="Đang hợp tác">Đang hợp tác</option>
-                  <option value="Ngưng cung cấp">Ngưng cung cấp</option>
-                  </select>
+                  <input v-model="searchQuery" type="text" placeholder="Tìm kiếm tên hãng..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 shadow-sm">
               </div>
           </div>
 
@@ -353,7 +325,7 @@
 
         // Cập nhật thông số phân trang
         totalPages.value = result.pagination.totalPage;
-        totalBrandsCount.value = result.pagination.totalBrands;
+        totalBrandsCount.value = result.pagination.totalItems;
       }
     } catch (error) {
       console.error("Lỗi khi tải danh sách hãng:", error);
