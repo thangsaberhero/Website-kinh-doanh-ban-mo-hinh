@@ -22,8 +22,8 @@
               </span>
             </button>
 
-            <div class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50 overflow-hidden cursor-default"> 
-              <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50 overflow-hidden cursor-default flex flex-col"> 
+              <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <h3 class="text-sm font-bold text-slate-900">Thông báo mới ({{ unreadCount }})</h3>
                 <button v-if="unreadCount > 0" @click="markAllAsRead" class="text-[10px] text-[#ff8f73] hover:text-[#ff3d00] font-semibold">Đánh dấu đã đọc</button>
               </div>
@@ -54,7 +54,10 @@
                 <div v-if="notifications.length === 0" class="p-6 text-center text-slate-400 text-sm">
                   Bạn không có thông báo nào.
                 </div>
-                <button @click="router.push('/admin/notifications')" class="w-full text-center py-2.5 bg-slate-50 border-t border-slate-100 text-xs font-bold text-[#ff8f73] hover:text-[#ff3d00] hover:bg-slate-100/80 transition-all rounded-b-2xl">
+              </div>
+
+              <div class="border-t border-slate-100 bg-slate-50 shrink-0">
+                <button @click="router.push('/admin/notifications')" class="w-full text-center py-2.5 text-xs font-bold text-[#ff8f73] hover:text-[#ff3d00] hover:bg-slate-100/80 transition-all">
                   Xem tất cả thông báo
                 </button>
               </div>
