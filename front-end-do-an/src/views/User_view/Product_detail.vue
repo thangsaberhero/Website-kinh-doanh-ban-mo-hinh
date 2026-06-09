@@ -819,44 +819,36 @@
 
     isSubmittingReview.value = true;
     const token = localStorage.getItem('token');
-    let uploadedImageNames = [];
 
     try {
+      // 1. Dùng FormData để chứa cả Text và File
+      const formData = new FormData();
+      formData.append('MaMoHinh', product.value.MaMoHinh);
+      
+      // Xử lý MaPhanLoai tránh gửi chuỗi 'undefined' lên server
+      if (selectedVariant.value && selectedVariant.value.MaPhanLoai) {
+        formData.append('MaPhanLoai', selectedVariant.value.MaPhanLoai);
+      }
+      
+      formData.append('NoiDung', reviewForm.value.NoiDung);
+      formData.append('SoSao', reviewForm.value.SoSao);
+
+      // 2. Nhồi file ảnh vào chung gói FormData (Trùng key 'HinhAnh' với Backend)
       if (selectedFiles.value.length > 0) {
-        const formData = new FormData();
         selectedFiles.value.forEach(file => {
-          formData.append('images', file);
+          formData.append('HinhAnh', file); 
         });
-
-        const uploadRes = await fetch(`${API_BASE_URL}/api/reviews/upload`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadData.message || "Lỗi upload ảnh");
-
-        uploadedImageNames = uploadData.images;
       }
 
-      const payload = {
-        MaMoHinh: product.value.MaMoHinh,
-        MaPhanLoai: selectedVariant.value ? selectedVariant.value.MaPhanLoai : null,
-        NoiDung: reviewForm.value.NoiDung,
-        SoSao: reviewForm.value.SoSao,
-        HinhAnh: uploadedImageNames
-      };
-
+      // 3. GỌI DUY NHẤT 1 API CREATE
       const res = await fetch(`${API_BASE_URL}/api/reviews/create`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
+          // LƯU Ý TỐI QUAN TRỌNG: TUYỆT ĐỐI KHÔNG KHAI BÁO 'Content-Type' Ở ĐÂY!
+          // Trình duyệt sẽ tự động nhận diện FormData và tự set header multipart/form-data
         },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       const data = await res.json();
