@@ -86,8 +86,8 @@ const reviewController = {
             
             const MaKH = khachHang[0].MaKH;
             
-            // Ép mảng URL thành chuỗi JSON để lưu DB
-            const imageJson = JSON.stringify(HinhAnh || []);
+            const safeImages = Array.isArray(HinhAnh) ? HinhAnh.filter(img => img != null) : [];
+            const imageJson = JSON.stringify(safeImages);
             
             const sql = `INSERT INTO DanhGia(MaKH, MaMH, MaPhanLoai, NoiDung, SoSao, HinhAnh, TrangThai, ThoiGianDG) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`;
             await connection.query(sql, [MaKH, MaMoHinh, MaPhanLoai, NoiDung, SoSao, imageJson]);

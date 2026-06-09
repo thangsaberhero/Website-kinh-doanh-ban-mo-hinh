@@ -17,11 +17,18 @@ router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 
             return res.status(400).json({ message: "Không tìm thấy file tải lên" });
         }
         
-        // Lấy link ảnh từ Multer (Cloudinary dùng path, Local dùng filename)
-        const fileNames = req.files.map(file => file.path || file.filename);
+        // 💡 BÍ KÍP DEBUG: In ra console để xem Cloudinary thực sự trả về những gì
+        console.log("Dữ liệu file từ Cloudinary:", req.files);
+
+        // 🔴 ĐÃ SỬA: Bao phủ mọi tên biến mà Cloudinary hoặc Local Disk có thể trả về
+        const fileNames = req.files.map(file => file.secure_url || file.url || file.path || file.filename);
         
-        res.status(200).json({ images: fileNames });
+        // 🔴 TẤM KHIÊN 1: Lọc bỏ các phần tử undefined/null (nếu có)
+        const validFileNames = fileNames.filter(link => link != null);
+
+        res.status(200).json({ images: validFileNames });
     } catch (error) {
+        console.error("Lỗi upload ảnh:", error);
         res.status(500).json({ message: "Lỗi máy chủ khi lưu ảnh" });
     }
 });
