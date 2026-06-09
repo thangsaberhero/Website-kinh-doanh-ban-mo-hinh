@@ -819,54 +819,82 @@
 
     isSubmittingReview.value = true;
     const token = localStorage.getItem('token');
+    
+    // Mảng chứa tên các file ảnh sau khi upload thành công
+    let uploadedImageNames = [];
 
     try {
-      // 1. Dùng FormData để chứa cả Text và File
-      const formData = new FormData();
-      formData.append('MaMoHinh', product.value.MaMoHinh);
-      
-      // Xử lý MaPhanLoai tránh gửi chuỗi 'undefined' lên server
-      if (selectedVariant.value && selectedVariant.value.MaPhanLoai) {
-        formData.append('MaPhanLoai', selectedVariant.value.MaPhanLoai);
-      }
-      
-      formData.append('NoiDung', reviewForm.value.NoiDung);
-      formData.append('SoSao', reviewForm.value.SoSao);
-
-      // 2. Nhồi file ảnh vào chung gói FormData (Trùng key 'HinhAnh' với Backend)
+      // ==========================================
+      // GIAI ĐOẠN 1: UPLOAD ẢNH (NẾU CÓ)
+      // ==========================================
       if (selectedFiles.value.length > 0) {
+        const uploadFormData = new FormData();
+        
+        // LƯU Ý QUAN TRỌNG: Key ở đây phải là 'images' để khớp với:
+        // uploadReview.array('images', 5) ở Router Backend của bạn
         selectedFiles.value.forEach(file => {
-          formData.append('HinhAnh', file); 
+          uploadFormData.append('images', file); 
         });
+
+        const uploadRes = await fetch(`${API_BASE_URL}/api/reviews/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+            // Không set Content-Type khi gửi FormData
+          },
+          body: uploadFormData
+        });
+
+        const uploadData = await uploadRes.json();
+        
+        if (uploadRes.ok) {
+          // Lấy mảng tên file do Backend trả về (Ví dụ: ["anh1.jpg", "anh2.jpg"])
+          uploadedImageNames = uploadData.images || [];
+        } else {
+          throw new Error(uploadData.message || "Lỗi khi upload hình ảnh!");
+        }
       }
 
-      // 3. GỌI DUY NHẤT 1 API CREATE
-      const res = await fetch(`${API_BASE_URL}/api/reviews/create`, {
+      // ==========================================
+      // GIAI ĐOẠN 2: LƯU DỮ LIỆU ĐÁNH GIÁ VÀO DATABASE
+      // ==========================================
+      const reviewPayload = {
+        MaMoHinh: product.value.MaMoHinh,
+        MaPhanLoai: (selectedVariant.value && selectedVariant.value.MaPhanLoai) ? selectedVariant.value.MaPhanLoai : null,
+        NoiDung: reviewForm.value.NoiDung,
+        SoSao: reviewForm.value.SoSao,
+        HinhAnh: uploadedImageNames // Truyền mảng tên ảnh vào đây dưới dạng Text/Array
+      };
+
+      const createRes = await fetch(`${API_BASE_URL}/api/reviews/create`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json', // Đã chuyển về gửi JSON
           'Authorization': `Bearer ${token}`
-          // LƯU Ý TỐI QUAN TRỌNG: TUYỆT ĐỐI KHÔNG KHAI BÁO 'Content-Type' Ở ĐÂY!
-          // Trình duyệt sẽ tự động nhận diện FormData và tự set header multipart/form-data
         },
-        body: formData
+        body: JSON.stringify(reviewPayload)
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        toastStore.showToast("🎉 " + data.message, "success");
+      const createData = await createRes.json();
+      
+      if (createRes.ok) {
+        toastStore.showToast("🎉 " + createData.message, "success");
 
+        // Dọn dẹp form sau khi gửi thành công
         reviewForm.value.NoiDung = '';
         reviewForm.value.SoSao = 5;
         selectedFiles.value = [];
         previewUrls.value = [];
         canReview.value = false;
 
+        // Tải lại danh sách đánh giá
         await fetchReviews(product.value.MaMoHinh);
       } else {
-        toastStore.showToast("⚠️ Lỗi: " + data.message, "error");
+        throw new Error(createData.message || "Lỗi khi tạo đánh giá!");
       }
     } catch (error) {
-      toastStore.showToast(error.message || "Lỗi mạng khi gửi đánh giá", "error");
+      console.error(error);
+      toastStore.showToast("⚠️ " + (error.message || "Lỗi mạng khi gửi đánh giá"), "error");
     } finally {
       isSubmittingReview.value = false;
     }

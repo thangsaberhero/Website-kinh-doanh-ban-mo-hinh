@@ -63,6 +63,16 @@ const reviewController = {
             });
         }
 
+        // 🔴 BỔ SUNG: Validation dữ liệu đầu vào trước khi mở kết nối Database
+        const { MaMoHinh, MaPhanLoai, NoiDung, SoSao, HinhAnh } = req.body;
+        
+        if (!MaMoHinh || !NoiDung || !SoSao) {
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng cung cấp đầy đủ thông tin: Mã mô hình, Nội dung và Số sao đánh giá!"
+            });
+        }
+
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
@@ -76,18 +86,8 @@ const reviewController = {
             
             const MaKH = khachHang[0].MaKH;
             
-            // 🔴 CHỈ LẤY CÁC TRƯỜNG TEXT TỪ REQ.BODY
-            const { MaMoHinh, MaPhanLoai, NoiDung, SoSao } = req.body;
-            
-            // 🔴 XỬ LÝ MẢNG ẢNH TỪ REQ.FILES (MULTER)
-            let arrImages = [];
-            if (req.files && req.files.length > 0) {
-                // Chỉ lấy file.filename thô để tránh dính dấu gạch chéo ngược "\" của hệ thống
-                arrImages = req.files.map(file => file.path);
-            }
-            
             // Ép mảng URL thành chuỗi JSON để lưu DB
-            const imageJson = JSON.stringify(arrImages);
+            const imageJson = JSON.stringify(HinhAnh || []);
             
             const sql = `INSERT INTO DanhGia(MaKH, MaMH, MaPhanLoai, NoiDung, SoSao, HinhAnh, TrangThai, ThoiGianDG) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`;
             await connection.query(sql, [MaKH, MaMoHinh, MaPhanLoai, NoiDung, SoSao, imageJson]);
