@@ -1,0 +1,54 @@
+-- THÊM DỮ LIỆU MẪU --
+INSERT INTO Quyen (TenQuyen) VALUES ('Quản lý'), ('Nhân viên bán hàng'), ('Khách hàng');
+
+INSERT INTO HangSanXuat (TenHSX) VALUES
+('GoodSmileCompany'), ('Gift+'), ('Furyu'), ('SEGA'), ('BANDAI'), ('Max Factory'), ('Hobby stock');
+
+INSERT INTO DanhMuc (TenDM) VALUES
+('Mô hình'), ('Nendoroid'), ('Nhồi bông'), ('PRE-ORDER'), ('Phụ kiện khác');
+
+INSERT INTO ChiTietDanhMuc (MaDM, TenChiTietDM) VALUES
+(1, 'Gameprize'), (1, 'Mô hình scale'), (1, 'Mô hình Chibi'), (1, 'Mô hình lắp ráp'), (1, 'Action figure'),
+(2, 'Nedoroid Nam'), (2, 'Nendoroid nữ'), (4, 'Pre-order 2026'), (4, 'Pre-order 2027');
+
+INSERT INTO TrangThai (TenTrangThai) VALUES 
+('Chờ duyệt'),
+('Đang đóng gói'),
+('Đang vận chuyển'),
+('Đã giao'),
+('Đã hủy'),
+('Đang hoàn hàng');
+
+INSERT INTO PhuongThucThanhToan (TenPhuongThuc) VALUES
+('momo'),
+('COD');
+
+INSERT INTO TinTuc (MaTT, NoiDung, MaNV, TrangThai, TieuDe, TomTat, TheLoai, NgayDang, LuotXem) VALUES
+(1, 'Bandai đã định nghĩa lại chuẩn mực dòng Perfect Grade với PG Unleashed RX-78-2. Bài viết phân tích chi tiết khung xương, cơ chế LED và trải nghiệm lắp ráp.', 1, 'Đã duyệt', 'PG Unleashed RX-78-2: Đỉnh Cao Cơ Khí', 'Bandai đã định nghĩa lại hoàn toàn chuẩn mực của dòng Perfect Grade. Cùng mổ xẻ từng lớp khung xương và cơ chế LED đỉnh cao của huyền thoại này.', 'Đánh giá chi tiết', '2026-03-31 00:00:00', 320),
+(2, 'Danh sách 5 mẫu Nendoroid hiếm nhất đang được săn lùng trên thị trường hiện nay, giá trị tăng cao theo thời gian.', 1, 'Đã duyệt', 'Top 5 Nendoroid hiếm nhất đang bị săn lùng', NULL, 'Thị trường', '2026-03-28 00:00:00', 980),
+(3, 'Tổng hợp những điểm nổi bật tại Wonder Festival và dự đoán xu hướng ngành figure trong tương lai.', 1, 'Đã duyệt', 'Wonder Festival: Tương lai ngành figure', NULL, 'Sự kiện', '2026-03-29 00:00:00', 870),
+(4, 'Hướng dẫn bảo quản mô hình PVC đúng cách để tránh hiện tượng chảy nhớt và xuống màu theo thời gian.', 1, 'Đã duyệt', 'Bí quyết bảo quản nhựa PVC không bị chảy nhớt', NULL, 'Kiến thức', '2026-03-28 00:00:00', 760),
+(5, 'Figure kim loại (Die-cast) đang trở thành xu hướng mới nhờ độ bền và cảm giác cao cấp.', 1, 'Đã duyệt', 'Xu hướng Figure kim loại (Die-cast) lên ngôi', NULL, 'Thị trường', '2026-03-27 00:00:00', 690),
+(6, 'Đánh giá chi tiết phiên bản Hatsune Miku Digital Future Edition với hiệu ứng LED và thiết kế trong suốt độc đáo.', 1, 'Đã duyệt', 'Mở hộp Hatsune Miku 1/7 - Digital Future Edition', 'Phiên bản kỷ niệm với hệ thống LED RGB...', 'Anime Figure', '2026-03-26 00:00:00', 620),
+(7, 'Phân tích chi tiết mẫu figure Elf Bunny Girl Rabbi với chất liệu cao cấp và độ hoàn thiện ấn tượng.', 1, 'Đã duyệt', 'Nàng Elf Bunny Girl Rabbi – Mỗi đường cong là một cám dỗ', 'Siêu phẩm scale 1/4 từ B-Style...', 'Anime Figure', '2026-03-25 00:00:00', 540),
+(8, 'Metal Build EVA-01 mang đến trải nghiệm kết hợp giữa kim loại và thiết kế sinh học độc đáo.', 1, 'Đã duyệt', 'Metal Build Evangelion EVA-01: Có đáng tiền?', 'Sự kết hợp giữa chất liệu kim loại...', 'Mecha & Robot', '2026-03-20 00:00:00', 710),
+(9, 'Hướng dẫn phân biệt mô hình thật và hàng giả bằng cách kiểm tra tem, màu sơn và khớp nối.', 1, 'Đã duyệt', 'Phân biệt mô hình thật (Auth) và hàng giả (Bootleg)', 'Hướng dẫn chi tiết cách soi tem seal...', 'Kiến thức', '2026-03-15 00:00:00', 830),
+(10, 'Danh sách các mẫu Gundam sẽ phát hành trong quý 3/2026, bao gồm nhiều sản phẩm đáng chú ý.', 1, 'Đã duyệt', 'Lịch phát hành mô hình Gundam (Gunpla) Quý 3/2026', 'Tổng hợp danh sách các mẫu MG, RG...', 'Gundam', '2026-03-10 00:00:00', 900),
+(11, 'Hướng dẫn setup tủ trưng bày mô hình với hệ thống LED đẹp mắt và chuyên nghiệp.', 1, 'Đã duyệt', 'Cách setup tủ trưng bày LED chuẩn bảo tàng mini', NULL, 'Kinh nghiệm', '2026-03-01 00:00:00', 1100),
+(12, 'Phân tích lý do tại sao các mô hình hiếm lại có giá trị cao trên thị trường.', 1, 'Đã duyệt', 'Tại sao mô hình cũ (Rare) lại có giá trên trời?', NULL, 'Thị trường', '2026-02-28 00:00:00', 1250),
+(13, 'Tổng hợp 10 hãng sản xuất mô hình uy tín nhất thế giới hiện nay.', 1, 'Đã duyệt', 'Top 10 hãng sản xuất mô hình uy tín nhất thế giới', NULL, 'Tổng hợp', '2026-02-20 00:00:00', 1400);
+
+INSERT INTO AnhTinTuc (MaAnh, LinkAnh`, MaTT) VALUES
+(1, 'https://shopkeycap.com/wp-content/uploads/2021/06/Perfect-Grade-Unleashed-RX-78-2-ft.png', 1),
+(2, 'https://file.hstatic.net/1000231532/file/20220206-choi-nendoroid-sao-cho-dung_nshop-hobby11_d577ca1b2adc48418e80fed2291b7c81.jpg', 2),
+(3, 'https://i.ytimg.com/vi/Y3BAQabxcTw/maxresdefault.jpg', 3),
+(4, 'https://file.hstatic.net/200000462939/article/bao-quan-mo-hinh-pvc_4215ac9e512548edb7ecc62e4337f9ac.jpg', 4),
+(5, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8EdqfhHO1MmqYvBjqyF537FJ0LAeWwQqmEQ&s', 5),
+(6, 'https://product.hstatic.net/200000462939/product/4399653_7b748166b9c6458eb8c6a1450c3469f6_master.jpeg', 6),
+(7, 'https://pos.nvncdn.com/f625c0-33854/art/20250906_DjoKD7Js.jpeg?v=1757140733', 7),
+(8, 'https://bizweb.dktcdn.net/100/503/392/products/1-2830abed-41d0-4b6a-a6fc-4b71f827b943.jpg?v=1706807367323', 8),
+(9, 'https://khomohinh.com/wp-content/uploads/2023/01/cach-phan-biet-mo-hinh-real-fake-thumb.jpg', 9),
+(10, 'https://preview.redd.it/hg-1-144-tx-ff104-gundam-alyzeus-announced-release-date-v0-ive5786le2hg1.jpeg?width=640&crop=smart&auto=webp&s=066fda75065791f116de60557f3afa720aeecef9', 10),
+(11, 'https://noithatac.vn/wp-content/uploads/2025/04/tu-trung-bay-mo-hinh-cao-cap-TTB019.jpg', 11),
+(12, 'https://preview.redd.it/does-myethos-ever-remake-or-rerelease-figures-my-grail-is-v0-g1ukmmd1m6z41.jpg?width=640&crop=smart&auto=webp&s=d171f1372ef18298e8dfd43c279909aa083b0d7f', 12),
+(13, 'https://khomohinh.com/wp-content/uploads/2022/12/top-10-hang-figure-noi-tieng-chat-luong-nhat-o-nhat-ban-hien-nay-1.jpg', 13);
