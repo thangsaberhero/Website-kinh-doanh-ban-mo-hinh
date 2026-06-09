@@ -342,10 +342,10 @@
 
               <button v-for="star in [5, 4, 3, 2, 1]" :key="star"
                       @click="currentFilter = star.toString()"
-                      v-show="reviewStats.stars[star] > 0"
+                      v-show="reviewMeta['star' + star] > 0"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-1',
                               currentFilter === star.toString() ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
-                {{ star }} * ({{ reviewMeta['star' + star] }}) <span class="material-symbols-outlined text-[13px]">star</span> ({{ reviewStats.stars[star] }})
+                {{ star }} Sao <span class="material-symbols-outlined text-[13px]">star</span> ({{ reviewMeta['star' + star] || 0 }})
               </button>
             </div>
 
@@ -651,9 +651,9 @@
   //   return reviews.value;
   // });
 
-  const reviewsWithImageCount = computed(() => {
-    return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0).length;
-  });
+  // const reviewsWithImageCount = computed(() => {
+  //   return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0).length;
+  // });
 
   // const displayedReviews = computed(() => {
   //   return filteredReviews.value.slice(0, visibleCount.value);
@@ -741,23 +741,23 @@
     HinhAnh: []
   });
 
-  const reviewStats = computed(() => {
-    if (reviews.value.length === 0) return { avg: 0, count: 0, stars: { 5:0, 4:0, 3:0, 2:0, 1:0 } };
+  // const reviewStats = computed(() => {
+  //   if (reviews.value.length === 0) return { avg: 0, count: 0, stars: { 5:0, 4:0, 3:0, 2:0, 1:0 } };
 
-    let totalStars = 0;
-    const starsCount = { 5:0, 4:0, 3:0, 2:0, 1:0 };
+  //   let totalStars = 0;
+  //   const starsCount = { 5:0, 4:0, 3:0, 2:0, 1:0 };
 
-    reviews.value.forEach(r => {
-      totalStars += r.SoSao;
-      starsCount[r.SoSao] = (starsCount[r.SoSao] || 0) + 1;
-    });
+  //   reviews.value.forEach(r => {
+  //     totalStars += r.SoSao;
+  //     starsCount[r.SoSao] = (starsCount[r.SoSao] || 0) + 1;
+  //   });
 
-    return {
-      avg: (totalStars / reviews.value.length).toFixed(1),
-      count: reviews.value.length,
-      stars: starsCount
-    };
-  });
+  //   return {
+  //     avg: (totalStars / reviews.value.length).toFixed(1),
+  //     count: reviews.value.length,
+  //     stars: starsCount
+  //   };
+  // });
 
   const fetchReviews = async (maMH, isLoadMore = false) => {
     try {
