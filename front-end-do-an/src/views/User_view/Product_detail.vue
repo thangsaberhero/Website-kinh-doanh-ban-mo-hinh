@@ -331,13 +331,13 @@
               <button @click="currentFilter = 'all'"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
                               currentFilter === 'all' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
-                Tất cả ({{ reviewMeta.totalCount}})
+                Tất cả ({{ reviewMeta.totalCount || 0}})
               </button>
 
               <button @click="currentFilter = 'withImage'"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
                               currentFilter === 'withImage' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
-                Có hình ảnh ({{ reviewMeta.withImageCount }})
+                Có hình ảnh ({{ reviewMeta.withImageCount || 0}})
               </button>
 
               <button v-for="star in [5, 4, 3, 2, 1]" :key="star"
