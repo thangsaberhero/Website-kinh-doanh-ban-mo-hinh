@@ -349,7 +349,7 @@
               </button>
             </div>
 
-            <div v-for="review in displayedReviews" :key="review.MaDG" class="group border-b border-white/5 pb-8">
+            <div v-for="review in reviews" :key="review.MaDG" class="group border-b border-white/5 pb-8">
               <div class="flex justify-between items-start mb-4">
                 <div class="flex gap-4">
                   <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-white/10 flex items-center justify-center font-headline font-bold text-white">
@@ -528,7 +528,7 @@
   const hoverStar = ref(0);
   // Biến lưu trạng thái bộ lọc: 'all', 'withImage', '5', '4', '3', '2', '1'
   const currentFilter = ref('all');
-  const visibleCount = ref(5);
+  // const visibleCount = ref(5);
   const currentPageReviews = ref(1); 
   const totalReviewsFiltered = ref(0); 
   const reviewMeta = ref({ avgRating: 0, totalCount: 0, star5: 0, star4: 0, star3: 0, star2: 0, star1: 0, withImageCount: 0 });
@@ -634,30 +634,30 @@
     }
   };
 
-  const filteredReviews = computed(() => {
-    if (currentFilter.value === 'all') {
-      return reviews.value;
-    }
+  // const filteredReviews = computed(() => {
+  //   if (currentFilter.value === 'all') {
+  //     return reviews.value;
+  //   }
 
-    if (currentFilter.value === 'withImage') {
-      return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0);
-    }
+  //   if (currentFilter.value === 'withImage') {
+  //     return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0);
+  //   }
 
-    const starLevel = parseInt(currentFilter.value);
-    if (!isNaN(starLevel)) {
-      return reviews.value.filter(r => r.SoSao === starLevel);
-    }
+  //   const starLevel = parseInt(currentFilter.value);
+  //   if (!isNaN(starLevel)) {
+  //     return reviews.value.filter(r => r.SoSao === starLevel);
+  //   }
 
-    return reviews.value;
-  });
+  //   return reviews.value;
+  // });
 
   const reviewsWithImageCount = computed(() => {
     return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0).length;
   });
 
-  const displayedReviews = computed(() => {
-    return filteredReviews.value.slice(0, visibleCount.value);
-  });
+  // const displayedReviews = computed(() => {
+  //   return filteredReviews.value.slice(0, visibleCount.value);
+  // });
 
   const loadMoreReviews = () => {
     currentPageReviews.value++;
