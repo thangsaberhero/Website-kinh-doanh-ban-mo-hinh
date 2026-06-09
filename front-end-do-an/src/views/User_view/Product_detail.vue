@@ -256,18 +256,18 @@
         <div class="bg-surface-container-low rounded-2xl p-8 lg:p-12 border border-white/5 shadow-2xl mb-12 flex flex-col md:flex-row items-center justify-between gap-12">
           <div class="text-center md:w-1/3">
             <div class="text-7xl font-headline font-black text-primary drop-shadow-[0_0_15px_rgba(255,61,0,0.3)]">
-              {{ reviewStats.avg }}<span class="text-2xl text-on-surface-variant font-bold">/5</span>
+              {{ reviewMeta.avgRating }}<span class="text-2xl text-on-surface-variant font-bold">/5</span>
             </div>
-            <div class="text-xs text-outline uppercase font-bold mt-3 tracking-widest">Dựa trên {{ reviewStats.count }} Đánh giá</div>
+            <div class="text-xs text-outline uppercase font-bold mt-3 tracking-widest">Dựa trên {{ reviewMeta.totalCount }} Đánh giá</div>
           </div>
 
           <div class="md:w-2/3 w-full space-y-3">
             <div v-for="star in [5,4,3,2,1]" :key="star" class="flex items-center gap-4 text-xs font-bold">
               <span class="text-on-surface-variant w-10 text-right">{{ star }} Sao</span>
               <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                <div class="h-full bg-primary" :style="{ width: (reviewStats.count ? (reviewStats.stars[star] / reviewStats.count) * 100 : 0) + '%' }"></div>
+                <div class="h-full bg-primary" :style="{ width: (reviewMeta.totalCount ? (reviewMeta['star' + star] / reviewMeta.totalCount) * 100 : 0) + '%' }"></div>
               </div>
-              <span class="text-outline w-8">{{ reviewStats.stars[star] || 0 }}</span>
+              <span class="text-outline w-8">{{ reviewMeta['star' + star] || 0 }}</span>
             </div>
           </div>
         </div>
@@ -331,13 +331,13 @@
               <button @click="currentFilter = 'all'"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
                               currentFilter === 'all' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
-                Tất cả ({{ reviews.length }})
+                Tất cả ({{ reviewMeta.totalCount}})
               </button>
 
               <button @click="currentFilter = 'withImage'"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
                               currentFilter === 'withImage' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
-                Có hình ảnh ({{ reviewsWithImageCount }})
+                Có hình ảnh ({{ reviewMeta.withImageCount }})
               </button>
 
               <button v-for="star in [5, 4, 3, 2, 1]" :key="star"
@@ -345,7 +345,7 @@
                       v-show="reviewStats.stars[star] > 0"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-1',
                               currentFilter === star.toString() ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
-                {{ star }} <span class="material-symbols-outlined text-[13px]">star</span> ({{ reviewStats.stars[star] }})
+                {{ star }} * ({{ reviewMeta['star' + star] }}) <span class="material-symbols-outlined text-[13px]">star</span> ({{ reviewStats.stars[star] }})
               </button>
             </div>
 
@@ -395,25 +395,25 @@
 
             <div v-if="reviews.length === 0" class="text-center py-12 text-on-surface-variant border border-dashed border-white/10 rounded-xl">
               <span class="material-symbols-outlined text-4xl mb-2 opacity-50">forum</span>
-              <p class="text-sm">Chưa có đánh giá nào cho siêu phẩm này.<br>Hãy là người đầu tiên để lại cảm nhận!</p>
+              <p class="text-sm">Chưa có đánh giá nào phù hợp.<br>Hãy là người đầu tiên để lại cảm nhận!</p>
             </div>
-            <div v-if="filteredReviews.length === 0 && reviews.length > 0" class="text-center py-12 text-on-surface-variant">
-              <p class="text-sm">Không có đánh giá nào phù hợp với bộ lọc này.</p>
-            </div>
-            <div class="pt-8 border-t border-white/5 flex justify-center items-center gap-2">
-              <div v-if="visibleCount < filteredReviews.length" class="pt-8 flex justify-center items-center">
+
+            <div v-else class="pt-8 border-t border-white/5 flex justify-center items-center gap-2">
+              
+              <div v-if="reviews.length < totalReviewsFiltered" class="pt-8 flex justify-center items-center">
                 <button
                   @click="loadMoreReviews"
                   class="px-8 py-3.5 border border-white/10 rounded-xl font-headline font-bold text-xs text-outline hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all uppercase tracking-[0.2em] shadow-lg flex items-center gap-2"
                 >
                   <span class="material-symbols-outlined text-lg">expand_more</span>
-                  Xem thêm {{ filteredReviews.length - visibleCount }} đánh giá
+                  Xem thêm {{ totalReviewsFiltered - reviews.length }} đánh giá
                 </button>
               </div>
 
               <div v-else class="pt-8 text-center text-outline-variant text-xs font-bold uppercase tracking-widest">
-                Đã hiển thị toàn bộ đánh giá
+                Đã hiển thị toàn bộ đánh giá của bộ lọc này
               </div>
+              
             </div>
           </div>
         </div>
@@ -529,6 +529,9 @@
   // Biến lưu trạng thái bộ lọc: 'all', 'withImage', '5', '4', '3', '2', '1'
   const currentFilter = ref('all');
   const visibleCount = ref(5);
+  const currentPageReviews = ref(1); 
+  const totalReviewsFiltered = ref(0); 
+  const reviewMeta = ref({ avgRating: 0, totalCount: 0, star5: 0, star4: 0, star3: 0, star2: 0, star1: 0, withImageCount: 0 });
 
   const displayImages = ref([]);
   // Biến quản lý Lightbox
@@ -657,11 +660,12 @@
   });
 
   const loadMoreReviews = () => {
-    visibleCount.value += 5;
+    currentPageReviews.value++;
+    fetchReviews(product.value.MaMoHinh, true);
   };
 
   watch(currentFilter, () => {
-    visibleCount.value = 5;
+    fetchReviews(product.value.MaMoHinh, false);
   });
 
   const fetchProductDetails = async (id) => {
@@ -755,12 +759,33 @@
     };
   });
 
-  const fetchReviews = async (maMH) => {
+  const fetchReviews = async (maMH, isLoadMore = false) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/reviews/product/${maMH}`);
+      // Nếu không phải hành động "Xem thêm" (tức là chuyển Tab bộ lọc hoặc vừa vào trang) thì reset về trang 1
+      if (!isLoadMore) {
+        currentPageReviews.value = 1;
+        reviews.value = [];
+      }
+
+      // Gửi kèm page, limit và bộ lọc lên Server
+      const res = await fetch(`${API_BASE_URL}/api/reviews/product/${maMH}?page=${currentPageReviews.value}&limit=5&filter=${currentFilter.value}`);
       const data = await res.json();
+      
       if (res.ok) {
-        reviews.value = data.data;
+        if (isLoadMore) {
+          // KỸ THUẬT NỐI MẢNG: Giữ lại 5 đánh giá cũ và gộp thêm 5 đánh giá mới về sau
+          reviews.value = [...reviews.value, ...data.data];
+        } else {
+          reviews.value = data.data;
+        }
+
+        // Cập nhật tổng số lượng thuộc bộ lọc này để tính toán ẩn/hiện nút Xem thêm
+        totalReviewsFiltered.value = data.pagination.totalItems;
+        
+        // Cập nhật cục thống kê tổng quan từ server trả về
+        if (data.stats) {
+          reviewMeta.value = data.stats;
+        }
       }
     } catch (error) {
       console.error("Lỗi lấy danh sách đánh giá:", error);
@@ -794,7 +819,7 @@
       await Promise.all([
         fetchProductDetails(id),
         checkFavoriteStatus(id),
-        fetchReviews(id),
+        fetchReviews(id, false),
         checkEligibility(id),
         fetchRelatedProducts(id)
       ]);

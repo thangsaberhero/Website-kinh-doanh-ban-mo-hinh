@@ -2,56 +2,101 @@ const db = require('../../config/db');
 
 const reviewController = {
     getReviewsByProduct: async(req, res) => {
-        try{
+        try {
             const { maMH } = req.params;
             const parsedId = Number(maMH);
             if (isNaN(parsedId) || parsedId <= 0 || !Number.isInteger(parsedId)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Mã sản phẩm không hợp lệ!"
-                });
+                return res.status(400).json({ success: false, message: "Mã sản phẩm không hợp lệ!" });
             }
-            const sql = `SELECT dg.*, kh.TenKH, tk.AnhDaiDien, pl.ChiTietPhanLoai
-                        FROM DanhGia dg
-                        INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
-                        LEFT JOIN TaiKhoan tk ON tk.MaTK = kh.MaTK
-                        LEFT JOIN PhanLoai pl ON pl.MaPhanLoai = dg.MaPhanLoai
-                        WHERE dg.MaMH = ? AND dg.TrangThai = 1
-                        ORDER BY dg.ThoiGianDG DESC`;
-            const [result] = await db.query(sql, [parsedId]);
+
+            // 1. LẤY THAM SỐ PHÂN TRANG & BỘ LỌC TỪ QUERY
+            const page = Math.max(parseInt(req.query.page) || 1, 1);
+            const limit = Math.max(parseInt(req.query.limit) || 5, 5);
+            const offset = (page - 1) * limit;
+            const filter = req.query.filter || 'all'; // các giá trị: 'all', 'withImage', '5', '4', '3', '2', '1'
+
+            let whereConditions = ["dg.MaMH = ?", "dg.TrangThai = 1"];
+            let params = [parsedId];
+
+            // Xử lý bộ lọc động dưới Database
+            if (filter === 'withImage') {
+                whereConditions.push("dg.HinhAnh IS NOT NULL AND dg.HinhAnh != '[]' AND dg.HinhAnh != 'null'");
+            } else if (filter !== 'all') {
+                const starLevel = parseInt(filter);
+                if (!isNaN(starLevel)) {
+                    whereConditions.push("dg.SoSao = ?");
+                    params.push(starLevel);
+                }
+            }
+
+            const whereClause = whereConditions.join(" AND ");
+
+            // Câu lệnh 1: Đếm tổng số dòng thỏa mãn bộ lọc hiện tại
+            const countSql = `SELECT COUNT(*) as total FROM DanhGia dg WHERE ${whereClause}`;
+            
+            // Câu lệnh 2: Lấy dữ liệu phân trang (Giới hạn bằng LIMIT và OFFSET)
+            const dataSql = `
+                SELECT dg.*, kh.TenKH, tk.AnhDaiDien, pl.ChiTietPhanLoai
+                FROM DanhGia dg
+                INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
+                LEFT JOIN TaiKhoan tk ON tk.MaTK = kh.MaTK
+                LEFT JOIN PhanLoai pl ON pl.MaPhanLoai = dg.MaPhanLoai
+                WHERE ${whereClause}
+                ORDER BY dg.ThoiGianDG DESC
+                LIMIT ? OFFSET ?
+            `;
+
+            // Câu lệnh 3: Lấy thống kê toàn cục cho sản phẩm (Bất chấp bộ lọc phân trang đang chọn)
+            const statsSql = `
+                SELECT 
+                    COALESCE(ROUND(AVG(SoSao), 1), 0) as avgRating,
+                    COUNT(*) as totalCount,
+                    SUM(CASE WHEN SoSao = 5 THEN 1 ELSE 0 END) as star5,
+                    SUM(CASE WHEN SoSao = 4 THEN 1 ELSE 0 END) as star4,
+                    SUM(CASE WHEN SoSao = 3 THEN 1 ELSE 0 END) as star3,
+                    SUM(CASE WHEN SoSao = 2 THEN 1 ELSE 0 END) as star2,
+                    SUM(CASE WHEN SoSao = 1 THEN 1 ELSE 0 END) as star1,
+                    SUM(CASE WHEN HinhAnh IS NOT NULL AND HinhAnh != '[]' AND HinhAnh != 'null' THEN 1 ELSE 0 END) as withImageCount
+                FROM DanhGia
+                WHERE MaMH = ? AND TrangThai = 1
+            `;
+
+            // 2. ÉP XUNG HIỆU NĂNG: Chạy 3 câu lệnh song song
+            const [[countResult], [result], [statsResult]] = await Promise.all([
+                db.query(countSql, params),
+                db.query(dataSql, [...params, limit, offset]),
+                db.query(statsSql, [parsedId])
+            ]);
+
+            const totalItems = countResult[0].total;
+
             const processedReviews = result.map(item => {
                 let hinhAnhArr = [];
                 try {
                     if (item.HinhAnh) {
-                        hinhAnhArr = JSON.parse(item.HinhAnh);
-                        // Đề phòng trường hợp chuỗi bị stringify 2 lần
-                        if (typeof hinhAnhArr === 'string') {
-                            hinhAnhArr = JSON.parse(hinhAnhArr);
-                        }
+                        hinhAnhArr = typeof item.HinhAnh === 'string' ? JSON.parse(item.HinhAnh) : item.HinhAnh;
+                        if (typeof hinhAnhArr === 'string') hinhAnhArr = JSON.parse(hinhAnhArr);
                     }
                 } catch (e) {
-                    console.error(`Lỗi parse HinhAnh đơn ${item.MaDG}:`, e);
-                    hinhAnhArr = []; // Nếu lỗi thì trả về mảng rỗng, không làm sập cả API
+                    hinhAnhArr = [];
                 }
-
                 return {
                     ...item,
-                    HinhAnh: hinhAnhArr
+                    HinhAnh: Array.isArray(hinhAnhArr) ? hinhAnhArr.filter(img => img) : []
                 };
             });
+
+            // 3. TRẢ VỀ DỮ LIỆU KÈM METADATA PHÂN TRANG VÀ THỐNG KÊ
             res.status(200).json({
                 success: true,
                 message: "Tải dữ liệu đánh giá thành công",
-                data: processedReviews
+                data: processedReviews,
+                pagination: { totalItems, currentPage: page, limit },
+                stats: statsResult[0]
             });
-        }
-        catch(error){
+        } catch(error) {
             console.error("Lỗi API getReviewsByProduct: ", error);
-            res.status(500).json({
-                success: false,
-                message: "Lỗi máy chủ khi lấy đánh giá",
-                error: error.message
-            });
+            res.status(500).json({ success: false, message: "Lỗi máy chủ khi lấy đánh giá", error: error.message });
         }
     },
     createReview: async(req, res) => {
