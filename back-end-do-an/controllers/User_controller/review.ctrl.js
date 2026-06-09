@@ -13,12 +13,11 @@ const reviewController = {
             const page = Math.max(parseInt(req.query.page) || 1, 1);
             const limit = Math.max(parseInt(req.query.limit) || 5, 5);
             const offset = (page - 1) * limit;
-            const filter = req.query.filter || 'all'; // các giá trị: 'all', 'withImage', '5', '4', '3', '2', '1'
+            const filter = req.query.filter || 'all'; 
 
             let whereConditions = ["dg.MaMH = ?", "dg.TrangThai = 1"];
             let params = [parsedId];
 
-            // Xử lý bộ lọc động dưới Database
             if (filter === 'withImage') {
                 whereConditions.push("dg.HinhAnh IS NOT NULL AND dg.HinhAnh != '[]' AND dg.HinhAnh != 'null'");
             } else if (filter !== 'all') {
@@ -31,15 +30,9 @@ const reviewController = {
 
             const whereClause = whereConditions.join(" AND ");
 
-            // Câu lệnh 1: Đếm tổng số dòng thỏa mãn bộ lọc hiện tại
-            const countSql = `
-                SELECT COUNT(*) as total 
-                FROM DanhGia dg 
-                INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
-                WHERE ${whereClause}
-            `;
+            const countSql = `SELECT COUNT(*) as total FROM DanhGia dg INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH WHERE ${whereClause}`;
             
-            // Câu lệnh 2: Lấy dữ liệu phân trang (Giới hạn bằng LIMIT và OFFSET)
+            // 🔴 ĐÃ SỬA: Nhúng thẳng ${limit} và ${offset} vào chuỗi SQL để chống lỗi ER_PARSE_ERROR
             const dataSql = `
                 SELECT dg.*, kh.TenKH, tk.AnhDaiDien, pl.ChiTietPhanLoai
                 FROM DanhGia dg
@@ -48,29 +41,28 @@ const reviewController = {
                 LEFT JOIN PhanLoai pl ON pl.MaPhanLoai = dg.MaPhanLoai
                 WHERE ${whereClause}
                 ORDER BY dg.ThoiGianDG DESC
-                LIMIT ? OFFSET ?
+                LIMIT ${limit} OFFSET ${offset}
             `;
 
-            // Câu lệnh 3: Lấy thống kê toàn cục cho sản phẩm (Bất chấp bộ lọc phân trang đang chọn)
             const statsSql = `
                 SELECT 
-                    COALESCE(ROUND(AVG(SoSao), 1), 0) as avgRating,
-                    COUNT(*) as totalCount,
-                    SUM(CASE WHEN SoSao = 5 THEN 1 ELSE 0 END) as star5,
-                    SUM(CASE WHEN SoSao = 4 THEN 1 ELSE 0 END) as star4,
-                    SUM(CASE WHEN SoSao = 3 THEN 1 ELSE 0 END) as star3,
-                    SUM(CASE WHEN SoSao = 2 THEN 1 ELSE 0 END) as star2,
-                    SUM(CASE WHEN SoSao = 1 THEN 1 ELSE 0 END) as star1,
-                    SUM(CASE WHEN HinhAnh IS NOT NULL AND HinhAnh != '[]' AND HinhAnh != 'null' THEN 1 ELSE 0 END) as withImageCount
-                FROM DanhGia
+                    COALESCE(ROUND(AVG(dg.SoSao), 1), 0) as avgRating,
+                    COUNT(dg.MaDG) as totalCount,
+                    SUM(CASE WHEN dg.SoSao = 5 THEN 1 ELSE 0 END) as star5,
+                    SUM(CASE WHEN dg.SoSao = 4 THEN 1 ELSE 0 END) as star4,
+                    SUM(CASE WHEN dg.SoSao = 3 THEN 1 ELSE 0 END) as star3,
+                    SUM(CASE WHEN dg.SoSao = 2 THEN 1 ELSE 0 END) as star2,
+                    SUM(CASE WHEN dg.SoSao = 1 THEN 1 ELSE 0 END) as star1,
+                    SUM(CASE WHEN dg.HinhAnh IS NOT NULL AND dg.HinhAnh != '[]' AND dg.HinhAnh != 'null' THEN 1 ELSE 0 END) as withImageCount
+                FROM DanhGia dg
                 INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
-                WHERE MaMH = ? AND dg.TrangThai = 1
+                WHERE dg.MaMH = ? AND dg.TrangThai = 1
             `;
 
-            // 2. ÉP XUNG HIỆU NĂNG: Chạy 3 câu lệnh song song
+            // 🔴 ĐÃ SỬA: Truyền params giống nhau cho countSql và dataSql (Vì đã tháo limit/offset ra khỏi mảng)
             const [[countResult], [result], [statsResult]] = await Promise.all([
                 db.query(countSql, params),
-                db.query(dataSql, [...params, limit, offset]),
+                db.query(dataSql, params), 
                 db.query(statsSql, [parsedId])
             ]);
 
@@ -92,7 +84,6 @@ const reviewController = {
                 };
             });
 
-            // 3. TRẢ VỀ DỮ LIỆU KÈM METADATA PHÂN TRANG VÀ THỐNG KÊ
             res.status(200).json({
                 success: true,
                 message: "Tải dữ liệu đánh giá thành công",
