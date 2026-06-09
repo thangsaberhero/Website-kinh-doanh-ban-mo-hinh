@@ -85,12 +85,40 @@ const reviewController = {
             }
             
             const MaKH = khachHang[0].MaKH;
+
+            const [checkReview] = await connection.query('SELECT MaDG FROM DanhGia WHERE MaMH = ? AND MaKH = ?', [MaMoHinh, MaKH]);
+            if (checkReview.length > 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi: Bạn đã đánh giá sản phẩm này rồi!" });
+            }
+
+            // =========================================================
+            // LỚP LỌC 2: KIỂM TRA ĐÃ MUA VÀ NHẬN HÀNG THÀNH CÔNG CHƯA?
+            // (Thêm MaMoHinh và Trạng Thái = 4)
+            // =========================================================
+            const sqlCheckPurchase = `
+                SELECT dh.MaDH 
+                FROM DonHang dh
+                INNER JOIN ChiTietDonHang ctdh ON dh.MaDH = ctdh.MaDH
+                INNER JOIN PhanLoai pl ON pl.MaPhanLoai = ctdh.MaPhanLoai
+                INNER JOIN ChiTietTrangThai cttt ON cttt.MaDH = dh.MaDH
+                WHERE dh.MaKH = ? AND pl.MaMoHinh = ? AND cttt.MaTrangThai = 4
+                LIMIT 1
+            `;
+            const [checkPurchase] = await connection.query(sqlCheckPurchase, [MaKH, MaMoHinh]);
+            
+            // Nếu độ dài === 0 nghĩa là chưa từng mua hoặc chưa nhận hàng
+            if (checkPurchase.length === 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi: Bạn cần mua và nhận hàng thành công mới được đánh giá!" });
+            }
             
             const safeImages = Array.isArray(HinhAnh) ? HinhAnh.filter(img => img != null) : [];
             const imageJson = JSON.stringify(safeImages);
             
             const sql = `INSERT INTO DanhGia(MaKH, MaMH, MaPhanLoai, NoiDung, SoSao, HinhAnh, TrangThai, ThoiGianDG) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`;
             await connection.query(sql, [MaKH, MaMoHinh, MaPhanLoai, NoiDung, SoSao, imageJson]);
+
 
             let tittleReview = SoSao <= 3 ? `Đánh giá thấp (${SoSao} sao)` : `Đánh giá mới (${SoSao} sao)`;
             await connection.query(`

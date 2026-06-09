@@ -8,9 +8,6 @@ const { uploadReview } = require('../../middlewares/upload.js');
 router.get('/check-purchase-status', authMiddleware.verifyToken, reviewController.checkPurchaseStatus);
 router.get('/product/:maMH', reviewController.getReviewsByProduct);
 
-// ============================================================
-// API 1: NHẬN ẢNH VÀ ĐẨY LÊN CLOUDINARY/LOCAL (DÙNG MULTER)
-// ============================================================
 router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 5), (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
@@ -33,10 +30,6 @@ router.post('/upload', authMiddleware.verifyToken, uploadReview.array('images', 
     }
 });
 
-// ============================================================
-// API 2: LƯU JSON ĐÁNH GIÁ (TEXT + MẢNG LINK ẢNH) VÀO DATABASE
-// ============================================================
-// Lưu ý: KHÔNG dùng middleware uploadReview ở đây nữa
 router.post('/create', authMiddleware.verifyToken, reviewController.createReview);
 
 module.exports = router;

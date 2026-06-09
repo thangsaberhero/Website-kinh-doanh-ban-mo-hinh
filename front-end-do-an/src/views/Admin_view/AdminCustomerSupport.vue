@@ -116,7 +116,9 @@
                 <p class="text-slate-700 text-sm leading-relaxed mb-4">{{ review.content }}</p>
                 <div v-if="review.images && review.images.length > 0" class="flex gap-2 mb-6">
                   <div v-for="(img, idx) in review.images" :key="idx" class="w-16 h-16 rounded-lg border border-slate-200 overflow-hidden cursor-zoom-in hover:border-[#ff8f73]">
-                    <img :src="img" @click="zoomedImage = img" class="w-full h-full object-cover">
+                    <img :src="img.startsWith('http') ? img : `${API_BASE_URL}/Images_review/${img}`" 
+                         @click="zoomedImage = img" 
+                         class="w-full h-full object-cover">
                   </div>
                 </div>
                 
@@ -354,7 +356,9 @@
     <button class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
       <span class="material-symbols-outlined text-4xl">close</span>
     </button>
-    <img :src="zoomedImage" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" @click.stop>
+    <img :src="zoomedImage.startsWith('http') ? zoomedImage : `${API_BASE_URL}/Images_review/${zoomedImage}`" 
+         class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" 
+         @click.stop>
   </div>
 </template>
   
@@ -462,6 +466,16 @@
       if (res.ok) {
         reviews.value = result.data.map(item => {
             const dateObj = new Date(item.ThoiGianDG);
+            let imageArr = [];
+            try {
+              if (item.HinhAnh) {
+                // Nếu backend trả về string thì parse, nếu trả về array sẵn thì giữ nguyên
+                imageArr = typeof item.HinhAnh === 'string' ? JSON.parse(item.HinhAnh) : item.HinhAnh;
+              }
+            } catch(e) { 
+              imageArr = []; 
+            }
+
             return {
               id: item.MaDG,
               customerName: item.TenKH || 'Khách hàng', 
@@ -471,7 +485,7 @@
               variant: item.ChiTietPhanLoai,
               stars: item.SoSao,
               content: item.NoiDung,
-              images: item.HinhAnh || [],
+              images: imageArr, // <-- ĐÃ SỬA DÒNG NÀY
               shopReply: item.PhanHoiShop,
               responderName: item.TenNVPhanHoi,
               status: item.TrangThai
