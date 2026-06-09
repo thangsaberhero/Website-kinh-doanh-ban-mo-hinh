@@ -469,8 +469,8 @@
             let imageArr = [];
             try {
               if (item.HinhAnh) {
-                // Nếu backend trả về string thì parse, nếu trả về array sẵn thì giữ nguyên
-                imageArr = typeof item.HinhAnh === 'string' ? JSON.parse(item.HinhAnh) : item.HinhAnh;
+                let parsed = typeof item.HinhAnh === 'string' ? JSON.parse(item.HinhAnh) : item.HinhAnh;
+                imageArr = Array.isArray(parsed) ? parsed.filter(img => img) : [];
               }
             } catch(e) { 
               imageArr = []; 

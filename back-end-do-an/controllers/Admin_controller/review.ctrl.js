@@ -80,7 +80,7 @@ const adminReviewController = {
                 if (item.HinhAnh && item.HinhAnh !== '[]' && item.HinhAnh !== 'null') {
                     try {
                         const imgArr = typeof item.HinhAnh === 'string' ? JSON.parse(item.HinhAnh) : item.HinhAnh;
-                        imageArr = Array.isArray(parsed) ? parsed.filter(img => img) : [];
+                        parsedImages = imgArr; 
                     } catch (e) { 
                         console.error("Lỗi parse JSON ảnh đánh giá:", e); 
                     }
