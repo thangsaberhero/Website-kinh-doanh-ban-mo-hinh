@@ -123,33 +123,62 @@ const reviewController = {
         }
     },
     checkPurchaseStatus: async(req, res) => {
+        // Chặn quyền Admin/Staff
         if (req.user && (req.user.role == 1 || req.user.role == 2)) {
             return res.status(403).json({ 
                 success: false, 
                 message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
             });
         }
-        try{
+        try {
             const MaTK = req.user.id; 
             const [khachHang] = await db.query('SELECT MaKH FROM KhachHang WHERE MaTK = ?', [MaTK]);
             if (khachHang.length === 0) return res.status(200).json({ canReview: false });
             
             const MaKH = khachHang[0].MaKH;
             const { MaMoHinh } = req.query;
-            const sql = `SELECT dh.MaDH
-                        FROM DonHang dh
-                        JOIN ChiTietDonHang ctdh ON ctdh.MaDH = dh.MaDH
-                        JOIN PhanLoai pl ON pl.MaPhanLoai = ctdh.MaPhanLoai
-                        JOIN ChiTietTrangThai cttt ON cttt.MaDH = dh.MaDH
-                        WHERE dh.MaKH = ? AND pl.MaMoHinh = ? AND cttt.MaTrangThai = 4
-                        ORDER BY cttt.ThoiGian DESC
-                        LIMIT 1`;
-            const [result] = await db.query(sql, [MaKH, MaMoHinh]);
-            res.status(200).json({
-                canReview: result.length > 0
-            });
+
+            // =========================================================
+            // LỚP LỌC 1: KIỂM TRA KHÁCH HÀNG ĐÃ ĐÁNH GIÁ SẢN PHẨM NÀY CHƯA?
+            // =========================================================
+            const sqlCheckReview = `SELECT MaDG FROM DanhGia WHERE MaKH = ? AND MaMH = ? LIMIT 1`;
+            const [existingReview] = await db.query(sqlCheckReview, [MaKH, MaMoHinh]);
+
+            if (existingReview.length > 0) {
+                // Nếu tìm thấy lịch sử đánh giá -> Khóa quyền luôn, không cần check đơn hàng nữa
+                return res.status(200).json({
+                    canReview: false,
+                    message: "Bạn đã đánh giá sản phẩm này rồi!"
+                });
+            }
+
+            // =========================================================
+            // LỚP LỌC 2: NẾU CHƯA ĐÁNH GIÁ -> KIỂM TRA ĐÃ MUA & NHẬN HÀNG CHƯA?
+            // =========================================================
+            const sqlCheckPurchase = `SELECT dh.MaDH
+                                      FROM DonHang dh
+                                      JOIN ChiTietDonHang ctdh ON ctdh.MaDH = dh.MaDH
+                                      JOIN PhanLoai pl ON pl.MaPhanLoai = ctdh.MaPhanLoai
+                                      JOIN ChiTietTrangThai cttt ON cttt.MaDH = dh.MaDH
+                                      WHERE dh.MaKH = ? AND pl.MaMoHinh = ? AND cttt.MaTrangThai = 4
+                                      ORDER BY cttt.ThoiGian DESC
+                                      LIMIT 1`;
+            const [purchaseResult] = await db.query(sqlCheckPurchase, [MaKH, MaMoHinh]);
+            
+            if (purchaseResult.length > 0) {
+                // Đã nhận hàng + Chưa đánh giá -> Cho phép (Mở khóa Form)
+                return res.status(200).json({
+                    canReview: true
+                });
+            } else {
+                // Chưa mua hoặc đơn hàng chưa giao thành công
+                return res.status(200).json({
+                    canReview: false,
+                    message: "Bạn cần mua và nhận hàng thành công để đánh giá!"
+                });
+            }
         }
-        catch(error){
+        catch(error) {
             console.error("Lỗi API checkPurchaseStatus: ", error);
             res.status(500).json({
                 message: "Lỗi máy chủ",
