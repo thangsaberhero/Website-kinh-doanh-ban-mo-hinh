@@ -32,7 +32,12 @@ const reviewController = {
             const whereClause = whereConditions.join(" AND ");
 
             // Câu lệnh 1: Đếm tổng số dòng thỏa mãn bộ lọc hiện tại
-            const countSql = `SELECT COUNT(*) as total FROM DanhGia dg WHERE ${whereClause}`;
+            const countSql = `
+                SELECT COUNT(*) as total 
+                FROM DanhGia dg 
+                INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
+                WHERE ${whereClause}
+            `;
             
             // Câu lệnh 2: Lấy dữ liệu phân trang (Giới hạn bằng LIMIT và OFFSET)
             const dataSql = `
@@ -58,7 +63,8 @@ const reviewController = {
                     SUM(CASE WHEN SoSao = 1 THEN 1 ELSE 0 END) as star1,
                     SUM(CASE WHEN HinhAnh IS NOT NULL AND HinhAnh != '[]' AND HinhAnh != 'null' THEN 1 ELSE 0 END) as withImageCount
                 FROM DanhGia
-                WHERE MaMH = ? AND TrangThai = 1
+                INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH
+                WHERE MaMH = ? AND dg.TrangThai = 1
             `;
 
             // 2. ÉP XUNG HIỆU NĂNG: Chạy 3 câu lệnh song song
