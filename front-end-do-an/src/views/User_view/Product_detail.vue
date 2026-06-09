@@ -422,7 +422,7 @@
         <button class="absolute top-6 right-6 text-white/50 hover:text-primary transition-colors">
           <span class="material-symbols-outlined text-4xl">close</span>
         </button>
-        <img :src="`${API_BASE_URL}/Images_review/` + zoomedImage"
+        <img :src="zoomedImage"
             class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] transform scale-100 animate-[zoomIn_0.2s_ease-out]"
             @click.stop />
       </div>
