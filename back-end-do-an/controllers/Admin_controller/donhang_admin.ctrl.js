@@ -6,6 +6,7 @@ const donhang_admin = {
     tao_don_hang_ngoai: async(req, res) => {
         const connection = await db.getConnection();
         try {
+            const MaTK = req.user.id;
             const [check_nv] = await connection.query(`SELECT MaNV FROM NhanVien WHERE MaTK = ?`, [MaTK]);
             
             if (check_nv.length === 0) {
