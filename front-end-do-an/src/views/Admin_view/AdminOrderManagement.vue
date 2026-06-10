@@ -570,7 +570,11 @@
               </div>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1.5">Địa chỉ giao hàng</label>
+              <label class="text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1">
+                Địa chỉ giao hàng
+                <span v-if="isCartContainsOrder" class="text-rose-500 font-bold">*</span>
+                <span v-else class="text-slate-400 font-normal text-[10px]">(Tùy chọn với Hàng có sẵn)</span>
+              </label>
               <input v-model="externalOrderForm.DiaChiGiao" type="text" placeholder="Nhập địa chỉ chi tiết..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
             </div>
           </div>
@@ -1507,6 +1511,12 @@ const exportExcelReport = async () => {
     GiamGiaVoucher: 0
   });
 
+  const isCartContainsOrder = computed(() => {
+    return externalOrderForm.value.DanhSachSanPham.some(item => 
+      item.LoaiHinhBan && item.LoaiHinhBan.toLowerCase().includes('order')
+    );
+  });
+
   const fetchVouchersForPOS = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -1676,8 +1686,19 @@ const exportExcelReport = async () => {
   });
 
   const submitExternalOrder = async () => {
-    if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan || !externalOrderForm.value.DiaChiGiao) {
-      toastStore.showToast('Vui lòng nhập Tên, Số điện thoại và Địa chỉ của khách hàng!', 'error');
+    if (!externalOrderForm.value.TenNguoiNhan || !externalOrderForm.value.SDTNguoiNhan) {
+      toastStore.showToast('Vui lòng nhập Tên và Số điện thoại của khách hàng (Bắt buộc để bảo hành)!', 'error');
+      return;
+    }
+
+    // 2. CHỐT CHẶN 2: Kiểm tra xem trong giỏ đang có hàng Order hay không
+    const isOrderProduct = externalOrderForm.value.DanhSachSanPham.some(item => 
+      item.LoaiHinhBan && item.LoaiHinhBan.toLowerCase().includes('order')
+    );
+
+    // 3. CHỐT CHẶN 3: Nếu là hàng Order thì bắt buộc phải có Địa chỉ
+    if (isOrderProduct && !externalOrderForm.value.DiaChiGiao) {
+      toastStore.showToast('Vui lòng nhập Địa chỉ giao hàng đối với sản phẩm Order / Pre-order!', 'error');
       return;
     }
 
