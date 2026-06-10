@@ -58,16 +58,17 @@
                   <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Email</label>
                   <span v-if="isSocialAccount" class="text-[9px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded">Tài khoản liên kết</span>
                 </div>
-                <input 
-                  v-model="form.email" :disabled="isSocialAccount"
-                  :class="[
-                    'w-full bg-transparent border-none border-b-2 focus:ring-0 transition-all py-3 px-0 font-medium',
-                    isSocialAccount ? 'border-outline-variant/20 text-outline/50 cursor-not-allowed' : 'border-outline-variant/40 focus:border-primary text-white input-focus-glow'
-                  ]"
-                  type="email" 
-                  placeholder="Nhập email của bạn"
-                  :title="isSocialAccount ? 'Không thể thay đổi email của tài khoản liên kết' : ''"
-                />
+                
+                <div class="relative group">
+                  <input 
+                    v-model="form.email" 
+                    disabled
+                    class="w-full bg-transparent border-none border-b-2 border-outline-variant/20 text-outline/50 cursor-not-allowed py-3 px-0 font-medium" 
+                    type="email" 
+                    :title="isSocialAccount ? 'Không thể thay đổi email của tài khoản liên kết' : 'Email không thể tự thay đổi để đảm bảo bảo mật. Vui lòng liên hệ Hotline nếu cần hỗ trợ.'"
+                  />
+                  <span class="absolute right-0 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline/50 text-sm">lock</span>
+                </div>
               </div>
 
               <div class="space-y-2">
@@ -270,7 +271,7 @@
     try {
       const formData = new FormData();
       formData.append('TenKH', form.name);
-      formData.append('email', form.email);
+      // formData.append('email', form.email);
       formData.append('SDT', form.phone);
       formData.append('DiaChi', form.address);
       formData.append('isAvatarRemoved', isAvatarRemoved.value); 
