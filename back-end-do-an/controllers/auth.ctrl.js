@@ -450,6 +450,8 @@ const authController = {
             delete fullUser.ResetOTP;
             delete fullUser.OTPExpires;
 
+            fullUser.isSocialAuth = true;
+
             res.status(200).json({
                 success: true,
                 message: "Đăng nhập Google thành công!",
@@ -529,6 +531,8 @@ const authController = {
             delete fullUser.MatKhau;
             delete fullUser.ResetOTP;
             delete fullUser.OTPExpires;
+
+            fullUser.isSocialAuth = true;
 
             res.status(200).json({ success: true, message: "Đăng nhập Facebook thành công!", token: appToken, user: fullUser });
         } 

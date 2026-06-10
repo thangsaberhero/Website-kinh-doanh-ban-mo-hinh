@@ -24,7 +24,7 @@
         <router-link to="/profile" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
           <span class="material-symbols-outlined">person</span> <span>Thông tin cá nhân</span>
         </router-link>
-        <router-link to="/change-password" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
+        <router-link v-if="!isSocialAccount" to="/change-password" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
           <span class="material-symbols-outlined">lock</span> <span>Đổi mật khẩu</span>
         </router-link>
         <router-link to="/wishlist" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
@@ -55,6 +55,7 @@
   const totalFigures = ref(0); 
   const userString = localStorage.getItem('user');
   const currentUser = userString ? JSON.parse(userString) : null;
+  const isSocialAccount = computed(() => currentUser?.isSocialAuth === true);
   
   const fetchUserStats = async () => {
     if (!currentUser) return;

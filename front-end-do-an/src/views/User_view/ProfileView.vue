@@ -54,8 +54,20 @@
               </div>
 
               <div class="space-y-2">
-                <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Email</label>
-                <input v-model="form.email" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" type="email" placeholder="Nhập email của bạn"/>
+                <div class="flex items-center justify-between">
+                  <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Email</label>
+                  <span v-if="isSocialAccount" class="text-[9px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded">Tài khoản liên kết</span>
+                </div>
+                <input 
+                  v-model="form.email" :disabled="isSocialAccount"
+                  :class="[
+                    'w-full bg-transparent border-none border-b-2 focus:ring-0 transition-all py-3 px-0 font-medium',
+                    isSocialAccount ? 'border-outline-variant/20 text-outline/50 cursor-not-allowed' : 'border-outline-variant/40 focus:border-primary text-white input-focus-glow'
+                  ]"
+                  type="email" 
+                  placeholder="Nhập email của bạn"
+                  :title="isSocialAccount ? 'Không thể thay đổi email của tài khoản liên kết' : ''"
+                />
               </div>
 
               <div class="space-y-2">
@@ -124,6 +136,7 @@
 
   const userString = localStorage.getItem('user');
   const currentUser = userString ? JSON.parse(userString) : null;
+  const isSocialAccount = ref(currentUser?.isSocialAuth === true);
 
   const fileInput = ref(null); 
   const selectedFile = ref(null); 
