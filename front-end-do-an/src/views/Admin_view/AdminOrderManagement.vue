@@ -534,195 +534,210 @@
   </div>
   
   <div v-if="isCreateExternalOrderOpen" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[90vh] animate-[fadeIn_0.2s_ease-out]">
         
-        <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 shrink-0">
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
             <span class="material-symbols-outlined text-emerald-500">add_shopping_cart</span>
-            Tạo đơn hàng thủ công
+            Tạo đơn hàng thủ công tại quầy
           </h3>
           <button @click="isCreateExternalOrderOpen = false" class="text-slate-400 hover:text-rose-500 transition-colors">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
-          <div class="space-y-4">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Thông tin Khách hàng</h4>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1.5">Tên khách hàng (*)</label>
-                <input v-model="externalOrderForm.TenNguoiNhan" type="text" placeholder="VD: Phùng Thắng" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1.5">Số điện thoại (*)</label>
-                <input v-model="externalOrderForm.SDTNguoiNhan" type="text" placeholder="VD: 0912345678" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-              </div>
-            </div>
-            <div>
-              <label class="text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1">
-                Địa chỉ giao hàng
-                <span v-if="isCartContainsOrder" class="text-rose-500 font-bold">*</span>
-                <span v-else class="text-slate-400 font-normal text-[10px]">(Tùy chọn với Hàng có sẵn)</span>
-              </label>
-              <input v-model="externalOrderForm.DiaChiGiao" type="text" placeholder="Nhập địa chỉ chi tiết..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-            </div>
-          </div>
-
-          <div class="space-y-4 pt-4 border-t border-slate-100">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Thanh toán & Đặt cọc</h4>
-            <div class="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              
-              <label class="flex items-center gap-2 cursor-pointer w-fit">
-                <input type="checkbox" v-model="externalOrderForm.ThuTienNgay" class="w-4 h-4 text-emerald-500 rounded border-slate-300 focus:ring-emerald-500">
-                <span class="text-sm font-bold text-slate-700">Khách thanh toán / Đặt cọc ngay</span>
-              </label>
-
-              <div v-if="externalOrderForm.ThuTienNgay" class="flex flex-col gap-4 animate-[fadeIn_0.2s_ease-out] pt-3 border-t border-slate-200/60">
-                
-                <div class="flex gap-4">
-                  <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="5" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
-                    <span class="text-sm font-bold text-slate-600">Tiền mặt</span>
-                  </label>
-                  <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="4" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
-                    <span class="text-sm font-bold text-slate-600">Chuyển khoản ngoài</span>
-                  </label>
-                </div>
-
-                <div>
-                  <div class="flex justify-between items-end mb-1.5">
-                    <label class="block text-xs font-bold text-slate-600">Số tiền khách đưa (VNĐ) <span class="text-rose-500">*</span></label>
-                    <div class="flex gap-2">
-                      <span v-if="externalOrderForm.TongCocToiThieu > 0" class="text-[10px] font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 transition-colors px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.TongCocToiThieu">Gợi ý cọc tối thiểu</span>
-                      
-                      <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100 hover:bg-emerald-200 transition-colors px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.ThanhTien">Thu Full</span>
-                    </div>
-                  </div>
-                  <input v-model="externalOrderForm.SoTienDaTra" type="number" min="0" placeholder="Nhập số tiền..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-bold text-slate-800">
-                  
-                  <p v-if="externalOrderForm.TongCocToiThieu > 0 && externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.TongCocToiThieu" class="text-[11px] text-rose-500 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
-                    <span class="material-symbols-outlined text-[14px]">warning</span>
-                    Chưa đạt mức cọc tối thiểu ({{ externalOrderForm.TongCocToiThieu.toLocaleString('vi-VN') }} ₫)!
-                  </p>
-                  
-                  <p v-else-if="externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.ThanhTien" class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
-                    <span class="material-symbols-outlined text-[14px]">info</span>
-                    Hệ thống sẽ ghi nhận đây là khoản ĐẶT CỌC.
-                  </p>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <div class="space-y-4 pt-4 border-t border-slate-100">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Thêm sản phẩm vào đơn</h4>
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search_insights</span>
-              <input v-model="searchProductQuery" @input="debounceSearchProduct" type="text" placeholder="Tìm tên mô hình, nhân vật..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium text-slate-700">
-              <span v-if="isSearchingProducts" class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin">progress_activity</span>
+            <div class="lg:col-span-5 space-y-5">
+              
+              <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200/60 space-y-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">person</span> Thông tin Khách hàng
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Tên khách hàng <span class="text-rose-500 font-bold">*</span></label>
+                    <input v-model="externalOrderForm.TenNguoiNhan" type="text" placeholder="VD: Phùng Thắng" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Số điện thoại <span class="text-rose-500 font-bold">*</span></label>
+                    <input v-model="externalOrderForm.SDTNguoiNhan" type="text" placeholder="VD: 0912345678" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1">
+                    Địa chỉ giao hàng
+                    <span v-if="isCartContainsOrder" class="text-rose-500 font-bold">*</span>
+                    <span v-else class="text-slate-400 font-normal text-[10px]">(Tùy chọn với Hàng có sẵn)</span>
+                  </label>
+                  <input v-model="externalOrderForm.DiaChiGiao" type="text" placeholder="Nhập địa chỉ chi tiết để giao hàng..." class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 pl-1">
+                  <span class="material-symbols-outlined text-[16px]">payments</span> Thanh toán & Đặt cọc
+                </h4>
+                <div class="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  
+                  <label class="flex items-center gap-2 cursor-pointer w-fit">
+                    <input type="checkbox" v-model="externalOrderForm.ThuTienNgay" class="w-4 h-4 text-emerald-500 rounded border-slate-300 focus:ring-emerald-500">
+                    <span class="text-sm font-bold text-slate-700">Khách thanh toán / Đặt cọc ngay</span>
+                  </label>
+
+                  <div v-if="externalOrderForm.ThuTienNgay" class="flex flex-col gap-4 animate-[fadeIn_0.2s_ease-out] pt-3 border-t border-slate-200/60">
+                    
+                    <div class="flex gap-4">
+                      <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="5" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
+                        <span class="text-sm font-bold text-slate-600">Tiền mặt</span>
+                      </label>
+                      <label class="flex items-center gap-1.5 cursor-pointer">
+                        <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="4" class="text-emerald-500 focus:ring-emerald-500 border-slate-300">
+                        <span class="text-sm font-bold text-slate-600">Chuyển khoản ngoài</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <div class="flex justify-between items-end mb-1.5">
+                        <label class="block text-xs font-bold text-slate-600">Số tiền khách đưa (VNĐ) <span class="text-rose-500">*</span></label>
+                        <div class="flex gap-2">
+                          <span v-if="externalOrderForm.TongCocToiThieu > 0" class="text-[10px] font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 transition-colors px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.TongCocToiThieu">Gợi ý cọc tối thiểu</span>
+                          <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100 hover:bg-emerald-200 transition-colors px-1.5 py-0.5 rounded cursor-pointer" @click="externalOrderForm.SoTienDaTra = externalOrderForm.ThanhTien">Thu Full</span>
+                        </div>
+                      </div>
+                      <input v-model="externalOrderForm.SoTienDaTra" type="number" min="0" placeholder="Nhập số tiền..." class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-bold text-slate-800">
+                      
+                      <p v-if="externalOrderForm.TongCocToiThieu > 0 && externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.TongCocToiThieu" class="text-[11px] text-rose-500 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
+                        <span class="material-symbols-outlined text-[14px]">warning</span>
+                        Chưa đạt mức cọc tối thiểu ({{ externalOrderForm.TongCocToiThieu.toLocaleString('vi-VN') }} ₫)!
+                      </p>
+                      <p v-else-if="externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.ThanhTien" class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
+                        <span class="material-symbols-outlined text-[14px]">info</span>
+                        Hệ thống sẽ ghi nhận đây là khoản ĐẶT CỌC.
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="availableVouchers.length > 0" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <label class="block text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-emerald-500">local_activity</span> 
+                  Áp dụng Mã giảm giá công khai (Tùy chọn)
+                </label>
+                <select v-model="externalOrderForm.MaGG" @change="recalculateOrderTotal" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-medium text-slate-700 cursor-pointer">
+                  <option :value="null">-- Không áp dụng mã giảm giá --</option>
+                  <option v-for="v in availableVouchers" :key="v.MaGG" :value="v.MaGG" :disabled="externalOrderForm.TongTien < v.MucGiaToiThieu">
+                    {{ v.MaVoucher }} - Giảm {{ v.LoaiGiamGia === 'TienMat' ? v.ChietKhau.toLocaleString('vi-VN') + 'đ' : v.ChietKhau + '%' }} 
+                    (Đơn từ {{ v.MucGiaToiThieu.toLocaleString('vi-VN') }}đ)
+                  </option>
+                </select>
+              </div>
+
             </div>
 
-            <div v-if="searchResults.length > 0" class="max-h-60 overflow-y-auto custom-scrollbar bg-white border border-slate-200 rounded-xl shadow-lg p-2 space-y-2">
-              <div v-for="prod in searchResults" :key="prod.MaMoHinh" class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div class="flex gap-3 items-start">
-                  <div class="w-12 h-12 bg-white rounded border border-slate-200 p-1 shrink-0">
-                    <img :src="prod.AnhDaiDien ? (prod.AnhDaiDien.startsWith('http') ? prod.AnhDaiDien : `${API_BASE_URL}/Images_product/${prod.AnhDaiDien}`) : ''" class="w-full h-full object-contain" />
-                  </div>
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-2">
-                        <p class="text-sm font-bold text-slate-900">{{ prod.TenMH }}</p>
-                        <span class="text-[9px] px-2 py-0.5 rounded border uppercase font-bold tracking-widest whitespace-nowrap"
-                              :class="prod.LoaiHinhBan && prod.LoaiHinhBan.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
-                            {{ prod.LoaiHinhBan || 'Có sẵn' }}
-                        </span>
-                    </div>
-                    <div class="space-y-1.5">
-                      <div v-for="variant in prod.PhanLoai" :key="variant.MaPhanLoai" class="flex justify-between items-center bg-white px-3 py-1.5 rounded border border-slate-200">
-                        <div>
-                          <span class="text-xs font-semibold text-slate-700">{{ variant.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : variant.ChiTietPhanLoai }}</span>
-                          <span class="text-[10px] text-slate-400 ml-2">Kho: {{ variant.TonKho }}</span>
+            <div class="lg:col-span-7 space-y-5 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-6">
+              
+              <div class="space-y-3">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">search_insights</span> Tìm sản phẩm vào đơn
+                </h4>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search_insights</span>
+                  <input v-model="searchProductQuery" @input="debounceSearchProduct" type="text" placeholder="Tìm tên mô hình, nhân vật hoặc series..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium text-slate-700">
+                  <span v-if="isSearchingProducts" class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin">progress_activity</span>
+                </div>
+
+                <div v-if="searchResults.length > 0" class="max-h-44 overflow-y-auto custom-scrollbar bg-white border border-slate-200 rounded-xl shadow-lg p-2 space-y-2">
+                  <div v-for="prod in searchResults" :key="prod.MaMoHinh" class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                    <div class="flex gap-3 items-start">
+                      <div class="w-10 h-10 bg-white rounded border border-slate-200 p-1 shrink-0">
+                        <img :src="prod.AnhDaiDien ? (prod.AnhDaiDien.startsWith('http') ? prod.AnhDaiDien : `${API_BASE_URL}/Images_product/${prod.AnhDaiDien}`) : ''" class="w-full h-full object-contain" />
+                      </div>
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <p class="text-xs font-bold text-slate-900 line-clamp-1">{{ prod.TenMH }}</p>
+                            <span class="text-[8px] px-1.5 py-0.5 rounded border uppercase font-black tracking-widest whitespace-nowrap"
+                                  :class="prod.LoaiHinhBan && prod.LoaiHinhBan.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
+                                {{ prod.LoaiHinhBan || 'Có sẵn' }}
+                            </span>
                         </div>
-                        <div class="flex items-center gap-3">
-                          <span class="text-xs font-bold text-[#ff3d00]">{{ variant.DonGia?.toLocaleString('vi-VN') }} ₫</span>
-                          <button @click="addVariantToOrder(prod, variant)" class="w-6 h-6 flex items-center justify-center bg-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded transition-colors">
-                            <span class="material-symbols-outlined text-[16px]">add</span>
-                          </button>
+                        <div class="space-y-1">
+                          <div v-for="variant in prod.PhanLoai" :key="variant.MaPhanLoai" class="flex justify-between items-center bg-white px-2.5 py-1 rounded border border-slate-200/60 text-xs">
+                            <div>
+                              <span class="font-semibold text-slate-700">{{ variant.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : variant.ChiTietPhanLoai }}</span>
+                              <span class="text-[10px] text-slate-400 ml-2">Kho: {{ variant.TonKho }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                              <span class="font-bold text-[#ff3d00]">{{ variant.DonGia?.toLocaleString('vi-VN') }} ₫</span>
+                              <button @click="addVariantToOrder(prod, variant)" class="w-5 h-5 flex items-center justify-center bg-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded transition-colors">
+                                <span class="material-symbols-outlined text-[14px]">add</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div v-else-if="searchProductQuery.length > 0 && !isSearchingProducts" class="text-center py-4 text-xs font-medium text-slate-400 border border-dashed border-slate-200 rounded-xl">
-              Không tìm thấy mô hình nào phù hợp.
-            </div>
-          </div>
-
-          <div v-if="externalOrderForm.DanhSachSanPham.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sản phẩm đã chọn</h4>
-            <div class="space-y-2">
-              <div v-for="(item, index) in externalOrderForm.DanhSachSanPham" :key="index" class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
-                <div class="flex-1">
-                  <p class="text-xs font-bold text-slate-800 line-clamp-1" :title="item.TenMH">{{ item.TenMH }}</p>
-                  <p class="text-[10px] font-semibold text-slate-500 mt-0.5">Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</p>
-                  <p class="text-xs font-bold text-[#ff3d00] mt-1">{{ item.DonGia?.toLocaleString('vi-VN') }} ₫</p>
+                <div v-else-if="searchProductQuery.length > 0 && !isSearchingProducts" class="text-center py-3 text-xs font-medium text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                  Không tìm thấy mô hình nào phù hợp.
                 </div>
-                
-                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0">
-                  <button @click="updateItemQuantity(index, -1)" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors"><span class="material-symbols-outlined text-[14px]">remove</span></button>
-                  <span class="text-xs font-bold w-6 text-center text-slate-700">{{ item.SoLuong }}</span>
-                  <button @click="updateItemQuantity(index, 1)" :disabled="item.SoLuong >= item.TonKho" class="w-6 h-6 flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 rounded transition-colors disabled:opacity-30"><span class="material-symbols-outlined text-[14px]">add</span></button>
+              </div>
+
+              <div v-if="externalOrderForm.DanhSachSanPham.length > 0" class="space-y-3 pt-2">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sản phẩm đã chọn mua</h4>
+                <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                  <div v-for="(item, index) in externalOrderForm.DanhSachSanPham" :key="index" class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <div class="flex-1">
+                      <p class="text-xs font-bold text-slate-800 line-clamp-1" :title="item.TenMH">{{ item.TenMH }}</p>
+                      <p class="text-[10px] font-semibold text-slate-500 mt-0.5">Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</p>
+                      <p class="text-xs font-bold text-[#ff3d00] mt-0.5">{{ item.DonGia?.toLocaleString('vi-VN') }} ₫</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0">
+                      <button @click="updateItemQuantity(index, -1)" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors"><span class="material-symbols-outlined text-[12px]">remove</span></button>
+                      <span class="text-xs font-bold w-5 text-center text-slate-700">{{ item.SoLuong }}</span>
+                      <button @click="updateItemQuantity(index, 1)" :disabled="item.SoLuong >= item.TonKho" class="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-emerald-500 hover:bg-emerald-50 rounded transition-colors disabled:opacity-30"><span class="material-symbols-outlined text-[12px]">add</span></button>
+                    </div>
+                    
+                    <div class="text-right shrink-0 w-24">
+                      <p class="text-xs font-bold text-slate-900">{{ (item.DonGia * item.SoLuong).toLocaleString('vi-VN') }} ₫</p>
+                    </div>
+
+                    <button @click="removeVariantFromOrder(index)" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors shrink-0">
+                      <span class="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </div>
                 </div>
-                
-                <div class="text-right shrink-0 w-24">
-                  <p class="text-sm font-bold text-slate-900">{{ (item.DonGia * item.SoLuong).toLocaleString('vi-VN') }} ₫</p>
+
+                <div class="flex flex-col gap-2 p-4 bg-emerald-50/60 border border-emerald-100 rounded-xl mt-2">
+                  <div class="flex justify-between items-center text-xs">
+                      <span class="font-bold text-slate-600">Tổng tiền hàng gốc:</span>
+                      <span class="font-bold text-slate-900">{{ externalOrderForm.TongTien?.toLocaleString('vi-VN') }} ₫</span>
+                  </div>
+                  <div v-if="externalOrderForm.GiamGiaVoucher > 0" class="flex justify-between items-center text-xs">
+                      <span class="font-bold text-emerald-600">Khấu trừ giảm giá Voucher:</span>
+                      <span class="font-bold text-emerald-600">-{{ externalOrderForm.GiamGiaVoucher?.toLocaleString('vi-VN') }} ₫</span>
+                  </div>
+                  <div class="border-t border-emerald-200/60 pt-2.5 mt-1 flex justify-between items-center">
+                      <span class="text-xs font-bold text-emerald-800">Thành tiền cần thu ({{ externalOrderForm.DanhSachSanPham.reduce((sum, i) => sum + i.SoLuong, 0) }} món)</span>
+                      <span class="text-lg font-brand font-black text-emerald-600">{{ externalOrderForm.ThanhTien?.toLocaleString('vi-VN') }} ₫</span>
+                  </div>
                 </div>
-
-                <button @click="removeVariantFromOrder(index)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors shrink-0">
-                  <span class="material-symbols-outlined text-[18px]">delete</span>
-                </button>
               </div>
+
             </div>
 
-            <div v-if="availableVouchers.length > 0" class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <label class="block text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px] text-emerald-500">local_activity</span> 
-                Áp dụng Mã giảm giá (Tùy chọn)
-              </label>
-              <select v-model="externalOrderForm.MaGG" @change="recalculateOrderTotal" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-medium text-slate-700 cursor-pointer">
-                <option :value="null">-- Không áp dụng mã giảm giá --</option>
-                <option v-for="v in availableVouchers" :key="v.MaGG" :value="v.MaGG" :disabled="externalOrderForm.TongTien < v.MucGiaToiThieu">
-                  {{ v.MaVoucher }} - Giảm {{ v.LoaiGiamGia === 'TienMat' ? v.ChietKhau.toLocaleString('vi-VN') + 'đ' : v.ChietKhau + '%' }} 
-                  (Đơn từ {{ v.MucGiaToiThieu.toLocaleString('vi-VN') }}đ)
-                </option>
-              </select>
-            </div>
-
-            <div class="flex flex-col gap-2 p-4 bg-emerald-50 border border-emerald-100 rounded-xl mt-4">
-              <div class="flex justify-between items-center text-sm">
-                  <span class="font-bold text-slate-600">Tổng tiền hàng:</span>
-                  <span class="font-bold text-slate-900">{{ externalOrderForm.TongTien?.toLocaleString('vi-VN') }} ₫</span>
-              </div>
-              <div v-if="externalOrderForm.GiamGiaVoucher > 0" class="flex justify-between items-center text-sm">
-                  <span class="font-bold text-emerald-600">Giảm giá Voucher:</span>
-                  <span class="font-bold text-emerald-600">-{{ externalOrderForm.GiamGiaVoucher?.toLocaleString('vi-VN') }} ₫</span>
-              </div>
-              <div class="border-t border-emerald-200/60 pt-2 mt-1 flex justify-between items-center">
-                  <span class="text-sm font-bold text-emerald-800">Thanh toán ({{ externalOrderForm.DanhSachSanPham.reduce((sum, i) => sum + i.SoLuong, 0) }} SP)</span>
-                  <span class="text-xl font-brand font-black text-emerald-600">{{ externalOrderForm.ThanhTien?.toLocaleString('vi-VN') }} ₫</span>
-              </div>
-            </div>
           </div>
         </div>
 
         <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
-          <button @click="isCreateExternalOrderOpen = false" class="px-6 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Hủy</button>
-          <button @click="submitExternalOrder" class="px-6 py-2.5 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 rounded-xl transition-all">Lưu đơn hàng</button>
+          <button @click="isCreateExternalOrderOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors uppercase tracking-wider">Hủy bỏ</button>
+          <button @click="submitExternalOrder" class="px-6 py-2.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 rounded-xl transition-all uppercase tracking-wider">Lưu đơn hàng</button>
         </div>
 
       </div>
