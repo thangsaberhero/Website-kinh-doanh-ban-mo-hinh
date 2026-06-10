@@ -83,8 +83,6 @@ const donhang_admin = {
                     message: "Vui lòng nhập đầy đủ thông tin!" });
             }
 
-            if (coHangOrder) 
-
             let TongTienHang = 0;
             let TongTienKhuyenMai = 0;
             let arrChiTietDonHang = [];
