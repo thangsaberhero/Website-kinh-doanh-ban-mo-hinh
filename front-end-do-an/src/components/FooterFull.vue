@@ -1,7 +1,7 @@
 <template>
   <footer class="bg-surface-container-lowest border-t border-outline-variant/15 pt-20 pb-10">
     <div class="max-w-7xl mx-auto px-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">        
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">        
         <div class="lg:col-span-1">
           <router-link to="/" class="font-headline text-2xl font-bold tracking-tighter text-primary mb-6 block">
             {{ systemStore.settings.shop_name || 'FigureCollect' }}
@@ -9,15 +9,32 @@
           <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
             Điểm đến hàng đầu cho cộng đồng đam mê sưu tập mô hình tại Việt Nam. Chúng tôi mang đến những tạo tác giá trị nhất từ khắp nơi trên thế giới.
           </p>
-          <div class="flex gap-3">
-            <a href="#" class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant">
-              <span class="material-symbols-outlined text-xl">social_leaderboard</span>
+          <div class="flex gap-4">
+            <a v-if="systemStore.settings.social_facebook" 
+              :href="systemStore.settings.social_facebook" 
+              target="_blank" rel="noopener noreferrer"
+              class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+              <img src="https://api.iconify.design/logos:facebook.svg" 
+                    alt="Facebook" 
+                    class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
             </a>
-            <a href="#" class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant">
-              <span class="material-symbols-outlined text-xl">camera</span>
+
+            <a v-if="systemStore.settings.social_youtube" 
+              :href="systemStore.settings.social_youtube" 
+              target="_blank" rel="noopener noreferrer"
+              class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+              <img src="https://api.iconify.design/logos:youtube-icon.svg" 
+                    alt="YouTube" 
+                    class="w-7 h-7 object-contain group-hover:scale-110 transition-transform" />
             </a>
-            <a href="#" class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors text-on-surface-variant">
-              <span class="material-symbols-outlined text-xl">play_circle</span>
+
+            <a v-if="systemStore.settings.social_instagram" 
+              :href="systemStore.settings.social_instagram" 
+              target="_blank" rel="noopener noreferrer"
+              class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+              <img src="https://api.iconify.design/skill-icons:instagram.svg" 
+                    alt="Instagram" 
+                    class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
             </a>
           </div>
         </div>
@@ -54,7 +71,7 @@
           </ul>
         </div>
 
-        <div>
+        <!-- <div>
           <h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Đăng ký nhận tin</h4>
           <p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Nhận thông báo sớm nhất về các đợt Pre-order giới hạn.</p>
           <form @submit.prevent="handleSubscribe" class="relative">
@@ -69,7 +86,7 @@
               <span class="material-symbols-outlined text-[18px]">send</span>
             </button>
           </form>
-        </div>       
+        </div>        -->
       </div>
 
       <div class="border-t border-outline-variant/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-outline font-bold tracking-widest uppercase">
