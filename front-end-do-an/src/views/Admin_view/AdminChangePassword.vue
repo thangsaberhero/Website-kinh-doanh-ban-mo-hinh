@@ -173,10 +173,6 @@
     if (!currentUser && !localStorage.getItem('token')) {
       router.push('/login');
     }
-    else if (currentUser?.isSocialAuth === true) {
-      toastStore.showToast("Tài khoản liên kết Google/Facebook không thể sử dụng chức năng đổi mật khẩu!", "error");
-      router.push('/profile');
-    }
   });
   
   // Bắt lỗi Validation realtime khi gõ
