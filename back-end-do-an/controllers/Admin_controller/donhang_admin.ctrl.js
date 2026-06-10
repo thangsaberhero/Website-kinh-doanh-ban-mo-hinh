@@ -58,16 +58,26 @@ const donhang_admin = {
                 return res.status(400).json({ success: false, message: "Có sản phẩm không tồn tại trong hệ thống!" });
             }
 
-            const coHangSan = db_items.some(item => item.LoaiHinhBan == 1 || item.LoaiHinhBan == 0 || item.LoaiHinhBan == null);
-            const coHangOrder = db_items.some(item => item.LoaiHinhBan > 1);
+            const coHangSan = db_items.some(item => !item.LoaiHinhBan || item.LoaiHinhBan.toLowerCase().includes('có sẵn'));
+            // Chỉ cần chứa chữ "order" là bao trọn cả "Order" và "Pre-order"
+            const coHangOrder = db_items.some(item => item.LoaiHinhBan && item.LoaiHinhBan.toLowerCase().includes('order'));
 
             if (coHangSan && coHangOrder) {
                 await connection.rollback();
                 return res.status(400).json({ 
                     success: false, 
-                    message: "Không thể tạo chung đơn có cả Hàng sẵn và Pre-order. Vui lòng tách thành 2 đơn riêng biệt!" 
+                    message: "Không thể tạo chung đơn có cả Hàng sẵn và Hàng Order/Pre-order. Vui lòng tách thành 2 đơn riêng biệt!" 
                 });
             }
+
+            if (coHangOrder && !DiaChi) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Vui lòng nhập đầy đủ thông tin!" });
+            }
+
+            if (coHangOrder) 
 
             let TongTienHang = 0;
             let TongTienKhuyenMai = 0;
@@ -82,8 +92,11 @@ const donhang_admin = {
 
                 if (soLuongYeuCau > item.TonKho) {
                     await connection.rollback();
-                    const kieuHang = item.LoaiHinhBan > 1 ? 'Slot Pre-order' : 'Hàng có sẵn';
-                    return res.status(400).json({ success: false, message: `Sản phẩm ${item.TenMH} (${item.ChiTietPhanLoai}) chỉ còn ${item.TonKho} ${kieuHang}!` });
+                    const isOrder = item.LoaiHinhBan && item.LoaiHinhBan.toLowerCase().includes('order');
+                    const kieuHang = isOrder ? 'Slot Order/Pre-order' : 'Hàng có sẵn';
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Sản phẩm ${item.TenMH} (${item.ChiTietPhanLoai}) chỉ còn ${item.TonKho} ${kieuHang}!` });
                 }
 
                 const slSale = item.SoLuongKhuyenMaiConLai > 0 ? Math.min(soLuongYeuCau, item.SoLuongKhuyenMaiConLai) : 0;
@@ -168,13 +181,32 @@ const donhang_admin = {
             const maDH_moi = tao_don.insertId;
 
             // Ghi nhận bảng thanh toán nếu có đưa tiền (Cọc hoặc Full)
-            if (ThuTienNgay && PhuongThucTT && tienThucThu > 0) {
-                await connection.query(`
-                    INSERT INTO ThanhToan (MaDH, MaPT, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, NgayThanhToan) 
-                    VALUES (?, ?, ?, ?, 'Thành công', NOW())
-                `, [maDH_moi, PhuongThucTT, tienThucThu, loaiGiaoDich]);
-            }
+            if (ThuTienNgay && tienThucThu > 0) {
+                if (!PhuongThucTT) {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Vui lòng chọn phương thức thanh toán!" });
+                }
 
+                // KIỂM TRA MÃ CÓ TỒN TẠI VÀ ĐANG HOẠT ĐỘNG KHÔNG
+                const [check_pttt] = await connection.query(`SELECT MaPT FROM PhuongThucThanhToan WHERE MaPT = ? AND TrangThaiHoatDong = 1`, [PhuongThucTT]);
+                
+                // Gỡ bom 1: Chặn sập API nếu mảng rỗng
+                if (check_pttt.length === 0) {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Phương thức thanh toán không tồn tại hoặc đã bị khóa!" });
+                }
+
+                const maPT = check_pttt[0].MaPT;
+
+                // Gỡ bom 2: Sửa || thành &&. Nghiệp vụ: Đơn tại quầy chỉ nhận mã 4 (CK) và 5 (Tiền mặt)
+                if (maPT !== 4 && maPT !== 5) {
+                    await connection.rollback();
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: "Nghiệp vụ lỗi: Đơn hàng tại quầy chỉ hỗ trợ 'Thanh toán trực tiếp' hoặc 'Chuyển khoản ngoài'!" 
+                    });
+                }
+            }
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 1, NOW())`, [maDH_moi]);
 
             for (let detail of arrChiTietDonHang) {
@@ -262,7 +294,7 @@ const donhang_admin = {
             let whereClause = "WHERE " + condition.join(" AND ");
 
             // Đổi pl.SoLuong AS TonKho để khớp với Frontend
-            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX, mh.TienCocToiThieu,
+            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX, mh.TienCocToiThieu, mh.LoaiHinhBan
                                 pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho
                         FROM MoHinh mh
                         INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
@@ -309,6 +341,8 @@ const donhang_admin = {
             res.status(500).json({ success: false, message: "Lỗi máy chủ khi tìm kiếm sản phẩm" });
         }
     },
+
+    
 
     huy_don_hang: async(req, res) => {
         const connection = await db.getConnection();
@@ -454,7 +488,7 @@ const donhang_admin = {
             const currentStatus = trang_thai[0].MaTrangThai;
             const maHienThi = trang_thai[0].MaDonHangHienThi;
                 
-            if(currentStatus === 3 || currentStatus === 4 || currentStatus === 5){
+            if(currentStatus === 3 || currentStatus === 4 || currentStatus === 5 || currentStatus === 6){
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
