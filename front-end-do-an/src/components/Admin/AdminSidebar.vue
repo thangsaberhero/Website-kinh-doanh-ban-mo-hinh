@@ -8,7 +8,7 @@
       <h1 class="font-headline font-brand font-bold text-[#ff8f73] tracking-tighter transition-all duration-300" 
           :class="isCollapsed ? 'text-xl' : 'text-2xl'">
           {{ isCollapsed 
-            ? (systemStore.settings.shop_name?.substring(0, 2).toUpperCase() || 'FC') 
+            ? getAcronym(systemStore.settings.shop_name) 
             : (systemStore.settings.shop_name || 'FigureCollect') 
           }}
       </h1>
@@ -266,6 +266,18 @@
   // Hàm bắt sự kiện cuộn chuột để lưu lại vị trí hiện tại vào Pinia
   const handleScroll = (event) => {
     layoutStore.sidebarScrollTop = event.target.scrollTop;
+  };
+
+  const getAcronym = (name) => {
+    if (!name) return 'FC';
+    if (name.includes(' ')) {
+      return name.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase();
+    }
+    const capitals = name.match(/[A-Z]/g);
+    if (capitals && capitals.length >= 2) {
+      return capitals.slice(0, 2).join('');
+    }
+    return name.substring(0, 2).toUpperCase();
   };
 
   onMounted(() => {
