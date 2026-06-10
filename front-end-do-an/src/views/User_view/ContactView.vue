@@ -154,7 +154,11 @@
 <script setup>
     import { ref, onMounted, computed } from 'vue';
     import TheHeader from '../../components/TheHeader.vue';
-    import { useToastStore } from '../../stores/toast'
+    import { useToastStore } from '../../stores/toast';
+    import { useSystemStore } from '../../stores/system';
+    
+    const toastStore = useToastStore();
+    const systemStore = useSystemStore();
 
     const scrollToTopCustom = (duration = 1000) => {
         const startPosition = window.scrollY;
@@ -178,7 +182,7 @@
     };
 
     const mapEmbedUrl = computed(() => {
-        const address = systemStore.settings.shop_address || 'Hải Phòng, Việt Nam';
+        const address = systemStore.settings?.shop_address || 'Hải Phòng, Việt Nam';
         
         // Mã hóa địa chỉ để đưa lên URL
         const encodedAddress = encodeURIComponent(address);
@@ -189,7 +193,6 @@
         scrollToTopCustom();
     });
 
-    const toastStore = useToastStore();
     const form = ref({
         name: '',
         email: '',
