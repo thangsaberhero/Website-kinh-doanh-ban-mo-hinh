@@ -355,6 +355,7 @@ const donhang_admin = {
                         TenMH: row.TenMH,
                         AnhDaiDien: row.AnhDaiDien,
                         TienCocToiThieu: row.TienCocToiThieu,
+                        LoaiHinhBan: row.LoaiHinhBan,
                         PhanLoai: [] // Tạo mảng rỗng để chứa các phân loại
                     };
                     acc.push(model);

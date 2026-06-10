@@ -639,10 +639,13 @@
                     <img :src="prod.AnhDaiDien ? (prod.AnhDaiDien.startsWith('http') ? prod.AnhDaiDien : `${API_BASE_URL}/Images_product/${prod.AnhDaiDien}`) : ''" class="w-full h-full object-contain" />
                   </div>
                   <div class="flex-1">
-                    <p class="text-sm font-bold text-slate-900 mb-2">{{ prod.TenMH }}</p>
-                    <p v-if="prod.TienCocToiThieu > 0" class="text-[10px] text-amber-600 font-bold mb-2 flex items-center gap-1">
-                      <span class="material-symbols-outlined text-[12px]">payments</span> Cọc tối thiểu: {{ prod.TienCocToiThieu?.toLocaleString('vi-VN') }} ₫
-                    </p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <p class="text-sm font-bold text-slate-900">{{ prod.TenMH }}</p>
+                        <span class="text-[9px] px-2 py-0.5 rounded border uppercase font-bold tracking-widest whitespace-nowrap"
+                              :class="prod.LoaiHinhBan && prod.LoaiHinhBan.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
+                            {{ prod.LoaiHinhBan || 'Có sẵn' }}
+                        </span>
+                    </div>
                     <div class="space-y-1.5">
                       <div v-for="variant in prod.PhanLoai" :key="variant.MaPhanLoai" class="flex justify-between items-center bg-white px-3 py-1.5 rounded border border-slate-200">
                         <div>
@@ -1562,16 +1565,39 @@ const exportExcelReport = async () => {
   };
 
   const addVariantToOrder = (product, variant) => {
-    const existingIndex = externalOrderForm.value.DanhSachSanPham.findIndex(item => item.MaPhanLoai === variant.MaPhanLoai);
+    const currentItems = externalOrderForm.value.DanhSachSanPham;
+
+    // ========================================================
+    // CHỐT CHẶN: KIỂM TRA LOẠI HÌNH BÁN TRƯỚC KHI THÊM
+    // ========================================================
+    if (currentItems.length > 0) {
+      // Nhận diện hàng Order/Pre-order (Chỉ cần có chữ 'order')
+      const isNewItemOrder = product.LoaiHinhBan && product.LoaiHinhBan.toLowerCase().includes('order');
+      
+      // Lấy loại hình của sản phẩm đầu tiên đang có sẵn trong giỏ
+      const firstItem = currentItems[0];
+      const isCartOrder = firstItem.LoaiHinhBan && firstItem.LoaiHinhBan.toLowerCase().includes('order');
+
+      // Nếu 1 cái là Có sẵn, 1 cái là Order -> Văng lỗi và Dừng ngay lập tức!
+      if (isNewItemOrder !== isCartOrder) {
+        toastStore.showToast("⚠️ Không thể thêm! Đơn hàng này không được phép trộn lẫn Hàng có sẵn và Hàng Order.", "error");
+        return; 
+      }
+    }
+
+    // ========================================================
+    // XỬ LÝ THÊM VÀO GIỎ NHƯ BÌNH THƯỜNG
+    // ========================================================
+    const existingIndex = currentItems.findIndex(item => item.MaPhanLoai === variant.MaPhanLoai);
     
     if (existingIndex > -1) {
-      if (externalOrderForm.value.DanhSachSanPham[existingIndex].SoLuong < variant.TonKho) {
-        externalOrderForm.value.DanhSachSanPham[existingIndex].SoLuong++;
+      if (currentItems[existingIndex].SoLuong < variant.TonKho) {
+        currentItems[existingIndex].SoLuong++;
       } else {
         toastStore.showToast("Đã đạt giới hạn tồn kho!", "error");
       }
     } else {
-      externalOrderForm.value.DanhSachSanPham.push({
+      currentItems.push({
         MaMoHinh: product.MaMoHinh,
         TenMH: product.TenMH,
         AnhDaiDien: product.AnhDaiDien,
@@ -1580,7 +1606,8 @@ const exportExcelReport = async () => {
         DonGia: variant.DonGia,
         TonKho: variant.TonKho,
         SoLuong: 1,
-        TienCocToiThieu: product.TienCocToiThieu || 0
+        TienCocToiThieu: product.TienCocToiThieu || 0,
+        LoaiHinhBan: product.LoaiHinhBan // <-- LƯU VÀO ĐỂ LẦN CLICK SAU CÓ DỮ LIỆU ĐỂ KIỂM TRA
       });
     }
     recalculateOrderTotal();
