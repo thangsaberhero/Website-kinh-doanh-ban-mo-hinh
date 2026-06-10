@@ -115,16 +115,23 @@
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col lg:col-span-2 mt-8">
-          <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <span class="material-symbols-outlined text-[#ff8f73]">share</span>
-              Liên kết Mạng xã hội
-            </h2>
-            <p class="text-xs text-slate-500 mt-1">Đường dẫn tới Fanpage và kênh truyền thông của cửa hàng (Để trống nếu không muốn hiển thị).</p>
+          <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#ff8f73]">share</span>
+                Liên kết Mạng xã hội
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">Đường dẫn tới Fanpage và kênh truyền thông của cửa hàng (Để trống nếu không muốn hiển thị).</p>
+            </div>
+            <button @click="saveTextSettings" :disabled="isSavingText" class="shrink-0 bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md flex items-center gap-2 disabled:opacity-50">
+              <span v-if="isSavingText" class="material-symbols-outlined animate-spin text-[18px]">autorenew</span>
+              <span v-else class="material-symbols-outlined text-[18px]">save</span>
+              Lưu liên kết
+            </button>
           </div>
+          
           <div class="p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">       
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <img src="https://api.iconify.design/logos:facebook.svg"> Facebook
@@ -204,8 +211,7 @@
                     <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
                   </label>
                 </template>
-              </draggable>
-              
+              </draggable>              
             </div>
           </div>
           
@@ -348,7 +354,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import draggable from 'vuedraggable';
+// import draggable from 'vuedraggable';
 import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
 import AdminHeader from "../../components/Admin/AdminHeader.vue";
 import { useToastStore } from "../../stores/toast";
