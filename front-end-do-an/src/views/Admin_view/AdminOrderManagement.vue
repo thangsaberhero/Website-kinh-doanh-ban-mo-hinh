@@ -1490,6 +1490,7 @@ const exportExcelReport = async () => {
 
   // --- Biến cho Modal Tạo đơn ngoài ---
   const isCreateExternalOrderOpen = ref(false);
+  const availableVouchers = ref([]);
   
   const externalOrderForm = ref({
     TenNguoiNhan: '',
