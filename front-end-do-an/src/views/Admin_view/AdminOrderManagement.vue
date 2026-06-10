@@ -692,9 +692,33 @@
               </div>
             </div>
 
-            <div class="flex justify-between items-center p-4 bg-emerald-50 border border-emerald-100 rounded-xl mt-4">
-              <span class="text-sm font-bold text-emerald-800">Tổng cộng ({{ externalOrderForm.DanhSachSanPham.reduce((sum, i) => sum + i.SoLuong, 0) }} SP)</span>
-              <span class="text-xl font-brand font-black text-emerald-600">{{ externalOrderForm.TongTien?.toLocaleString('vi-VN') }} ₫</span>
+            <div v-if="availableVouchers.length > 0" class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <label class="block text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-emerald-500">local_activity</span> 
+                Áp dụng Mã giảm giá (Tùy chọn)
+              </label>
+              <select v-model="externalOrderForm.MaGG" @change="recalculateOrderTotal" class="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-medium text-slate-700 cursor-pointer">
+                <option :value="null">-- Không áp dụng mã giảm giá --</option>
+                <option v-for="v in availableVouchers" :key="v.MaGG" :value="v.MaGG" :disabled="externalOrderForm.TongTien < v.MucGiaToiThieu">
+                  {{ v.MaVoucher }} - Giảm {{ v.LoaiGiamGia === 'TienMat' ? v.ChietKhau.toLocaleString('vi-VN') + 'đ' : v.ChietKhau + '%' }} 
+                  (Đơn từ {{ v.MucGiaToiThieu.toLocaleString('vi-VN') }}đ)
+                </option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-2 p-4 bg-emerald-50 border border-emerald-100 rounded-xl mt-4">
+              <div class="flex justify-between items-center text-sm">
+                  <span class="font-bold text-slate-600">Tổng tiền hàng:</span>
+                  <span class="font-bold text-slate-900">{{ externalOrderForm.TongTien?.toLocaleString('vi-VN') }} ₫</span>
+              </div>
+              <div v-if="externalOrderForm.GiamGiaVoucher > 0" class="flex justify-between items-center text-sm">
+                  <span class="font-bold text-emerald-600">Giảm giá Voucher:</span>
+                  <span class="font-bold text-emerald-600">-{{ externalOrderForm.GiamGiaVoucher?.toLocaleString('vi-VN') }} ₫</span>
+              </div>
+              <div class="border-t border-emerald-200/60 pt-2 mt-1 flex justify-between items-center">
+                  <span class="text-sm font-bold text-emerald-800">Thanh toán ({{ externalOrderForm.DanhSachSanPham.reduce((sum, i) => sum + i.SoLuong, 0) }} SP)</span>
+                  <span class="text-xl font-brand font-black text-emerald-600">{{ externalOrderForm.ThanhTien?.toLocaleString('vi-VN') }} ₫</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1474,8 +1498,25 @@ const exportExcelReport = async () => {
     TongCocToiThieu: 0,
     ThuTienNgay: false, 
     PhuongThucTT: 5,
-    SoTienDaTra: 0
+    SoTienDaTra: 0,
+    MaGG: null,
+    GiamGiaVoucher: 0
   });
+
+  const fetchVouchersForPOS = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/get_magg`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        availableVouchers.value = data.data || [];
+      }
+    } catch (error) {
+      console.error("Lỗi lấy danh sách voucher:", error);
+    }
+  };
 
   watch(() => externalOrderForm.value.ThuTienNgay, (newVal) => {
     if (newVal) {
@@ -1570,15 +1611,39 @@ const exportExcelReport = async () => {
     });
     
     externalOrderForm.value.TongTien = total;
-    externalOrderForm.value.ThanhTien = total; 
+
+    // TÍNH TOÁN VOUCHER
+    let giamVoucher = 0;
+    if (externalOrderForm.value.MaGG) {
+      const voucher = availableVouchers.value.find(v => v.MaGG === externalOrderForm.value.MaGG);
+      if (voucher && total >= Number(voucher.MucGiaToiThieu)) {
+        if (voucher.LoaiGiamGia === 'TienMat') {
+          giamVoucher = Number(voucher.ChietKhau);
+        } else if (voucher.LoaiGiamGia === 'ChietKhau') {
+          const tinhGiam = total * (Number(voucher.ChietKhau) / 100);
+          giamVoucher = Math.min(tinhGiam, Number(voucher.GiaTriGiamToiDa || tinhGiam));
+        }
+      } else if (total > 0) {
+        // Tự động tháo mã nếu nhân viên xóa bớt sản phẩm làm tổng tiền bị tụt
+        externalOrderForm.value.MaGG = null;
+        toastStore.showToast("Đơn hàng không còn đủ điều kiện áp dụng mã giảm giá này!", "error");
+      } else {
+        externalOrderForm.value.MaGG = null;
+      }
+    }
+
+    externalOrderForm.value.GiamGiaVoucher = giamVoucher;
+    externalOrderForm.value.ThanhTien = Math.max(0, total - giamVoucher); 
     externalOrderForm.value.TongCocToiThieu = totalCoc;
   };
 
   watch(isCreateExternalOrderOpen, (newVal) => {
     if (!newVal) {
-      externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [], TongTien: 0, ThanhTien: 0, ThuTienNgay: false, PhuongThucTT: 5 };
+      externalOrderForm.value = { TenNguoiNhan: '', SDTNguoiNhan: '', DiaChiGiao: '', DanhSachSanPham: [], TongTien: 0, ThanhTien: 0, TongCocToiThieu: 0, ThuTienNgay: false, PhuongThucTT: 5, SoTienDaTra: 0, MaGG: null, GiamGiaVoucher: 0 };
       searchProductQuery.value = '';
       searchResults.value = [];
+    } else {
+      fetchVouchersForPOS();
     }
   });
 
@@ -1595,8 +1660,8 @@ const exportExcelReport = async () => {
         Ten: externalOrderForm.value.TenNguoiNhan,
         SDT: externalOrderForm.value.SDTNguoiNhan,
         DiaChi: externalOrderForm.value.DiaChiGiao,
+        MaGG: externalOrderForm.value.MaGG,
         Note: "Đơn tạo thủ công tại quầy",
-        // Đính kèm cờ xác nhận thanh toán để Backend gọi hàm ghi nhận Giao dịch
         ThuTienNgay: externalOrderForm.value.ThuTienNgay,
         PhuongThucTT: externalOrderForm.value.PhuongThucTT,
         SoTienDaTra: externalOrderForm.value.SoTienDaTra
