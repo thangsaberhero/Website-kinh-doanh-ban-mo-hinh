@@ -666,53 +666,73 @@ const donhang_user = {
            
             //Xử lý voucher
             let soTienGiamVoucher = 0;
+
             if (MaGG) {
-                // 1. CÂU TRUY VẤN ĐÃ FIX: Thêm gg.MaGG = ? và đơn giản hóa Subquery
+                // Truy vấn thông tin Voucher cơ bản
                 const sql_check_voucher = `
-                    SELECT DISTINCT gg.*
-                    FROM MaGiamGia gg
-                    LEFT JOIN ChiTietMaGiamGia ctgg ON ctgg.MaGG = gg.MaGG
-                    WHERE gg.MaGG = ? 
-                      AND gg.TrangThaiHoatDong = 1 
-                      AND gg.ThoiGianBD <= NOW() 
-                      AND gg.ThoiGianKT >= NOW()
-                      
-                      -- CHỐT CHẶN: Áp dụng toàn shop HOẶC món đó đang nằm trong giỏ
-                      AND (
-                          ctgg.MaGG IS NULL 
-                          OR ctgg.MaPhanLoai IN (SELECT MaPhanLoai FROM ChiTietGioHang WHERE MaGH = ?)
-                      )
+                    SELECT * FROM MaGiamGia 
+                    WHERE MaGG = ? 
+                      AND ThoiGianBD <= NOW() 
+                      AND ThoiGianKT >= NOW() 
+                      AND TrangThaiHoatDong = 1
+                      AND (MaKH IS NULL OR MaKH = ?) -- 🔴 CHỐT CHẶN BẢO MẬT: Mã toàn sàn HOẶC mã của riêng khách này
                 `;
-                // Đã truyền đủ 2 biến [MaGG, MaGH] cho 2 dấu chấm hỏi
-                const [voucherInfo] = await connection.query(sql_check_voucher, [MaGG, MaGH]);
+                const [voucherInfo] = await connection.query(sql_check_voucher, [MaGG, MaKH]);
                 
                 if (voucherInfo.length > 0) {
                     const v = voucherInfo[0];
                     
-                    // Kiểm tra xem khách đã dùng mã này chưa (Đoạn này bạn viết rất chuẩn)
-                    const sql_check_used = `SELECT MaLichSu FROM LogSuDungMaGiamGia WHERE MaGG = ? AND MaKH = ?`;
+                    // CHỐT CHẶN 1: Kiểm tra lượt sử dụng chung
+                    if (v.SoLuongDaDung >= v.SoLuongDungToiDa) {
+                        await connection.rollback();
+                        return res.status(400).json({ success: false, message: `Mã voucher này đã hết lượt sử dụng!` });
+                    }
+
+                    // CHỐT CHẶN 2: Khách hàng đã dùng mã này chưa (Dùng MaKH chuẩn xác hơn đơn ngoài)
+                    const sql_check_used = `SELECT MaLichSu FROM LogSuDungMaGiamGia WHERE MaGG = ? AND MaKH = ? LIMIT 1`;
                     const [check_used] = await connection.query(sql_check_used, [MaGG, MaKH]);
                     
-                    if(check_used.length > 0){
+                    if (check_used.length > 0) {
                         await connection.rollback();
-                        return res.status(400).json({ success: false, message: `Mã voucher ${v.MaVoucher} đã được bạn sử dụng!` });
+                        return res.status(400).json({ success: false, message: `Bạn đã sử dụng mã voucher này trước đó rồi!` });
                     }
 
-                    if(v.SoLuongDaDung >= v.SoLuongDungToiDa){
-                        await connection.rollback();
-                        return res.status(400).json({ success: false, message: `Mã voucher ${v.MaVoucher} đã hết lượt sử dụng!` });
+                    // CHỐT CHẶN 3: Kiểm tra phân loại sản phẩm trong giỏ hàng
+                    const sql_check_product = `SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?`;
+                    const [apDungChoPhanLoai] = await connection.query(sql_check_product, [MaGG]);
+                    
+                    if (apDungChoPhanLoai.length > 0) {
+                        // Mảng các sản phẩm được phép dùng mã
+                        const danhSachChoPhep = apDungChoPhanLoai.map(item => item.MaPhanLoai);
+                        // Lấy mảng MaPhanLoai từ giỏ hàng (nhờ tận dụng lại biến cart_item ở trên)
+                        const danhSachTrongGio = cart_item.map(item => item.MaPhanLoai);
+                        
+                        // Kiểm tra xem giỏ hàng có MÓN NÀO khớp với danh sách cho phép không
+                        const coMonHopLe = danhSachTrongGio.some(ma => danhSachChoPhep.includes(ma));
+                        
+                        if (!coMonHopLe) {
+                            // BẮT BUỘC PHẢI BÁO LỖI ĐỂ KHÁCH HÀNG BIẾT
+                            await connection.rollback();
+                            return res.status(400).json({ 
+                                success: false, 
+                                message: `Mã giảm giá này không áp dụng cho các sản phẩm đang có trong giỏ hàng của bạn!` 
+                            });
+                        }
                     }
 
-                    // 2. ĐÃ SỬA LỖI TÊN CỘT: Dùng GiaTriDonToiThieu
-                    if(v.GiaTriDonToiThieu > tongTienThanhToan){
+                    // CHỐT CHẶN 4: Kiểm tra giá trị đơn hàng tối thiểu
+                    const giaTriToiThieu = Number(v.GiaTriDonToiThieu || 0); 
+                    if (tongTienThanhToan < giaTriToiThieu) {
                         await connection.rollback();
                         return res.status(400).json({ 
                             success: false, 
-                            message: `Đơn hàng chưa đạt giá trị tối thiểu (${v.GiaTriDonToiThieu.toLocaleString('vi-VN')}đ) để sử dụng mã này!` 
+                            message: `Đơn hàng chưa đạt giá trị tối thiểu (${giaTriToiThieu.toLocaleString('vi-VN')}đ) để sử dụng mã này!` 
                         });
                     }
                     
-                    // Tính toán số tiền giảm
+                    // ========================================================
+                    // VƯỢT QUA 4 CHỐT CHẶN -> TÍNH TOÁN TRỪ TIỀN
+                    // ========================================================
                     if (v.LoaiGiamGia === 'TienMat') {
                         soTienGiamVoucher = Number(v.ChietKhau);
                     } else if (v.LoaiGiamGia === 'ChietKhau') {
@@ -727,7 +747,7 @@ const donhang_user = {
                     await connection.rollback();
                     return res.status(400).json({ 
                         success: false, 
-                        message: `Mã voucher không tồn tại, hết hạn hoặc không áp dụng cho sản phẩm trong giỏ!` 
+                        message: `Mã voucher không tồn tại hoặc đã hết hạn!` 
                     });
                 }
             }

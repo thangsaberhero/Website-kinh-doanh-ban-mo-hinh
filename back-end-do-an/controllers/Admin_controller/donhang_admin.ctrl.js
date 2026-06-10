@@ -6,7 +6,13 @@ const donhang_admin = {
     tao_don_hang_ngoai: async(req, res) => {
         const connection = await db.getConnection();
         try {
-            const MaTK  = req.user.id;
+            const [check_nv] = await connection.query(`SELECT MaNV FROM NhanVien WHERE MaTK = ?`, [MaTK]);
+            
+            if (check_nv.length === 0) {
+                return res.status(403).json({ success: false, message: "Bạn không phải nhân viên, không đủ thẩm quyền tạo đơn hàng!" });
+            }
+            
+            const MaNV = check_nv[0].MaNV;
             const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note, ThuTienNgay, PhuongThucTT, SoTienDaTra } = req.body;
             // DanhSachSanPham từ FE gửi lên phải có dạng: [{ MaPhanLoai: 1, SoLuong: 2 }, ...]
 
@@ -131,14 +137,50 @@ const donhang_admin = {
                         await connection.rollback();
                         return res.status(400).json({ success: false, message: `Mã voucher đã hết lượt sử dụng!` });
                     }
+
+                    const sql_check_used = `
+                        SELECT 1 
+                        FROM LogSuDungMaGiamGia log
+                        INNER JOIN DonHang dh ON log.MaDH = dh.MaDH
+                        WHERE log.MaGG = ? AND dh.SDTNguoiNhan = ?
+                        LIMIT 1
+                    `;
+                    const [usedCheck] = await connection.query(sql_check_used, [MaGG, SDT]);
                     
-                    if (v.LoaiGiamGia === 'TienMat') {
-                        soTienGiamVoucher = Number(v.ChietKhau);
-                    } else if (v.LoaiGiamGia === 'ChietKhau') {
-                        const tinhGiam = tongTienThanhToan * (Number(v.ChietKhau) / 100);
-                        soTienGiamVoucher = Math.min(tinhGiam, Number(v.GiaTriGiamToiDa || tinhGiam));
+                    if (usedCheck.length > 0) {
+                        await connection.rollback();
+                        return res.status(400).json({ 
+                            success: false, 
+                            message: `Khách hàng có SĐT ${SDT} đã từng sử dụng mã giảm giá này rồi!` 
+                        });
                     }
-                    tongTienThanhToan = Math.max(0, tongTienThanhToan - soTienGiamVoucher);
+
+                    const sql_check_product = `SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?`;
+                    const [apDungChoPhanLoai] = await connection.query(sql_check_product, [MaGG]);
+                    
+                    let isHopLeSanPham = true;
+                    
+                    // Nếu bảng chi tiết có dữ liệu -> Mã này bị giới hạn chỉ áp dụng cho một số món
+                    if (apDungChoPhanLoai.length > 0) {
+                        const danhSachChoPhep = apDungChoPhanLoai.map(item => item.MaPhanLoai);
+                        
+                        // listMaPhanLoai là mảng các ID sản phẩm khách ĐANG MUA ở trên
+                        const coMonHopLe = listMaPhanLoai.some(ma => danhSachChoPhep.includes(ma));
+                        
+                        if (!coMonHopLe) {
+                            isHopLeSanPham = false; // Đánh dấu là không hợp lệ
+                        }
+                    }
+                    
+                    if (isHopLeSanPham && tongTienThanhToan >= Number(v.MucGiaToiThieu)) {
+                        if (v.LoaiGiamGia === 'TienMat') {
+                            soTienGiamVoucher = Number(v.ChietKhau);
+                        } else if (v.LoaiGiamGia === 'ChietKhau') {
+                            const tinhGiam = tongTienThanhToan * (Number(v.ChietKhau) / 100);
+                            soTienGiamVoucher = Math.min(tinhGiam, Number(v.GiaTriGiamToiDa || tinhGiam));
+                        }
+                        tongTienThanhToan = Math.max(0, tongTienThanhToan - soTienGiamVoucher);
+                    }
                 } else {
                     await connection.rollback();
                     return res.status(400).json({ success: false, message: "Mã voucher không hợp lệ hoặc đã hết hạn!" });
@@ -174,10 +216,10 @@ const donhang_admin = {
 
             // 5. Insert Bảng DonHang
             const sql_tao_don = `
-                INSERT INTO DonHang (MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
-                VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)
+                INSERT INTO DonHang (MaNV, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
+                VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
             `;
-            const [tao_don] = await connection.query(sql_tao_don, [maHienThi, TongTienHang, tongTienThanhToan, trangThaiThanhToan, Ten, SDT, DiaChi, Note]);
+            const [tao_don] = await connection.query(sql_tao_don, [MaNV, maHienThi, TongTienHang, tongTienThanhToan, trangThaiThanhToan, Ten, SDT, DiaChi, Note]);
             const maDH_moi = tao_don.insertId;
 
             // Ghi nhận bảng thanh toán nếu có đưa tiền (Cọc hoặc Full)
@@ -342,7 +384,41 @@ const donhang_admin = {
         }
     },
 
-    
+    liet_ke_maGG_tai_quay: async (req, res) => {
+        try {
+            const sql_lay_ds = `
+                SELECT 
+                    gg.MaGG, 
+                    gg.MaVoucher, 
+                    gg.LoaiGiamGia, 
+                    gg.ChietKhau, 
+                    gg.GiaTriGiamToiDa, 
+                    gg.MucGiaToiThieu, 
+                    gg.ThoiGianKT,
+                    gg.SoLuongDungToiDa,
+                    gg.SoLuongDaDung
+                FROM MaGiamGia gg
+                WHERE gg.TrangThaiHoatDong = 1 
+                  AND gg.ThoiGianBD <= NOW()  
+                  AND gg.ThoiGianKT >= NOW()  
+                  AND gg.SoLuongDungToiDa > gg.SoLuongDaDung 
+                  AND gg.MaKH IS NULL
+                ORDER BY gg.ChietKhau DESC
+            `;
+            
+            const [ds] = await db.query(sql_lay_ds);
+            
+            res.status(200).json({
+                success: true,
+                data: ds,
+                message: "Lấy danh sách mã giảm giá tại quầy thành công!"
+            });
+        }
+        catch(error){
+            console.error("Lỗi khi lấy danh sách mã giảm giá POS: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống tải danh sách mã giảm giá!" });
+        }
+    },
 
     huy_don_hang: async(req, res) => {
         const connection = await db.getConnection();

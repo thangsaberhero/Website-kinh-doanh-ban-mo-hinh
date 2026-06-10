@@ -7,6 +7,7 @@ const authMiddleware = require('../../middlewares/auth.middleware.js');
 // 1. NHÓM LẤY DỮ LIỆU VÀ BÁO CÁO (GET)
 // ==========================================
 // Đưa TẤT CẢ các route tĩnh lên trên cùng
+router.get('/get_magg', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.liet_ke_maGG_tai_quay)
 router.get('/export-excel', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.xuatExcelDonHang);
 router.get('/print/:MaDH', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.in_hoa_don);
 router.get('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.liet_ke_don_hang);
