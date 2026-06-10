@@ -334,7 +334,7 @@ const donhang_admin = {
             let whereClause = "WHERE " + condition.join(" AND ");
 
             // Đổi pl.SoLuong AS TonKho để khớp với Frontend
-            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX, mh.TienCocToiThieu, mh.LoaiHinhBan
+            const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX, mh.TienCocToiThieu, mh.LoaiHinhBan,
                                 pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho
                         FROM MoHinh mh
                         INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
