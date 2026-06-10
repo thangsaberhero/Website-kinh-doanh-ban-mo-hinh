@@ -129,7 +129,7 @@
               Lưu liên kết
             </button>
           </div>
-          
+
           <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">       
               <div class="flex flex-col gap-2">
@@ -354,7 +354,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-// import draggable from 'vuedraggable';
+import draggable from 'vuedraggable';
 import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
 import AdminHeader from "../../components/Admin/AdminHeader.vue";
 import { useToastStore } from "../../stores/toast";
