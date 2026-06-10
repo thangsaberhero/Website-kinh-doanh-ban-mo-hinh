@@ -8,7 +8,7 @@
 
     <AdminSideBar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
     
-    <div class="flex-1 flex flex-col h-screen w-full relative">
+    <div class="flex-1 flex flex-col h-screen min-w-0 relative overflow-x-hidden">
       <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       
       <main class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar pb-24">

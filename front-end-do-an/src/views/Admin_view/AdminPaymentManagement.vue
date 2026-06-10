@@ -282,12 +282,7 @@
             </div>
           </div>
         </div>
-
       </main>
-      
-      <footer class="absolute bottom-0 w-full bg-white border-t border-slate-200 flex justify-between items-center px-8 py-4 z-40">
-        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">© 2026 FigureCollect - Tài chính Kế toán.</span>
-      </footer>
     </div>
   </div>
 </template>
