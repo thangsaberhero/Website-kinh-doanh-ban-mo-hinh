@@ -127,21 +127,21 @@
               
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png" class="w-4 h-4 object-contain"> Facebook
+                  <img src="https://api.iconify.design/logos:facebook.svg"> Facebook
                 </label>
                 <input v-model="formText.social_facebook" type="url" placeholder="https://facebook.com/..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#1877F2] outline-none">
               </div>
 
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/1024px-YouTube_full-color_icon_%282017%29.svg.png" class="w-4 h-4 object-contain"> YouTube
+                  <img src="https://api.iconify.design/logos:youtube-icon.svg"> YouTube
                 </label>
                 <input v-model="formText.social_youtube" type="url" placeholder="https://youtube.com/..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#FF0000] outline-none">
               </div>
 
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/1024px-Instagram_logo_2016.svg.png" class="w-4 h-4 object-contain"> Instagram
+                  <img src="https://api.iconify.design/skill-icons:instagram.svg"> Instagram
                 </label>
                 <input v-model="formText.social_instagram" type="url" placeholder="https://instagram.com/..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#E4405F] outline-none">
               </div>
