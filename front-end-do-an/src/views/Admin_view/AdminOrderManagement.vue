@@ -469,16 +469,6 @@
           </div>
         </div>
       </div>
-
-      <footer class="absolute bottom-0 w-full bg-white border-t border-slate-200 flex justify-between items-center px-8 py-4 z-40">
-        <div class="flex items-center gap-6">
-          <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">© 2026 FigureCollect. Phiên bản 2.4.0-Technical.</span>
-        </div>
-        <div class="flex items-center gap-4">
-          <a href="#" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#ff8f73] transition-colors">Tài liệu kỹ thuật</a>
-          <a href="#" class="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#ff8f73] transition-colors">Nhật ký thay đổi</a>
-        </div>
-      </footer>
     </div>
   </div>
   <div 
