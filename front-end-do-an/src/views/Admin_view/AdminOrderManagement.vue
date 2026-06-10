@@ -745,13 +745,13 @@
 
     <div v-if="isCancelModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
-        <div class="px-6 py-4 border-b border-rose-100 flex justify-between items-center bg-rose-50 shrink-0">
-          <h3 class="text-lg font-bold text-rose-600 flex items-center gap-2">
-            <span class="material-symbols-outlined">warning</span>
-            Xác nhận hủy đơn hàng
+        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-500">add_shopping_cart</span>
+            Tạo đơn hàng thủ công tại quầy
           </h3>
-          <button @click="isCancelModalOpen = false" class="text-slate-400 hover:text-rose-600 transition-colors">
-            <span class="material-symbols-outlined">close</span>
+          <button @click="isCreateExternalOrderOpen = false" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-full hover:bg-slate-200 transition-all flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
 
