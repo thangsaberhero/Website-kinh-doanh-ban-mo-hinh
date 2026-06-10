@@ -7,7 +7,10 @@
          :class="isCollapsed ? 'items-center px-0' : 'px-6'">
       <h1 class="font-headline font-brand font-bold text-[#ff8f73] tracking-tighter transition-all duration-300" 
           :class="isCollapsed ? 'text-xl' : 'text-2xl'">
-        {{ isCollapsed ? 'FC' : 'FigureCollect' }}
+          {{ isCollapsed 
+            ? (systemStore.settings.shop_name?.substring(0, 2).toUpperCase() || 'FC') 
+            : (systemStore.settings.shop_name || 'FigureCollect') 
+          }}
       </h1>
       <p class="text-[10px] text-[#a3aac4] uppercase tracking-[0.2em] mt-1 transition-all duration-300 ease-in-out"
          :class="isCollapsed ? 'max-h-0 opacity-0' : 'max-h-10 opacity-100'">
@@ -164,6 +167,7 @@
   import { RouterLink, useRoute, useRouter } from 'vue-router';
   import { useLayoutStore } from '../../stores/layout';
   import { useToastStore } from '../../stores/toast';
+  import { useSystemStore } from '../../stores/system';
 
   defineProps({
     isCollapsed: {
@@ -176,6 +180,7 @@
   const router = useRouter();
   const layoutStore = useLayoutStore();
   const toastStore = useToastStore();
+  const systemStore = useSystemStore();
 
   const hoveredMenu = ref(null);
   const popupTop = ref(0);

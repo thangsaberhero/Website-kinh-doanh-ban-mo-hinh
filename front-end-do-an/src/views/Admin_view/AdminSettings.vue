@@ -20,8 +20,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">        
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -44,6 +43,10 @@
                   <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Email hỗ trợ</label>
                   <input v-model="formText.contact_email" type="email" placeholder="VD: hotro@shop.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800">
                 </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Địa chỉ cửa hàng</label>
+                <textarea v-model="formText.shop_address" rows="2" placeholder="VD: Số 123 Đà Nẵng, Phường Ngô Quyền, TP. Hải Phòng" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800 resize-none"></textarea>
               </div>
             </div>
             <div class="p-6 pt-0">
@@ -334,7 +337,8 @@ const fetchDropdownData = async () => {
 const formText = ref({
   shop_name: '',
   contact_phone: '',
-  contact_email: ''
+  contact_email: '',
+  shop_address: ''
 });
 
 // State cho File đang chờ Upload và File Preview hiển thị
@@ -384,6 +388,7 @@ const fetchSettings = async () => {
       formText.value.shop_name = data.shop_name || '';
       formText.value.contact_phone = data.contact_phone || '';
       formText.value.contact_email = data.contact_email || '';
+      formText.value.shop_address = data.shop_address || '';
 
       // Gán dữ liệu Hình ảnh hiện tại vào Preview
       previews.value.logo_header = data.logo_header || null;

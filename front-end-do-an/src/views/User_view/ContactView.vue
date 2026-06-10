@@ -35,7 +35,7 @@
                                 </div>
                                 <div class="pt-1">
                                     <h4 class="font-headline text-[10px] font-black text-primary tracking-widest uppercase mb-1">Địa chỉ</h4>
-                                    <p class="text-white text-sm font-medium">Phường Ngô Quyền, TP. Hải Phòng</p>
+                                    <p class="text-white text-sm font-medium">{{ systemStore.settings.shop_address || 'Đang cập nhật địa chỉ...' }}</p>
                                 </div>
                             </div>
                             
@@ -45,7 +45,7 @@
                                 </div>
                                 <div class="pt-1">
                                     <h4 class="font-headline text-[10px] font-black text-primary tracking-widest uppercase mb-1">Hotline</h4>
-                                    <p class="text-white text-lg font-bold">0795.209.255</p>
+                                    <p class="text-white text-lg font-bold">{{ systemStore.settings.contact_phone || 'Đang cập nhật' }}</p>
                                     <p class="text-on-surface-variant text-xs mt-0.5">Thứ 2 - Chủ Nhật: 08:00 - 22:00</p>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
                                 </div>
                                 <div class="pt-1">
                                     <h4 class="font-headline text-[10px] font-black text-primary tracking-widest uppercase mb-1">Email</h4>
-                                    <p class="text-white text-sm font-medium">vuhongphong04@gmail.com</p>
+                                    <p class="text-white text-sm font-medium">{{ systemStore.settings.contact_email || 'Đang cập nhật' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -127,9 +127,9 @@
                         <h3 class="font-headline text-2xl font-bold tracking-tight uppercase text-white">Hệ thống cửa hàng</h3>
                     </div>
                     
-                    <div class="relative h-[450px] w-full rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-surface-variant">
+                    <div class="relative h-[450px] w-full rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-surface-variant">    
                         <iframe 
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d29825.56967170584!2d106.68348336167409!3d20.8641403195122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x314a7ac36d54cd99%3A0x744b1317d1a1c23b!2zTmfDtCBRdXnhu4FuLCBI4bqjaSBQaMOybmcsIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1774884746827!5m2!1svi!2s" 
+                            :src="mapEmbedUrl" 
                             class="absolute inset-0 w-full h-full border-0 filter grayscale-[20%] invert-[90%] hue-rotate-[180deg] contrast-[1.1] opacity-80 hover:opacity-100 transition-opacity duration-500" 
                             allowfullscreen="" 
                             loading="lazy" 
@@ -138,8 +138,10 @@
                         
                         <div class="absolute top-6 left-6 pointer-events-none">
                             <div class="bg-background/90 backdrop-blur-md border border-white/10 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                            <span class="text-white font-headline font-bold text-[10px] tracking-widest uppercase">Ngô Quyền, Hải Phòng</span>
+                                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                <span class="text-white font-headline font-bold text-[10px] tracking-widest uppercase truncate max-w-[250px]">
+                                    {{ systemStore.settings.shop_address || 'Phường Ngô Quyền, TP. Hải Phòng' }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -150,7 +152,7 @@
 </template>
   
 <script setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, computed } from 'vue';
     import TheHeader from '../../components/TheHeader.vue';
     import { useToastStore } from '../../stores/toast'
 
@@ -174,6 +176,14 @@
 
         requestAnimationFrame(animateScroll);
     };
+
+    const mapEmbedUrl = computed(() => {
+        const address = systemStore.settings.shop_address || 'Hải Phòng, Việt Nam';
+        
+        // Mã hóa địa chỉ để đưa lên URL
+        const encodedAddress = encodeURIComponent(address);
+        return `https://maps.google.com/maps?q=${encodedAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    });
 
     onMounted(() => {
         scrollToTopCustom();

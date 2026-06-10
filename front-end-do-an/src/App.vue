@@ -21,6 +21,8 @@
 <script setup>
 import { RouterView, useRoute } from 'vue-router';
 import { ref, onMounted, onUnmounted } from 'vue'; // Thêm import ref, lifecycle
+import { useSystemStore } from '@/stores/system';
+
 import TheToast from '@/components/TheToast.vue';
 import FooterFull from '@/components/FooterFull.vue';
 import FooterMinimal from '@/components/FooterMinimal.vue';
@@ -29,6 +31,7 @@ import Chatbox from '@/components/Chatbot.vue';
 import ProvenanceTracking from './views/User_view/ProvenanceTracking.vue';
 
 const route = useRoute();
+const systemStore = useSystemStore();
 
 // --- LOGIC CON TRỎ CHUỘT ---
 const customCursor = ref(null);
@@ -70,6 +73,7 @@ const handleHover = (e) => {
 };
 
 onMounted(() => {
+  systemStore.fetchSettings();
   window.addEventListener('mousemove', moveCursor);
   window.addEventListener('mouseover', handleHover); // Lắng nghe sự kiện di chuột qua phần tử
 });
