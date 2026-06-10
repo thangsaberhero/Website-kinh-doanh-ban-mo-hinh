@@ -11,7 +11,10 @@ export const useSystemStore = defineStore('system', {
       logo_header: '',
       logo_favicon: '',
       login_bg: [], // Chứa mảng ảnh slider đăng nhập
-      home_banner: [] // Chứa mảng ảnh banner trang chủ
+      home_banner: [], // Chứa mảng ảnh banner trang chủ
+      social_facebook: '',
+      social_youtube: '',
+      social_instagram: ''
     },
     isLoaded: false // Cờ đánh dấu để không gọi API nhiều lần
   }),

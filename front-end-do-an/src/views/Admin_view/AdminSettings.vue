@@ -114,6 +114,41 @@
           </div>
         </div>
 
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col lg:col-span-2 mt-8">
+          <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#ff8f73]">share</span>
+              Liên kết Mạng xã hội
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Đường dẫn tới Fanpage và kênh truyền thông của cửa hàng (Để trống nếu không muốn hiển thị).</p>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <img src="https://api.iconify.design/logos:facebook.svg"> Facebook
+                </label>
+                <input v-model="formText.social_facebook" type="url" placeholder="https://facebook.com/..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#1877F2] outline-none">
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <img src="https://api.iconify.design/logos:youtube-icon.svg"> YouTube
+                </label>
+                <input v-model="formText.social_youtube" type="url" placeholder="https://youtube.com/..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#FF0000] outline-none">
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <img src="https://api.iconify.design/skill-icons:instagram.svg"> Instagram
+                </label>
+                <input v-model="formText.social_instagram" type="url" placeholder="https://instagram.com/..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#E4405F] outline-none">
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">          
           <!-- KHỐI 3: SLIDER ẢNH NỀN ĐĂNG NHẬP -->
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
@@ -347,7 +382,10 @@ const formText = ref({
   shop_name: '',
   contact_phone: '',
   contact_email: '',
-  shop_address: ''
+  shop_address: '',
+  social_facebook: '',
+  social_youtube: '',
+  social_instagram: ''
 });
 
 // State cho File đang chờ Upload và File Preview hiển thị
@@ -398,6 +436,9 @@ const fetchSettings = async () => {
       formText.value.contact_phone = data.contact_phone || '';
       formText.value.contact_email = data.contact_email || '';
       formText.value.shop_address = data.shop_address || '';
+      formText.value.social_facebook = data.social_facebook || '';
+      formText.value.social_youtube = data.social_youtube || '';
+      formText.value.social_instagram = data.social_instagram || '';
 
       // Gán dữ liệu Hình ảnh hiện tại vào Preview
       previews.value.logo_header = data.logo_header || null;

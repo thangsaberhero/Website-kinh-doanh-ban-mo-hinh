@@ -64,9 +64,32 @@
                         <div class="mt-12 pt-8 border-t border-white/10 relative z-10">
                             <h4 class="font-headline text-[10px] text-on-surface-variant tracking-widest uppercase font-bold mb-4">Kết nối qua Social</h4>
                             <div class="flex gap-4">
-                                <a href="#" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all"><span class="material-symbols-outlined text-xl">public</span></a>
-                                <a href="#" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all"><span class="material-symbols-outlined text-xl">smart_display</span></a>
-                                <a href="#" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all"><span class="material-symbols-outlined text-xl">camera_alt</span></a>
+                                <a v-if="systemStore.settings.social_facebook" 
+                                :href="systemStore.settings.social_facebook" 
+                                target="_blank" rel="noopener noreferrer"
+                                class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+                                <img src="https://api.iconify.design/logos:facebook.svg" 
+                                        alt="Facebook" 
+                                        class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
+                                </a>
+
+                                <a v-if="systemStore.settings.social_youtube" 
+                                :href="systemStore.settings.social_youtube" 
+                                target="_blank" rel="noopener noreferrer"
+                                class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+                                <img src="https://api.iconify.design/logos:youtube-icon.svg" 
+                                        alt="YouTube" 
+                                        class="w-7 h-7 object-contain group-hover:scale-110 transition-transform" />
+                                </a>
+
+                                <a v-if="systemStore.settings.social_instagram" 
+                                :href="systemStore.settings.social_instagram" 
+                                target="_blank" rel="noopener noreferrer"
+                                class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+                                <img src="https://api.iconify.design/skill-icons:instagram.svg" 
+                                        alt="Instagram" 
+                                        class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
+                                </a>
                             </div>
                         </div>
                     </div>
