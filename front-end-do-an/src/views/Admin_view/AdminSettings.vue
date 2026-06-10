@@ -353,357 +353,361 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import draggable from 'vuedraggable';
-import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
-import AdminHeader from "../../components/Admin/AdminHeader.vue";
-import { useToastStore } from "../../stores/toast";
-import { useLayoutStore } from '../../stores/layout';
+  import { ref, onMounted } from 'vue';
+  import draggable from 'vuedraggable';
+  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
+  import AdminHeader from "../../components/Admin/AdminHeader.vue";
+  import { useToastStore } from "../../stores/toast";
+  import { useLayoutStore } from '../../stores/layout';
+  import { useSystemStore } from '../../stores/system';
 
-const toastStore = useToastStore();
-const layoutStore = useLayoutStore();
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const categoriesList = ref([]);
-const brandsList = ref([]);
+  const toastStore = useToastStore();
+  const layoutStore = useLayoutStore();
+  const systemStore = useSystemStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const categoriesList = ref([]);
+  const brandsList = ref([]);
 
-// Hàm tải dữ liệu Danh mục & Hãng để làm gợi ý Link
-const fetchDropdownData = async () => {
-  try {
-    // 1. Lấy danh mục
-    const resCat = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
-    const catData = await resCat.json();
-    if (resCat.ok) categoriesList.value = catData.data;
+  // Hàm tải dữ liệu Danh mục & Hãng để làm gợi ý Link
+  const fetchDropdownData = async () => {
+    try {
+      // 1. Lấy danh mục
+      const resCat = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
+      const catData = await resCat.json();
+      if (resCat.ok) categoriesList.value = catData.data;
 
-    // 2. Lấy hãng sản xuất
-    const resBrand = await fetch(`${API_BASE_URL}/api/products/hsx`);
-    const brandData = await resBrand.json();
-    if (resBrand.ok) brandsList.value = brandData.data;
-  } catch (error) {
-    console.error("Lỗi lấy dữ liệu gợi ý link:", error);
-  }
-};
-
-// State lưu trữ dữ liệu
-const formText = ref({
-  shop_name: '',
-  contact_phone: '',
-  contact_email: '',
-  shop_address: '',
-  social_facebook: '',
-  social_youtube: '',
-  social_instagram: ''
-});
-
-// State cho File đang chờ Upload và File Preview hiển thị
-const files = ref({
-  logo_header: null,
-  logo_favicon: null,
-  login_bg: [],
-  home_banner: [] // Chứa các File object thật
-});
-
-const previews = ref({
-  logo_header: null,
-  logo_favicon: null,
-  login_bg: [],
-  home_banner: [] // Chứa blob URL để preview ảnh mới
-});
-
-const existingBanners = ref([]); 
-const existingLoginBanners = ref([]);
-const isSavingText = ref(false);
-
-const formatBanners = (rawArray) => {
-  if (!Array.isArray(rawArray)) return [];
-  return rawArray.map((item, idx) => {
-    const uniqueId = 'home_' + idx + '_' + Date.now();
-    if (typeof item === 'string') {
-      return { 
-        id: uniqueId, image: item, tag: 'NEW ARRIVAL', 
-        title: 'SẢN PHẨM', titleAccent: 'MỚI', 
-        desc: 'Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn.', link: '/category' 
-      };
+      // 2. Lấy hãng sản xuất
+      const resBrand = await fetch(`${API_BASE_URL}/api/products/hsx`);
+      const brandData = await resBrand.json();
+      if (resBrand.ok) brandsList.value = brandData.data;
+    } 
+    catch (error) {
+      console.error("Lỗi lấy dữ liệu gợi ý link:", error);
     }
-    return { id: item.id || uniqueId, ...item }; 
+  };
+
+  // State lưu trữ dữ liệu
+  const formText = ref({
+    shop_name: '',
+    contact_phone: '',
+    contact_email: '',
+    shop_address: '',
+    social_facebook: '',
+    social_youtube: '',
+    social_instagram: ''
   });
-};
 
-// --- 1. LẤY TOÀN BỘ CÀI ĐẶT TỪ DB KHI LOAD TRANG ---
-const fetchSettings = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/setting/admin`);
-    const result = await response.json();
-    
-    if (result.success) {
-      const data = result.data;
-      
-      // Gán dữ liệu Văn bản
-      formText.value.shop_name = data.shop_name || '';
-      formText.value.contact_phone = data.contact_phone || '';
-      formText.value.contact_email = data.contact_email || '';
-      formText.value.shop_address = data.shop_address || '';
-      formText.value.social_facebook = data.social_facebook || '';
-      formText.value.social_youtube = data.social_youtube || '';
-      formText.value.social_instagram = data.social_instagram || '';
+  // State cho File đang chờ Upload và File Preview hiển thị
+  const files = ref({
+    logo_header: null,
+    logo_favicon: null,
+    login_bg: [],
+    home_banner: [] // Chứa các File object thật
+  });
 
-      // Gán dữ liệu Hình ảnh hiện tại vào Preview
-      previews.value.logo_header = data.logo_header || null;
-      previews.value.logo_favicon = data.logo_favicon || null;
+  const previews = ref({
+    logo_header: null,
+    logo_favicon: null,
+    login_bg: [],
+    home_banner: [] // Chứa blob URL để preview ảnh mới
+  });
+
+  const existingBanners = ref([]); 
+  const existingLoginBanners = ref([]);
+  const isSavingText = ref(false);
+
+  const formatBanners = (rawArray) => {
+    if (!Array.isArray(rawArray)) return [];
+    return rawArray.map((item, idx) => {
+      const uniqueId = 'home_' + idx + '_' + Date.now();
+      if (typeof item === 'string') {
+        return { 
+          id: uniqueId, image: item, tag: 'NEW ARRIVAL', 
+          title: 'SẢN PHẨM', titleAccent: 'MỚI', 
+          desc: 'Nâng tầm bộ sưu tập của bạn với những kiệt tác giới hạn.', link: '/category' 
+        };
+      }
+      return { id: item.id || uniqueId, ...item }; 
+    });
+  };
+
+  // --- 1. LẤY TOÀN BỘ CÀI ĐẶT TỪ DB KHI LOAD TRANG ---
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/setting/admin`);
+      const result = await response.json();
       
-      // Mảng Banner
-      existingLoginBanners.value = Array.isArray(data.login_bg) 
-        ? data.login_bg.map((url, i) => ({ id: 'login_' + i + '_' + Date.now(), url })) 
-        : [];
-      existingBanners.value = formatBanners(data.home_banner);
+      if (result.success) {
+        const data = result.data;
+        
+        // Gán dữ liệu Văn bản
+        formText.value.shop_name = data.shop_name || '';
+        formText.value.contact_phone = data.contact_phone || '';
+        formText.value.contact_email = data.contact_email || '';
+        formText.value.shop_address = data.shop_address || '';
+        formText.value.social_facebook = data.social_facebook || '';
+        formText.value.social_youtube = data.social_youtube || '';
+        formText.value.social_instagram = data.social_instagram || '';
+
+        // Gán dữ liệu Hình ảnh hiện tại vào Preview
+        previews.value.logo_header = data.logo_header || null;
+        previews.value.logo_favicon = data.logo_favicon || null;
+        
+        // Mảng Banner
+        existingLoginBanners.value = Array.isArray(data.login_bg) 
+          ? data.login_bg.map((url, i) => ({ id: 'login_' + i + '_' + Date.now(), url })) 
+          : [];
+        existingBanners.value = formatBanners(data.home_banner);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải cài đặt:", error);
+      toastStore.showToast("Không thể kết nối đến máy chủ!", "error");
     }
-  } catch (error) {
-    console.error("Lỗi khi tải cài đặt:", error);
-    toastStore.showToast("Không thể kết nối đến máy chủ!", "error");
-  }
-};
+  };
 
-// --- 2. CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
-const saveTextSettings = async () => {
-  isSavingText.value = true;
-  const token = localStorage.getItem('token');
-  
-  try {
-    // Vì API cap_nhat_van_ban nhận từng Key một, ta dùng Promise.all để gọi đồng thời
-    const updatePromises = Object.keys(formText.value).map(key => {
-      return fetch(`${API_BASE_URL}/api/setting/admin/update_text`, {
+  // --- 2. CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
+  const saveTextSettings = async () => {
+    isSavingText.value = true;
+    const token = localStorage.getItem('token');
+    
+    try {
+      // Vì API cap_nhat_van_ban nhận từng Key một, ta dùng Promise.all để gọi đồng thời
+      const updatePromises = Object.keys(formText.value).map(key => {
+        return fetch(`${API_BASE_URL}/api/setting/admin/update_text`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ keyCaiDat: key, giaTri: formText.value[key] })
+        });
+      });
+
+      await Promise.all(updatePromises);
+      toastStore.showToast("Đã lưu thông tin cơ bản thành công!", "success");
+      await systemStore.fetchSettings(true);
+    } 
+    catch (error) {
+      console.error("Lỗi cập nhật văn bản:", error);
+      toastStore.showToast("Lỗi khi lưu thông tin!", "error");
+    } finally {
+      isSavingText.value = false;
+    }
+  };
+
+  // --- 3. XỬ LÝ ẢNH FILE ĐƠN ---
+  const handleSingleFile = (event, fieldKey) => {
+    const file = event.target.files[0];
+    if (file) {
+      files.value[fieldKey] = file;
+      // Tạo link ảo để preview lập tức
+      previews.value[fieldKey] = URL.createObjectURL(file);
+    }
+  };
+
+  const saveSingleImage = async (fieldKey, endpoint) => {
+    if (!files.value[fieldKey]) return;
+    
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('keyCaiDat', fieldKey);
+    formData.append(fieldKey, files.value[fieldKey]); // Tên trường file trùng với tên khai báo ở Backend Route
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/setting/admin${endpoint}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        toastStore.showToast("Đã cập nhật hình ảnh!", "success");
+        files.value[fieldKey] = null; // Xóa file bộ nhớ đệm đi để ẩn nút "Tải lên"
+      } else {
+        toastStore.showToast(result.message || "Lỗi cập nhật ảnh!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi cập nhật file:", error);
+      toastStore.showToast("Lỗi máy chủ!", "error");
+    }
+  };
+
+  // --- 4. XỬ LÝ MẢNG ẢNH BANNER TRANG CHỦ ---
+  const handleHomeBannerFiles = (event) => {
+    const selectedFiles = Array.from(event.target.files);
+    
+    selectedFiles.forEach(file => {
+      files.value.home_banner.push(file);
+      previews.value.home_banner.push(URL.createObjectURL(file));
+    });
+    
+    // Xóa nội dung input để có thể chọn lại cùng 1 file nếu cần
+    event.target.value = ''; 
+  };
+
+  const removeExistingBanner = (index) => {
+    existingBanners.value.splice(index, 1);
+  };
+
+  const removeNewBanner = (index) => {
+    files.value.home_banner.splice(index, 1);
+    previews.value.home_banner.splice(index, 1);
+  };
+
+  const handleLoginBannerFiles = (event) => {
+    const selectedFiles = Array.from(event.target.files);
+    selectedFiles.forEach(file => {
+      files.value.login_bg.push(file);
+      previews.value.login_bg.push(URL.createObjectURL(file));
+    });
+    event.target.value = ''; 
+  };
+
+  const removeExistingLoginBanner = (index) => {
+    existingLoginBanners.value.splice(index, 1);
+  };
+
+  const removeNewLoginBanner = (index) => {
+    files.value.login_bg.splice(index, 1);
+    previews.value.login_bg.splice(index, 1);
+  };
+
+  const saveLoginBanners = async () => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    
+    formData.append('keyCaiDat', 'login_bg');
+    const oldUrls = existingLoginBanners.value.map(item => item.url);
+    formData.append('oldImages', JSON.stringify(oldUrls));
+    
+    files.value.login_bg.forEach(file => {
+      // Chú ý: Tên append phải khớp với tên trong uploadLoginSlider.array('login_bg', 5)
+      formData.append('login_bg', file); 
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/setting/admin/update_login_bg`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        toastStore.showToast("Cập nhật Slider Đăng nhập thành công!", "success");
+        existingLoginBanners.value = Array.isArray(result.data) 
+          ? result.data.map((url, i) => ({ id: 'login_' + i + '_' + Date.now(), url })) 
+          : [];
+        files.value.login_bg = [];
+        previews.value.login_bg = [];
+      } else {
+        toastStore.showToast(result.message || "Lỗi cập nhật slider!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi cập nhật slider login:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    }
+  };
+
+  const saveHomeBanners = async () => {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    
+    formData.append('keyCaiDat', 'home_banner');
+    // Ép mảng ảnh cũ còn giữ lại thành JSON
+    formData.append('oldImages', JSON.stringify(existingBanners.value));
+    
+    // Đính kèm các ảnh mới vừa chọn
+    files.value.home_banner.forEach(file => {
+      formData.append('home_banner', file);
+    });
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/setting/admin/update_home_banner`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        toastStore.showToast("Cập nhật toàn bộ Slider thành công!", "success");
+        
+        // Làm mới dữ liệu
+        existingBanners.value = formatBanners(result.data); // <--- Sửa dòng này
+        files.value.home_banner = [];
+        previews.value.home_banner = [];
+      } else {
+        toastStore.showToast(result.message || "Lỗi cập nhật slider!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi cập nhật slider:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    }
+  };
+
+  // Khai báo state
+  const paymentMethods = ref([]);
+
+  // Hàm tải dữ liệu
+  const fetchPaymentMethods = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/setting/admin/payment-methods`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        paymentMethods.value = data.data;
+      }
+    } catch (error) {
+      console.error("Lỗi lấy cổng TT:", error);
+    }
+  };
+
+  // Hàm gạt công tắc Bật/Tắt
+  const togglePaymentMethod = async (method) => {
+    const newStatus = method.TrangThaiHoatDong === 1 ? 0 : 1;
+    const token = localStorage.getItem('token');
+    
+    // Tạm cập nhật UI cho mượt
+    method.TrangThaiHoatDong = newStatus;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/setting/admin/payment-methods/toggle`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ keyCaiDat: key, giaTri: formText.value[key] })
+        body: JSON.stringify({ MaPT: method.MaPT, TrangThaiHoatDong: newStatus })
       });
-    });
-
-    await Promise.all(updatePromises);
-    toastStore.showToast("Đã lưu thông tin cơ bản thành công!", "success");
-    
-  } catch (error) {
-    console.error("Lỗi cập nhật văn bản:", error);
-    toastStore.showToast("Lỗi khi lưu thông tin!", "error");
-  } finally {
-    isSavingText.value = false;
-  }
-};
-
-// --- 3. XỬ LÝ ẢNH FILE ĐƠN ---
-const handleSingleFile = (event, fieldKey) => {
-  const file = event.target.files[0];
-  if (file) {
-    files.value[fieldKey] = file;
-    // Tạo link ảo để preview lập tức
-    previews.value[fieldKey] = URL.createObjectURL(file);
-  }
-};
-
-const saveSingleImage = async (fieldKey, endpoint) => {
-  if (!files.value[fieldKey]) return;
-  
-  const token = localStorage.getItem('token');
-  const formData = new FormData();
-  formData.append('keyCaiDat', fieldKey);
-  formData.append(fieldKey, files.value[fieldKey]); // Tên trường file trùng với tên khai báo ở Backend Route
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/setting/admin${endpoint}`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData
-    });
-    
-    const result = await response.json();
-    if (result.success) {
-      toastStore.showToast("Đã cập nhật hình ảnh!", "success");
-      files.value[fieldKey] = null; // Xóa file bộ nhớ đệm đi để ẩn nút "Tải lên"
-    } else {
-      toastStore.showToast(result.message || "Lỗi cập nhật ảnh!", "error");
-    }
-  } catch (error) {
-    console.error("Lỗi cập nhật file:", error);
-    toastStore.showToast("Lỗi máy chủ!", "error");
-  }
-};
-
-// --- 4. XỬ LÝ MẢNG ẢNH BANNER TRANG CHỦ ---
-const handleHomeBannerFiles = (event) => {
-  const selectedFiles = Array.from(event.target.files);
-  
-  selectedFiles.forEach(file => {
-    files.value.home_banner.push(file);
-    previews.value.home_banner.push(URL.createObjectURL(file));
-  });
-  
-  // Xóa nội dung input để có thể chọn lại cùng 1 file nếu cần
-  event.target.value = ''; 
-};
-
-const removeExistingBanner = (index) => {
-  existingBanners.value.splice(index, 1);
-};
-
-const removeNewBanner = (index) => {
-  files.value.home_banner.splice(index, 1);
-  previews.value.home_banner.splice(index, 1);
-};
-
-const handleLoginBannerFiles = (event) => {
-  const selectedFiles = Array.from(event.target.files);
-  selectedFiles.forEach(file => {
-    files.value.login_bg.push(file);
-    previews.value.login_bg.push(URL.createObjectURL(file));
-  });
-  event.target.value = ''; 
-};
-
-const removeExistingLoginBanner = (index) => {
-  existingLoginBanners.value.splice(index, 1);
-};
-
-const removeNewLoginBanner = (index) => {
-  files.value.login_bg.splice(index, 1);
-  previews.value.login_bg.splice(index, 1);
-};
-
-const saveLoginBanners = async () => {
-  const token = localStorage.getItem('token');
-  const formData = new FormData();
-  
-  formData.append('keyCaiDat', 'login_bg');
-  const oldUrls = existingLoginBanners.value.map(item => item.url);
-  formData.append('oldImages', JSON.stringify(oldUrls));
-  
-  files.value.login_bg.forEach(file => {
-    // Chú ý: Tên append phải khớp với tên trong uploadLoginSlider.array('login_bg', 5)
-    formData.append('login_bg', file); 
-  });
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/setting/admin/update_login_bg`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData
-    });
-    
-    const result = await response.json();
-    if (result.success) {
-      toastStore.showToast("Cập nhật Slider Đăng nhập thành công!", "success");
-      existingLoginBanners.value = Array.isArray(result.data) 
-        ? result.data.map((url, i) => ({ id: 'login_' + i + '_' + Date.now(), url })) 
-        : [];
-      files.value.login_bg = [];
-      previews.value.login_bg = [];
-    } else {
-      toastStore.showToast(result.message || "Lỗi cập nhật slider!", "error");
-    }
-  } catch (error) {
-    console.error("Lỗi cập nhật slider login:", error);
-    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
-  }
-};
-
-const saveHomeBanners = async () => {
-  const token = localStorage.getItem('token');
-  const formData = new FormData();
-  
-  formData.append('keyCaiDat', 'home_banner');
-  // Ép mảng ảnh cũ còn giữ lại thành JSON
-  formData.append('oldImages', JSON.stringify(existingBanners.value));
-  
-  // Đính kèm các ảnh mới vừa chọn
-  files.value.home_banner.forEach(file => {
-    formData.append('home_banner', file);
-  });
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/setting/admin/update_home_banner`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData
-    });
-    
-    const result = await response.json();
-    if (result.success) {
-      toastStore.showToast("Cập nhật toàn bộ Slider thành công!", "success");
       
-      // Làm mới dữ liệu
-      existingBanners.value = formatBanners(result.data); // <--- Sửa dòng này
-      files.value.home_banner = [];
-      previews.value.home_banner = [];
-    } else {
-      toastStore.showToast(result.message || "Lỗi cập nhật slider!", "error");
-    }
-  } catch (error) {
-    console.error("Lỗi cập nhật slider:", error);
-    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
-  }
-};
-
-// Khai báo state
-const paymentMethods = ref([]);
-
-// Hàm tải dữ liệu
-const fetchPaymentMethods = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API_BASE_URL}/api/setting/admin/payment-methods`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      paymentMethods.value = data.data;
-    }
-  } catch (error) {
-    console.error("Lỗi lấy cổng TT:", error);
-  }
-};
-
-// Hàm gạt công tắc Bật/Tắt
-const togglePaymentMethod = async (method) => {
-  const newStatus = method.TrangThaiHoatDong === 1 ? 0 : 1;
-  const token = localStorage.getItem('token');
-  
-  // Tạm cập nhật UI cho mượt
-  method.TrangThaiHoatDong = newStatus;
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/setting/admin/payment-methods/toggle`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ MaPT: method.MaPT, TrangThaiHoatDong: newStatus })
-    });
-    
-    const data = await res.json();
-    if (data.success) {
-      toastStore.showToast(`${newStatus ? 'Đã BẬT' : 'Đã TẮT'} ${method.TenPhuongThuc}`, "success");
-    } else {
-      // Rollback UI nếu lỗi
+      const data = await res.json();
+      if (data.success) {
+        toastStore.showToast(`${newStatus ? 'Đã BẬT' : 'Đã TẮT'} ${method.TenPhuongThuc}`, "success");
+      } else {
+        // Rollback UI nếu lỗi
+        method.TrangThaiHoatDong = newStatus === 1 ? 0 : 1; 
+        toastStore.showToast("Cập nhật thất bại!", "error");
+      }
+    } catch (error) {
       method.TrangThaiHoatDong = newStatus === 1 ? 0 : 1; 
-      toastStore.showToast("Cập nhật thất bại!", "error");
+      toastStore.showToast("Lỗi mạng!", "error");
     }
-  } catch (error) {
-    method.TrangThaiHoatDong = newStatus === 1 ? 0 : 1; 
-    toastStore.showToast("Lỗi mạng!", "error");
-  }
-};
+  };
 
-onMounted(() => {
-  fetchSettings();
-  fetchDropdownData();
-  fetchPaymentMethods();
-});
+  onMounted(() => {
+    fetchSettings();
+    fetchDropdownData();
+    fetchPaymentMethods();
+  });
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>

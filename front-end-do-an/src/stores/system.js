@@ -20,9 +20,9 @@ export const useSystemStore = defineStore('system', {
   }),
   
   actions: {
-    async fetchSettings() {
-      // Nếu đã tải rồi thì không gọi API nữa, tiết kiệm băng thông cho Server
-      if (this.isLoaded) return; 
+    async fetchSettings(forceReload = false) {
+      // Nếu đã tải rồi VÀ không có lệnh ép tải lại (forceReload), thì mới dừng
+      if (this.isLoaded && !forceReload) return; 
 
       try {
         const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -30,7 +30,6 @@ export const useSystemStore = defineStore('system', {
         const result = await response.json();
         
         if (result.success) {
-          // Nạp dữ liệu từ DB vào State
           this.settings = { ...this.settings, ...result.data };
           this.isLoaded = true;
           
@@ -48,7 +47,8 @@ export const useSystemStore = defineStore('system', {
             link.href = this.settings.logo_favicon;
           }
         }
-      } catch (error) {
+      } 
+      catch (error) {
         console.error('Lỗi tải cài đặt hệ thống:', error);
       }
     }
