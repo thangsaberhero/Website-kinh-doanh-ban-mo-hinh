@@ -20,8 +20,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">        
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -45,6 +44,10 @@
                   <input v-model="formText.contact_email" type="email" placeholder="VD: hotro@shop.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800">
                 </div>
               </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Địa chỉ cửa hàng</label>
+                <textarea v-model="formText.shop_address" rows="2" placeholder="VD: Số 123 Đà Nẵng, Phường Ngô Quyền, TP. Hải Phòng" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800 resize-none"></textarea>
+              </div>
             </div>
             <div class="p-6 pt-0">
               <button @click="saveTextSettings" :disabled="isSavingText" class="w-full py-3 rounded-xl font-bold text-white bg-slate-900 hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
@@ -55,7 +58,7 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#ff8f73]">branding_watermark</span>
@@ -63,43 +66,52 @@
               </h2>
               <p class="text-xs text-slate-500 mt-1">Cập nhật Logo hiển thị trên thanh điều hướng và Favicon.</p>
             </div>
-            <div class="p-6 space-y-6 flex-1">
-              
-              <div class="flex items-start gap-6">
-                <div class="w-32 h-16 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-800 shrink-0 relative group">
-                  <img v-if="previews.logo_header" :src="previews.logo_header" class="max-w-full max-h-full object-contain p-2" />
-                  <span v-else class="text-xs font-medium text-slate-400">Trống</span>
+            
+            <div class="p-6 flex-1 flex flex-col justify-between">
+              <div class="space-y-8"> <div class="flex items-start gap-6">
+                  <div class="w-40 h-20 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-800 shrink-0 relative group">
+                    <img v-if="previews.logo_header" :src="previews.logo_header" class="max-w-full max-h-full object-contain p-2" />
+                    <span v-else class="text-xs font-medium text-slate-400">Trống</span>
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm font-bold text-slate-800 mb-1">Logo Header (Ngang)</label>
+                    <p class="text-[10px] text-slate-500 mb-4">Hiển thị ở góc trái thanh điều hướng.</p>
+                    <div class="flex gap-2">
+                      <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_header')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer">
+                      <button v-if="files.logo_header" @click="saveSingleImage('logo_header', '/update_logo_header')" class="shrink-0 bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm">Lưu ảnh</button>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex-1">
-                  <label class="block text-sm font-bold text-slate-800 mb-1">Logo Header (Ngang)</label>
-                  <p class="text-[10px] text-slate-500 mb-3">Hiển thị ở góc trái thanh điều hướng. Khuyên dùng định dạng PNG không nền, chữ trắng/sáng.</p>
-                  <div class="flex gap-2">
-                    <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_header')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer">
-                    <button v-if="files.logo_header" @click="saveSingleImage('logo_header', '/update_logo_header')" class="shrink-0 bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Tải lên</button>
+
+                <div class="h-px bg-slate-100 w-full"></div>
+
+                <div class="flex items-start gap-6">
+                  <div class="w-20 h-20 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 shrink-0 relative group">
+                    <img v-if="previews.logo_favicon" :src="previews.logo_favicon" class="w-full h-full object-cover p-1" />
+                    <span v-else class="text-xs font-medium text-slate-400">Trống</span>
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm font-bold text-slate-800 mb-1">Logo Vuông (Favicon)</label>
+                    <p class="text-[10px] text-slate-500 mb-4">Dùng làm biểu tượng trên Tab trình duyệt.</p>
+                    <div class="flex gap-2">
+                      <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_favicon')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
+                      <button v-if="files.logo_favicon" @click="saveSingleImage('logo_favicon', '/update_logo_favicon')" class="shrink-0 bg-slate-800 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm">Lưu ảnh</button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="h-px bg-slate-100 w-full"></div>
-
-              <div class="flex items-start gap-6">
-                <div class="w-16 h-16 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-slate-50 shrink-0 relative group">
-                  <img v-if="previews.logo_favicon" :src="previews.logo_favicon" class="w-full h-full object-cover p-1" />
-                  <span v-else class="text-xs font-medium text-slate-400">Trống</span>
-                </div>
-                <div class="flex-1">
-                  <label class="block text-sm font-bold text-slate-800 mb-1">Logo Vuông (Favicon)</label>
-                  <p class="text-[10px] text-slate-500 mb-3">Dùng làm biểu tượng trên Tab trình duyệt hoặc Avatar.</p>
-                  <div class="flex gap-2">
-                    <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_favicon')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
-                    <button v-if="files.logo_favicon" @click="saveSingleImage('logo_favicon', '/update_logo_favicon')" class="shrink-0 bg-slate-800 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Tải lên</button>
-                  </div>
+              <div class="mt-8 bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+                <span class="material-symbols-outlined text-blue-500 mt-0.5 text-[20px]">lightbulb</span>
+                <div>
+                  <h4 class="text-xs font-bold text-blue-800 mb-1">Mẹo tối ưu hình ảnh</h4>
+                  <p class="text-[11px] text-blue-600/80 leading-relaxed">
+                    Nên dùng định dạng <strong class="text-blue-700">.PNG</strong> hoặc <strong class="text-blue-700">.WEBP</strong> không nền. Dung lượng mỗi ảnh nên dưới <strong class="text-blue-700">2MB</strong> để website tải nhanh nhất.
+                  </p>
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">          
@@ -334,7 +346,8 @@ const fetchDropdownData = async () => {
 const formText = ref({
   shop_name: '',
   contact_phone: '',
-  contact_email: ''
+  contact_email: '',
+  shop_address: ''
 });
 
 // State cho File đang chờ Upload và File Preview hiển thị
@@ -384,6 +397,7 @@ const fetchSettings = async () => {
       formText.value.shop_name = data.shop_name || '';
       formText.value.contact_phone = data.contact_phone || '';
       formText.value.contact_email = data.contact_email || '';
+      formText.value.shop_address = data.shop_address || '';
 
       // Gán dữ liệu Hình ảnh hiện tại vào Preview
       previews.value.logo_header = data.logo_header || null;

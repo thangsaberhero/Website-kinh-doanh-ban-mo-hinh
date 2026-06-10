@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
       
       <div class="flex items-center gap-12">
-        <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">FigureCollect</a>
+        <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">{{ systemStore.settings.shop_name || 'FigureCollect' }}</a>
         <div class="hidden md:flex items-center gap-8">
           <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/category')">Cửa hàng</a>
           <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/news')">Tin tức</a>
@@ -197,11 +197,13 @@
 <script setup>
   import { ref , computed, onMounted, onUnmounted, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import { useAuthStore } from '@/stores/auth'; 
+  import { useAuthStore } from '@/stores/auth';
+  import { useSystemStore } from '@/stores/system';
 
   const router = useRouter();
   const route = useRoute();
   const authStore = useAuthStore();
+  const systemStore = useSystemStore();
 
   const showUserMenu = ref(false);
   const cartCount = ref(0);

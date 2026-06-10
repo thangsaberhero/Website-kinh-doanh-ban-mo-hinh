@@ -4,7 +4,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">        
         <div class="lg:col-span-1">
           <router-link to="/" class="font-headline text-2xl font-bold tracking-tighter text-primary mb-6 block">
-            FigureCollect
+            {{ systemStore.settings.shop_name || 'FigureCollect' }}
           </router-link>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
             Điểm đến hàng đầu cho cộng đồng đam mê sưu tập mô hình tại Việt Nam. Chúng tôi mang đến những tạo tác giá trị nhất từ khắp nơi trên thế giới.
@@ -37,15 +37,15 @@
           <ul class="space-y-4 text-on-surface-variant text-sm">
             <li class="flex items-start gap-3">
               <span class="material-symbols-outlined text-[18px] text-primary">location_on</span>
-              <span>Phường Ngô Quyền, TP. Hải Phòng</span>
+              <span>{{ systemStore.settings.shop_address || 'Đang cập nhật địa chỉ' }}</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="material-symbols-outlined text-[18px] text-primary">call</span>
-              <span>0795 209 255 (Zalo/Hotline)</span>
+              <span>{{ systemStore.settings.contact_phone || 'Đang cập nhật' }} (Zalo/Hotline)</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="material-symbols-outlined text-[18px] text-primary">mail</span>
-              <span>vuhongphong04@gmail.com</span>
+              <span>{{ systemStore.settings.contact_email || 'Đang cập nhật' }}</span>
             </li>
             <li class="flex items-center gap-3">
               <span class="material-symbols-outlined text-[18px] text-primary">schedule</span>
@@ -73,23 +73,25 @@
       </div>
 
       <div class="border-t border-outline-variant/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-outline font-bold tracking-widest uppercase">
-        <div>© {{ currentYear }} FigureCollect. All rights reserved.</div>
+        <div>© {{ currentYear }} {{ systemStore.settings.shop_name || 'FigureCollect' }}. All rights reserved.</div>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useToastStore } from '@/stores/toast';
-  
-const currentYear = computed(() => new Date().getFullYear());
-const toastStore = useToastStore();
-const emailInput = ref('');
+  import { ref, computed } from 'vue';
+  import { useToastStore } from '@/stores/toast';
+  import { useSystemStore } from '@/stores/system';
 
-const handleSubscribe = () => {
-  console.log('Đăng ký nhận tin với email:', emailInput.value);
-  toastStore.showToast("Cảm ơn bạn đã đăng ký nhận tin!", "success");
-  emailInput.value = '';
-};
+  const systemStore = useSystemStore();
+  const currentYear = computed(() => new Date().getFullYear());
+  const toastStore = useToastStore();
+  const emailInput = ref('');
+
+  const handleSubscribe = () => {
+    console.log('Đăng ký nhận tin với email:', emailInput.value);
+    toastStore.showToast("Cảm ơn bạn đã đăng ký nhận tin!", "success");
+    emailInput.value = '';
+  };
 </script>

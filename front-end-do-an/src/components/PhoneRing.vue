@@ -4,7 +4,7 @@
       <div v-show="isOpen" class="flex flex-col gap-4 mb-4 items-center">
         
         <a 
-          href="https://zalo.me/0795209255" 
+          :href="'https://zalo.me/' + systemStore.settings.contact_phone" 
           target="_blank" 
           aria-label="Chat Zalo"
           class="relative group flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#0068FF] shadow-lg hover:scale-110 transition-transform"
@@ -29,7 +29,7 @@
         </a>
 
         <a 
-          href="mailto:contact@figurecollect.com" 
+          :href="'mailto:' + systemStore.settings.contact_email"
           aria-label="Gửi Email"
           class="relative group flex items-center justify-center w-[45px] h-[45px] rounded-full shadow-lg hover:scale-110 transition-transform bg-white"
         >
@@ -41,7 +41,7 @@
         </a>
 
         <a 
-          href="tel:0795209255" 
+          :href="'tel:' + systemStore.settings.contact_phone"
           aria-label="Gọi Hotline"
           class="relative group flex items-center justify-center w-[45px] h-[45px] rounded-full bg-green-500 text-white shadow-lg hover:scale-110 transition-transform"
         >
@@ -49,7 +49,7 @@
             <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
           </svg>
           <span class="absolute left-14 px-3 py-1.5 bg-black/80 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
-            0795.209.255
+            {{ systemStore.settings.contact_phone || 'Đang cập nhật' }}
           </span>
         </a>
       </div>
@@ -80,7 +80,10 @@
 
 <script setup>
   import { ref } from 'vue';
+  import { useSystemStore } from '@/stores/system';
+
   const isOpen = ref(false);
+  const systemStore = useSystemStore();
 </script>
 
 <style scoped>

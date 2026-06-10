@@ -7,6 +7,7 @@ export const useSystemStore = defineStore('system', {
       shop_name: 'FigureCollect',
       contact_phone: '',
       contact_email: '',
+      shop_address: '',
       logo_header: '',
       logo_favicon: '',
       login_bg: [], // Chứa mảng ảnh slider đăng nhập
