@@ -165,6 +165,8 @@
     newPassword: '',
     confirmPassword: ''
   });
+  const userString = localStorage.getItem('user');
+  const currentUser = userString ? JSON.parse(userString) : null;
 
   // Logic bắt lỗi Real-time cho Mật khẩu mới
   const validations = computed(() => ({
@@ -205,6 +207,10 @@
     scrollToTopCustom();
     if (!authStore.user && !localStorage.getItem('token')) {
       router.push('/login');
+    }
+    else if (currentUser?.isSocialAuth === true) {
+      toastStore.showToast("Tài khoản liên kết Google/Facebook không thể sử dụng chức năng đổi mật khẩu!", "error");
+      router.push('/profile');
     }
   });
 
