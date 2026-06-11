@@ -349,42 +349,42 @@
             </div>
 
             <div>
-              <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Lịch sử thanh toán</h4>
+              <div class="flex justify-between items-end mb-2">
+                <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400">Lịch sử giao dịch</h4>
+                <div class="flex gap-2">
+                  <button v-if="!selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan?.includes('Đã thanh toán') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HỦY') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HOÀN')"
+                          @click="confirmPayment(selectedOrder)"
+                          class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">price_check</span> Thu thêm tiền
+                  </button>
+                  <button v-if="selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan === 'Chờ hoàn tiền'"
+                          @click="confirmRefund(selectedOrder.MaDH, selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi)"
+                          class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">currency_exchange</span> Xác nhận hoàn tiền
+                  </button>
+                </div>
+              </div>
+
               <div class="border border-slate-200 rounded-xl overflow-hidden">
                 <table class="w-full text-left text-sm">
                   <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                     <tr>
-                      <th class="p-4">Mã Voucher</th>
-                      <th class="p-4">Đối tác/Phương thức</th>
-                      <th class="p-4 text-right">Tổng thanh toán</th>
-                      <th class="p-4 text-center">Trạng thái</th>
+                      <th class="p-3 text-center">Thời gian</th>
+                      <th class="p-3">Phương thức</th>
+                      <th class="p-3">Loại giao dịch</th>
+                      <th class="p-3 text-right">Số tiền</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-100">
-                    <tr class="text-slate-700 font-medium">
-                      <td class="p-4 text-slate-400">{{ selectedOrder.ThongTinGiaoHang?.MaVoucher || 'Không áp dụng mã' }}</td>
-                      <td class="p-4 font-bold text-blue-600">Thanh toán theo đơn</td>
-                      <td class="p-4 text-right font-bold">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</td>
-                      <td class="p-4 text-center">
-                        <div class="flex flex-col items-center gap-2">
-                          <span :class="selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan?.includes('Đã thanh toán') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'" 
-                                class="text-[11px] px-2 py-0.5 rounded font-bold border whitespace-nowrap">
-                            {{ selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan || 'Chưa thanh toán' }}
-                          </span>
-                          
-                          <button v-if="!selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan?.includes('Đã thanh toán') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HỦY') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HOÀN')"
-                                  @click="confirmPayment(selectedOrder)"
-                                  class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
-                            <span class="material-symbols-outlined text-[14px]">price_check</span>
-                            Xác nhận thu tiền
-                          </button>
-                          <button v-if="selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan === 'Chờ hoàn tiền'"
-                                  @click="confirmRefund(selectedOrder.MaDH, selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi)"
-                                  class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95 mt-1">
-                            <span class="material-symbols-outlined text-[14px]">currency_exchange</span>
-                            Xác nhận đã hoàn tiền
-                          </button>
-                        </div>
+                    <tr v-if="!selectedOrder.ThanhToan || selectedOrder.ThanhToan.length === 0">
+                      <td colspan="4" class="p-6 text-center text-slate-400 italic">Chưa có giao dịch thu/chi nào được ghi nhận.</td>
+                    </tr>
+                    <tr v-for="(tx, idx) in selectedOrder.ThanhToan" :key="idx" class="text-slate-700 font-medium hover:bg-slate-50 transition-colors">
+                      <td class="p-3 text-center text-xs text-slate-500">{{ new Date(tx.NgayThanhToan).toLocaleString('vi-VN') }}</td>
+                      <td class="p-3 font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-blue-600'">{{ tx.TenPhuongThuc || 'Thu hộ COD' }}</td>
+                      <td class="p-3 text-xs">{{ tx.LoaiGiaoDich }}</td>
+                      <td class="p-3 text-right font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-emerald-600'">
+                        {{ tx.SoTienGiaoDich > 0 ? '+' : '' }}{{ formatPrice(tx.SoTienGiaoDich) }}
                       </td>
                     </tr>
                   </tbody>
@@ -439,16 +439,30 @@
             <div class="flex justify-end">
               <div class="w-80 bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 text-sm">
                 <div class="flex justify-between text-slate-500">
-                  <span>Tổng tiền hàng:</span>
+                  <span>Tổng tiền hàng hóa:</span>
                   <span class="font-semibold text-slate-800">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.TongTien) }}</span>
                 </div>
                 <div class="flex justify-between text-slate-500">
                   <span>Giảm giá/Voucher:</span>
                   <span class="font-semibold text-emerald-600">-{{ formatPrice((selectedOrder.ThongTinGiaoHang?.TongTien || 0) - (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0)) }}</span>
                 </div>
+                
                 <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline">
-                  <span class="font-bold text-slate-900 text-base">Tổng thu:</span>
-                  <span class="font-headline font-bold text-rose-600 text-xl">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</span>
+                  <span class="font-bold text-slate-700">Tổng giá trị đơn:</span>
+                  <span class="font-bold text-slate-900">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                  <span class="font-bold text-slate-700">Đã thanh toán:</span>
+                  <span class="font-bold text-emerald-600">
+                    {{ formatPrice(selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0) }}
+                  </span>
+                </div>
+                
+                <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline bg-rose-50 -mx-5 px-5 pb-5 -mb-5 rounded-b-xl">
+                  <span class="font-bold text-rose-900 text-base mt-2">CÒN PHẢI THU:</span>
+                  <span class="font-headline font-black text-rose-600 text-xl">
+                    {{ formatPrice(Math.max(0, (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0) - (selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0))) }}
+                  </span>
                 </div>
               </div>
             </div>

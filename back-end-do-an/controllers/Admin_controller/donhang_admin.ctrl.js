@@ -787,12 +787,11 @@ const donhang_admin = {
         try {
             const MaDH = Number(req.params.MaDH);
             
-            // Validate định dạng ID
             if (isNaN(MaDH) || MaDH <= 0 || !Number.isInteger(MaDH)) {
                 return res.status(400).json({ success: false, message: "Mã đơn hàng không hợp lệ!" });
             }
 
-            // 1. LẤY THÔNG TIN CHUNG CỦA ĐƠN HÀNG
+            // 1. LẤY THÔNG TIN CHUNG
             const sql_donhang = `
                 SELECT 
                     DonHang.MaDH, MaDonHangHienThi, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, 
@@ -802,18 +801,12 @@ const donhang_admin = {
                 LEFT JOIN MaGiamGia ma ON ma.MaGG = log.MaGG
                 WHERE DonHang.MaDH = ?
             `;
-            const [donhang_info] = await db.query(sql_donhang, [MaDH]);
 
-            if (donhang_info.length === 0) {
-                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
-            }
-
-            // 2. LẤY DANH SÁCH SẢN PHẨM (Đã sửa lỗi thiếu dấu phẩy và tên cột)
+            // 2. LẤY DANH SÁCH SẢN PHẨM
             const sql_products = `
                 SELECT 
                     mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, 
-                    ct.LaHangKhuyenMai,
-                    ct.GiaNhapThucTe, ct.DonGiaGoc, ct.DonGiaBan,
+                    ct.LaHangKhuyenMai, ct.GiaNhapThucTe, ct.DonGiaGoc, ct.DonGiaBan,
                     pl.MaPhanLoai, pl.ChiTietPhanLoai, ct.SoLuong,
                     ((ct.DonGiaGoc - ct.DonGiaBan) * ct.SoLuong) AS SoTienKhuyenMai
                 FROM MoHinh mh
@@ -829,27 +822,38 @@ const donhang_admin = {
                 FROM TrangThai tt
                 INNER JOIN ChiTietTrangThai cttt ON tt.MaTrangThai = cttt.MaTrangThai
                 WHERE cttt.MaDH = ?
-                ORDER BY cttt.ThoiGian DESC
-                LIMIT 1
+                ORDER BY cttt.ThoiGian DESC LIMIT 1
             `;
 
-            // ⚡ TUYỆT CHIÊU TỐI ƯU TỐC ĐỘ: CHẠY SONG SONG 2 LỆNH SQL CÙNG LÚC
-            const [productsResult, trangthaiResult] = await Promise.all([
-                db.query(sql_products, [MaDH]),
-                db.query(sql_trangthai, [MaDH])
-            ]);
+            // 4. LẤY LỊCH SỬ THANH TOÁN (ĐÃ SỬA LỖI TÊN CỘT)
+            const sql_thanhtoan = `
+                SELECT tt.NgayThanhToan, tt.SoTienGiaoDich, tt.LoaiGiaoDich, tt.TrangThaiGiaoDich, pt.TenPhuongThuc
+                FROM ThanhToan tt
+                LEFT JOIN PhuongThucThanhToan pt on pt.MaPT = tt.MaPT
+                WHERE tt.MaDH = ? AND tt.TrangThaiGiaoDich = 'Thành công'
+                ORDER BY tt.NgayThanhToan DESC
+            `;
 
-            // Trích xuất data từ mảng trả về
-            const products = productsResult[0];
-            const trangthai = trangthaiResult[0][0]; // Lấy object đầu tiên luôn cho gọn
+            const [donhang_info] = await db.query(sql_donhang, [MaDH]);
+            if (donhang_info.length === 0) {
+                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
+            }
+
+            // ⚡ CHẠY SONG SONG 3 LỆNH CÙNG LÚC
+            const [productsResult, trangthaiResult, thanhtoanResult] = await Promise.all([
+                db.query(sql_products, [MaDH]),
+                db.query(sql_trangthai, [MaDH]),
+                db.query(sql_thanhtoan, [MaDH])
+            ]);
 
             res.status(200).json({
                 success: true,
                 message: "Lấy chi tiết đơn hàng thành công",
                 data: {
                     ThongTinGiaoHang: donhang_info[0],
-                    TrangThaiHienTai: trangthai || null,
-                    DanhSachHang: products
+                    TrangThaiHienTai: trangthaiResult[0][0] || null,
+                    DanhSachHang: productsResult[0],
+                    ThanhToan: thanhtoanResult[0] // Trả về mảng Lịch sử giao dịch chuẩn xác
                 }
             });
         } 
