@@ -805,7 +805,7 @@ const donhang_admin = {
             // 2. LẤY DANH SÁCH SẢN PHẨM
             const sql_products = `
                 SELECT 
-                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, 
+                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu,
                     ct.LaHangKhuyenMai, ct.GiaNhapThucTe, ct.DonGiaGoc, ct.DonGiaBan,
                     pl.MaPhanLoai, pl.ChiTietPhanLoai, ct.SoLuong,
                     ((ct.DonGiaGoc - ct.DonGiaBan) * ct.SoLuong) AS SoTienKhuyenMai

@@ -687,6 +687,9 @@
                                 {{ prod.LoaiHinhBan || 'Có sẵn' }}
                             </span>
                         </div>
+                        <p v-if="prod.TienCocToiThieu > 0" class="text-[10px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 w-fit mb-1.5">
+                            Yêu cầu cọc: {{ formatPrice(prod.TienCocToiThieu) }}
+                        </p>
                         <div class="space-y-1">
                           <div v-for="variant in prod.PhanLoai" :key="variant.MaPhanLoai" class="flex justify-between items-center bg-white px-2.5 py-1 rounded border border-slate-200/60 text-xs">
                             <div>
@@ -718,6 +721,10 @@
                       <p class="text-xs font-bold text-slate-800 line-clamp-1" :title="item.TenMH">{{ item.TenMH }}</p>
                       <p class="text-[10px] font-semibold text-slate-500 mt-0.5">Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</p>
                       <p class="text-xs font-bold text-[#ff3d00] mt-0.5">{{ item.DonGia?.toLocaleString('vi-VN') }} ₫</p>
+                      <p v-if="item.TienCocToiThieu > 0" class="text-[10px] font-bold text-amber-600 mt-0.5 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">monetization_on</span>
+                        Mức cọc: {{ formatPrice(item.TienCocToiThieu * item.SoLuong) }}
+                      </p>
                     </div>
                     
                     <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0">
@@ -1802,7 +1809,7 @@ const exportExcelReport = async () => {
 
   const orderCodeToPay = ref('');
   const confirmPayment = (order) => {
-    orderToPay.value = order.MaDH;
+    orderToPay.value = order;
     orderCodeToPay.value = order.ThongTinGiaoHang?.MaDonHangHienThi;
     
     // Tìm giao dịch đã thanh toán trong mảng Orders (từ bảng ngoài)
