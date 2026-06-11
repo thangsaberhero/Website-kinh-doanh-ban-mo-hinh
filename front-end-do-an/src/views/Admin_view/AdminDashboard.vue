@@ -794,8 +794,6 @@
         } else {
           animateNumber(totalProfit, lnThucTe / 1000000, 1500, 1); profitUnit.value = 'Tr';
         }
-
-        animateNumber(newOrders, dataDoanhThu.data.TongSoDonHang, 1500, 0);
       }
 
       // 3. KHÁCH HÀNG MỚI
@@ -829,6 +827,7 @@
         const totalOrdersCount = dataDonHang.data.reduce((sum, item) => sum + item.SoLuongDon, 0);
         const canceledOrders = dataDonHang.data.find(item => item.TenTrangThai.toLowerCase().includes('hủy'))?.SoLuongDon || 0;
         animateNumber(cancelRate, totalOrdersCount > 0 ? (canceledOrders / totalOrdersCount) * 100 : 0, 1500, 1);
+        animateNumber(newOrders, totalOrdersCount, 1500, 0);
       }
 
       // 5. BIỂU ĐỒ XU HƯỚNG DOANH THU (API ĐƯỜNG MỚI VIẾT)
