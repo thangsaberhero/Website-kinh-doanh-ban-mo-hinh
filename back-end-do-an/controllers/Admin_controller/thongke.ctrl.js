@@ -1187,7 +1187,7 @@ const thongke = {
 
             if (selectedTypes.includes('doanhthu')) {
                 const [resKPI] = await db.query(`SELECT COUNT(DISTINCT dh.MaDH) as TongSoDonHang, IFNULL(SUM(dh.ThanhTien), 0) as TongDoanhThu, IFNULL(SUM(dh.ThanhTien - OrderImportCost.TotalImport), 0) as TongLoiNhuan FROM DonHang dh INNER JOIN (SELECT MaDH, SUM(COALESCE(GiaNhapThucTe, 0) * SoLuong) as TotalImport FROM ChiTietDonHang GROUP BY MaDH) OrderImportCost ON dh.MaDH = OrderImportCost.MaDH ${latestStatusJoin} ${whereClauseSuccess}`, valueTime);
-                const [resBieuDo] = await db.query(`SELECT DATE_FORMAT(dh.NgayLapDon, '%d/%m/%Y') as Ngay, IFNULL(SUM(dh.ThanhTien), 0) as DoanhThuNgay FROM DonHang dh ${latestStatusJoin} ${whereClauseSuccess} GROUP BY DATE(dh.NgayLapDon) ORDER BY DATE(dh.NgayLapDon) ASC`, valueTime);
+                const [resBieuDo] = await db.query(`SELECT DATE_FORMAT(dh.NgayLapDon, '%d/%m/%Y') as Ngay, IFNULL(SUM(dh.ThanhTien), 0) as DoanhThuNgay FROM DonHang dh ${latestStatusJoin} ${whereClauseSuccess} GROUP BY Ngay ORDER BY MAX(dh.NgayLapDon) ASC`, valueTime);
 
                 const ws1 = workbook.addWorksheet('Tổng quan & Tài chính');
                 ws1.columns = [{ key: 'A', width: 18 }, { key: 'B', width: 22 }, { key: 'C', width: 22 }, { key: 'D', width: 22 }];
