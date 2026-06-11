@@ -1530,10 +1530,19 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
-            const { MaDH } = req.body;
+            // 🔴 ĐÃ SỬA: Nhận đủ các biến thanh toán động từ Frontend gửi lên
+            const { MaDH, SoTienThu, PhuongThuc } = req.body;
             const MaTK = req.user.id;
 
-            // 1. Kiểm tra đơn hàng có tồn tại không và LẤY TRẠNG THÁI ĐƠN HÀNG HIỆN TẠI
+            if (!MaDH || SoTienThu === undefined || !PhuongThuc) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Thiếu thông tin xử lý thanh toán!" });
+            }
+
+            const tienThuLanNay = Number(SoTienThu);
+            const maPhuongThuc = Number(PhuongThuc);
+
+            // 1. Kiểm tra đơn hàng có tồn tại không và lấy trạng thái hiện tại
             const sql_check = `
                 SELECT dh.MaDH, dh.MaDonHangHienThi, dh.ThanhTien, dh.TrangThaiThanhToan,
                        (SELECT MaTrangThai FROM ChiTietTrangThai cttt WHERE cttt.MaDH = dh.MaDH ORDER BY Thoigian DESC LIMIT 1) AS TrangThaiHienTai
@@ -1549,46 +1558,72 @@ const donhang_admin = {
 
             const dh = don_hang[0];
 
-            // NẾU ĐƠN HÀNG ĐÃ BỊ HỦY HOẶC ĐANG HOÀN HÀNG THÌ KHÔNG CHO THANH TOÁN
+            // Chặn đơn đã bị Hủy hoặc Hoàn trả
             if (dh.TrangThaiHienTai === 5 || dh.TrangThaiHienTai === 6) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Không thể thu tiền cho đơn hàng đã bị Hủy hoặc Hoàn trả!" });
             }
 
-            // 2. Chặn nếu đơn đã thanh toán rồi
+            // Chặn nếu đơn đã thanh toán đủ từ trước
             if (dh.TrangThaiThanhToan && dh.TrangThaiThanhToan.includes('Đã thanh toán')) {
                 await connection.rollback();
-                return res.status(400).json({ success: false, message: "Đơn hàng này đã được thanh toán từ trước!" });
+                return res.status(400).json({ success: false, message: "Đơn hàng này đã được thanh toán đủ từ trước!" });
             }
 
-            // 3. Cập nhật trạng thái ở bảng DonHang
-            const trangThaiMoi = 'Đã thanh toán (Thu hộ COD)';
-            await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
+            // 2. Tính tổng số tiền khách ĐÃ TRẢ THÀNH CÔNG trước đây
+            const sql_paid = `SELECT COALESCE(SUM(SoTienGiaoDich), 0) as DaTra FROM ThanhToan WHERE MaDH = ? AND TrangThaiGiaoDich = 'Thành công'`;
+            const [paid_res] = await connection.query(sql_paid, [MaDH]);
+            const daTraTruocDo = Number(paid_res[0].DaTra) || 0;
 
-            // 4. Ghi nhận giao dịch vào bảng ThanhToan
-            const sql_check_tt = `SELECT MaTT FROM ThanhToan WHERE MaDH = ?`;
-            const [check_tt] = await connection.query(sql_check_tt, [MaDH]);
-
-            if (check_tt.length > 0) {
-                // Nếu lúc tạo đơn có insert sẵn thì update lại
-                await connection.query(`
-                    UPDATE ThanhToan 
-                    SET TrangThaiGiaoDich = 'Thành công', NgayThanhToan = NOW(), SoTienGiaoDich = ? 
-                    WHERE MaDH = ?
-                `, [dh.ThanhTien, MaDH]);
-            } else {
-                // Nếu chưa có thì chèn dòng giao dịch mới
-                await connection.query(`
-                    INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
-                    VALUES (3, ?, NOW(), ?, 'Thanh toán toàn bộ', 'Thành công')
-                `, [MaDH, dh.ThanhTien]);
+            // ==========================================================
+            // 🔴 CHỐT CHẶN BẢO MẬT: KIỂM TRA LỊCH SỬ CỌC KHI CHỌN COD
+            // ==========================================================
+            if (maPhuongThuc === 3 && daTraTruocDo === 0) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Vi phạm nghiệp vụ: Không thể áp dụng hình thức thu hộ COD cho đơn hàng chưa từng thực hiện đặt cọc / tạm ứng!" 
+                });
             }
 
-            // 5. Ghi Log Hoạt động
+            // Kiểm tra tránh thu vượt quá số tiền còn nợ của đơn hàng
+            const soTienConNo = dh.ThanhTien - daTraTruocDo;
+            if (tienThuLanNay > soTienConNo) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Số tiền nhập vào (${tienThuLanNay.toLocaleString('vi-VN')}đ) vượt quá số tiền khách còn nợ (${soTienConNo.toLocaleString('vi-VN')}đ)!` 
+                });
+            }
+
+            // 3. Tính toán và cập nhật trạng thái mới cho bảng DonHang
+            const tongTienSauKhiThu = daTraTruocDo + tienThuLanNay;
+            let trangThaiThanhToanMoi = 'Đã đặt cọc';
+            let loaiGiaoDich = 'Đặt cọc bổ sung';
+
+            // Nếu tổng tiền tích lũy đã đủ để trả hết hóa đơn
+            if (tongTienSauKhiThu >= dh.ThanhTien) {
+                if (maPhuongThuc === 3) {
+                    trangThaiThanhToanMoi = 'Đã thanh toán (Thu hộ COD)';
+                } else {
+                    trangThaiThanhToanMoi = 'Đã thanh toán';
+                }
+                loaiGiaoDich = daTraTruocDo > 0 ? 'Thanh toán phần còn lại' : 'Thanh toán toàn bộ';
+            }
+
+            await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiThanhToanMoi, MaDH]);
+
+            // 4. ĐÃ SỬA CHUẨN: Dùng INSERT thay vì UPDATE để lưu vết tất cả các đợt đóng tiền
+            await connection.query(`
+                INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
+                VALUES (?, ?, NOW(), ?, ?, 'Thành công')
+            `, [maPhuongThuc, MaDH, tienThuLanNay, loaiGiaoDich]);
+
+            // 5. Ghi Log Hoạt động hệ thống
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            const noiDungLog = `Xác nhận đã thu tiền thành công cho đơn hàng #${MaDH} (${dh.MaDonHangHienThi}). Số tiền: ${dh.ThanhTien.toLocaleString('vi-VN')} đ`;
+            const noiDungLog = `Xác nhận thu tiền đơn #${MaDH} (${dh.MaDonHangHienThi}). Thu thêm: ${tienThuLanNay.toLocaleString('vi-VN')} đ qua phương thức mã [${maPhuongThuc}]`;
             
             await connection.query(`
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
@@ -1599,7 +1634,7 @@ const donhang_admin = {
             res.status(200).json({
                 success: true,
                 message: "Xác nhận thu tiền thành công!",
-                TrangThaiThanhToan: trangThaiMoi
+                TrangThaiThanhToan: trangThaiThanhToanMoi
             });
 
         } 
