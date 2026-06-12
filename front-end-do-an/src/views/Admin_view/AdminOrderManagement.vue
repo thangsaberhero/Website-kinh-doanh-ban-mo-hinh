@@ -408,46 +408,51 @@
 
           <div class="p-8 space-y-6 flex-1">
             
-            <div class="relative">
-
-              <button @click="copyCustomerInfo"
-                          class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-emerald-500 hover:border-emerald-300 rounded-lg shadow-sm transition-all"
-                          title="Copy thông tin gửi hàng (Tên, SĐT, Địa chỉ)">
-                      <span class="material-symbols-outlined text-[16px]">content_copy</span>
-                  </button>
+            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               
-              <button v-if="getCurrentStatusCode() < 4" 
-                      @click="openEditInfoModal" 
-                      class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-sky-500 hover:border-sky-300 rounded-lg shadow-sm transition-all z-10" 
-                      title="Sửa thông tin nhận hàng">
-                  <span class="material-symbols-outlined text-[16px]">edit</span>
-              </button>
+              <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
+                <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">contact_mail</span> Thông tin nhận hàng
+                </h4>
+                
+                <div class="flex items-center gap-3">
+                  <button @click="copyCustomerInfo" class="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-emerald-600 transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">content_copy</span> Copy thông tin
+                  </button>
+                  
+                  <div v-if="getCurrentStatusCode() < 3" class="w-px h-3 bg-slate-300"></div>
+                  
+                  <button v-if="getCurrentStatusCode() < 3" @click="openEditInfoModal" class="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-sky-600 transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">edit</span> Sửa thông tin
+                  </button>
+                </div>
+              </div>
 
-              <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm mt-3">
-                <div class="p-4 bg-slate-50/50">
-                  <p class="text-slate-400 font-medium mb-1">Ngày đặt</p>
+              <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm bg-white">
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ngày đặt</p>
                   <p class="font-semibold text-slate-800">{{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
                 </div>
-                <div class="p-4 bg-slate-50/50">
-                  <p class="text-slate-400 font-medium mb-1">Trạng thái đơn</p>
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Trạng thái đơn</p>
                   <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).class}`">
                     {{ getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).text }}
                   </span>
                 </div>
-                <div class="p-4 bg-slate-50/50">
-                  <p class="text-slate-400 font-medium mb-1">Khách hàng</p>
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Khách hàng</p>
                   <p class="font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.TenNguoiNhan || 'Khách vãng lai' }}</p>
                 </div>
-                <div class="p-4 bg-slate-50/50">
-                  <p class="text-slate-400 font-medium mb-1">Số điện thoại</p>
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Số điện thoại</p>
                   <p class="font-semibold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.SDTNguoiNhan || 'N/A' }}</p>
                 </div>
-                <div class="p-4 md:col-span-2">
-                  <p class="text-slate-400 font-medium mb-1">Địa chỉ giao hàng</p>
+                <div class="p-4 md:col-span-2 border-t border-slate-200">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Địa chỉ giao hàng</p>
                   <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
                 </div>
-                <div class="p-4 md:col-span-2">
-                  <p class="text-slate-400 font-medium mb-1">Ghi chú</p>
+                <div class="p-4 md:col-span-2 border-t border-slate-200">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú</p>
                   <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có ghi chú.' }}</p>
                 </div>
               </div>
