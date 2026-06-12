@@ -3,9 +3,9 @@
     <TheHeader />
 
     <main class="flex-1">
-      <section v-if="heroNews.id" class="relative w-full h-[65vh] sm:h-[75vh] md:h-[85vh] min-h-[420px] md:min-h-[500px] overflow-hidden">
+      <section v-if="heroNews.id" class="relative w-full h-[55vh] sm:h-[60vh] md:h-[85vh] min-h-[380px] md:min-h-[500px] overflow-hidden">
         <div class="absolute inset-0">
-          <img :src="heroNews.image" :alt="heroNews.title" class="w-full h-full object-cover object-top md:object-center" />
+          <img :src="heroNews.image" :alt="heroNews.title" class="w-full h-full object-cover object-[center_15%] md:object-center" />
           <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
           <div class="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent"></div>
         </div>
@@ -91,10 +91,10 @@
                     </span>
                   </div>
                 </div>
-                <div class="absolute top-2 -left-1.5 bg-primary text-on-primary-fixed flex flex-col items-center justify-center min-w-[50px] px-3 py-2 rounded-br-2xl shadow-lg z-10">
-                     <span class="text-xl font-headline font-black leading-none mb-1">{{ post.date.split('/')[0] }}</span>
-                     <span class="text-[10px] font-bold leading-none opacity-90">{{ post.date.split('/')[1] }}/{{ post.date.split('/')[2] }}</span>
-                     <div class="absolute top-full left-0 w-0 h-0 border-t-[8px] border-l-[8px] border-l-transparent border-t-[#cc3200]"></div>
+                <div class="absolute top-2 -left-1.5 bg-primary text-on-primary-fixed flex flex-col items-center justify-center px-2 sm:px-3 py-1.5 sm:py-2 rounded-br-2xl shadow-lg z-10">
+                  <span class="text-lg sm:text-xl font-headline font-black leading-none mb-1">{{ post.date.split('/')[0] }}</span>
+                  <span class="text-[9px] sm:text-[10px] font-bold leading-none opacity-90 whitespace-nowrap">{{ post.date.split('/')[1] }}/{{ post.date.split('/')[2] }}</span>
+                  <div class="absolute top-full left-0 w-0 h-0 border-t-[8px] border-l-[8px] border-l-transparent border-t-[#cc3200]"></div>
                 </div>
                 <div class="flex flex-col px-1">
                   <h3 class="font-headline text-lg font-bold leading-snug group-hover:text-primary transition-colors text-white line-clamp-2" :title="post.title">

@@ -5,7 +5,7 @@
 
   <div class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
     <TheHeader />
-    <main class="flex-1 relative py-12 lg:py-20 overflow-x-hidden">
+    <main class="flex-1 relative pt-12 pb-32 lg:py-20 overflow-x-hidden">
       <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
       <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-tertiary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
@@ -58,8 +58,8 @@
           <div class="news-content text-lg leading-relaxed text-on-surface" v-html="article.NoiDung"></div>
         </div>
 
-        <div class="max-w-3xl mx-auto mt-12 pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 relative z-10">
-          <div v-if="articleTags.length > 0" class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div class="max-w-3xl w-full mx-auto mt-12 pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4 relative z-10">
+          <div v-if="articleTags.length > 0" class="flex items-center gap-2 sm:gap-3 flex-wrap w-full sm:w-auto justify-start">
             <span class="text-sm font-headline font-bold text-on-surface-variant uppercase tracking-wider mr-1 sm:mr-2">Tags: </span> 
             <span 
               v-for="tag in articleTags" 
@@ -71,7 +71,7 @@
             </span>
           </div>
 
-          <div :class="['flex items-center gap-3', articleTags.length === 0 ? 'sm:ml-auto' : '']">
+          <div :class="['flex items-center justify-start gap-3 w-full sm:w-auto', articleTags.length === 0 ? 'sm:ml-auto' : '']">
             <span class="text-sm font-headline font-bold text-on-surface-variant uppercase tracking-wider mr-1 sm:mr-2">Chia sẻ:</span>            
             <button @click="shareFacebook" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1877F2]/10 text-[#1877F2] border border-[#1877F2]/20 hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all" title="Chia sẻ lên Facebook">
               <span class="material-symbols-outlined text-[16px] sm:text-[18px]">share</span>
