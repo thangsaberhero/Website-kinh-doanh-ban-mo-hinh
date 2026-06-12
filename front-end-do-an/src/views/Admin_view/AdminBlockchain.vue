@@ -1,14 +1,14 @@
 <template>
-  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 h-screen overflow-hidden font-body flex w-full text-slate-800 relative">
-    <div 
-      v-show="layoutStore.isMobileMenuOpen" 
-      @click="layoutStore.isMobileMenuOpen = false" 
+  <div @click="layoutStore.closeMobileMenu" class="bg-slate-100 min-h-screen font-body flex w-full text-slate-800 relative">
+    <div
+      v-show="layoutStore.isMobileMenuOpen"
+      @click="layoutStore.isMobileMenuOpen = false"
       class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden transition-opacity"
     ></div>
 
     <AdminSidebar :is-collapsed="layoutStore.isSidebarCollapsed" :is-mobile-open="layoutStore.isMobileMenuOpen"/>
 
-    <div class="flex-1 flex flex-col h-screen w-full relative">
+    <div class="flex-1 flex flex-col min-h-screen overflow-hidden w-full relative">
       <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       <main class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-24">
         <div>
@@ -75,7 +75,7 @@
                     'cursor-pointer transition-colors hover:bg-slate-50/80',
                     selectedSerial === item.MaVach_Serial ? 'bg-orange-50/50 font-medium' : ''
                   ]"
-                  @click="selectModel(item)"
+                  @click="handleRowClick(item)"
                 >
                   <td class="p-4 text-slate-400">{{ index + 1 }}</td>
                   <td class="p-4 font-mono font-bold text-orange-600">
@@ -92,7 +92,7 @@
                     </span>
                   </td>
                   <td class="p-4 text-right">
-                    <button class="bg-white border border-slate-200 hover:border-orange-500 hover:text-orange-600 text-slate-600 text-xs px-3 py-1.5 rounded-xl shadow-sm transition-colors" @click.stop="quickFill(item)">
+                    <button class="bg-white border border-slate-200 hover:border-orange-500 hover:text-orange-600 text-slate-600 text-xs px-3 py-1.5 rounded-xl shadow-sm transition-colors" @click.stop="handleProcessClick(item)">
                       Xử lý
                     </button>
                   </td>
@@ -124,13 +124,13 @@
                 <span>⚠️ Mã serial này đã được khởi tạo (Mint) vĩnh viễn trên Blockchain rồi!</span>
               </div>
 
-              <button 
-                @click="handleMint" 
+              <button
+                @click="handleMint"
                 :disabled="isCurrentSerialMinted"
                 :class="[
                   'w-full font-bold py-2.5 rounded-xl text-sm transition-colors shadow-sm',
-                  isCurrentSerialMinted 
-                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70 shadow-none border border-slate-200' 
+                  isCurrentSerialMinted
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-70 shadow-none border border-slate-200'
                     : 'text-white bg-emerald-600 hover:bg-emerald-500'
                 ]"
               >
@@ -159,6 +159,7 @@
                     <input
                       v-model="locationSearchQuery"
                       @input="onLocationInput"
+                      @keydown.enter.prevent="applyTypedLocation"
                       @focus="showSuggestions = true"
                       @blur="hideSuggestionsWithDelay"
                       type="text"
@@ -230,7 +231,7 @@
 
             <div class="bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden min-h-[260px] h-full flex flex-col items-center justify-center">
               <div v-show="mapInstance" id="admin-map" class="w-full h-full absolute inset-0 z-0"></div>
-              
+
               <div v-if="!mapInstance" class="text-slate-400 text-xs text-center p-4 z-10 space-y-2">
                 <p class="text-2xl mb-1">📦</p>
                 <p class="font-medium text-slate-500 text-sm">Sản phẩm đã khởi tạo định danh thành công</p>
@@ -252,33 +253,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useLayoutStore } from '../../stores/layout';
 import { useToastStore } from '../../stores/toast';
-import { onMounted} from 'vue';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const scrollToTopCustom = (duration = 1000) => {
-    const startPosition = window.scrollY;
-    const startTime = performance.now();
-
-    const animateScroll = (currentTime) => {
-      const timeElapsed = currentTime - startTime;
-      let progress = Math.min(timeElapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-      // Thực hiện cuộn
-      window.scrollTo(0, startPosition * (1 - easeProgress));
-
-      // Nếu chưa hết thời gian thì tiếp tục gọi animation
-      if (timeElapsed < duration) {
-        requestAnimationFrame(animateScroll);
-      }
-    };
-
-    requestAnimationFrame(animateScroll);
-  };
-
-  onMounted(() => {
-    scrollToTopCustom();
-  });
 export default {
   name: "AdminBlockchain",
   components: {
@@ -304,6 +280,7 @@ export default {
       locationSuggestions: [],
       isSearchingLocation: false,
       showSuggestions: false,
+      selectedLocationObject: null,
       debounceTimer: null
     };
   },
@@ -357,63 +334,122 @@ export default {
   },
   methods: {
     showToast(message, type = 'success', duration = 3500) {
-      this.toastStore.showToast(message, type);
+      this.toastStore.showToast(message, type, duration);
     },
 
     onLocationInput() {
       clearTimeout(this.debounceTimer);
+      this.selectedLocationObject = null;
+      this.updateForm.location = "";
+
       if (!this.locationSearchQuery.trim()) {
         this.locationSuggestions = [];
-        this.updateForm.location = "";
         return;
       }
+
       this.isSearchingLocation = true;
       this.debounceTimer = setTimeout(() => {
         this.fetchLocationSuggestions();
-      }, 500);
+      }, 450);
+    },
+
+    normalizeLocationQuery(value = "") {
+      const query = String(value).trim();
+      if (!query) return "";
+
+      // Nếu người dùng chỉ nhập tên đường/ngõ, thêm Việt Nam để Nominatim ưu tiên đúng khu vực.
+      return /việt nam|viet nam|vietnam/i.test(query) ? query : `${query}, Việt Nam`;
+    },
+
+    formatOsmAddress(item) {
+      const addr = item.address || {};
+      const street = [addr.house_number, addr.road].filter(Boolean).join(" ");
+      const ward = addr.suburb || addr.quarter || addr.neighbourhood || addr.hamlet || addr.village;
+      const district = addr.city_district || addr.county || addr.town;
+      const city = addr.city || addr.state || addr.province;
+      const country = addr.country;
+
+      const parts = [street, ward, district, city, country]
+        .filter(Boolean)
+        .map(part => String(part).trim())
+        .filter((part, index, arr) => part && arr.indexOf(part) === index);
+
+      return parts.length ? parts.join(", ") : item.display_name;
     },
 
     async fetchLocationSuggestions() {
       try {
-        const query = encodeURIComponent(this.locationSearchQuery);
-        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${query}`;
+        const query = encodeURIComponent(this.normalizeLocationQuery(this.locationSearchQuery));
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&namedetails=1&dedupe=1&limit=8&countrycodes=vn&accept-language=vi&q=${query}`;
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: { "Accept-Language": "vi-VN,vi;q=0.9,en;q=0.8" }
+        });
         const data = await response.json();
 
         this.locationSuggestions = data.map(item => {
           const addr = item.address || {};
-          const addressPart = addr.road || addr.suburb || addr.quarter || addr.amenity || addr.industrial || "";
-          const cityPart = addr.city || addr.town || addr.village || addr.state || "";
-          const countryPart = addr.country || "";
-
-          const formattedArray = [addressPart, cityPart, countryPart].filter(str => str.trim() !== "");
-          const concatenatedString = formattedArray.join(", ") || item.display_name;
+          const fullAddress = this.formatOsmAddress(item);
+          const street = [addr.house_number, addr.road].filter(Boolean).join(" ");
+          const mainText = street || item.namedetails?.name || item.name || addr.road || addr.suburb || addr.city || "Địa điểm gợi ý";
 
           return {
-            mainText: addressPart || cityPart || countryPart || "Địa điểm không rõ",
-            secondaryText: concatenatedString
+            mainText,
+            secondaryText: fullAddress,
+            fullAddress,
+            lat: item.lat ? Number(item.lat) : null,
+            lon: item.lon ? Number(item.lon) : null,
+            raw: item
           };
         });
       } catch (error) {
-        console.error("Lỗi khi kết nối dữ liệu địa điểm toàn cầu:", error);
+        console.error("Lỗi khi kết nối dữ liệu địa điểm:", error);
+        this.locationSuggestions = [];
       } finally {
         this.isSearchingLocation = false;
       }
     },
 
     selectLocation(suggestion) {
-      this.locationSearchQuery = suggestion.secondaryText;
-      this.updateForm.location = suggestion.secondaryText; 
+      const address = suggestion.fullAddress || suggestion.secondaryText;
+      this.selectedLocationObject = suggestion;
+      this.locationSearchQuery = address;
+      this.updateForm.location = address;
       this.locationSuggestions = [];
       this.showSuggestions = false;
-      this.showToast("Đã xác thực và ghép địa chỉ thành công!", "info");
+      this.showToast("Đã chọn địa chỉ gợi ý. Độ chính xác sẽ tốt hơn khi địa chỉ có số nhà/tên đường/phường.", "info");
+    },
+
+    applyTypedLocation() {
+      if (this.locationSuggestions.length > 0) {
+        this.selectLocation(this.locationSuggestions[0]);
+        return;
+      }
+
+      const typedAddress = this.locationSearchQuery.trim();
+      if (typedAddress) {
+        this.updateForm.location = this.normalizeLocationQuery(typedAddress);
+        this.showSuggestions = false;
+      }
     },
 
     hideSuggestionsWithDelay() {
       setTimeout(() => {
         this.showSuggestions = false;
       }, 300);
+    },
+
+    clearProcessingForms() {
+      // Click dòng thường chỉ để xem Live Tracking Preview,
+      // nên cần xóa dữ liệu xử lý cũ khỏi các textbox.
+      this.mintForm = { serialNumber: "", manufacturer: "" };
+      this.updateForm = { serialNumber: "", newStatus: "", location: "" };
+      this.locationSearchQuery = "";
+      this.locationSuggestions = [];
+      this.selectedLocationObject = null;
+      this.showSuggestions = false;
+      this.isSearchingLocation = false;
+      clearTimeout(this.debounceTimer);
     },
 
     async fetchMohinhFromDB() {
@@ -423,7 +459,7 @@ export default {
           this.mohinhList = response.data.data || response.data;
 
           if (this.mohinhList.length > 0) {
-            this.selectModel(this.mohinhList[0]);
+            this.previewModel(this.mohinhList[0]);
           }
         }
       } catch (error) {
@@ -440,7 +476,20 @@ export default {
       return `${API_BASE_URL}/Images_product/${image}`;
     },
 
-    async selectModel(product) {
+    async handleRowClick(product) {
+      // Click vào dòng thường: chỉ xem Live Tracking Preview,
+      // đồng thời xóa dữ liệu cũ đang nằm trong các ô textbox xử lý.
+      this.clearProcessingForms();
+      await this.previewModel(product, { clearForm: false });
+    },
+
+    async previewModel(product, options = {}) {
+      const { clearForm = true } = options;
+
+      if (clearForm) {
+        this.clearProcessingForms();
+      }
+
       this.selectedSerial = product.MaVach_Serial;
       let historyData = [];
       let verifiedManufacturer = "Đang cập nhật...";
@@ -490,7 +539,8 @@ export default {
       if (!address) return null;
       try {
         // Sử dụng OpenStreetMap Nominatim API đồng bộ với gợi ý tìm kiếm địa điểm công cộng
-        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`;
+        const normalizedAddress = this.normalizeLocationQuery(address);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=vn&accept-language=vi&q=${encodeURIComponent(normalizedAddress)}`;
         const response = await fetch(url, {
           headers: { 'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8' }
         });
@@ -515,17 +565,17 @@ export default {
 
         // Kiểm tra từ khóa rác kĩ thuật và loại bỏ chúng
         if (
-          locText.includes("metadata") || 
-          locText.includes("không rõ") || 
-          locText.includes("bắt đầu sản xuất") || 
+          locText.includes("metadata") ||
+          locText.includes("không rõ") ||
+          locText.includes("bắt đầu sản xuất") ||
           locText.includes("bat dau san xuat")
         ) {
           return false;
         }
 
         if (
-          statusText.includes("khoi tao") || 
-          statusText.includes("khởi tạo") || 
+          statusText.includes("khoi tao") ||
+          statusText.includes("khởi tạo") ||
           statusText.includes("mint")
         ) {
           return false;
@@ -632,12 +682,22 @@ export default {
       }, 500);
     },
 
-    quickFill(model) {
-      this.mintForm.serialNumber = model.MaVach_Serial;
+    async handleProcessClick(model) {
+      // Nút "Xử lý" vẫn cập nhật preview nhưng không clear form trong preview.
+      await this.previewModel(model, { clearForm: false });
+
+      // Chỉ nút "Xử lý" mới được nạp dữ liệu lên các ô textbox.
+      this.mintForm.serialNumber = model.MaVach_Serial || "";
       this.mintForm.manufacturer = model.TenHSX || "Good Smile Company";
-      this.updateForm.serialNumber = model.MaVach_Serial;
-      this.selectModel(model);
-      this.showToast(`Đã nạp nhanh mã ${model.MaVach_Serial} vào các form xử lý!`, "info");
+      this.updateForm.serialNumber = model.MaVach_Serial || "";
+      this.updateForm.newStatus = "";
+      this.updateForm.location = "";
+      this.locationSearchQuery = "";
+      this.locationSuggestions = [];
+      this.selectedLocationObject = null;
+      this.showSuggestions = false;
+
+      this.showToast(`Đã nạp mã ${model.MaVach_Serial} vào form xử lý.`, "info");
     },
     formatPrice(value) {
       if(!value) return "0 ₫";
@@ -663,10 +723,20 @@ export default {
       }
     },
     async handleUpdate() {
-      if (!this.updateForm.serialNumber || !this.updateForm.newStatus || !this.updateForm.location) {
-        this.showToast("Vui lòng nhập đầy đủ thông tin hành trình của mô hình!", "warning");
+      if (!this.updateForm.serialNumber || !this.updateForm.newStatus) {
+        this.showToast("Vui lòng nhập mã serial và trạng thái hành trình!", "warning");
         return;
       }
+
+      if (!this.updateForm.location && this.locationSearchQuery.trim()) {
+        this.applyTypedLocation();
+      }
+
+      if (!this.updateForm.location) {
+        this.showToast("Vui lòng chọn địa điểm từ danh sách gợi ý hoặc nhập địa chỉ đầy đủ!", "warning");
+        return;
+      }
+
       try {
         const response = await axios.post(`${API_BASE_URL}/api/blockchain/update`, {
           serialNumber: this.updateForm.serialNumber,
@@ -677,10 +747,11 @@ export default {
           this.showToast(`Cập nhật vị trí lên Smart Contract thành công!\nHash: ${response.data.hash}`, "success", 5000);
 
           this.updateForm = { serialNumber: '', newStatus: '', location: '' };
-          this.locationSearchQuery = ""; 
+          this.locationSearchQuery = "";
+          this.selectedLocationObject = null;
 
           const currentProduct = this.mohinhList.find(p => p.MaVach_Serial === this.selectedSerial);
-          if (currentProduct) this.selectModel(currentProduct);
+          if (currentProduct) this.previewModel(currentProduct);
         }
       } catch (error) {
         this.showToast("Cập nhật thất bại: " + (error.response?.data?.message || error.message), "error");
@@ -722,7 +793,7 @@ export default {
   :deep(.live-number-inner) {
     width: 22px;
     height: 22px;
-    background-color: #ef4444; 
+    background-color: #ef4444;
     border: 2px solid #ffffff;
     color: white;
     font-size: 11px;
