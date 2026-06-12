@@ -1,7 +1,7 @@
 <template>
-  <footer class="bg-surface-container-lowest border-t border-outline-variant/15 pt-20 pb-10">
+  <footer class="bg-surface-container-lowest border-t border-outline-variant/15 pt-10 md:pt-20 pb-6 md:pb-10">
     <div class="max-w-7xl mx-auto px-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-16">        
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 mb-10 md:mb-16">        
         <div class="lg:col-span-1">
           <router-link to="/" class="font-headline text-2xl font-bold tracking-tighter text-primary mb-6 block">
             {{ systemStore.settings.shop_name || 'FigureCollect' }}
