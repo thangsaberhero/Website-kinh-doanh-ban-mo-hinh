@@ -409,6 +409,12 @@
           <div class="p-8 space-y-6 flex-1">
             
             <div class="relative">
+
+              <button @click="copyCustomerInfo"
+                          class="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-emerald-500 hover:border-emerald-300 rounded-lg shadow-sm transition-all"
+                          title="Copy thông tin gửi hàng (Tên, SĐT, Địa chỉ)">
+                      <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                  </button>
               
               <button v-if="getCurrentStatusCode() < 3" 
                       @click="openEditInfoModal" 
@@ -417,7 +423,7 @@
                   <span class="material-symbols-outlined text-[16px]">edit</span>
               </button>
 
-              <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm">
+              <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm mt-3">
                 <div class="p-4 bg-slate-50/50">
                   <p class="text-slate-400 font-medium mb-1">Ngày đặt</p>
                   <p class="font-semibold text-slate-800">{{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
@@ -2531,6 +2537,26 @@ const exportExcelReport = async () => {
       toastStore.showToast("Không thể chọn tất cả lúc này!", "error");
     } finally {
       isFetchingAllIds.value = false;
+    }
+  };
+
+  const copyCustomerInfo = async () => {
+    if (!selectedOrder.value || !selectedOrder.value.ThongTinGiaoHang) return;
+    
+    const info = selectedOrder.value.ThongTinGiaoHang;
+    
+    // Gom dữ liệu thành chuẩn Form dễ đọc để dán vào App giao hàng
+    let textToCopy = `${info.TenNguoiNhan} - ${info.SDTNguoiNhan}\n${info.DiaChiGiao}`;
+    if (info.Note && info.Note.trim() !== '') {
+        textToCopy += `\nLưu ý cho Shipper: ${info.Note}`;
+    }
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      toastStore.showToast("Đã copy thông tin giao hàng!", "success");
+    } catch (err) {
+      console.error('Lỗi khi copy: ', err);
+      toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
     }
   };
 
