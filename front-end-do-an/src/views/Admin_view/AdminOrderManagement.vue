@@ -1617,7 +1617,7 @@ const exportExcelReport = async () => {
     if (n === 'Đơn tạo thủ công tại quầy') return false;
     if (n.startsWith('[HỦY ĐƠN]')) return false;
     if (n.startsWith('[HOÀN HÀNG]')) return false;
-    if (n.startsWith('[HỆ THỐNG]')) return false;
+    if (n.startsWith('[Hệ thống]')) return false;
     if (n.startsWith('Hủy tự động')) return false;
     if (n.startsWith('Đơn tạo thủ công tại quầy') && n.includes('[HỦY ĐƠN]')) return false;
     if (n.startsWith('Đơn tạo thủ công tại quầy') && n.includes('[HOÀN HÀNG]')) return false;
