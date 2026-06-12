@@ -468,6 +468,82 @@
               </div>
             </div>
 
+            <div class="bg-slate-50/60 border border-slate-200/60 rounded-xl p-6">
+              <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">timeline</span> Hành trình đơn hàng
+              </h4>
+              
+              <div v-if="getCurrentStatusCode() == 5 || getCurrentStatusCode() == 6" class="flex items-center gap-3 bg-rose-50 border border-rose-100 p-4 rounded-xl">
+                <span class="material-symbols-outlined text-rose-500 text-2xl animate-bounce">cancel_presentation</span>
+                <div>
+                  <p class="text-sm font-bold text-rose-900">
+                    {{ getCurrentStatusCode() == 5 ? 'ĐƠN HÀNG ĐÃ BỊ HỦY BỎ' : 'ĐƠN HÀNG ĐÃ HOÀN TRẢ VỀ KHO' }}
+                  </p>
+                  <p class="text-xs text-rose-600 mt-0.5 font-medium">
+                    Ghi nhận vào lúc: {{ new Date(selectedOrder.LichSuTrangThai?.find(line => line.MaTrangThai == getCurrentStatusCode())?.Thoigian).toLocaleString('vi-VN') }}
+                  </p>
+                </div>
+              </div>
+
+              <div v-else class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-4">
+                
+                <div class="absolute top-5 left-6 right-6 h-0.5 bg-slate-200 hidden md:block z-0"></div>
+
+                <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 1) ? 'bg-amber-500 border-amber-500 text-white shadow-amber-500/20' : 'bg-white border-slate-200 text-slate-400'">
+                    <span class="material-symbols-outlined text-[18px]">order_approve</span>
+                  </div>
+                  <div class="flex flex-col md:items-center">
+                    <p class="text-xs font-bold text-slate-800">Chờ duyệt</p>
+                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 1) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 1).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 2) ? 'bg-indigo-600 border-indigo-600 text-white shadow-indigo-600/20' : 'bg-white border-slate-200 text-slate-400'">
+                    <span class="material-symbols-outlined text-[18px]">package_2</span>
+                  </div>
+                  <div class="flex flex-col md:items-center">
+                    <p class="text-xs font-bold text-slate-800">Đóng gói</p>
+                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 2) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 2).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 3) ? 'bg-sky-500 border-sky-500 text-white shadow-sky-500/20' : 'bg-white border-slate-200 text-slate-400'">
+                    <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                  </div>
+                  <div class="flex flex-col md:items-center">
+                    <p class="text-xs font-bold text-slate-800">Đang giao</p>
+                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 3) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 3).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 4) ? 'bg-emerald-500 border-emerald-500 text-white shadow-emerald-500/20' : 'bg-white border-slate-200 text-slate-400'">
+                    <span class="material-symbols-outlined text-[18px]">task_alt</span>
+                  </div>
+                  <div class="flex flex-col md:items-center">
+                    <p class="text-xs font-bold text-slate-800">Đã giao</p>
+                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 4) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 4).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
             <div>
               <div class="flex justify-between items-end mb-2">
                 <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400">Lịch sử giao dịch</h4>

@@ -946,11 +946,20 @@ const donhang_admin = {
                 return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
             }
 
+            const sql_lich_su_trang_thai = `
+                SELECT cttt.MaTrangThai, tt.TenTrangThai, cttt.Thoigian
+                FROM ChiTietTrangThai cttt
+                INNER JOIN TrangThai tt ON cttt.MaTrangThai = tt.MaTrangThai
+                WHERE cttt.MaDH = ?
+                ORDER BY cttt.Thoigian ASC
+            `;
+
             // ⚡ CHẠY SONG SONG 3 LỆNH CÙNG LÚC
-            const [productsResult, trangthaiResult, thanhtoanResult] = await Promise.all([
+            const [productsResult, trangthaiResult, thanhtoanResult, lichSuTrangThai] = await Promise.all([
                 db.query(sql_products, [MaDH]),
                 db.query(sql_trangthai, [MaDH]),
-                db.query(sql_thanhtoan, [MaDH])
+                db.query(sql_thanhtoan, [MaDH]),
+                db.query(sql_lich_su_trang_thai, [MaDH])
             ]);
 
             res.status(200).json({
@@ -960,7 +969,8 @@ const donhang_admin = {
                     ThongTinGiaoHang: donhang_info[0],
                     TrangThaiHienTai: trangthaiResult[0][0] || null,
                     DanhSachHang: productsResult[0],
-                    ThanhToan: thanhtoanResult[0] // Trả về mảng Lịch sử giao dịch chuẩn xác
+                    ThanhToan: thanhtoanResult[0],
+                    LichSuTrangThai: lichSuTrangThai[0]
                 }
             });
         } 
