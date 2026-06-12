@@ -190,9 +190,9 @@
 
         if (response.ok) {
             wishlistItems.value = dataJSON.data || [];
-            if (result.pagination) {
-              currentPage.value = result.pagination.currentPage;
-              totalPages.value = result.pagination.totalPage;
+            if (dataJSON.pagination) {
+              currentPage.value = dataJSON.pagination.currentPage;
+              totalPages.value = dataJSON.pagination.totalPage;
             }
         } else {
             console.error("Lỗi:", dataJSON.message);
