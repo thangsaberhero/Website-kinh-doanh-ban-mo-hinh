@@ -348,6 +348,28 @@
               </div>
             </div>
 
+            <div v-if="selectedOrder.ThongTinGiaoHang?.MaVanDon" class="flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl p-4 animate-[fadeIn_0.3s_ease-out]">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-sky-200 shadow-sm shrink-0">
+                  <span class="material-symbols-outlined text-sky-500 text-2xl">local_shipping</span>
+                </div>
+                <div>
+                  <p class="text-[10px] font-bold text-sky-600 uppercase tracking-widest mb-0.5">Thông tin vận chuyển</p>
+                  <p class="text-sm font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.HangVanChuyen }}</p>
+                </div>
+              </div>
+              
+              <div class="text-right">
+                <p class="text-[10px] text-slate-500 mb-1 font-medium uppercase tracking-widest">Mã tra cứu vận đơn</p>
+                <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-sky-200 shadow-sm">
+                  <span class="font-black text-sky-700 tracking-wider text-sm">{{ selectedOrder.ThongTinGiaoHang?.MaVanDon }}</span>
+                  <button @click="copyTrackingCode(selectedOrder.ThongTinGiaoHang?.MaVanDon)" class="text-slate-400 hover:text-sky-600 transition-colors flex items-center justify-center" title="Copy mã vận đơn">
+                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div>
               <div class="flex justify-between items-end mb-2">
                 <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400">Lịch sử giao dịch</h4>
@@ -823,6 +845,29 @@
             <option value="3" :disabled="getCurrentStatusCode() >= 3">ĐANG VẬN CHUYỂN (Giao cho shipper)</option>
             <option value="4" :disabled="getCurrentStatusCode() >= 4">ĐÃ GIAO (Khách ký nhận thành công)</option>
           </select>
+        </div>
+
+        <div v-if="updateStatusValue == 3" class="mb-6 space-y-3 bg-sky-50 p-4 rounded-xl border border-sky-100 animate-[fadeIn_0.2s_ease-out]">
+            <p class="text-[11px] font-bold text-sky-700 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">local_shipping</span> Thông tin vận chuyển</p>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Đơn vị vận chuyển <span class="text-rose-500">*</span></label>
+                    <select v-model="updateCarrier" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-sky-500 outline-none bg-white font-medium text-slate-700">
+                        <option value="Giao Hàng Nhanh">Giao Hàng Nhanh (GHN)</option>
+                        <option value="SPX">SPX</option>
+                        <option value="Giao Hàng Tiết Kiệm">Giao Hàng Tiết Kiệm (GHTK)</option>
+                        <option value="Viettel Post">Viettel Post</option>
+                        <option value="J&T Express">J&T Express</option>
+                        <option value="Ninja Van">Ninja Van</option>
+                        <option value="Grab / AhaMove">Giao hỏa tốc (Grab/Aha)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-1">Mã vận đơn <span class="text-rose-500">*</span></label>
+                    <input v-model="updateTrackingCode" type="text" placeholder="Nhập mã bill..." class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-sky-500 outline-none bg-white font-bold text-slate-800 uppercase">
+                </div>
+            </div>
         </div>
 
         <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
@@ -1457,6 +1502,10 @@ const exportExcelReport = async () => {
   };
 
   const submitUpdateStatus = async () => {
+    if (updateStatusValue.value == 3 && !updateTrackingCode.value.trim()) {
+        toastStore.showToast("Vui lòng nhập Mã vận đơn trước khi giao cho Shipper!", "warning");
+        return;
+    }
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
@@ -1467,7 +1516,9 @@ const exportExcelReport = async () => {
         },
         body: JSON.stringify({
           MaDH: selectedOrder.value.MaDH,
-          TrangThai: updateStatusValue.value
+          TrangThai: updateStatusValue.value,
+          MaVanDon: updateTrackingCode.value,
+          HangVanChuyen: updateCarrier.value 
         })
       });
       const result = await response.json();
@@ -1490,6 +1541,8 @@ const exportExcelReport = async () => {
   const isCancelModalOpen = ref(false);
   const isUpdateModalOpen = ref(false);
   const updateStatusValue = ref('');
+  const updateTrackingCode = ref(''); // Lưu mã vận đơn
+  const updateCarrier = ref('Giao Hàng Nhanh'); // Lưu hãng vận chuyển (Mặc định GHN)
   const cancelReason = ref('');
   const orderToCancel = ref(null);
 
@@ -1939,6 +1992,19 @@ const exportExcelReport = async () => {
     } catch (error) {
       console.error("Lỗi khi xác nhận hoàn tiền:", error);
       toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    }
+  };
+
+  const copyTrackingCode = async (code) => {
+    if (!code) return;
+    try {
+      // Sử dụng API Clipboard của trình duyệt
+      await navigator.clipboard.writeText(code);
+      toastStore.showToast(`Đã copy mã: ${code}`, "success");
+    } catch (err) {
+      console.error('Lỗi khi copy: ', err);
+      // Fallback cho một số trình duyệt cũ nếu cần
+      toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
     }
   };
 

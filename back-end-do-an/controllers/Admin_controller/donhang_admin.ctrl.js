@@ -795,7 +795,8 @@ const donhang_admin = {
             const sql_donhang = `
                 SELECT 
                     DonHang.MaDH, MaDonHangHienThi, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, 
-                    TongTien, ThanhTien, NgayLapDon, Note, TrangThaiThanhToan, ma.MaVoucher
+                    TongTien, ThanhTien, NgayLapDon, Note, TrangThaiThanhToan, ma.MaVoucher,
+                    DonHang.MaVanDon, DonHang.HangVanChuyen 
                 FROM DonHang
                 LEFT JOIN LogSuDungMaGiamGia log ON log.MaDH = DonHang.MaDH
                 LEFT JOIN MaGiamGia ma ON ma.MaGG = log.MaGG
@@ -867,7 +868,7 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try{
             await connection.beginTransaction();
-            const { MaDH, TrangThai } = req.body;
+            const { MaDH, TrangThai, MaVanDon, HangVanChuyen } = req.body;
             const MaTK = req.user.id;
 
             const sql_lay_trang_thai = `
@@ -897,6 +898,17 @@ const donhang_admin = {
             }
 
             const trangThaiMoi = TrangThai ? parseInt(TrangThai) : (matrangthai + 1);
+            if (trangThaiMoi === 3) {
+                if (!MaVanDon || !HangVanChuyen || MaVanDon.trim() === '') {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Vui lòng nhập Hãng vận chuyển và Mã vận đơn!" });
+                }
+                // Lưu mã vận đơn vào bảng DonHang
+                await connection.query(
+                    `UPDATE DonHang SET MaVanDon = ?, HangVanChuyen = ? WHERE MaDH = ?`, 
+                    [MaVanDon.trim(), HangVanChuyen, MaDH]
+                );
+            }
 
             const update_trang_thai = `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, ?, NOW())`;
             await connection.query(update_trang_thai, [MaDH, trangThaiMoi]);
