@@ -220,7 +220,7 @@
                   
                   <td class="px-8 py-5">
                     <div class="flex items-center gap-2">
-                        <span class="font-headline font-bold text-sm text-slate-900">#{{ order.id }}</span>
+                        <span class="font-headline font-bold text-sm text-slate-900">#{{ order.code }}</span>
                         <span class="text-[8px] px-1.5 py-0.5 rounded border font-black tracking-widest whitespace-nowrap"
                               :class="order.saleType?.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
                           {{ order.saleType?.toLowerCase().includes('order') ? 'ORDER' : 'SẴN' }}
@@ -295,7 +295,7 @@
       
       <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
         <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-          Chi tiết đơn hàng <span class="text-[#ff8f73]">#{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi || selectedOrder.MaDH }}</span>
+          Chi tiết đơn hàng <span class="text-[#ff8f73]">{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi || `#FC-${selectedOrder.MaDH}` }}</span>
         </h3>
         <button @click="isDetailModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-200 transition-colors">
           <span class="material-symbols-outlined">close</span>
@@ -304,32 +304,113 @@
 
       <div class="p-8 space-y-6 flex-1">
         
-        <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm">
-          <div class="p-4 bg-slate-50/50">
-            <p class="text-slate-400 font-medium mb-1">Ngày đặt</p>
-            <p class="font-semibold text-slate-800">{{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
+        <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+          <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
+            <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">contact_mail</span> Thông tin nhận hàng
+            </h4>
+            </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm bg-white">
+            <div class="p-4">
+              <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ngày đặt</p>
+              <p class="font-semibold text-slate-800">{{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
+            </div>
+            <div class="p-4">
+              <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Trạng thái đơn</p>
+              <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).class}`">
+                {{ getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).text }}
+              </span>
+            </div>
+            <div class="p-4">
+              <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Khách hàng</p>
+              <p class="font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.TenNguoiNhan || 'Khách vãng lai' }}</p>
+            </div>
+            <div class="p-4">
+              <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Số điện thoại</p>
+              <p class="font-semibold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.SDTNguoiNhan || 'N/A' }}</p>
+            </div>
+            <div class="p-4 md:col-span-2 border-t border-slate-200">
+              <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Địa chỉ giao hàng</p>
+              <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
+            </div>
+            <div class="p-4 md:col-span-2 border-t border-slate-200">
+              <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú</p>
+              <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có ghi chú.' }}</p>
+            </div>
           </div>
-          <div class="p-4 bg-slate-50/50">
-            <p class="text-slate-400 font-medium mb-1">Trạng thái đơn</p>
-            <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).class}`">
-              {{ getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).text }}
-            </span>
+        </div>
+
+        <div class="bg-slate-50/60 border border-slate-200/60 rounded-xl p-6">
+          <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">timeline</span> Hành trình đơn hàng
+          </h4>
+          
+          <div v-if="getCurrentStatusCode() == 5 || getCurrentStatusCode() == 6" class="flex items-center gap-3 bg-rose-50 border border-rose-100 p-4 rounded-xl">
+            <span class="material-symbols-outlined text-rose-500 text-2xl animate-bounce">cancel_presentation</span>
+            <div>
+              <p class="text-sm font-bold text-rose-900">
+                {{ getCurrentStatusCode() == 5 ? 'ĐƠN HÀNG ĐÃ BỊ HỦY BỎ' : 'ĐƠN HÀNG ĐÃ HOÀN TRẢ VỀ KHO' }}
+              </p>
+              <p class="text-xs text-rose-600 mt-0.5 font-medium">
+                Ghi nhận vào lúc: {{ selectedOrder.LichSuTrangThai?.find(line => line.MaTrangThai == getCurrentStatusCode()) ? new Date(selectedOrder.LichSuTrangThai.find(line => line.MaTrangThai == getCurrentStatusCode()).Thoigian).toLocaleString('vi-VN') : 'N/A' }}
+              </p>
+            </div>
           </div>
-          <div class="p-4 bg-slate-50/50">
-            <p class="text-slate-400 font-medium mb-1">Khách hàng</p>
-            <p class="font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.TenNguoiNhan || 'Khách vãng lai' }}</p>
-          </div>
-          <div class="p-4 bg-slate-50/50">
-            <p class="text-slate-400 font-medium mb-1">Số điện thoại</p>
-            <p class="font-semibold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.SDTNguoiNhan || 'N/A' }}</p>
-          </div>
-          <div class="p-4 md:col-span-2">
-            <p class="text-slate-400 font-medium mb-1">Địa chỉ giao hàng</p>
-            <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
-          </div>
-          <div class="p-4 md:col-span-2">
-            <p class="text-slate-400 font-medium mb-1">Ghi chú</p>
-            <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có ghi chú.' }}</p>
+
+          <div v-else class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-4">
+            <div class="absolute top-5 left-6 right-6 h-0.5 bg-slate-200 hidden md:block z-0"></div>
+
+            <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                    :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 1) ? 'bg-amber-500 border-amber-500 text-white shadow-amber-500/20' : 'bg-white border-slate-200 text-slate-400'">
+                <span class="material-symbols-outlined text-[18px]">order_approve</span>
+              </div>
+              <div class="flex flex-col md:items-center">
+                <p class="text-xs font-bold text-slate-800">Chờ duyệt</p>
+                <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                  {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 1) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 1).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                    :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 2) ? 'bg-indigo-600 border-indigo-600 text-white shadow-indigo-600/20' : 'bg-white border-slate-200 text-slate-400'">
+                <span class="material-symbols-outlined text-[18px]">package_2</span>
+              </div>
+              <div class="flex flex-col md:items-center">
+                <p class="text-xs font-bold text-slate-800">Đóng gói</p>
+                <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                  {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 2) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 2).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                    :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 3) ? 'bg-sky-500 border-sky-500 text-white shadow-sky-500/20' : 'bg-white border-slate-200 text-slate-400'">
+                <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+              </div>
+              <div class="flex flex-col md:items-center">
+                <p class="text-xs font-bold text-slate-800">Đang giao</p>
+                <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                  {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 3) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 3).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="relative z-10 flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all"
+                    :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 4) ? 'bg-emerald-500 border-emerald-500 text-white shadow-emerald-500/20' : 'bg-white border-slate-200 text-slate-400'">
+                <span class="material-symbols-outlined text-[18px]">task_alt</span>
+              </div>
+              <div class="flex flex-col md:items-center">
+                <p class="text-xs font-bold text-slate-800">Đã giao</p>
+                <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                  {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 4) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 4).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -461,10 +542,7 @@
           <span class="material-symbols-outlined text-[18px]">open_in_new</span> Mở trang xử lý đơn
         </RouterLink>
         <div class="flex gap-2">
-          <button @click="handleOrderAction('print', selectedOrder.MaDH)" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
-            <span class="material-symbols-outlined text-[18px]">print</span> In hóa đơn
-          </button>
-        </div>
+          </div>
       </div>
 
     </div>
@@ -917,7 +995,8 @@
             const customerName = order.TenKH || order.TenNguoiNhan || 'Khách vãng lai';
             
             return {
-              id: order.MaDonHangHienThi,
+              id: order.MaDH, 
+              code: order.MaDonHangHienThi,
               avatarText: customerName.charAt(0).toUpperCase(),
               customerName: customerName,
               email: order.SDTNguoiNhan || 'Không có SĐT', 
