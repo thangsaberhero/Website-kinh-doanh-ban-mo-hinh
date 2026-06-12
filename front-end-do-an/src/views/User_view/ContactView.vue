@@ -3,9 +3,9 @@
         <TheHeader />
   
         <main class="flex-1">
-            <section class="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+            <section class="relative h-[50vh] sm:h-[60vh] md:h-[80vh] min-h-[350px] md:min-h-[500px] flex items-center justify-center overflow-hidden">
                 <div class="absolute inset-0 z-0">
-                    <img class="w-full h-full object-cover brightness-50 contrast-125" alt="Showroom Background" src="https://cdn-media.sforum.vn/storage/app/media/CTVSEO_Maihue/H%C3%ACnh%20n%E1%BB%81n%20Gundam/hinh-nen-gundam-51.jpg"/>
+                    <img class="w-full h-full object-cover object-[center_20%] md:object-center brightness-50 contrast-125" alt="Showroom Background" src="https://cdn-media.sforum.vn/storage/app/media/CTVSEO_Maihue/H%C3%ACnh%20n%E1%BB%81n%20Gundam/hinh-nen-gundam-51.jpg"/>
                     <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
                 </div>
                 <div class="relative z-10 text-center px-4 mt-16">
