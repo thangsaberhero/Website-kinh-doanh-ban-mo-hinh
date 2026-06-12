@@ -921,7 +921,20 @@
             <div class="pt-3 border-t border-emerald-200/50 mt-2">
               <div class="flex justify-between items-end mb-2">
                 <span class="font-bold text-emerald-800">Số tiền khách nộp lần này:</span>
-                <button @click="amountToCollect = (orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - alreadyPaidAmount" class="text-[10px] font-bold text-emerald-600 bg-emerald-100 hover:bg-emerald-200 px-2 py-1 rounded transition-colors shadow-sm">Thu Full (Còn lại)</button>
+                
+                <div class="flex gap-2">
+                  <button v-if="suggestedDepositAmount > 0" 
+                          @click="amountToCollect = suggestedDepositAmount" 
+                          class="text-[10px] font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded transition-colors shadow-sm">
+                    Gợi ý cọc ({{ formatPrice(suggestedDepositAmount) }})
+                  </button>
+                  
+                  <button @click="amountToCollect = (orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - alreadyPaidAmount" 
+                          class="text-[10px] font-bold text-emerald-600 bg-emerald-100 hover:bg-emerald-200 px-2 py-1 rounded transition-colors shadow-sm">
+                    Thu Full (Còn lại)
+                  </button>
+                </div>
+
               </div>
               <div class="relative">
                 <input v-model="amountToCollect" type="number" min="0" :max="(orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - alreadyPaidAmount" class="w-full border border-emerald-200 rounded-lg p-2.5 text-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-black text-emerald-600 text-right pr-8 shadow-inner">
@@ -1822,19 +1835,26 @@ const exportExcelReport = async () => {
   const amountToCollect = ref(0);
   const collectionMethod = ref(5); // Mặc định thu Tiền mặt
   const alreadyPaidAmount = ref(0);
+  const suggestedDepositAmount = ref(0);
 
   const orderCodeToPay = ref('');
   const confirmPayment = (order) => {
     orderToPay.value = order;
     orderCodeToPay.value = order.ThongTinGiaoHang?.MaDonHangHienThi;
     
-    // Tính toán tiền cọc
     const listOrder = orders.value.find(o => o.id === order.MaDH);
-    alreadyPaidAmount.value = listOrder ? listOrder.transactionAmount : 0; // 🔴 GÁN TIỀN CỌC
+    alreadyPaidAmount.value = listOrder ? listOrder.transactionAmount : 0; 
     const totalAmount = order.ThongTinGiaoHang?.ThanhTien || 0;
 
     amountToCollect.value = totalAmount - alreadyPaidAmount.value;
     if (amountToCollect.value < 0) amountToCollect.value = 0; 
+    let totalDepositRequired = 0;
+    if (selectedOrder.value && selectedOrder.value.DanhSachHang) {
+      // Cộng dồn: (Tiền cọc 1 món * Số lượng)
+      totalDepositRequired = selectedOrder.value.DanhSachHang.reduce((sum, item) => sum + ((item.TienCocToiThieu || 0) * item.SoLuong), 0);
+    }
+    // Số tiền cọc cần thu thêm = Tổng cọc yêu cầu của các món - Số tiền khách ĐÃ TRẢ trước đó
+    suggestedDepositAmount.value = Math.max(0, totalDepositRequired - alreadyPaidAmount.value);
 
     collectionMethod.value = 5; 
     isPaymentConfirmModalOpen.value = true;
