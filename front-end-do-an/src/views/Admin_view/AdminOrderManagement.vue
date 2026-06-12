@@ -205,10 +205,17 @@
                           {{ order.saleType?.toLowerCase().includes('order') ? 'ORDER' : 'SẴN' }}
                         </span>
 
-                        <div v-if="order.note" class="relative group/note cursor-help flex items-center justify-center">
-                          <span class="material-symbols-outlined text-rose-500 text-[18px] animate-pulse">edit_note</span>
+                        <div v-if="isCustomerNote(order.note)" class="relative group/note cursor-help flex items-center justify-center">
+                          <span class="material-symbols-outlined text-[18px] transition-colors"
+                                :class="order.statusId < 3 ? 'text-rose-500 animate-pulse' : 'text-slate-400'">
+                            edit_note
+                          </span>
+                          
                           <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-lg opacity-0 group-hover/note:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-slate-700 whitespace-normal">
-                            <p class="font-bold text-rose-400 uppercase tracking-widest mb-1 text-[9px]">Ghi chú của khách:</p> 
+                            <p class="font-bold uppercase tracking-widest mb-1 text-[9px]"
+                               :class="order.statusId < 3 ? 'text-rose-400' : 'text-slate-400'">
+                               Ghi chú của khách:
+                            </p> 
                             {{ order.note }}
                           </div>
                         </div>
@@ -1599,6 +1606,22 @@ const exportExcelReport = async () => {
       return diffHours >= 24; // Nếu lớn hơn hoặc bằng 24 tiếng thì báo động
     }
     return false;
+  };
+
+  // --- HÀM LỌC GHI CHÚ HỆ THỐNG ---
+  const isCustomerNote = (note) => {
+    if (!note) return false;
+    let n = note.trim();
+    
+    // Nếu ghi chú chỉ toàn là câu mặc định của hệ thống -> Trả về false (Không hiện cảnh báo đỏ)
+    if (n === 'Đơn tạo thủ công tại quầy') return false;
+    if (n.startsWith('[HỦY ĐƠN]')) return false;
+    if (n.startsWith('[HOÀN HÀNG]')) return false;
+    if (n.startsWith('Hủy tự động')) return false;
+    if (n.startsWith('Đơn tạo thủ công tại quầy') && n.includes('[HỦY ĐƠN]')) return false;
+    if (n.startsWith('Đơn tạo thủ công tại quầy') && n.includes('[HOÀN HÀNG]')) return false;
+    if (n.startsWith('Đơn tạo thủ công tại quầy') && n.includes('Hủy tự động')) return false;
+    return true; 
   };
 
   let fetchTimeout = null;
