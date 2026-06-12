@@ -9,14 +9,14 @@
           <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
           <div class="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent"></div>
         </div>
-        <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-6 pb-20">
+        <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-6 pb-10 md:pb-20">
           <div class="flex items-center space-x-3 mb-4">
             <span class="px-3 py-1 bg-primary border border-primary text-black text-[10px] font-black tracking-[0.2em] uppercase rounded shadow-[0_0_15px_rgba(255,61,0,0.5)]">
               {{ heroNews.category }}
             </span>
             <span class="text-on-surface-variant text-xs font-bold tracking-widest uppercase">• {{ heroNews.readTime }} phút đọc</span>
           </div>
-          <h1 class="font-headline text-4xl md:text-6xl lg:text-7xl font-black italic tracking-tighter text-white leading-tight mb-6 uppercase max-w-4xl" v-html="heroNews.titleHtml">
+          <h1 class="font-headline text-3xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white leading-tight mb-4 md:mb-6 uppercase max-w-4xl" v-html="heroNews.titleHtml">
           </h1>
           <p class="font-body text-base md:text-lg text-on-surface-variant max-w-2xl mb-8 leading-relaxed font-medium">
             {{ heroNews.summary }}
@@ -40,8 +40,7 @@
           </div>
           
           <div class="flex space-x-6 overflow-x-auto hide-scrollbar pb-6 -mx-6 px-6 snap-x">
-            <div v-for="item in trendingNews" :key="item.id" @click="router.push(`/news/${item.id}`)" 
-                 class="snap-start min-w-[280px] sm:min-w-[300px] h-[350px] group relative rounded-2xl overflow-hidden cursor-pointer border border-outline-variant/30 hover:border-primary/50 transition-colors">
+            <div v-for="item in trendingNews" :key="item.id" @click="router.push(`/news/${item.id}`)" class="snap-start min-w-[280px] sm:min-w-[300px] h-[280px] sm:h-[350px] group relative rounded-2xl overflow-hidden cursor-pointer border border-outline-variant/30 hover:border-primary/50 transition-colors">
               <img :src="item.image" :alt="item.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
               <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
               <div class="absolute bottom-6 left-6 right-6">

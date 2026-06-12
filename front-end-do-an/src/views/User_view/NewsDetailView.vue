@@ -29,7 +29,7 @@
             {{ article.TieuDe }}
           </h1>
           
-          <div class="flex flex-wrap items-center justify-center gap-6 text-sm font-headline tracking-wider text-on-surface-variant">
+          <div class="flex flex-wrap items-center justify-center gap-3 md:gap-6 text-xs md:text-sm font-headline tracking-wider text-on-surface-variant">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant/30">
                 <img :src="`https://ui-avatars.com/api/?name=${article.TacGia || 'Admin'}&background=192540&color=ff8f73`" alt="Avatar">
@@ -49,7 +49,7 @@
           </div>
         </header>
   
-        <figure v-if="article.AnhThumbnail" class="w-full h-[300px] md:h-[550px] rounded-[2rem] overflow-hidden border border-outline-variant/20 shadow-2xl mb-16 relative">
+        <figure v-if="article.AnhThumbnail" class="w-full h-[220px] sm:h-[300px] md:h-[550px] rounded-2xl md:rounded-[2rem] overflow-hidden border border-outline-variant/20 shadow-2xl mb-10 md:mb-16 relative">
           <img :src="article.AnhThumbnail" :alt="article.TieuDe" class="w-full h-full object-cover">
           <div class="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent"></div>
         </figure>
@@ -133,7 +133,7 @@
   </div>
   <button 
     @click="router.push('/news')" 
-    class="fixed top-[80px] left-8 bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:shadow-lg hover:-translate-y-1 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-md z-40"
+    class="hidden md:flex fixed top-[80px] left-8 bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:shadow-lg hover:-translate-y-1 transition-all w-12 h-12 rounded-full items-center justify-center shadow-md z-40"
     title="Quay lại danh sách tin tức"
   >
     <span class="material-symbols-outlined">arrow_back</span>
