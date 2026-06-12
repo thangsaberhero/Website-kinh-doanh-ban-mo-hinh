@@ -915,11 +915,25 @@
             </div>
             <div class="flex justify-between mb-2 text-sm text-slate-600">
               <span>Đã thanh toán (Cọc):</span>
-              <span class="font-bold text-slate-900">{{ formatPrice((orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - amountToCollect) }}</span>
+              <span class="font-bold text-slate-900">{{ formatPrice(alreadyPaidAmount) }}</span>
             </div>
-            <div class="flex justify-between items-center pt-3 border-t border-emerald-200/50 mt-2">
-              <span class="font-bold text-emerald-800">Số tiền cần thu thêm:</span>
-              <span class="text-xl font-black text-emerald-600">{{ formatPrice(amountToCollect) }}</span>
+            
+            <div class="pt-3 border-t border-emerald-200/50 mt-2">
+              <div class="flex justify-between items-end mb-2">
+                <span class="font-bold text-emerald-800">Số tiền khách nộp lần này:</span>
+                <button @click="amountToCollect = (orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - alreadyPaidAmount" class="text-[10px] font-bold text-emerald-600 bg-emerald-100 hover:bg-emerald-200 px-2 py-1 rounded transition-colors shadow-sm">Thu Full (Còn lại)</button>
+              </div>
+              <div class="relative">
+                <input v-model="amountToCollect" type="number" min="0" :max="(orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - alreadyPaidAmount" class="w-full border border-emerald-200 rounded-lg p-2.5 text-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white font-black text-emerald-600 text-right pr-8 shadow-inner">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 font-bold">₫</span>
+              </div>
+              
+              <p v-if="amountToCollect < ((orderToPay?.ThongTinGiaoHang?.ThanhTien || 0) - alreadyPaidAmount)" class="text-[11px] text-amber-600 font-bold mt-2 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
+                <span class="material-symbols-outlined text-[14px]">info</span> Khách đóng thêm cọc. Đơn vẫn giữ trạng thái "Đã đặt cọc".
+              </p>
+              <p v-else-if="amountToCollect > 0" class="text-[11px] text-emerald-600 font-bold mt-2 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
+                <span class="material-symbols-outlined text-[14px]">check_circle</span> Thu đủ tiền. Đơn sẽ chuyển thành "Đã thanh toán".
+              </p>
             </div>
           </div>
 
@@ -946,7 +960,8 @@
                   <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
                   <span class="text-[10px] font-bold">Zalo Pay</span>
                 </label>
-                <label :class="collectionMethod === 3 ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300'" class="border rounded-xl p-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
+
+                <label v-if="alreadyPaidAmount > 0" :class="collectionMethod === 3 ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300'" class="border rounded-xl p-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
                   <input type="radio" v-model="collectionMethod" :value="3" class="hidden">
                   <span class="material-symbols-outlined text-[20px]">local_shipping</span>
                   <span class="text-[10px] font-bold">Thu hộ COD</span>
@@ -1806,20 +1821,20 @@ const exportExcelReport = async () => {
   const orderToPay = ref(null);
   const amountToCollect = ref(0);
   const collectionMethod = ref(5); // Mặc định thu Tiền mặt
+  const alreadyPaidAmount = ref(0);
 
   const orderCodeToPay = ref('');
   const confirmPayment = (order) => {
     orderToPay.value = order;
     orderCodeToPay.value = order.ThongTinGiaoHang?.MaDonHangHienThi;
     
-    // Tìm giao dịch đã thanh toán trong mảng Orders (từ bảng ngoài)
+    // Tính toán tiền cọc
     const listOrder = orders.value.find(o => o.id === order.MaDH);
-    const alreadyPaid = listOrder ? listOrder.transactionAmount : 0;
+    alreadyPaidAmount.value = listOrder ? listOrder.transactionAmount : 0; // 🔴 GÁN TIỀN CỌC
     const totalAmount = order.ThongTinGiaoHang?.ThanhTien || 0;
 
-    // Tính số tiền cần thu thêm
-    amountToCollect.value = totalAmount - alreadyPaid;
-    if (amountToCollect.value < 0) amountToCollect.value = 0; // Chống lỗi số âm
+    amountToCollect.value = totalAmount - alreadyPaidAmount.value;
+    if (amountToCollect.value < 0) amountToCollect.value = 0; 
 
     collectionMethod.value = 5; 
     isPaymentConfirmModalOpen.value = true;
@@ -1836,7 +1851,7 @@ const exportExcelReport = async () => {
         },
         // ĐÃ BỔ SUNG: Truyền thêm số tiền cần thu và phương thức để Backend xử lý
         body: JSON.stringify({ 
-          MaDH: orderToPay.value,
+          MaDH: orderToPay.value.MaDH,
           SoTienThu: amountToCollect.value,
           PhuongThuc: collectionMethod.value
         })
