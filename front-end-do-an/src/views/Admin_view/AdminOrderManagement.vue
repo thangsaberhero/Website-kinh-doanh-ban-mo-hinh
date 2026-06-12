@@ -117,10 +117,19 @@
                 <span>Hiển thị {{ startItem }} - {{ endItem }} / {{ totalOrders }} đơn hàng</span>
               </div>
               
-              <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-[#ff8f73] transition-all">
-                <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer transition-colors"/>
-                <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn tất cả</span>
-              </label>
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-[#ff8f73] transition-all">
+                  <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer transition-colors"/>
+                  <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn trang này</span>
+                </label>
+
+                <button v-if="selectedOrders.length > 0" 
+                        @click="selectedOrders = []" 
+                        class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-xl transition-all border border-rose-100 shadow-sm animate-[fadeIn_0.2s_ease-out]">
+                  <span class="material-symbols-outlined text-[14px]">clear_all</span>
+                  Bỏ chọn tất cả ({{ selectedOrders.length }})
+                </button>
+              </div>
             </div>
 
             <div class="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
@@ -1529,12 +1538,16 @@ const exportExcelReport = async () => {
   const selectedOrders = ref([]); 
   
   const selectAll = computed({
-    get: () => orders.value.length > 0 && selectedOrders.value.length === orders.value.length,
+    get: () => orders.value.length > 0 && orders.value.every(o => selectedOrders.value.includes(o.id)),
     set: (value) => {
+      const currentPageIds = orders.value.map(o => o.id);
       if (value) {
-        selectedOrders.value = orders.value.map(o => o.id); 
+        // Cộng dồn: Thêm những ID của trang hiện tại chưa có trong selectedOrders vào mảng
+        const newIds = currentPageIds.filter(id => !selectedOrders.value.includes(id));
+        selectedOrders.value.push(...newIds);
       } else {
-        selectedOrders.value = []; 
+        // Gỡ bỏ: Lọc vứt bỏ các ID của trang hiện tại ra khỏi selectedOrders
+        selectedOrders.value = selectedOrders.value.filter(id => !currentPageIds.includes(id));
       }
     }
   });
