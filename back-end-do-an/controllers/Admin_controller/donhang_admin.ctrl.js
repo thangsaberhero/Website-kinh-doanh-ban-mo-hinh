@@ -711,7 +711,9 @@ const donhang_admin = {
                         OR (mh.Series COLLATE utf8mb4_unicode_ci LIKE ?)
                     )
                 )`);
-                whereValues.push(`%${tensanpham.trim()}%`);
+                
+                const searchPattern = `%${tensanpham.trim()}%`;
+                whereValues.push(searchPattern, searchPattern, searchPattern);
             }
 
             if (ngaybatdau) {
