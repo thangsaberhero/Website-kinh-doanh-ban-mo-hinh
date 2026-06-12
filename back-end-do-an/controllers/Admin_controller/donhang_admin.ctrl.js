@@ -906,7 +906,7 @@ const donhang_admin = {
                 // Lưu mã vận đơn vào bảng DonHang
                 await connection.query(
                     `UPDATE DonHang SET MaVanDon = ?, HangVanChuyen = ? WHERE MaDH = ?`, 
-                    [MaVanDon.trim(), HangVanChuyen, MaDH]
+                    [MaVanDon.trim().toUpperCase(), HangVanChuyen, MaDH]
                 );
             }
 

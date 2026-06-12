@@ -1517,7 +1517,7 @@ const exportExcelReport = async () => {
         body: JSON.stringify({
           MaDH: selectedOrder.value.MaDH,
           TrangThai: updateStatusValue.value,
-          MaVanDon: updateTrackingCode.value,
+          MaVanDon: updateTrackingCode.value.trim().toUpperCase(),
           HangVanChuyen: updateCarrier.value 
         })
       });
