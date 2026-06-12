@@ -740,6 +740,14 @@ const donhang_admin = {
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.HangVanChuyen, dh.MaVanDon,
                 dh.ThanhTien, dh.TrangThaiThanhToan,
                 (
+                    SELECT DISTINCT mh.LoaiHinhBan 
+                    FROM ChiTietDonHang ctdh
+                    INNER JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai
+                    INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                    WHERE ctdh.MaDH = dh.MaDH
+                    LIMIT 1
+                ) AS LoaiHinhBan,
+                (
                     SELECT cttt.MaTrangThai
                     FROM ChiTietTrangThai cttt 
                     WHERE cttt.MaDH = dh.MaDH 

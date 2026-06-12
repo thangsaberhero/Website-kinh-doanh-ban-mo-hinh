@@ -197,7 +197,15 @@
                   
                   <td class="px-6 py-4">
                     <div class="flex flex-col">
-                      <span class="font-bold text-slate-900 text-sm">{{ order.code }}</span>
+                      
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-900 text-sm">{{ order.code }}</span>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded border font-black tracking-widest whitespace-nowrap transition-all"
+                              :class="order.saleType?.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
+                          {{ order.saleType?.toLowerCase().includes('order') ? 'ORDER' : 'SẴN' }}
+                        </span>
+                      </div>
+                      
                       <span class="text-[11px] font-semibold text-slate-600 mt-0.5">{{ order.customer }}</span>
                     </div>
                   </td>
@@ -1526,7 +1534,8 @@ const exportExcelReport = async () => {
             paymentMethod: item.TenPhuongThuc || 'COD',
             paymentType: item.LoaiGiaoDich || 'Thanh toán toàn bộ',
             transactionAmount: Number(item.SoTienGiaoDich) || 0,
-            transactionDate: item.NgayThanhToan ? new Date(item.NgayThanhToan).toLocaleString('vi-VN') : 'Chưa thu tiền'
+            transactionDate: item.NgayThanhToan ? new Date(item.NgayThanhToan).toLocaleString('vi-VN') : 'Chưa thu tiền',
+            saleType: item.LoaiHinhBan || 'Có sẵn'
           };
         });
       }
