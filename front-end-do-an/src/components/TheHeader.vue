@@ -2,7 +2,11 @@
   <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
       
-      <div class="flex items-center gap-4 md:gap-12">        
+      <div class="flex items-center gap-4 md:gap-12">
+        <button @click="showMobileMenu = !showMobileMenu" class="md:hidden text-on-surface hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+        
         <a class="font-headline text-xl md:text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">{{ systemStore.settings.shop_name || 'FigureCollect' }}</a>
         <div class="hidden md:flex items-center gap-8">
           <router-link to="/category" active-class="text-primary font-bold" class="text-sm font-medium hover:text-primary transition-colors">Cửa hàng</router-link>
