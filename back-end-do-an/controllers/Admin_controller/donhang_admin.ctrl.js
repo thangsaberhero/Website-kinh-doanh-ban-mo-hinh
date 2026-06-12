@@ -1901,6 +1901,91 @@ const donhang_admin = {
         }
     },
 
+    lay_tat_ca_id_don_hang: async(req, res) => {
+        try {
+            const { trangthai, ngaybatdau, ngayketthuc, timkiem, trangthaitt, minPrice, maxPrice, loaihinhban, tensanpham } = req.query;
+
+            let conditions = [];
+            let whereValues = [];
+            let havingConditions = [];
+            let havingValues = [];
+
+            if(timkiem){
+                conditions.push("(dh.MaDonHangHienThi LIKE ? or dh.MaDH like ? or dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ? or dh.SDTNguoiNhan LIKE ?)");
+                whereValues.push(`%${timkiem}%`,`%${timkiem}%`,`%${timkiem}%`,`%${timkiem}%`);
+            }
+
+            if (tensanpham && tensanpham.trim() !== '') {
+                conditions.push(`EXISTS (
+                    SELECT 1 FROM ChiTietDonHang ctdh 
+                    JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai 
+                    JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh 
+                    WHERE ctdh.MaDH = dh.MaDH AND 
+                    (
+                        (mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ?)
+                        OR (mh.TenNhanVat COLLATE utf8mb4_unicode_ci LIKE ?)
+                        OR (mh.Series COLLATE utf8mb4_unicode_ci LIKE ?)
+                    )
+                )`);
+                const searchPattern = `%${tensanpham.trim()}%`;
+                whereValues.push(searchPattern, searchPattern, searchPattern);
+            }
+
+            if (ngaybatdau) { conditions.push("dh.NgayLapDon >= ?"); whereValues.push(`${ngaybatdau} 00:00:00`); }
+            if (ngayketthuc) { conditions.push("dh.NgayLapDon <= ?"); whereValues.push(`${ngayketthuc} 23:59:59`); }
+            
+            if (trangthaitt) {
+                if (trangthaitt === 'Chưa thanh toán') conditions.push("(dh.TrangThaiThanhToan IS NULL OR dh.TrangThaiThanhToan NOT LIKE '%Đã thanh toán%')");
+                else { conditions.push("dh.TrangThaiThanhToan LIKE ?"); whereValues.push(`%${trangthaitt}%`); }
+            }
+            if (minPrice && !isNaN(minPrice)) { conditions.push("dh.ThanhTien >= ?"); whereValues.push(Number(minPrice)); }
+            if (maxPrice && !isNaN(maxPrice)) { conditions.push("dh.ThanhTien <= ?"); whereValues.push(Number(maxPrice)); }
+            
+            let condition_clause = conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+
+            if (trangthai) { havingConditions.push("MaTT = ?"); havingValues.push(trangthai); }
+            if (loaihinhban && loaihinhban !== 'all') {
+                if (loaihinhban === 'order') havingConditions.push("LoaiHinhBan LIKE '%order%'");
+                else if (loaihinhban === 'san') havingConditions.push("(LoaiHinhBan NOT LIKE '%order%' OR LoaiHinhBan IS NULL)");
+            }
+            let having_clause = havingConditions.length > 0 ? "HAVING " + havingConditions.join(" AND ") : "";
+
+            // 🔴 TRUY VẤN SIÊU TỐC: Chỉ lấy MaDH
+            const sql_core = `
+                SELECT dh.MaDH,
+                (
+                    SELECT DISTINCT mh.LoaiHinhBan 
+                    FROM ChiTietDonHang ctdh
+                    INNER JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai
+                    INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                    WHERE ctdh.MaDH = dh.MaDH LIMIT 1
+                ) AS LoaiHinhBan,
+                (
+                    SELECT cttt.MaTrangThai FROM ChiTietTrangThai cttt 
+                    WHERE cttt.MaDH = dh.MaDH ORDER BY cttt.MaTrangThai DESC LIMIT 1
+                ) AS MaTT
+                FROM DonHang dh
+                LEFT JOIN NhanVien nv ON dh.MaNV = nv.MaNV
+                LEFT JOIN KhachHang kh ON kh.MaKH = dh.MaKH
+                ${condition_clause}
+                GROUP BY dh.MaDH
+                ${having_clause}
+            `;
+
+            const combinedValues = [...whereValues, ...havingValues];
+            const [rows] = await db.query(sql_core, combinedValues);
+            
+            // Ép mảng object thành mảng các con số ID đơn thuần: [1, 2, 5, 8...]
+            const ids = rows.map(r => r.MaDH);
+
+            res.status(200).json({ success: true, data: ids });
+        } 
+        catch (error) {
+            console.error("Lỗi khi lấy tất cả ID: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server!" });
+        }
+    },
+
     xac_nhan_thanh_toan: async(req, res) => {
         const connection = await db.getConnection();
         try {

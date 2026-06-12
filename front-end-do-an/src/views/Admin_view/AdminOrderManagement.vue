@@ -123,6 +123,15 @@
                   <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn trang này</span>
                 </label>
 
+                <button v-if="totalOrders > itemsPerPage"
+                        @click="selectAllMatchingOrders"
+                        :disabled="isFetchingAllIds"
+                        class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-4 py-2 rounded-xl shadow-sm transition-all">
+                  <span v-if="isFetchingAllIds" class="material-symbols-outlined text-[14px] text-slate-500 animate-spin">progress_activity</span>
+                  <span v-else class="material-symbols-outlined text-[14px] text-slate-500">library_add_check</span>
+                  <span class="text-xs font-bold text-slate-600">Chọn toàn bộ {{ totalOrders }} đơn</span>
+                </button>
+
                 <button v-if="selectedOrders.length > 0" 
                         @click="selectedOrders = []" 
                         class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-xl transition-all border border-rose-100 shadow-sm animate-[fadeIn_0.2s_ease-out]">
@@ -2481,6 +2490,47 @@ const exportExcelReport = async () => {
     } catch (error) {
         console.error("Lỗi khi in hàng loạt:", error);
         toastStore.showToast("Có lỗi xảy ra khi lấy dữ liệu in!", "error");
+    }
+  };
+
+  const isFetchingAllIds = ref(false);
+
+  const selectAllMatchingOrders = async () => {
+    isFetchingAllIds.value = true;
+    try {
+      let statusParam = '';
+      if (activeTab.value === 'pending') statusParam = 1;
+      else if (activeTab.value === 'packing') statusParam = 2;
+      else if (activeTab.value === 'shipping') statusParam = 3;
+      else if (activeTab.value === 'completed') statusParam = 4;
+      else if (activeTab.value === 'cancelled') statusParam = 5;
+      else if (activeTab.value === 'returned') statusParam = 6;
+
+      let url = `${API_BASE_URL}/api/invoice_admin/get-all-ids?`;      
+      if (statusParam) url += `&trangthai=${statusParam}`;
+      if (searchQuery.value) url += `&timkiem=${encodeURIComponent(searchQuery.value)}`; 
+      if (filterDate.value.from) url += `&ngaybatdau=${filterDate.value.from}`;
+      if (filterDate.value.to) url += `&ngayketthuc=${filterDate.value.to}`;
+      if (advancedFilter.value.paymentStatus !== 'all') url += `&trangthaitt=${encodeURIComponent(advancedFilter.value.paymentStatus)}`;
+      if (advancedFilter.value.saleType !== 'all') url += `&loaihinhban=${encodeURIComponent(advancedFilter.value.saleType)}`;
+      if (advancedFilter.value.productName && advancedFilter.value.productName.trim() !== '') url += `&tensanpham=${encodeURIComponent(advancedFilter.value.productName.trim())}`;
+      if (advancedFilter.value.minPrice) url += `&minPrice=${advancedFilter.value.minPrice}`;
+      if (advancedFilter.value.maxPrice) url += `&maxPrice=${advancedFilter.value.maxPrice}`;
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(url, { headers: {'Authorization': `Bearer ${token}`} });
+      const result = await response.json();
+
+      if (result.success) {
+        // Đổ toàn bộ ID vào mảng chọn
+        selectedOrders.value = result.data;
+        toastStore.showToast(`Đã chọn thành công toàn bộ ${result.data.length} đơn hàng!`, "success");
+      }
+    } catch (error) {
+      console.error("Lỗi khi chọn tất cả:", error);
+      toastStore.showToast("Không thể chọn tất cả lúc này!", "error");
+    } finally {
+      isFetchingAllIds.value = false;
     }
   };
 
