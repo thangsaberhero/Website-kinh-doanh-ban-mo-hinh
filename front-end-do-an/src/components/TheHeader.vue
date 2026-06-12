@@ -1,21 +1,25 @@
 <template>
   <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      <button @click="isMobileMenuOpen = true" class="md:hidden text-on-surface hover:text-primary transition-colors p-2 flex items-center justify-center">
-        <span class="material-symbols-outlined text-3xl">menu</span>
-      </button>
+    <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
       
-      <div class="flex items-center gap-12">
-        <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">{{ systemStore.settings.shop_name || 'FigureCollect' }}</a>
+      <div class="flex items-center gap-4 md:gap-12">
+        <button @click="showMobileMenu = !showMobileMenu" class="md:hidden text-on-surface hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+        
+        <a class="font-headline text-xl md:text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">{{ systemStore.settings.shop_name || 'FigureCollect' }}</a>
         <div class="hidden md:flex items-center gap-8">
-          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/category')">Cửa hàng</a>
-          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/news')">Tin tức</a>
-          <a class="text-sm font-medium hover:text-primary transition-colors cursor-pointer" @click="router.push('/contact')">Liên hệ</a>
-          <router-link to="/truy-xuat/" class="hover:text-primary transition-colors font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
+          <router-link to="/category" class="text-sm font-medium hover:text-primary transition-colors">Cửa hàng</router-link>
+          <router-link to="/news" class="text-sm font-medium hover:text-primary transition-colors">Tin tức</router-link>
+          <router-link to="/contact" class="text-sm font-medium hover:text-primary transition-colors">Liên hệ</router-link>
+          <router-link to="/truy-xuat/" class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff] hover:text-primary transition-colors">Truy xuất Blockchain</router-link>
         </div>
       </div>
 
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3 md:gap-6">
+        <button @click="router.push('/search')" class="lg:hidden hover:text-primary transition-colors p-1">
+          <span class="material-symbols-outlined text-[22px]">search</span>
+        </button>
         
         <div class="w-96 hidden lg:flex items-center relative bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 focus-within:border-primary/50 transition-colors z-50">
           <span class="material-symbols-outlined text-outline text-xl mr-2">search</span>
@@ -69,8 +73,8 @@
           </div>
         </div>
         
-        <div class="flex items-center gap-4">
-          <button @click="router.push('/wishlist')" class="hover:text-primary transition-colors"><span class="material-symbols-outlined">favorite</span></button>
+        <div class="flex items-center gap-2 md:gap-4">
+          <button @click="router.push('/wishlist')" class="hidden md:block hover:text-primary transition-colors"><span class="material-symbols-outlined">favorite</span></button>
           <div class="relative" @mouseenter="showMiniCart = true" @mouseleave="showMiniCart = false">          
             <button @click="router.push('/cart')" class="hover:text-primary relative transition-colors outline-none py-2" title="Xem giỏ hàng">
               <span class="material-symbols-outlined">shopping_cart</span>
@@ -138,7 +142,7 @@
             </transition>
           </div>
           
-          <div v-if="authStore.user" class="flex items-center gap-3 ml-2 border-l border-outline-variant/30 pl-4 relative">
+          <div v-if="authStore.user" class="flex items-center gap-3 ml-1 md:ml-2 border-l border-outline-variant/30 pl-2 md:pl-4 relative">
             <span class="text-sm font-bold text-primary hidden md:block">
               Chào, {{ authStore.user.TenKH || authStore.user.username || 'Collector' }}!
             </span>
@@ -186,8 +190,8 @@
             </transition>
           </div>
 
-          <div v-else class="ml-2 border-l border-outline-variant/30 pl-4">
-            <button @click="router.push({ path: '/login', query: { redirect: route.fullPath } })" class="px-5 py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
+          <div v-else class="ml-1 md:ml-2 border-l border-outline-variant/30 pl-2 md:pl-4">
+            <button @click="router.push({ path: '/login', query: { redirect: route.fullPath } })" class="px-3 py-1.5 md:px-5 md:py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-xs md:text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
               Đăng nhập
             </button>
           </div>    
@@ -195,45 +199,20 @@
       </div>
     </div>
     <transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 -translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-4"
     >
-      <div v-show="isMobileMenuOpen" class="fixed inset-0 z-[100] md:hidden">
-        <div @click="isMobileMenuOpen = false" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-
-        <div class="absolute inset-y-0 left-0 w-[80%] max-w-sm bg-surface-container-high shadow-2xl flex flex-col transition-transform duration-300 transform" :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'">
-          
-          <div class="p-6 flex items-center justify-between border-b border-outline-variant/20">
-            <span class="font-headline text-xl font-bold text-primary">Menu</span>
-            <button @click="isMobileMenuOpen = false" class="text-outline hover:text-white transition-colors">
-              <span class="material-symbols-outlined">close</span>
-            </button>
-          </div>
-
-          <div class="p-6 border-b border-outline-variant/10">
-            <div class="flex items-center relative bg-surface-container px-4 py-3 rounded-lg border border-outline-variant/20 focus-within:border-primary/50">
-              <span class="material-symbols-outlined text-outline mr-2">search</span>
-              <input 
-                  v-model="searchQuery" 
-                  @input="handleSearch"
-                  @keyup.enter="submitSearch"
-                  class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-outline text-white" 
-                  placeholder="Tìm kiếm..." 
-                  type="text"
-              />
-            </div>
-          </div>
-
-          <div class="p-6 flex flex-col gap-6 overflow-y-auto">
-            <a class="text-lg font-medium hover:text-primary transition-colors" @click="router.push('/category')">Cửa hàng</a>
-            <a class="text-lg font-medium hover:text-primary transition-colors" @click="router.push('/news')">Tin tức</a>
-            <a class="text-lg font-medium hover:text-primary transition-colors" @click="router.push('/contact')">Liên hệ</a>
-            <router-link to="/truy-xuat/" class="hover:text-primary transition-colors font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
-          </div>
+      <div v-if="showMobileMenu" class="md:hidden absolute top-full left-0 w-full bg-surface-container-high border-b border-outline-variant/20 shadow-xl z-40">
+        <div class="flex flex-col px-4 py-2">
+          <a class="py-3 border-b border-white/5 text-sm font-medium" @click="router.push('/category'); showMobileMenu = false">Cửa hàng</a>
+          <a class="py-3 border-b border-white/5 text-sm font-medium" @click="router.push('/news'); showMobileMenu = false">Tin tức</a>
+          <a class="py-3 border-b border-white/5 text-sm font-medium" @click="router.push('/contact'); showMobileMenu = false">Liên hệ</a>
+          <a class="py-3 text-sm font-medium" @click="router.push('/wishlist'); showMobileMenu = false">Mô hình yêu thích</a>
+          <router-link to="/truy-xuat/" @click="showMobileMenu = false" class="py-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
         </div>
       </div>
     </transition>
@@ -257,12 +236,9 @@
   const cartItems = ref([]);
   const cartTotal = ref(0);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const isMobileMenuOpen = ref(false);
 
-  // Đóng menu tự động khi chuyển trang
-  watch(() => route.fullPath, () => {
-    isMobileMenuOpen.value = false;
-  });
+  const showMobileMenu = ref(false);
+  const showMobileSearch = ref(false);
 
   const userAvatar = computed(() => {
     if (authStore.user && authStore.user.AnhDaiDien) {

@@ -15,11 +15,11 @@
               <span class="font-headline text-primary font-bold tracking-[0.3em] text-sm mb-4 animate-[slideInUp_0.5s_ease-out]">
                 {{ heroSlides[currentHeroIndex].tag }}
               </span>
-              <h1 class="font-headline text-6xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tighter mb-6 max-w-2xl animate-[slideInUp_0.7s_ease-out]">
+              <h1 class="font-headline text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tighter mb-4 md:mb-6 max-w-2xl animate-[slideInUp_0.7s_ease-out]">
                 {{ heroSlides[currentHeroIndex].title }} <br/> 
                 <span class="text-gradient">{{ heroSlides[currentHeroIndex].titleAccent }}</span>
               </h1>
-              <p class="text-on-surface-variant text-lg md:text-xl max-w-lg mb-10 leading-relaxed animate-[slideInUp_0.9s_ease-out]">
+              <p class="text-on-surface-variant text-base md:text-xl max-w-lg mb-8 md:mb-10 leading-relaxed animate-[slideInUp_0.9s_ease-out]">
                 {{ heroSlides[currentHeroIndex].desc }}
               </p>
               <div class="flex flex-wrap items-center gap-4 md:gap-6 animate-[slideInUp_1.1s_ease-out]">
@@ -207,7 +207,7 @@
             :key="sp.MaMoHinh" 
             :product="sp"
             @add-to-cart="addToCart"
-            class="shrink-0 w-[280px] lg:w-[calc(25%-18px)] snap-start"
+            class="shrink-0 w-[75vw] sm:w-[280px] lg:w-[calc(25%-18px)] snap-start"
           />
         </div>
       </div>
@@ -217,9 +217,9 @@
       <div class="relative rounded-2xl overflow-hidden min-h-[400px] flex items-center justify-center border border-tertiary/20 shadow-2xl shadow-tertiary/5">
         <img loading="lazy" class="absolute inset-0 w-full h-full object-cover" alt="Neon background" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80"/>
         <div class="absolute inset-0 glass-panel bg-surface/60"></div>
-        <div class="relative z-10 flex flex-col justify-center items-center text-center p-8 md:p-12 w-full">
-          <span class="font-headline text-tertiary font-bold tracking-[0.4em] text-xs md:text-sm mb-4">MEMBER EXCLUSIVE</span>
-          <h2 class="font-headline text-4xl md:text-5xl font-bold mb-6 text-on-surface">Special Member Rewards Program</h2>
+        <div class="relative z-10 flex flex-col justify-center items-center text-center p-6 md:p-12 w-full">
+          <span class="font-headline text-tertiary font-bold tracking-[0.4em] text-[10px] md:text-sm mb-4">MEMBER EXCLUSIVE</span>
+          <h2 class="font-headline text-2xl md:text-5xl font-bold mb-4 md:mb-6 text-on-surface">Special Member Rewards Program</h2>
           <p class="text-base md:text-lg text-on-surface-variant max-w-2xl mb-10 leading-relaxed">
             Tích lũy điểm cho mỗi đơn hàng, nhận ưu tiên Pre-order các phiên bản cực hiếm và voucher giảm giá độc quyền dành riêng cho Collector.
           </p>
