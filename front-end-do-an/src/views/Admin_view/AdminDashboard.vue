@@ -217,15 +217,28 @@
               </thead>
               <tbody class="divide-y divide-slate-100">
                 <tr v-for="(order, index) in recentOrders" :key="order.id" class="hover:bg-slate-50 transition-colors group">
-                  <td class="px-8 py-5 font-headline font-bold text-sm text-slate-900">#{{ order.id }}</td>
+                  
+                  <td class="px-8 py-5">
+                    <div class="flex items-center gap-2">
+                        <span class="font-headline font-bold text-sm text-slate-900">#{{ order.id }}</span>
+                        <span class="text-[8px] px-1.5 py-0.5 rounded border font-black tracking-widest whitespace-nowrap"
+                              :class="order.saleType?.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
+                          {{ order.saleType?.toLowerCase().includes('order') ? 'ORDER' : 'SẴN' }}
+                        </span>
+                    </div>
+                  </td>
+                  
                   <td class="px-8 py-5">
                     <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 rounded bg-slate-100 flex items-center justify-center text-[11px] font-bold text-slate-600">
+                      <div class="w-9 h-9 rounded bg-slate-100 flex items-center justify-center text-[11px] font-bold text-slate-600 shrink-0">
                         {{ order.avatarText }}
                       </div>
-                      <div>
+                      <div class="flex flex-col">
                         <p class="text-sm font-bold text-slate-900">{{ order.customerName }}</p>
                         <p class="text-[11px] text-slate-500">{{ order.email }}</p>
+                        <p class="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                          <span class="material-symbols-outlined text-[12px]">badge</span> NV: <span class="font-semibold text-slate-500">{{ order.staffName }}</span>
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -238,34 +251,16 @@
                   
                   <td class="px-8 py-5 text-right font-headline font-bold text-sm text-slate-900">{{ order.total }}</td>
                   
-                  <td class="px-8 py-5 text-center relative">
+                  <td class="px-8 py-5 text-center">
                     <button 
-                      @click.stop="toggleMenu(order.id)" 
-                      class="text-slate-400 hover:text-[#ff8f73] p-1 rounded transition-colors focus:outline-none focus:bg-slate-100"
+                      @click.stop="handleOrderAction('detail', order.id)" 
+                      class="text-slate-400 hover:text-sky-500 bg-white hover:bg-sky-50 border border-transparent hover:border-sky-100 p-2 rounded-lg transition-all focus:outline-none flex items-center justify-center mx-auto shadow-sm"
+                      title="Xem chi tiết đơn hàng"
                     >
-                      <span class="material-symbols-outlined text-lg">more_vert</span>
+                      <span class="material-symbols-outlined text-lg">visibility</span>
                     </button>
-
-                    <div 
-                      v-show="activeMenuId === order.id"
-                      class="absolute right-8 w-40 bg-white rounded-lg shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-1 z-50 text-left overflow-hidden"
-                      :class="index >= recentOrders.length - 2 ? 'bottom-8' : 'top-10'"
-                    >
-                      <button @click="handleOrderAction('detail', order.id)" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">visibility</span> Xem chi tiết
-                      </button>
-                      <button @click="handleOrderAction('update', order.id, order.status)" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">edit_document</span> Cập nhật
-                      </button>
-                      <button @click="handleOrderAction('print', order.id)" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">print</span> In hóa đơn
-                      </button>
-                      <div class="border-t border-slate-100 my-1"></div>
-                      <button @click="handleOrderAction('cancel', order.id)" class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[16px]">cancel</span> Hủy đơn
-                      </button>
-                    </div>
                   </td>
+                  
                 </tr>
               </tbody>
             </table>
@@ -927,7 +922,9 @@
               customerName: customerName,
               email: order.SDTNguoiNhan || 'Không có SĐT', 
               status: order.TrangThai, 
-              total: formatPrice(order.ThanhTien)
+              total: formatPrice(order.ThanhTien),
+              staffName: order.TenNV || 'Chưa phân công',
+              saleType: order.LoaiHinhBan || 'Có sẵn'
             };
           });
         }
