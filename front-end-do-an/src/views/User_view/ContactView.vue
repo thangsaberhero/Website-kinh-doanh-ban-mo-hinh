@@ -9,7 +9,7 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
                 </div>
                 <div class="relative z-10 text-center px-4 mt-16">
-                    <h1 class="font-headline text-5xl md:text-7xl lg:text-8xl font-black italic text-primary tracking-tighter neon-glow mb-4 uppercase">
+                    <h1 class="font-headline text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black italic text-primary tracking-tighter neon-glow mb-4 uppercase">
                         Contact Us
                     </h1>
                     <p class="font-headline text-lg md:text-xl text-on-surface-variant tracking-[0.3em] uppercase font-bold">
@@ -20,7 +20,7 @@
     
             <section class="relative z-20 -mt-24 px-6 pb-24 max-w-7xl mx-auto">
                 <div class="bg-surface rounded-3xl overflow-hidden flex flex-col lg:flex-row shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10">         
-                    <div class="lg:w-2/5 p-8 md:p-12 bg-white/5 border-r border-white/5 relative overflow-hidden">
+                    <div class="lg:w-2/5 p-6 md:p-12 bg-white/5 border-r border-white/5 relative overflow-hidden">
                         <div class="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
             
                         <h2 class="font-headline text-3xl font-bold text-white mb-4 relative z-10">Thông tin liên hệ</h2>
@@ -94,7 +94,7 @@
                         </div>
                     </div>
         
-                    <div class="lg:w-3/5 p-8 md:p-12">
+                    <div class="lg:w-3/5 p-6 md:p-12">
                         <h3 class="font-headline text-2xl font-bold text-white mb-8">Gửi tin nhắn cho chúng tôi</h3>
                     
                         <form @submit.prevent="submitForm" class="space-y-8">
@@ -150,7 +150,7 @@
                         <h3 class="font-headline text-2xl font-bold tracking-tight uppercase text-white">Hệ thống cửa hàng</h3>
                     </div>
                     
-                    <div class="relative h-[450px] w-full rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-surface-variant">    
+                    <div class="relative h-[300px] md:h-[450px] w-full rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-surface-variant">    
                         <iframe 
                             :src="mapEmbedUrl" 
                             class="absolute inset-0 w-full h-full border-0 filter grayscale-[20%] invert-[90%] hue-rotate-[180deg] contrast-[1.1] opacity-80 hover:opacity-100 transition-opacity duration-500" 

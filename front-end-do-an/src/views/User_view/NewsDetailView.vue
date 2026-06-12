@@ -49,8 +49,8 @@
           </div>
         </header>
   
-        <figure v-if="article.AnhThumbnail" class="w-full h-[220px] sm:h-[300px] md:h-[550px] rounded-2xl md:rounded-[2rem] overflow-hidden border border-outline-variant/20 shadow-2xl mb-10 md:mb-16 relative">
-          <img :src="article.AnhThumbnail" :alt="article.TieuDe" class="w-full h-full object-cover">
+        <figure class="w-full h-[220px] sm:h-[300px] md:h-[550px] rounded-2xl md:rounded-[2rem] overflow-hidden border border-outline-variant/20 shadow-2xl mb-10 md:mb-16 relative">
+          <img :src="getImageUrl(article.AnhThumbnail)" :alt="article.TieuDe" class="w-full h-full object-cover">
           <div class="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent"></div>
         </figure>
   
@@ -96,7 +96,7 @@
                   class="group cursor-pointer bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/20 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(255,143,115,0.15)] transition-all duration-300 flex flex-col h-full">
                   
                   <div class="h-48 w-full overflow-hidden relative">
-                      <img :src="item.AnhThumbnail" :alt="item.TieuDe" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                      <img :src="getImageUrl(item.AnhThumbnail)" :alt="item.TieuDe" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                       <div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
                   </div>
                   
@@ -167,6 +167,11 @@
   const copied = ref(false);
   const readingProgress = ref(0);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+  const getImageUrl = (image) => {
+    if (!image) return 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg';
+    return image.startsWith('http') ? image : `${API_BASE_URL}/Images_news/${image}`;
+  };
 
   const updateProgress = () => {
     const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
