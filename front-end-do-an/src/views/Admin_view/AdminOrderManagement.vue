@@ -416,7 +416,7 @@
                       <span class="material-symbols-outlined text-[16px]">content_copy</span>
                   </button>
               
-              <button v-if="getCurrentStatusCode() < 3" 
+              <button v-if="getCurrentStatusCode() < 4" 
                       @click="openEditInfoModal" 
                       class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-sky-500 hover:border-sky-300 rounded-lg shadow-sm transition-all z-10" 
                       title="Sửa thông tin nhận hàng">

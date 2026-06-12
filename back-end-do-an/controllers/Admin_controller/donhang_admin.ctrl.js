@@ -564,7 +564,7 @@ const donhang_admin = {
             const currentStatus = trang_thai[0].MaTrangThai;
             const maHienThi = trang_thai[0].MaDonHangHienThi;
                 
-            if(currentStatus === 3 || currentStatus === 4 || currentStatus === 5 || currentStatus === 6){
+            if(currentStatus === 4 || currentStatus === 5 || currentStatus === 6){
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
