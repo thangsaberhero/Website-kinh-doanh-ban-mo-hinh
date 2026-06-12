@@ -14,7 +14,7 @@ router.get('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_
 router.get('/search-products',authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.liet_ke_san_pham);
 router.get('/payment', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.liet_ke_giao_dich);
 router.get('/payment/export', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.xuat_excel_giao_dich);
-router.get('/get-all-ids', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.lay_tat_ca_id_don_hang);)
+router.get('/get-all-ids', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.lay_tat_ca_id_don_hang);
 router.get('/:MaDH', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.xem_chi_tiet_don_hang);
 
 // ==========================================
