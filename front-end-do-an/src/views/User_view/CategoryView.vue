@@ -91,8 +91,9 @@
       <main class="flex-1 overflow-y-auto bg-surface p-6 lg:p-12 custom-scrollbar">
         <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 class="text-4xl lg:text-6xl font-headline font-bold tracking-tight mb-2 uppercase text-white">
-              {{ getCategoryName() }} <span class="text-primary">{{ getCategoryNumber() }}</span>
+            <h1 class="text-3xl sm:text-4xl lg:text-6xl font-headline font-bold tracking-tight mb-2 uppercase text-white flex items-baseline gap-2 sm:gap-3 whitespace-nowrap">
+              <span class="truncate">{{ getCategoryName() }}</span>
+              <span class="text-primary shrink-0">{{ getCategoryNumber() }}</span>
             </h1>
             <p class="text-gray-400 max-w-xl font-medium">Khám phá những tạo tác tinh xảo nhất từ thế giới Anime và Mecha. Mỗi mô hình là một câu chuyện huyền thoại.</p>
           </div>

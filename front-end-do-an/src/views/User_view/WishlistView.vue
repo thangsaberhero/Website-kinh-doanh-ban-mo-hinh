@@ -4,7 +4,7 @@
     <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
       <UserSidebar />
 
-      <main class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
+      <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-12 custom-scrollbar relative">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
         <header class="mb-12">
@@ -27,7 +27,7 @@
           <div 
             v-for="item in wishlistItems" 
             :key="item.MaMoHinh"
-            class="group rounded-2xl overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col h-[550px] bg-surface-container-low"
+            class="group rounded-2xl overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col h-[400px] md:h-[550px] bg-surface-container-low"
           >
             <div class="relative flex-1 overflow-hidden bg-surface-container-lowest cursor-pointer" @click="router.push(`/product/${item.MaMoHinh}`)">
               <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ?  item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
@@ -38,15 +38,15 @@
                 </span>
               </div>
 
-              <div class="absolute inset-0 p-8 flex flex-col justify-end bg-gradient-to-t from-[#0c0e17] via-[#0c0e17]/60 to-transparent">
+              <div class="absolute inset-0 p-4 md:p-8 flex flex-col justify-end bg-gradient-to-t from-[#0c0e17] via-[#0c0e17]/60 to-transparent">
                 <div class="mb-2">
                   <span :class="`px-2 py-0.5 text-[10px] font-black rounded border uppercase tracking-widest ${getStatusClass(item.SoLuong, item.TrangThai)}`">
                     {{ item.SoLuong === 0 ? 'Hết hàng' : (item.TrangThai || 'Sẵn có') }}
                   </span>
                 </div>
-                <h3 class="font-headline text-3xl font-bold leading-none mb-2 text-white line-clamp-2">{{ item.TenMH }}</h3>
+                <h3 class="font-headline text-xl md:text-3xl font-bold leading-none mb-2 text-white line-clamp-2">{{ item.TenMH }}</h3>
                 <div class="flex justify-between items-end">
-                  <p class="font-headline text-2xl font-bold text-primary tracking-tighter">
+                  <p class="font-headline text-lg md:text-2xl font-bold text-primary tracking-tighter">
                       {{ formatPrice(item.dongiakhuyenmai ? item.dongiakhuyenmai : item.DonGia) }}
                   </p>
                   <span class="text-[10px] text-outline uppercase tracking-widest font-bold">{{ item.TenHSX }}</span>
