@@ -2,7 +2,7 @@
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">  
     <TheHeader />
 
-    <main class="flex-1 max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 w-full pb-40">
+    <main class="flex-1 max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 w-full">
       <div class="mb-12">
         <h1 class="text-3xl sm:text-5xl md:text-6xl font-headline font-bold tracking-tighter uppercase text-white mb-2">
           Kho Báu <span class="text-primary italic">Đang Chờ</span>
@@ -17,7 +17,7 @@
 
           <div class="flex flex-col sm:flex-row justify-between items-center bg-surface-container-low p-4 rounded-xl border border-outline-variant/10 mb-2">
             <span class="text-on-surface-variant text-sm font-medium mb-3 sm:mb-0">
-              Đang hiển thị <strong>{{ cartItems.length }}</strong> / {{ totalItemsCount }} sản phẩm
+              Đang hiển thị <strong>{{ cartItems.length }}</strong> / {{ totalItems }} sản phẩm
             </span>
             <div class="flex items-center gap-3">
               <span class="text-xs text-outline font-bold uppercase tracking-widest">Sắp xếp:</span>
@@ -113,7 +113,7 @@
         </div>
 
         <div class="lg:col-span-4">
-          <div class="fixed lg:sticky bottom-0 lg:bottom-auto left-0 lg:left-auto w-full lg:w-auto z-50 lg:z-10 top-auto lg:top-28 bg-surface-container p-5 md:p-8 rounded-t-2xl lg:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] lg:shadow-2xl border-t lg:border border-outline-variant/20">
+          <div class="lg:sticky lg:top-28 bg-surface-container p-5 md:p-8 rounded-2xl shadow-xl lg:shadow-2xl border border-outline-variant/20 mt-8 lg:mt-0">
             <h2 class="text-xl font-headline font-bold tracking-widest uppercase border-b border-outline-variant/20 pb-4 mb-6 text-white">Tóm tắt đơn hàng</h2>
             <div class="space-y-4 mb-6 text-sm font-medium">
               <div class="flex justify-between text-on-surface-variant">
@@ -247,6 +247,12 @@
     subtotal: 0,
     discount: 0,
     totalPrice: 0
+  });
+
+  const totalItems = computed(() => {
+    return cartItems.value.reduce((total, item) => {
+      return total + (Number(item.SoLuong) || 0);
+    }, 0);
   });
 
   const fetchCartData = async () => {
