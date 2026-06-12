@@ -1,6 +1,9 @@
 <template>
   <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <button @click="isMobileMenuOpen = true" class="md:hidden text-on-surface hover:text-primary transition-colors p-2 flex items-center justify-center">
+        <span class="material-symbols-outlined text-3xl">menu</span>
+      </button>
       
       <div class="flex items-center gap-12">
         <a class="font-headline text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">{{ systemStore.settings.shop_name || 'FigureCollect' }}</a>
@@ -191,6 +194,49 @@
         </div>
       </div>
     </div>
+    <transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div v-show="isMobileMenuOpen" class="fixed inset-0 z-[100] md:hidden">
+        <div @click="isMobileMenuOpen = false" class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+
+        <div class="absolute inset-y-0 left-0 w-[80%] max-w-sm bg-surface-container-high shadow-2xl flex flex-col transition-transform duration-300 transform" :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'">
+          
+          <div class="p-6 flex items-center justify-between border-b border-outline-variant/20">
+            <span class="font-headline text-xl font-bold text-primary">Menu</span>
+            <button @click="isMobileMenuOpen = false" class="text-outline hover:text-white transition-colors">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <div class="p-6 border-b border-outline-variant/10">
+            <div class="flex items-center relative bg-surface-container px-4 py-3 rounded-lg border border-outline-variant/20 focus-within:border-primary/50">
+              <span class="material-symbols-outlined text-outline mr-2">search</span>
+              <input 
+                  v-model="searchQuery" 
+                  @input="handleSearch"
+                  @keyup.enter="submitSearch"
+                  class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-outline text-white" 
+                  placeholder="Tìm kiếm..." 
+                  type="text"
+              />
+            </div>
+          </div>
+
+          <div class="p-6 flex flex-col gap-6 overflow-y-auto">
+            <a class="text-lg font-medium hover:text-primary transition-colors" @click="router.push('/category')">Cửa hàng</a>
+            <a class="text-lg font-medium hover:text-primary transition-colors" @click="router.push('/news')">Tin tức</a>
+            <a class="text-lg font-medium hover:text-primary transition-colors" @click="router.push('/contact')">Liên hệ</a>
+            <router-link to="/truy-xuat/" class="hover:text-primary transition-colors font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
+          </div>
+        </div>
+      </div>
+    </transition>
   </nav>
 </template>
 
@@ -211,6 +257,12 @@
   const cartItems = ref([]);
   const cartTotal = ref(0);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const isMobileMenuOpen = ref(false);
+
+  // Đóng menu tự động khi chuyển trang
+  watch(() => route.fullPath, () => {
+    isMobileMenuOpen.value = false;
+  });
 
   const userAvatar = computed(() => {
     if (authStore.user && authStore.user.AnhDaiDien) {
