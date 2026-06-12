@@ -5,7 +5,7 @@
     <main class="flex-1">
       <section v-if="heroNews.id" class="relative w-full h-[55vh] sm:h-[60vh] md:h-[85vh] min-h-[380px] md:min-h-[500px] overflow-hidden">
         <div class="absolute inset-0">
-          <img :src="heroNews.image" :alt="heroNews.title" class="w-full h-full object-cover object-[center_15%] md:object-center" />
+          <img :src="heroNews.image" :alt="heroNews.title" class="w-full h-full object-cover object-[center_20%] md:object-center" />
           <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
           <div class="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent"></div>
         </div>
