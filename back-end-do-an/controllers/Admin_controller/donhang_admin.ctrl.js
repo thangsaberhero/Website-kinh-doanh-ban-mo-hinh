@@ -1412,6 +1412,9 @@ const donhang_admin = {
 
     in_hoa_don_hang_loat: async (req, res) => {
         const connection = await db.getConnection();
+        const fs = require('fs');
+        const path = require('path');
+
         try {
             const { orderIds } = req.body;
 
@@ -1419,127 +1422,232 @@ const donhang_admin = {
                 return res.status(400).json({ success: false, message: "Danh sách đơn hàng không hợp lệ!" });
             }
 
-            // Bắt đầu nối chuỗi HTML tổng
+            // 1. ĐỊNH DẠNG CHUNG (Tiền tệ, Ngày tháng & Logo)
+            const formatMoney = (amount) => Number(amount).toLocaleString('vi-VN') + ' đ';
+            const formatDate = (dateStr) => {
+                const d = new Date(dateStr);
+                return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+            };
+
+            let logoBase64 = '';
+            try {
+                const logoPath = path.join(__dirname, '../../public/logo.png');
+                const logoBuffer = fs.readFileSync(logoPath);
+                logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+            } 
+            catch (error) {
+                console.log("Không thể đọc file logo cho hóa đơn in hàng loạt:", error.message);
+            }
+
+            // 2. TẠO KHUNG HTML TỔNG VÀ CSS INLINE (Đã bao gồm css page-break)
             let combinedHtml = `
-                <!DOCTYPE html>
-                <html lang="vi">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>In Hóa Đơn Hàng Loạt</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; margin: 0; padding: 0; }
-                        /* QUAN TRỌNG: Ép ngắt trang sau mỗi hóa đơn */
-                        .invoice-page { padding: 40px; box-sizing: border-box; page-break-after: always; }
-                        /* Hóa đơn cuối cùng thì không ngắt trang nữa để tránh dư giấy trắng */
-                        .invoice-page:last-child { page-break-after: auto; }
-                        
-                        .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; }
-                        .shop-name { font-size: 24px; font-weight: bold; margin: 0 0 5px 0; color: #ff8f73; }
-                        .info-grid { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; }
-                        table { w-full; border-collapse: collapse; margin-bottom: 20px; width: 100%; }
-                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
-                        th { background-color: #f8fafc; }
-                        .total-section { text-align: right; font-size: 15px; }
-                        .total-price { font-size: 20px; font-weight: bold; color: #e11d48; }
-                    </style>
-                </head>
-                <body>
+            <!DOCTYPE html>
+            <html lang="vi">
+            <head>
+                <meta charset="utf-8">
+                <title>In Hóa Đơn Hàng Loạt</title>
+                <style>
+                    body { font-family: 'Arial', sans-serif; font-size: 13px; color: #000; margin: 0; padding: 20px; line-height: 1.4; background: #eee; }
+                    
+                    /* QUAN TRỌNG: Ép ngắt trang sau mỗi hóa đơn, giao diện tờ A5/K80 */
+                    .invoice-page { 
+                        max-width: 600px; 
+                        margin: 0 auto 20px auto; 
+                        padding: 20px; 
+                        background: #fff;
+                        box-sizing: border-box; 
+                        page-break-after: always; 
+                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                    }
+                    .invoice-page:last-child { page-break-after: auto; margin-bottom: 0; }
+                    
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .header h2 { margin: 5px 0; text-transform: uppercase; font-size: 20px; }
+                    .header p { margin: 3px 0; font-size: 12px; color: #555; }
+                    .divider { border-top: 2px solid #000; margin: 15px 0; }
+                    
+                    .info-table { width: 100%; margin-bottom: 15px; }
+                    .info-table td { padding: 3px 0; vertical-align: top; }
+                    
+                    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    .data-table th { border-bottom: 2px solid #000; padding: 6px 0; font-weight: bold; font-size: 12px; text-align: left;}
+                    .data-table td { border-bottom: 1px dashed #ccc; padding: 6px 0; }
+                    
+                    .summary-table { width: 100%; margin-top: 15px; font-size: 13px; }
+                    .summary-table td { padding: 4px 0; }
+                    
+                    .footer-sign { width: 100%; margin-top: 40px; text-align: center; }
+                    .footer-sign td { width: 50%; font-weight: bold; }
+                    
+                    /* Tự kích hoạt ẩn các thành phần thừa và xóa màu nền khi in thật */
+                    @media print {
+                        body { padding: 0; margin: 0; background: transparent; }
+                        @page { size: auto; margin: 5mm; }
+                        .invoice-page { margin: 0; max-width: 100%; box-shadow: none; padding: 10px; }
+                    }
+                </style>
+            </head>
+            <body>
             `;
 
-            // Lặp qua từng đơn hàng để lấy dữ liệu và tạo HTML
+            // 3. LẶP QUA TỪNG ĐƠN HÀNG ĐỂ LẤY DỮ LIỆU & RÁP GIAO DIỆN
             for (let i = 0; i < orderIds.length; i++) {
                 const MaDH = orderIds[i];
 
-                // 1. Lấy thông tin chung của đơn hàng
+                // Lấy thông tin chung
                 const [donhang_info] = await connection.query(`
-                    SELECT dh.MaDonHangHienThi, dh.NgayLapDon, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.DiaChiGiao, dh.ThanhTien, dh.TongTien
-                    FROM DonHang dh WHERE dh.MaDH = ?
+                    SELECT 
+                        dh.MaDH, dh.MaDonHangHienThi, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.DiaChiGiao, 
+                        dh.TongTien, dh.ThanhTien, dh.NgayLapDon, dh.Note, dh.TrangThaiThanhToan, ma.MaVoucher
+                    FROM DonHang dh
+                    LEFT JOIN LogSuDungMaGiamGia log ON log.MaDH = dh.MaDH
+                    LEFT JOIN MaGiamGia ma ON ma.MaGG = log.MaGG
+                    WHERE dh.MaDH = ?
                 `, [MaDH]);
 
-                if (donhang_info.length === 0) continue; // Bỏ qua nếu đơn không tồn tại
-                const order = donhang_info[0];
+                if (donhang_info.length === 0) continue;
+                const dh_data = donhang_info[0];
 
-                // 2. Lấy danh sách sản phẩm
-                const [san_pham] = await connection.query(`
-                    SELECT mh.TenMH, pl.ChiTietPhanLoai, ct.SoLuong, ct.DonGiaBan
+                // Lấy sản phẩm
+                const [products] = await connection.query(`
+                    SELECT 
+                        mh.TenMH, pl.ChiTietPhanLoai, ct.SoLuong, ct.DonGiaGoc, ct.DonGiaBan, ct.LaHangKhuyenMai
                     FROM ChiTietDonHang ct
-                    JOIN PhanLoai pl ON ct.MaPhanLoai = pl.MaPhanLoai
-                    JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                    INNER JOIN PhanLoai pl ON ct.MaPhanLoai = pl.MaPhanLoai
+                    INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
                     WHERE ct.MaDH = ?
+                    ORDER BY ct.LaHangKhuyenMai ASC
                 `, [MaDH]);
 
-                // 3. Tạo các dòng <tr> cho bảng sản phẩm
-                let trRows = '';
-                san_pham.forEach((sp, index) => {
-                    trRows += `
+                // Xử lý tính toán cho hóa đơn này
+                let inputRows = '';
+                let tongTienGiamCacMon = 0;
+
+                products.forEach((item, index) => {
+                    const thanhTienGoc = item.DonGiaGoc * item.SoLuong;
+                    const thanhTienBan = item.DonGiaBan * item.SoLuong;
+                    tongTienGiamCacMon += (thanhTienGoc - thanhTienBan);
+
+                    const noteKM = item.LaHangKhuyenMai === 1 ? ' <small style="color:#ff3d00;">(FlashSale)</small>' : '';
+                    const tenHienThi = `${item.TenMH} - ${item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai}${noteKM}`;
+
+                    inputRows += `
                         <tr>
                             <td style="text-align: center;">${index + 1}</td>
-                            <td><strong>${sp.TenMH}</strong><br><small style="color: #666;">Phân loại: ${sp.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : sp.ChiTietPhanLoai}</small></td>
-                            <td style="text-align: center;">${sp.SoLuong}</td>
-                            <td style="text-align: right;">${Number(sp.DonGiaBan).toLocaleString('vi-VN')} đ</td>
-                            <td style="text-align: right;"><strong>${(Number(sp.DonGiaBan) * Number(sp.SoLuong)).toLocaleString('vi-VN')} đ</strong></td>
+                            <td>${tenHienThi}</td>
+                            <td style="text-align: center;">${item.SoLuong}</td>
+                            <td style="text-align: right;">${formatMoney(item.DonGiaGoc)}</td>
+                            <td style="text-align: right;">${formatMoney(thanhTienGoc)}</td>
                         </tr>
                     `;
                 });
 
-                // 4. Nhúng vào khung HTML của một trang hóa đơn
+                const tongGiamVoucher = (dh_data.TongTien - tongTienGiamCacMon) - dh_data.ThanhTien;
+                const tongGiamGiaThucTe = Math.max(0, tongTienGiamCacMon + (tongGiamVoucher > 0 ? tongGiamVoucher : 0));
+
+                // Ráp vào khung của một trang (Một tờ hóa đơn)
                 combinedHtml += `
                     <div class="invoice-page">
                         <div class="header">
-                            <h1 class="shop-name">FIGURE COLLECT</h1>
-                            <p style="margin: 0; font-size: 14px; color: #666;">Phiếu Giao Hàng / Hóa Đơn Thanh Toán</p>
-                            <p style="margin: 5px 0 0 0; font-weight: bold;">Mã đơn: ${order.MaDonHangHienThi}</p>
+                            ${logoBase64 ? `<img src="${logoBase64}" width="90" style="display: block; margin: 0 auto 10px auto; object-fit: contain;">` : ''}
+                            <h2>FIGURECOLLECT SHOP</h2>
+                            <p>Địa chỉ: Lạch Tray, Ngô Quyền, Hải Phòng</p>
+                            <p>Hotline: 0123.456.789</p>
+                            <div class="divider"></div>
+                            <h3 style="margin: 10px 0; font-size: 18px;">HÓA ĐƠN BÁN HÀNG</h3>
+                            <p style="font-style: italic;">Mã tra cứu: ${dh_data.MaDonHangHienThi}</p>
                         </div>
 
-                        <div class="info-grid">
-                            <div>
-                                <p><strong>Người nhận:</strong> ${order.TenNguoiNhan}</p>
-                                <p><strong>Số điện thoại:</strong> ${order.SDTNguoiNhan}</p>
-                                <p><strong>Địa chỉ:</strong> ${order.DiaChiGiao || 'Nhận tại quầy'}</p>
-                            </div>
-                            <div style="text-align: right;">
-                                <p><strong>Ngày đặt:</strong> ${new Date(order.NgayLapDon).toLocaleString('vi-VN')}</p>
-                                <p><strong>Ngày in:</strong> ${new Date().toLocaleString('vi-VN')}</p>
-                            </div>
-                        </div>
+                        <table class="info-table">
+                            <tr>
+                                <td style="width: 40%"><strong>Ngày lập đơn:</strong> ${formatDate(dh_data.NgayLapDon)}</td>
+                                <td style="width: 60%"><strong>Khách hàng:</strong> ${dh_data.TenNguoiNhan}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Trạng thái:</strong> ${dh_data.TrangThaiThanhToan}</td>
+                                <td><strong>Số điện thoại:</strong> ${dh_data.SDTNguoiNhan}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><strong>Địa chỉ giao:</strong> ${dh_data.DiaChiGiao || 'Nhận tại quầy'}</td>
+                            </tr>
+                            ${dh_data.Note ? `<tr><td colspan="2"><strong style="color:#ff3d00">Ghi chú đơn:</strong> ${dh_data.Note}</td></tr>` : ''}
+                        </table>
 
-                        <table>
+                        <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 5%; text-align: center;">STT</th>
-                                    <th style="width: 45%;">Tên sản phẩm</th>
+                                    <th style="width: 8%; text-align: center;">STT</th>
+                                    <th>Tên mô hình / Phân loại</th>
                                     <th style="width: 10%; text-align: center;">SL</th>
                                     <th style="width: 20%; text-align: right;">Đơn giá</th>
-                                    <th style="width: 20%; text-align: right;">Thành tiền</th>
+                                    <th style="width: 22%; text-align: right;">Thành tiền</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${trRows}
+                                ${inputRows}
                             </tbody>
                         </table>
 
-                        <div class="total-section">
-                            <p>Tổng tiền hàng: ${Number(order.TongTien).toLocaleString('vi-VN')} đ</p>
-                            <p class="total-price">SỐ TIỀN PHẢI THU: ${Number(order.ThanhTien).toLocaleString('vi-VN')} đ</p>
-                        </div>
-                        
-                        <div style="margin-top: 40px; text-align: center; font-style: italic; color: #666; border-top: 1px solid #eee; padding-top: 20px;">
-                            <p>Cảm ơn quý khách đã mua sắm tại Figure Collect!</p>
-                            <p>Quay video unbox để được hỗ trợ tốt nhất khi có sự cố.</p>
-                        </div>
+                        <table class="summary-table">
+                            <tr>
+                                <td style="text-align: right; width: 70%;"><strong>Tổng tiền hàng:</strong></td>
+                                <td style="text-align: right; width: 30%; font-weight: bold;">${formatMoney(dh_data.TongTien)}</td>
+                            </tr>
+                            ${tongGiamGiaThucTe > 0 ? `
+                            <tr>
+                                <td style="text-align: right; color: red;"><strong>Tổng cộng giảm giá:</strong></td>
+                                <td style="text-align: right; font-weight: bold; color: red;">-${formatMoney(tongGiamGiaThucTe)}</td>
+                            </tr>` : ''}
+                            ${dh_data.MaVoucher ? `
+                            <tr>
+                                <td style="text-align: right; font-size: 11px; color: #666;">Mã Voucher áp dụng:</td>
+                                <td style="text-align: right; font-size: 11px; color: #666; font-weight:bold;">${dh_data.MaVoucher}</td>
+                            </tr>` : ''}
+                            <tr>
+                                <td style="text-align: right; font-size: 15px; border-top: 1px solid #000; padding-top: 8px;"><strong>TỔNG THANH TOÁN:</strong></td>
+                                <td style="text-align: right; font-size: 16px; font-weight: bold; color: #ff3d00; border-top: 1px solid #000; padding-top: 8px;">${formatMoney(dh_data.ThanhTien)}</td>
+                            </tr>
+                        </table>
+
+                        <table class="footer-sign">
+                            <tr>
+                                <td></td>
+                                <td style="font-size: 12px; font-style: italic; font-weight: normal; padding-bottom: 5px;">
+                                    Ngày ${new Date().getDate().toString().padStart(2, '0')} tháng ${(new Date().getMonth() + 1).toString().padStart(2, '0')} năm ${new Date().getFullYear()}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-bottom: 70px;">
+                                    Người mua hàng<br>
+                                    <span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span>
+                                </td>
+                                <td style="padding-bottom: 70px;">
+                                    Người lập phiếu<br>
+                                    <span style="font-size:11px; font-weight:normal; font-style:italic;">(Ký và ghi rõ họ tên)</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="text-align: center; margin-top: 10px; font-size: 12px; font-style: italic; color: #555;">
+                            🎉 Cảm ơn quý khách đã tin tưởng và ủng hộ FigureCollect! 🎉
+                        </p>
                     </div>
                 `;
-            }
+            } // Hết vòng lặp
 
-            // Đóng chuỗi HTML
+            // Đóng chuỗi HTML và tự động bật hộp thoại in
             combinedHtml += `
                 <script>
-                    window.onload = function() { window.print(); }
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() { window.close(); }, 500);
+                    }
                 </script>
-                </body></html>
+                </body>
+                </html>
             `;
 
-            res.send(combinedHtml);
+            res.status(200).send(combinedHtml);
 
         } catch (error) {
             console.error("Lỗi khi in hóa đơn hàng loạt: ", error);
