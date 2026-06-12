@@ -22,6 +22,7 @@ router.get('/:MaDH', authMiddleware.verifyToken, authMiddleware.verifyStaff, don
 router.post('/add', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.tao_don_hang_ngoai);
 router.post('/update', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.cap_nhat_trang_thai_don_hang);
 router.post('/huy', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.huy_don_hang);
+router.post('/print-bulk', authMiddleware.verifyToken, donhang_admin_Controller.in_hoa_don_hang_loat);
 
 // ==========================================
 // 3. NHÓM CẬP NHẬT/THAY ĐỔI DỮ LIỆU (PUT)
