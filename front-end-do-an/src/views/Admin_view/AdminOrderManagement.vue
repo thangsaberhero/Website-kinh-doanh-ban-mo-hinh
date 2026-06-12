@@ -207,6 +207,10 @@
                       </div>
                       
                       <span class="text-[11px] font-semibold text-slate-600 mt-0.5">{{ order.customer }}</span>
+                      <span class="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-1">
+                        <span class="material-symbols-outlined text-[13px] text-slate-400">badge</span>
+                        NV: <span class="font-bold text-slate-500">{{ order.staffName }}</span>
+                      </span>
                     </div>
                   </td>
                   
@@ -215,7 +219,18 @@
                       <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border shadow-sm" :class="getOrderStatusBadge(order.orderStatus).class">
                         {{ getOrderStatusBadge(order.orderStatus).text }}
                       </span>
+                      
                       <span class="text-[11px] font-medium text-slate-400">{{ order.time }} - {{ order.date }}</span>
+                      
+                      <div v-if="order.trackingCode" class="mt-1 flex flex-col gap-0.5 bg-sky-50/80 border border-sky-100/70 px-2 py-1 rounded-lg w-full max-w-[150px] shadow-sm">
+                        <p class="text-[9px] font-bold text-sky-600 flex items-center gap-1">
+                          <span class="material-symbols-outlined text-[12px]">local_shipping</span>
+                          {{ order.carrier }}
+                        </p>
+                        <p class="text-[10px] font-black text-slate-700 tracking-wider font-mono uppercase truncate" :title="order.trackingCode">
+                          {{ order.trackingCode }}
+                        </p>
+                      </div>
                     </div>
                   </td>
                   
@@ -1535,7 +1550,9 @@ const exportExcelReport = async () => {
             paymentType: item.LoaiGiaoDich || 'Thanh toán toàn bộ',
             transactionAmount: Number(item.SoTienGiaoDich) || 0,
             transactionDate: item.NgayThanhToan ? new Date(item.NgayThanhToan).toLocaleString('vi-VN') : 'Chưa thu tiền',
-            saleType: item.LoaiHinhBan || 'Có sẵn'
+            saleType: item.LoaiHinhBan || 'Có sẵn',
+            carrier: item.HangVanChuyen || 'Chưa gán hãng', 
+            trackingCode: item.MaVanDon || null
           };
         });
       }
