@@ -300,7 +300,7 @@
       
       <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
         <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-          Chi tiết đơn hàng <span class="text-[#ff8f73]">#{{ selectedOrder.MaDH }}</span>
+          Chi tiết đơn hàng <span class="text-[#ff8f73]">#{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi || selectedOrder.MaDH }}</span>
         </h3>
         <button @click="isDetailModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-200 transition-colors">
           <span class="material-symbols-outlined">close</span>
@@ -308,6 +308,7 @@
       </div>
 
       <div class="p-8 space-y-6 flex-1">
+        
         <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm">
           <div class="p-4 bg-slate-50/50">
             <p class="text-slate-400 font-medium mb-1">Ngày đặt</p>
@@ -337,25 +338,49 @@
           </div>
         </div>
 
+        <div v-if="selectedOrder.ThongTinGiaoHang?.MaVanDon" class="flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl p-4">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-sky-200 shadow-sm shrink-0">
+              <span class="material-symbols-outlined text-sky-500 text-2xl">local_shipping</span>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-sky-600 uppercase tracking-widest mb-0.5">Thông tin vận chuyển</p>
+              <p class="text-sm font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.HangVanChuyen }}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] text-slate-500 mb-1 font-medium uppercase tracking-widest">Mã tra cứu vận đơn</p>
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-sky-200 shadow-sm">
+              <span class="font-black text-sky-700 tracking-wider text-sm uppercase">{{ selectedOrder.ThongTinGiaoHang?.MaVanDon }}</span>
+              <button @click="copyTrackingCode(selectedOrder.ThongTinGiaoHang?.MaVanDon)" class="text-slate-400 hover:text-sky-600 transition-colors flex items-center justify-center" title="Copy mã vận đơn">
+                <span class="material-symbols-outlined text-[16px]">content_copy</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div>
-          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Lịch sử thanh toán</h4>
+          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Lịch sử giao dịch</h4>
           <div class="border border-slate-200 rounded-xl overflow-hidden">
             <table class="w-full text-left text-sm">
               <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                 <tr>
-                  <th class="p-4">Mã tham chiếu</th>
-                  <th class="p-4">Đối tác</th>
-                  <th class="p-4 text-right">Số tiền</th>
-                  <th class="p-4 text-center">Trạng thái</th>
+                  <th class="p-3 text-center">Thời gian</th>
+                  <th class="p-3">Phương thức</th>
+                  <th class="p-3">Loại giao dịch</th>
+                  <th class="p-3 text-right">Số tiền</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                <tr class="text-slate-700 font-medium">
-                  <td class="p-4 text-slate-400">{{ selectedOrder.ThongTinGiaoHang?.MaVoucher || 'Không áp dụng mã' }}</td>
-                  <td class="p-4 font-bold text-blue-600">COD / MOMO</td>
-                  <td class="p-4 text-right font-bold">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</td>
-                  <td class="p-4 text-center">
-                    <span class="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] px-2 py-0.5 rounded font-bold">SUCCESS</span>
+                <tr v-if="!selectedOrder.ThanhToan || selectedOrder.ThanhToan.length === 0">
+                  <td colspan="4" class="p-6 text-center text-slate-400 italic">Chưa có giao dịch thu/chi nào được ghi nhận.</td>
+                </tr>
+                <tr v-for="(tx, idx) in selectedOrder.ThanhToan" :key="idx" class="text-slate-700 font-medium hover:bg-slate-50 transition-colors">
+                  <td class="p-3 text-center text-xs text-slate-500">{{ new Date(tx.NgayThanhToan).toLocaleString('vi-VN') }}</td>
+                  <td class="p-3 font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-blue-600'">{{ tx.TenPhuongThuc || 'Thu hộ COD' }}</td>
+                  <td class="p-3 text-xs">{{ tx.LoaiGiaoDich }}</td>
+                  <td class="p-3 text-right font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-emerald-600'">
+                    {{ tx.SoTienGiaoDich > 0 ? '+' : '' }}{{ formatPrice(tx.SoTienGiaoDich) }}
                   </td>
                 </tr>
               </tbody>
@@ -377,26 +402,27 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                <tr v-for="(item, index) in selectedOrder.DanhSachHang" :key="item.MaMH || index" class="text-slate-700 font-medium">
+                <tr v-for="(item, index) in selectedOrder.DanhSachHang" :key="item.MaPhanLoai || index" class="text-slate-700 font-medium">
                   <td class="p-4">
                     <div class="flex items-center gap-4">
                       <img v-if="item.AnhDaiDien" 
-                          :src="`${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
-                          class="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm shrink-0 bg-slate-50" 
-                          alt="Product Thumbnail" />
-                      
+                           :src="item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
+                           class="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm shrink-0 bg-slate-50" />
                       <div v-else class="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200 shadow-sm shrink-0 flex items-center justify-center text-slate-400">
                         <span class="material-symbols-outlined text-xl">image_not_supported</span>
                       </div>
-                      
                       <div class="flex flex-col">
                         <p class="font-bold text-slate-900 leading-snug">{{ item.TenMH }}</p>
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Mã MH: #{{ item.MaMoHinh }}</p>
+                        <span v-if="item.LaHangKhuyenMai === 1" class="text-[9px] font-bold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded border border-rose-100 mt-1 w-fit">FLASH SALE</span>
                       </div>
                     </div>
                   </td>
-                  <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">{{ item.ChiTietPhanLoai || 'Tiêu chuẩn' }}</span></td>
-                  <td class="p-4 text-right">{{ formatPrice(item.DonGiaBan) }}</td>
+                  <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">{{ item.ChiTietPhanLoai || 'Mặc định' }}</span></td>
+                  <td class="p-4 text-right">
+                    <p :class="item.LaHangKhuyenMai === 1 ? 'line-through text-slate-400 text-xs' : ''">{{ formatPrice(item.DonGiaGoc) }}</p>
+                    <p v-if="item.LaHangKhuyenMai === 1" class="text-rose-500">{{ formatPrice(item.DonGiaBan) }}</p>
+                  </td>
                   <td class="p-4 text-center font-bold">{{ item.SoLuong }}</td>
                   <td class="p-4 text-right text-rose-500 font-bold">{{ formatPrice(item.DonGiaBan * item.SoLuong) }}</td>
                 </tr>
@@ -407,28 +433,45 @@
 
         <div class="flex justify-end">
           <div class="w-80 bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 text-sm">
-            <div class="flex justify-between text-slate-500"><span>Tổng tiền hàng:</span><span class="font-semibold text-slate-800">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.TongTien) }}</span></div>
+            <div class="flex justify-between text-slate-500">
+              <span>Tổng tiền hàng hóa:</span>
+              <span class="font-semibold text-slate-800">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.TongTien) }}</span>
+            </div>
+            <div class="flex justify-between text-slate-500">
+              <span>Giảm giá/Voucher:</span>
+              <span class="font-semibold text-emerald-600">-{{ formatPrice((selectedOrder.ThongTinGiaoHang?.TongTien || 0) - (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0)) }}</span>
+            </div>
             <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline">
-              <span class="font-bold text-slate-900 text-base">Tổng thanh toán:</span>
-              <span class="font-headline font-bold text-rose-600 text-xl">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</span>
+              <span class="font-bold text-slate-700">Tổng giá trị đơn:</span>
+              <span class="font-bold text-slate-900">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="font-bold text-slate-700">Đã thanh toán:</span>
+              <span class="font-bold text-emerald-600">
+                {{ formatPrice(selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0) }}
+              </span>
+            </div>
+            <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline bg-rose-50 -mx-5 px-5 pb-5 -mb-5 rounded-b-xl">
+              <span class="font-bold text-rose-900 text-base mt-2">CÒN PHẢI THU:</span>
+              <span class="font-headline font-black text-rose-600 text-xl">
+                {{ formatPrice(Math.max(0, (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0) - (selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0))) }}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
-        <button @click="isCancelModalOpen = true; cancelReasonValue = ''" class="px-4 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
-          <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn này
-        </button>
+        <RouterLink :to="`/admin/orders?viewOrderId=${selectedOrder.MaDH}`" class="px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
+          <span class="material-symbols-outlined text-[18px]">open_in_new</span> Mở trang xử lý đơn
+        </RouterLink>
         <div class="flex gap-2">
           <button @click="handleOrderAction('print', selectedOrder.MaDH)" class="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
             <span class="material-symbols-outlined text-[18px]">print</span> In hóa đơn
           </button>
-          <button @click="updateStatusValue = String(getCurrentStatusCode()); isUpdateModalOpen = true" class="px-4 py-2 bg-[#ff8f73] hover:bg-[#ff7352] text-white text-sm font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
-            <span class="material-symbols-outlined text-[18px]">edit_document</span> Đổi trạng thái
-          </button>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -1099,6 +1142,17 @@
     };
     
     window.requestAnimationFrame(step);
+  };
+
+  const copyTrackingCode = async (code) => {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      toastStore.showToast(`Đã copy mã vận đơn: ${code}`, "success");
+    } catch (err) {
+      console.error('Lỗi khi copy: ', err);
+      toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
+    }
   };
 </script>
 
