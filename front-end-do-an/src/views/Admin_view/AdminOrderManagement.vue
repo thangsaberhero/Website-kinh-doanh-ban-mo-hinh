@@ -360,7 +360,7 @@
               
             </div>
 
-            <div v-if="selectedOrder.ThongTinGiaoHang?.MaVanDon" class="flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl p-4 animate-[fadeIn_0.3s_ease-out]">
+            <div v-if="selectedOrder.ThongTinGiaoHang?.MaVanDon" class="relative group flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl p-4 animate-[fadeIn_0.3s_ease-out]">
               <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4" 
                       @click="openEditShippingModal" 
                       class="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-sky-500 hover:border-sky-300 rounded-full shadow-md transition-all z-10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100" 
