@@ -36,12 +36,12 @@
         <button v-if="!hideCart"
           @click.prevent="$emit('add-to-cart', product)" 
           :disabled="product.SoLuong === 0" 
-          :class="['absolute bottom-4 right-4 w-11 h-11 rounded-xl flex items-center justify-center transform transition-all shadow-lg z-10', 
-                   product.SoLuong === 0 
-                     ? 'bg-surface-container-high text-outline cursor-not-allowed opacity-100 translate-y-0' 
-                     : 'bg-primary text-on-primary lg:opacity-0 lg:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white hover:text-primary shadow-primary/20']"
+          :class="['absolute bottom-2 right-2 md:bottom-4 md:right-4 w-8 h-8 md:w-11 md:h-11 rounded-lg md:rounded-xl flex items-center justify-center transform transition-all shadow-lg z-10', 
+                  product.SoLuong === 0 
+                    ? 'bg-surface-container-high text-outline cursor-not-allowed opacity-100 translate-y-0' 
+                    : 'bg-primary text-on-primary lg:opacity-0 lg:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white hover:text-primary shadow-primary/20']"
         >
-          <span class="material-symbols-outlined text-[20px] font-bold">shopping_cart</span>
+          <span class="material-symbols-outlined text-[16px] md:text-[20px] font-bold">shopping_cart</span>
         </button>
       </div>
       
@@ -51,15 +51,15 @@
             {{ product.TenHSX || 'UNKNOWN' }} <span v-if="product.KichThuoc">• {{ product.KichThuoc }}</span>
           </p>
           
-          <h3 class="font-headline font-bold text-base leading-snug group-hover:text-primary transition-colors text-white line-clamp-2 min-h-[2.75rem]">
+          <h3 class="font-headline font-bold text-sm md:text-base leading-snug group-hover:text-primary transition-colors text-white line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem]">
             {{ product.TenMH }}
           </h3>
         </div>
         
         <div class="pt-1">
           <div v-if="product.dongiakhuyenmai" class="flex items-baseline gap-2">
-            <span :class="['text-lg md:text-xl font-headline font-bold tracking-tight', product.SoLuong === 0 ? 'text-outline' : 'text-primary']">
-                {{ formatPrice(product.dongiakhuyenmai) }}
+            <span :class="['text-base md:text-xl font-headline font-bold tracking-tight', product.SoLuong === 0 ? 'text-outline' : 'text-primary']">
+              {{ formatPrice(product.dongiakhuyenmai) }}
             </span>
             <span class="text-xs text-outline line-through font-medium">
                 {{ formatPrice(product.DonGia) }}
@@ -67,8 +67,8 @@
           </div>
         
           <div v-else>
-            <span :class="['text-lg md:text-xl font-headline font-bold tracking-tight', product.SoLuong === 0 ? 'text-outline' : 'text-primary']">
-                {{ formatPrice(product.DonGia) }}
+            <span :class="['text-base md:text-xl font-headline font-bold tracking-tight', product.SoLuong === 0 ? 'text-outline' : 'text-primary']">
+              {{ formatPrice(product.DonGia) }}
             </span>
           </div>
         </div>
