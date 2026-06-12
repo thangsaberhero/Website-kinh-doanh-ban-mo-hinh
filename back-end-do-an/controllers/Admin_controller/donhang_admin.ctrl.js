@@ -685,7 +685,7 @@ const donhang_admin = {
 
             const offset = (page - 1) * limit;
 
-            const { trangthai, ngaybatdau, ngayketthuc, timkiem, sapxep, trangthaitt, minPrice, maxPrice } = req.query;
+            const { trangthai, ngaybatdau, ngayketthuc, timkiem, sapxep, trangthaitt, minPrice, maxPrice, loaihinhban, tensanpham } = req.query;
 
             let conditions = [];
             let whereValues = [];
@@ -694,9 +694,26 @@ const donhang_admin = {
             let havingValues = [];
 
             if(timkiem){
-                conditions.push("(dh.MaDonHangHienThi LIKE ? or dh.MaDH like ? or dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ? or nv.TenNV COLLATE utf8mb4_unicode_ci LIKE ?)");
+                conditions.push("(dh.MaDonHangHienThi LIKE ? or dh.MaDH like ? or dh.TenNguoiNhan COLLATE utf8mb4_unicode_ci LIKE ? or dh.SDTNguoiNhan LIKE ?)");
                 whereValues.push(`%${timkiem}%`,`%${timkiem}%`,`%${timkiem}%`,`%${timkiem}%`);
             }
+
+            // 🔴 BỔ SUNG: Điều kiện tìm tên sản phẩm (Chỉ chạy khi nhân viên chủ động gõ trong bộ lọc)
+            if (tensanpham && tensanpham.trim() !== '') {
+                conditions.push(`EXISTS (
+                    SELECT 1 FROM ChiTietDonHang ctdh 
+                    JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai 
+                    JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh 
+                    WHERE ctdh.MaDH = dh.MaDH AND 
+                    (
+                        (mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ?)
+                        OR (mh.TenNhanVat COLLATE utf8mb4_unicode_ci LIKE ?)
+                        OR (mh.Series COLLATE utf8mb4_unicode_ci LIKE ?)
+                    )
+                )`);
+                whereValues.push(`%${tensanpham.trim()}%`);
+            }
+
             if (ngaybatdau) {
                 conditions.push("dh.NgayLapDon >= ?");
                 whereValues.push(`${ngaybatdau} 00:00:00`);
@@ -728,6 +745,15 @@ const donhang_admin = {
                 havingConditions.push("MaTT = ?");
                 havingValues.push(trangthai);
             }
+
+            // 🔴 BỔ SUNG: Lọc loại hình đơn hàng ở mệnh đề HAVING
+            if (loaihinhban && loaihinhban !== 'all') {
+                if (loaihinhban === 'order') {
+                    havingConditions.push("LoaiHinhBan LIKE '%order%'");
+                } else if (loaihinhban === 'san') {
+                    havingConditions.push("(LoaiHinhBan NOT LIKE '%order%' OR LoaiHinhBan IS NULL)");
+                }
+            }
             let having_clause = havingConditions.length > 0 ? "HAVING " + havingConditions.join(" AND ") : "";
 
             let filter = "ORDER BY dh.NgayLapDon DESC";
@@ -738,7 +764,9 @@ const donhang_admin = {
             const sql_core = `
                 SELECT dh.MaDH, dh.MaDonHangHienThi, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.HangVanChuyen, dh.MaVanDon,
-                dh.ThanhTien, dh.TrangThaiThanhToan, dh.Note,
+                dh.ThanhTien, dh.TrangThaiThanhToan,
+                
+                -- ĐỒNG BỘ MỤC 1: Quét loại hình bán của đơn hàng
                 (
                     SELECT DISTINCT mh.LoaiHinhBan 
                     FROM ChiTietDonHang ctdh
@@ -747,6 +775,7 @@ const donhang_admin = {
                     WHERE ctdh.MaDH = dh.MaDH
                     LIMIT 1
                 ) AS LoaiHinhBan,
+
                 (
                     SELECT cttt.MaTrangThai
                     FROM ChiTietTrangThai cttt 
@@ -769,7 +798,6 @@ const donhang_admin = {
                     WHERE tt.MaDH = dh.MaDH AND tt.TrangThaiGiaoDich = 'Thành công'
                 ) AS SoTienGiaoDich,
 
-                -- BỔ SUNG: Lấy Tên phương thức thanh toán mới nhất
                 (
                     SELECT pt.TenPhuongThuc
                     FROM ThanhToan tt
@@ -779,7 +807,6 @@ const donhang_admin = {
                     LIMIT 1
                 ) AS TenPhuongThuc,
 
-                -- BỔ SUNG: Lấy Loại giao dịch (VD: Thanh toán toàn bộ, Cọc...)
                 (
                     SELECT tt.LoaiGiaoDich
                     FROM ThanhToan tt
@@ -788,7 +815,6 @@ const donhang_admin = {
                     LIMIT 1
                 ) AS LoaiGiaoDich,
 
-                -- BỔ SUNG: Lấy Ngày thanh toán
                 (
                     SELECT tt.NgayThanhToan
                     FROM ThanhToan tt
@@ -805,6 +831,7 @@ const donhang_admin = {
                 GROUP BY dh.MaDH
                 ${having_clause}
             `;
+            // ... Toàn bộ logic phân trang, đếm count và trả về JSON phía sau giữ nguyên vẹn ...
 
             const combinedValues = [...whereValues, ...havingValues];
 

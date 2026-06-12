@@ -638,46 +638,76 @@
       </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-      <div class="space-y-4">
+    <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+      
+      <div class="space-y-2">
         <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <span class="material-symbols-outlined text-[16px]">price_check</span> Tình trạng thanh toán
+          <span class="material-symbols-outlined text-[16px]">toys</span> Tìm theo tên sản phẩm / Mô hình
         </label>
-        <div class="flex flex-col gap-3">
-          <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="all" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
-            <span class="text-sm font-medium text-slate-700">Tất cả</span>
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[16px]">search</span>
+          <input type="text" v-model="advancedFilter.productName" placeholder="Nhập tên nhân vật, mô hình..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:border-[#ff8f73] outline-none font-medium text-slate-700">
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">category</span> Phân loại đơn hàng
+        </label>
+        <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1 rounded-xl">
+          <label class="cursor-pointer">
+            <input type="radio" value="all" v-model="advancedFilter.saleType" class="hidden peer">
+            <div class="text-center text-[11px] font-bold text-slate-500 py-1.5 rounded-lg peer-checked:bg-white peer-checked:text-slate-800 peer-checked:shadow-sm transition-all">Tất cả</div>
           </label>
-          <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="Chưa thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
-            <span class="text-sm font-medium text-slate-700">Chưa thanh toán (Chờ thu tiền)</span>
+          <label class="cursor-pointer">
+            <input type="radio" value="san" v-model="advancedFilter.saleType" class="hidden peer">
+            <div class="text-center text-[11px] font-bold text-emerald-600 py-1.5 rounded-lg peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:shadow-sm transition-all">Có sẵn</div>
           </label>
-          <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="Đã thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
-            <span class="text-sm font-medium text-slate-700">Đã thanh toán thành công</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="Chờ hoàn tiền" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
-            <span class="text-sm font-medium text-rose-600 font-bold">Cần hoàn tiền (Đơn hủy/hoàn)</span>
+          <label class="cursor-pointer">
+            <input type="radio" value="order" v-model="advancedFilter.saleType" class="hidden peer">
+            <div class="text-center text-[11px] font-bold text-purple-600 py-1.5 rounded-lg peer-checked:bg-purple-500 peer-checked:text-white peer-checked:shadow-sm transition-all">Hàng Order</div>
           </label>
         </div>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-3">
+        <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">price_check</span> Tình trạng thanh toán
+        </label>
+        <div class="flex flex-col gap-2.5">
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="radio" value="all" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Tất cả trạng thái</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="radio" value="Chưa thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Chưa thanh toán</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="radio" value="Đã thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Đã thanh toán đủ</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="radio" value="Chờ hoàn tiền" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <span class="text-xs font-bold text-rose-600 group-hover:text-rose-800">Cần hoàn trả tiền</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="space-y-2">
         <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
           <span class="material-symbols-outlined text-[16px]">payments</span> Giá trị đơn hàng (VNĐ)
         </label>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[10px] text-slate-500 mb-1">Từ mức giá</label>
-            <input type="number" v-model="advancedFilter.minPrice" placeholder="VD: 500000" min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none">
+            <input type="number" v-model="advancedFilter.minPrice" placeholder="Từ mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-[#ff8f73] outline-none font-medium">
           </div>
           <div>
-            <label class="block text-[10px] text-slate-500 mb-1">Đến mức giá</label>
-            <input type="number" v-model="advancedFilter.maxPrice" placeholder="VD: 5000000" min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none">
+            <input type="number" v-model="advancedFilter.maxPrice" placeholder="Đến mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-[#ff8f73] outline-none font-medium">
           </div>
         </div>
       </div>
+
     </div>
 
     <div class="p-6 border-t border-slate-100 bg-white flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
@@ -1435,6 +1465,8 @@ const exportExcelReport = async () => {
     
   const advancedFilter = ref({
     paymentStatus: 'all',
+    saleType: 'all',      
+    productName: '',       
     minPrice: null,
     maxPrice: null
   });
@@ -1448,6 +1480,8 @@ const exportExcelReport = async () => {
   const resetAdvancedFilter = () => {
     advancedFilter.value = {
       paymentStatus: 'all',
+      saleType: 'all',
+      productName: '',
       minPrice: null,
       maxPrice: null
     };
@@ -1544,6 +1578,12 @@ const exportExcelReport = async () => {
 
       if (advancedFilter.value.paymentStatus !== 'all') {
         url += `&trangthaitt=${encodeURIComponent(advancedFilter.value.paymentStatus)}`;
+      }
+      if (advancedFilter.value.saleType !== 'all') {
+        url += `&loaihinhban=${encodeURIComponent(advancedFilter.value.saleType)}`;
+      }
+      if (advancedFilter.value.productName && advancedFilter.value.productName.trim() !== '') {
+        url += `&tensanpham=${encodeURIComponent(advancedFilter.value.productName.trim())}`;
       }
       if (advancedFilter.value.minPrice) {
         url += `&minPrice=${advancedFilter.value.minPrice}`;
