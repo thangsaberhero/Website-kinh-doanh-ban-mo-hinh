@@ -1,11 +1,10 @@
 <template>
-  <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
+  <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">  
     <TheHeader />
 
-    <main class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
+    <main class="flex-1 max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 w-full pb-40">
       <div class="mb-12">
-        <h1 class="text-5xl md:text-6xl font-headline font-bold tracking-tighter uppercase text-white mb-2">
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-headline font-bold tracking-tighter uppercase text-white mb-2">
           Kho Báu <span class="text-primary italic">Đang Chờ</span>
         </h1>
         <p class="text-on-surface-variant font-medium tracking-wide">
@@ -34,47 +33,47 @@
             <div 
               v-for="item in cartItems" 
               :key="item.MaPhanLoai"
-              class="group relative flex flex-col md:flex-row gap-6 p-6 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/10 hover:border-primary/30 transition-all duration-300 rounded-2xl"
+              class="group relative flex flex-row gap-3 sm:gap-6 p-3 sm:p-6 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/10 hover:border-primary/30 transition-all duration-300 rounded-2xl"
             >
-              <div class="relative w-full md:w-48 aspect-square overflow-hidden bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer shrink-0" @click="goToProduct(item.MaMoHinh)">
+              <div class="relative w-20 h-20 sm:w-32 sm:h-32 md:w-48 md:h-auto md:aspect-square overflow-hidden bg-surface-container-lowest rounded-xl border border-outline-variant/20 cursor-pointer shrink-0" @click="goToProduct(item.MaMoHinh)">
                 <img 
-                  :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : '${API_BASE_URL}/Images_product/' + item.AnhDaiDien"
+                  :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien"
                   :alt="item.TenMH" 
-                  class="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
+                  class="w-full h-full object-contain p-2 sm:p-4 group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
               
-              <div class="flex flex-col flex-1 justify-between py-2">
+              <div class="flex flex-col flex-1 justify-between py-1">
                 <div>
                   <div class="flex justify-between items-start">
-                    <div>
-                      <span class="text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-3 inline-block text-tertiary bg-tertiary/10 border border-tertiary/20">
+                    <div class="pr-6 md:pr-0"> <span class="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-full mb-1 sm:mb-3 inline-block text-tertiary bg-tertiary/10 border border-tertiary/20">
                         Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}
                       </span>               
-                      <h3 @click="goToProduct(item.MaMoHinh)" class="text-2xl font-headline font-bold text-white leading-tight cursor-pointer hover:text-primary transition-colors">
+                      <h3 @click="goToProduct(item.MaMoHinh)" class="text-sm sm:text-lg md:text-2xl font-headline font-bold text-white leading-tight cursor-pointer hover:text-primary transition-colors line-clamp-2">
                         {{ item.TenMH }}
                       </h3>          
-                      <p class="text-on-surface-variant text-sm mt-2 font-medium">Đơn giá: {{ formatPrice(item.DonGia) }}</p>
+                      <p class="text-on-surface-variant text-xs sm:text-sm mt-1 font-medium">Đơn giá: {{ formatPrice(item.DonGia) }}</p>
                     </div>
                     
-                    <button @click="confirmRemoveItem(item)" class="text-outline hover:text-error hover:bg-error/10 rounded-lg p-2 transition-all">
-                      <span class="material-symbols-outlined">delete</span>
+                    <button @click="confirmRemoveItem(item)" class="absolute top-2 right-2 sm:relative sm:top-0 sm:right-0 text-outline hover:text-error hover:bg-error/10 rounded-lg p-1.5 sm:p-2 transition-all">
+                      <span class="material-symbols-outlined text-[18px] sm:text-[24px]">delete</span>
                     </button>
                   </div>
                 </div>
                 
-                <div class="flex items-end justify-between mt-6 md:mt-0">
-                  <div class="flex items-center bg-surface-container-highest rounded-full px-2 py-1 border border-outline-variant/20">
-                    <button @click="decreaseQty(item)" class="w-8 h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
-                      <span class="material-symbols-outlined text-sm">remove</span>
+                <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mt-3 sm:mt-0 gap-2 sm:gap-0">
+                  <div class="flex items-center bg-surface-container-highest rounded-full px-1 py-0.5 sm:px-2 sm:py-1 border border-outline-variant/20">
+                    <button @click="decreaseQty(item)" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
+                      <span class="material-symbols-outlined text-[14px] sm:text-sm">remove</span>
                     </button>
-                    <span class="w-10 text-center font-bold text-white">{{ item.SoLuong }}</span>        
-                    <button @click="increaseQty(item)" class="w-8 h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
-                      <span class="material-symbols-outlined text-sm">add</span>
+                    <span class="w-6 sm:w-10 text-center font-bold text-white text-xs sm:text-base">{{ item.SoLuong }}</span>        
+                    <button @click="increaseQty(item)" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
+                      <span class="material-symbols-outlined text-[14px] sm:text-sm">add</span>
                     </button>
                   </div>
-                  <div class="text-right flex flex-col items-end justify-center">
-                    <span class="block text-primary font-headline font-bold text-2xl tracking-tighter">
+
+                  <div class="text-left sm:text-right flex flex-col items-start sm:items-end justify-center w-full sm:w-auto">
+                    <span class="block text-primary font-headline font-bold text-lg md:text-2xl tracking-tighter">
                       {{ formatPrice(item.ThanhTien) }}
                     </span>
                     
@@ -114,7 +113,7 @@
         </div>
 
         <div class="lg:col-span-4">
-          <div class="sticky top-28 bg-surface-container p-8 rounded-2xl shadow-2xl border border-outline-variant/20">
+          <div class="fixed lg:sticky bottom-0 lg:bottom-auto left-0 lg:left-auto w-full lg:w-auto z-50 lg:z-10 top-auto lg:top-28 bg-surface-container p-5 md:p-8 rounded-t-2xl lg:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] lg:shadow-2xl border-t lg:border border-outline-variant/20">
             <h2 class="text-xl font-headline font-bold tracking-widest uppercase border-b border-outline-variant/20 pb-4 mb-6 text-white">Tóm tắt đơn hàng</h2>
             <div class="space-y-4 mb-6 text-sm font-medium">
               <div class="flex justify-between text-on-surface-variant">
