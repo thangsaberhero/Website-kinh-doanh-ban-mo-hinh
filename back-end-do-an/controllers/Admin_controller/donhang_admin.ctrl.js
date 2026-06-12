@@ -294,7 +294,7 @@ const donhang_admin = {
             await connection.query(`
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, ?, ?, ?, NOW())
-            `, [MaTK, 'INVOICE', noiDungLog, userIp]);
+            `, [MaTK, 'ORDER_CREATE', noiDungLog, userIp]);
 
             await connection.query(`
                 INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
@@ -600,6 +600,75 @@ const donhang_admin = {
             await connection.rollback();
             console.error("Lỗi khi sửa thông tin đơn hàng: ", error);
             res.status(500).json({ message: "Lỗi server khi sửa thông tin đơn hàng!"});
+        }
+        finally {
+            connection.release();
+        }
+    },
+
+    sua_thong_tin_van_chuyen: async(req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const { MaDH, MaVanDon, HangVanChuyen } = req.body;
+            const MaTK = req.user.id;
+
+            if (!MaDH || !MaVanDon || !HangVanChuyen || MaVanDon.trim() === '') {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ Hãng vận chuyển và Mã vận đơn!" });
+            }
+
+            // 1. Kiểm tra trạng thái hiện tại
+            const sql_kiemtra = `
+                SELECT cttt.MaTrangThai, dh.MaDonHangHienThi 
+                FROM ChiTietTrangThai cttt 
+                INNER JOIN DonHang dh ON dh.MaDH = cttt.MaDH
+                WHERE cttt.MaDH = ? 
+                ORDER BY cttt.Thoigian DESC LIMIT 1
+            `;
+            const [trang_thai] = await connection.query(sql_kiemtra, [MaDH]);
+
+            if(trang_thai.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
+            }
+
+            const currentStatus = trang_thai[0].MaTrangThai;
+            const maHienThi = trang_thai[0].MaDonHangHienThi;
+
+            // 2. CHỐT CHẶN: Chỉ được sửa khi đơn đang đi giao (3) hoặc đã giao (4)
+            if (currentStatus < 3 || currentStatus > 4) {
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Chỉ có thể sửa thông tin vận chuyển khi đơn hàng Đang giao hoặc Đã giao."
+                });
+            }
+
+            // 3. Cập nhật và ép IN HOA tuyệt đối mã vận đơn
+            const maVanDonInHoa = MaVanDon.trim().toUpperCase();
+            await connection.query(
+                `UPDATE DonHang SET MaVanDon = ?, HangVanChuyen = ? WHERE MaDH = ?`, 
+                [maVanDonInHoa, HangVanChuyen, MaDH]
+            );
+
+            // 4. Ghi Log
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Cập nhật thông tin vận chuyển đơn #${MaDH} (${maHienThi}). Hãng: ${HangVanChuyen}, Mã bill mới: ${maVanDonInHoa}`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'ORDER_UPDATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            await connection.commit();
+            res.status(200).json({ success: true, message: "Cập nhật mã vận đơn thành công!" });
+        }
+        catch (error) {
+            await connection.rollback();
+            console.error("Lỗi khi sửa vận đơn: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi sửa thông tin vận chuyển!"});
         }
         finally {
             connection.release();

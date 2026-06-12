@@ -14,7 +14,6 @@ router.get('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_
 router.get('/search-products',authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.liet_ke_san_pham);
 router.get('/payment', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.liet_ke_giao_dich);
 router.get('/payment/export', authMiddleware.verifyToken, authMiddleware.verifyAdmin, donhang_admin_Controller.xuat_excel_giao_dich);
-// CHỐT CHẶN CUỐI CÙNG: Route chứa tham số động (/:MaDH) phải ở ĐÁY của nhóm GET
 router.get('/:MaDH', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.xem_chi_tiet_don_hang);
 
 // ==========================================
@@ -28,6 +27,7 @@ router.post('/huy', authMiddleware.verifyToken, authMiddleware.verifyStaff, donh
 // 3. NHÓM CẬP NHẬT/THAY ĐỔI DỮ LIỆU (PUT)
 // ==========================================
 router.put('/fix', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.sua_thong_tin_don_hang);
+router.put('/update-shipping', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.sua_thong_tin_van_chuyen);
 router.put('/hoan_hang', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.hoan_tra_don_hang);
 
 router.put('/payment-status', authMiddleware.verifyToken, authMiddleware.verifyStaff, donhang_admin_Controller.xac_nhan_thanh_toan);

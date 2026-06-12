@@ -361,6 +361,13 @@
             </div>
 
             <div v-if="selectedOrder.ThongTinGiaoHang?.MaVanDon" class="flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl p-4 animate-[fadeIn_0.3s_ease-out]">
+              <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4" 
+                      @click="openEditShippingModal" 
+                      class="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-sky-500 hover:border-sky-300 rounded-full shadow-md transition-all z-10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100" 
+                      title="Sửa mã vận đơn">
+                  <span class="material-symbols-outlined text-[16px]">edit</span>
+              </button>
+
               <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-sky-200 shadow-sm shrink-0">
                   <span class="material-symbols-outlined text-sky-500 text-2xl">local_shipping</span>
@@ -1109,6 +1116,45 @@
           <button @click="isRefundConfirmModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
           <button @click="executeConfirmRefund" class="px-5 py-2.5 text-sm font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 rounded-xl transition-all flex items-center gap-2">
             <span class="material-symbols-outlined text-[18px]">check_circle</span> Xác nhận đã CK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isEditShippingModalOpen" class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col border-t-4 border-sky-400">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sky-500">local_shipping</span> Cập nhật mã vận đơn
+          </h3>
+          <button @click="isEditShippingModalOpen = false" class="text-slate-400 hover:text-rose-500 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Đơn vị vận chuyển <span class="text-rose-500">*</span></label>
+              <select v-model="editShippingForm.HangVanChuyen" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none bg-slate-50 focus:bg-white font-medium text-slate-700">
+                  <option value="Giao Hàng Nhanh">Giao Hàng Nhanh (GHN)</option>
+                  <option value="SPX">SPX</option>
+                  <option value="Giao Hàng Tiết Kiệm">Giao Hàng Tiết Kiệm (GHTK)</option>
+                  <option value="Viettel Post">Viettel Post</option>
+                  <option value="J&T Express">J&T Express</option>
+                  <option value="Ninja Van">Ninja Van</option>
+                  <option value="Grab / AhaMove">Giao hỏa tốc (Grab/Aha)</option>
+              </select>
+          </div>
+          <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Mã vận đơn mới <span class="text-rose-500">*</span></label>
+              <input v-model="editShippingForm.MaVanDon" type="text" placeholder="Nhập mã bill..." class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-bold text-slate-800 bg-slate-50 focus:bg-white uppercase">
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="isEditShippingModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
+          <button @click="submitEditShipping" class="px-5 py-2.5 text-sm font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-lg shadow-sky-500/20 rounded-xl transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">save</span> Lưu thay đổi
           </button>
         </div>
       </div>
@@ -2107,6 +2153,52 @@ const exportExcelReport = async () => {
       console.error('Lỗi khi copy: ', err);
       // Fallback cho một số trình duyệt cũ nếu cần
       toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
+    }
+  };
+
+  const isEditShippingModalOpen = ref(false);
+  const editShippingForm = ref({ MaDH: '', MaVanDon: '', HangVanChuyen: '' });
+
+  const openEditShippingModal = () => {
+    editShippingForm.value = {
+      MaDH: selectedOrder.value.MaDH,
+      MaVanDon: selectedOrder.value.ThongTinGiaoHang?.MaVanDon || '',
+      HangVanChuyen: selectedOrder.value.ThongTinGiaoHang?.HangVanChuyen || 'Giao Hàng Nhanh'
+    };
+    isEditShippingModalOpen.value = true;
+  };
+
+  const submitEditShipping = async () => {
+    if (!editShippingForm.value.MaVanDon.trim()) {
+      toastStore.showToast("Vui lòng nhập Mã vận đơn!", "warning");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update-shipping`, { 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editShippingForm.value)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toastStore.showToast("Cập nhật mã vận đơn thành công!", "success");
+        isEditShippingModalOpen.value = false;
+        
+        // Tự động load lại cục bộ thông tin đơn hàng trên Modal
+        await viewOrderDetails({ id: editShippingForm.value.MaDH });
+      } else {
+        toastStore.showToast(result.message || "Không thể cập nhật vận đơn.", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi sửa mã vận đơn:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
     }
   };
 
