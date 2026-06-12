@@ -737,7 +737,7 @@ const donhang_admin = {
 
             const sql_core = `
                 SELECT dh.MaDH, dh.MaDonHangHienThi, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
-                dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan,
+                dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.HangVanChuyen, dh.MaVanDon,
                 dh.ThanhTien, dh.TrangThaiThanhToan,
                 (
                     SELECT cttt.MaTrangThai
@@ -758,7 +758,7 @@ const donhang_admin = {
                 (
                     SELECT COALESCE(SUM(tt.SoTienGiaoDich), 0)
                     FROM ThanhToan tt
-                    WHERE tt.MaDH = dh.MaDH
+                    WHERE tt.MaDH = dh.MaDH AND tt.TrangThaiGiaoDich = 'Thành công'
                 ) AS SoTienGiaoDich,
 
                 -- BỔ SUNG: Lấy Tên phương thức thanh toán mới nhất

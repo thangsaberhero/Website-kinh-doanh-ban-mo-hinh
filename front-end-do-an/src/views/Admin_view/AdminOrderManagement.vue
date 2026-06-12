@@ -222,17 +222,24 @@
                   </td>
                   
                   <td class="px-6 py-4">
-                    <div class="flex flex-col gap-0.5">
-                      <p class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[14px]" :class="order.paymentMethod?.includes('COD') ? 'text-sky-500' : 'text-purple-500'">
-                          {{ order.paymentMethod?.includes('COD') ? 'local_shipping' : 'account_balance' }}
-                        </span>
-                        {{ order.paymentMethod }} 
-                        <span class="text-slate-300 font-normal">|</span> 
-                        <span class="text-indigo-600 text-[11px]">{{ order.paymentType }}</span>
-                      </p>
-                      <p class="text-[11px] font-bold text-emerald-600 mt-1">GD: {{ order.transactionAmount?.toLocaleString('vi-VN') }} ₫</p>
-                      <p class="text-[10px] text-slate-400 font-medium">Lúc: {{ order.transactionDate }}</p>
+                    <div class="flex flex-col gap-1 w-40">
+                      
+                      <div class="flex justify-between items-center text-[11px] font-bold">
+                        <span class="text-slate-500">Đã thu:</span>
+                        <span class="text-emerald-600">+{{ order.transactionAmount?.toLocaleString('vi-VN') }} ₫</span>
+                      </div>
+                      
+                      <div class="flex justify-between items-center text-[11px] font-bold">
+                        <span class="text-slate-500">Còn nợ:</span>
+                        <span class="text-rose-500">{{ Math.max(0, order.total - order.transactionAmount).toLocaleString('vi-VN') }} ₫</span>
+                      </div>
+                      
+                      <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden" title="Tiến độ thanh toán">
+                        <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500"
+                             :style="{ width: `${Math.min(100, (order.transactionAmount / (order.total || 1)) * 100)}%` }">
+                        </div>
+                      </div>
+
                     </div>
                   </td>
                   
