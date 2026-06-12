@@ -28,11 +28,19 @@
                 <span class="material-symbols-outlined text-[20px]">add_box</span>
                 Tạo đơn ngoài
               </button>
+            <div class="flex gap-3 w-full xl:w-auto">
+            <button @click="handleBulkPrint" class="flex-1 xl:flex-none bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-slate-800/20 transition-all active:scale-95 text-sm">
+              <span class="material-symbols-outlined text-[20px]">print</span>
+              In hàng loạt
+              <span v-if="selectedOrders.length > 0" class="bg-white text-slate-900 text-[10px] px-1.5 py-0.5 rounded-md ml-1">{{ selectedOrders.length }}</span>
+            </button>
+            
             <button @click="openBulkUpdateModal" class="flex-1 xl:flex-none bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
               <span class="material-symbols-outlined text-[20px]">inventory</span>
               Xử lý hàng loạt
               <span v-if="selectedOrders.length > 0" class="bg-white text-[#ff3d00] text-[10px] px-1.5 py-0.5 rounded-md ml-1">{{ selectedOrders.length }}</span>
             </button>
+          </div>
           </div>
         </div>
 
@@ -2334,6 +2342,56 @@ const exportExcelReport = async () => {
     } catch (error) {
       console.error("Lỗi khi sửa mã vận đơn:", error);
       toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    }
+  };
+
+  const handleBulkPrint = async () => {
+    // Kiểm tra xem nhân viên đã tick chọn đơn nào chưa
+    if (selectedOrders.value.length === 0) {
+      toastStore.showToast("Vui lòng tick chọn ít nhất 1 đơn hàng để in!", "warning");
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        toastStore.showToast("⚠️ Vui lòng đăng nhập lại!", "error");
+        return;
+    }
+
+    toastStore.showToast(`Đang tạo mã in cho ${selectedOrders.value.length} hóa đơn...`, "info");
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/invoice_admin/print-bulk`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            // Truyền mảng các ID đơn hàng đã tick chọn lên Backend
+            body: JSON.stringify({ orderIds: selectedOrders.value })
+        });
+
+        if (!res.ok) {
+            throw new Error("Không thể tải hóa đơn hàng loạt từ máy chủ");
+        }
+
+        // Nhận về cục HTML khổng lồ đã nối sẵn
+        const htmlInvoice = await res.text();
+        
+        // Mở popup và in tương tự như in đơn lẻ
+        const printWindow = window.open('', '_blank', 'width=800,height=800');
+        if (printWindow) {
+            printWindow.document.open();
+            printWindow.document.write(htmlInvoice);
+            printWindow.document.close();
+            // Bỏ tick tất cả sau khi in xong để tránh in nhầm vào lần sau
+            selectedOrders.value = [];
+        } else {
+            toastStore.showToast("⚠️ Trình duyệt chặn Popup. Hãy cấp quyền mở Popup cho trang web!", "error");
+        }
+    } catch (error) {
+        console.error("Lỗi khi in hàng loạt:", error);
+        toastStore.showToast("Có lỗi xảy ra khi lấy dữ liệu in!", "error");
     }
   };
 

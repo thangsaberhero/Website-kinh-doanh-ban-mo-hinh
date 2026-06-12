@@ -1400,6 +1400,145 @@ const donhang_admin = {
         }
     },
 
+    in_hoa_don_hang_loat: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            const { orderIds } = req.body;
+
+            if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+                return res.status(400).json({ success: false, message: "Danh sách đơn hàng không hợp lệ!" });
+            }
+
+            // Bắt đầu nối chuỗi HTML tổng
+            let combinedHtml = `
+                <!DOCTYPE html>
+                <html lang="vi">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>In Hóa Đơn Hàng Loạt</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; margin: 0; padding: 0; }
+                        /* QUAN TRỌNG: Ép ngắt trang sau mỗi hóa đơn */
+                        .invoice-page { padding: 40px; box-sizing: border-box; page-break-after: always; }
+                        /* Hóa đơn cuối cùng thì không ngắt trang nữa để tránh dư giấy trắng */
+                        .invoice-page:last-child { page-break-after: auto; }
+                        
+                        .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px; }
+                        .shop-name { font-size: 24px; font-weight: bold; margin: 0 0 5px 0; color: #ff8f73; }
+                        .info-grid { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; }
+                        table { w-full; border-collapse: collapse; margin-bottom: 20px; width: 100%; }
+                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
+                        th { background-color: #f8fafc; }
+                        .total-section { text-align: right; font-size: 15px; }
+                        .total-price { font-size: 20px; font-weight: bold; color: #e11d48; }
+                    </style>
+                </head>
+                <body>
+            `;
+
+            // Lặp qua từng đơn hàng để lấy dữ liệu và tạo HTML
+            for (let i = 0; i < orderIds.length; i++) {
+                const MaDH = orderIds[i];
+
+                // 1. Lấy thông tin chung của đơn hàng
+                const [donhang_info] = await connection.query(`
+                    SELECT dh.MaDonHangHienThi, dh.NgayLapDon, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.DiaChiGiao, dh.ThanhTien, dh.TongTien
+                    FROM DonHang dh WHERE dh.MaDH = ?
+                `, [MaDH]);
+
+                if (donhang_info.length === 0) continue; // Bỏ qua nếu đơn không tồn tại
+                const order = donhang_info[0];
+
+                // 2. Lấy danh sách sản phẩm
+                const [san_pham] = await connection.query(`
+                    SELECT mh.TenMH, pl.ChiTietPhanLoai, ct.SoLuong, ct.DonGiaBan
+                    FROM ChiTietDonHang ct
+                    JOIN PhanLoai pl ON ct.MaPhanLoai = pl.MaPhanLoai
+                    JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                    WHERE ct.MaDH = ?
+                `, [MaDH]);
+
+                // 3. Tạo các dòng <tr> cho bảng sản phẩm
+                let trRows = '';
+                san_pham.forEach((sp, index) => {
+                    trRows += `
+                        <tr>
+                            <td style="text-align: center;">${index + 1}</td>
+                            <td><strong>${sp.TenMH}</strong><br><small style="color: #666;">Phân loại: ${sp.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : sp.ChiTietPhanLoai}</small></td>
+                            <td style="text-align: center;">${sp.SoLuong}</td>
+                            <td style="text-align: right;">${Number(sp.DonGiaBan).toLocaleString('vi-VN')} đ</td>
+                            <td style="text-align: right;"><strong>${(Number(sp.DonGiaBan) * Number(sp.SoLuong)).toLocaleString('vi-VN')} đ</strong></td>
+                        </tr>
+                    `;
+                });
+
+                // 4. Nhúng vào khung HTML của một trang hóa đơn
+                combinedHtml += `
+                    <div class="invoice-page">
+                        <div class="header">
+                            <h1 class="shop-name">FIGURE COLLECT</h1>
+                            <p style="margin: 0; font-size: 14px; color: #666;">Phiếu Giao Hàng / Hóa Đơn Thanh Toán</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold;">Mã đơn: ${order.MaDonHangHienThi}</p>
+                        </div>
+
+                        <div class="info-grid">
+                            <div>
+                                <p><strong>Người nhận:</strong> ${order.TenNguoiNhan}</p>
+                                <p><strong>Số điện thoại:</strong> ${order.SDTNguoiNhan}</p>
+                                <p><strong>Địa chỉ:</strong> ${order.DiaChiGiao || 'Nhận tại quầy'}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <p><strong>Ngày đặt:</strong> ${new Date(order.NgayLapDon).toLocaleString('vi-VN')}</p>
+                                <p><strong>Ngày in:</strong> ${new Date().toLocaleString('vi-VN')}</p>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%; text-align: center;">STT</th>
+                                    <th style="width: 45%;">Tên sản phẩm</th>
+                                    <th style="width: 10%; text-align: center;">SL</th>
+                                    <th style="width: 20%; text-align: right;">Đơn giá</th>
+                                    <th style="width: 20%; text-align: right;">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${trRows}
+                            </tbody>
+                        </table>
+
+                        <div class="total-section">
+                            <p>Tổng tiền hàng: ${Number(order.TongTien).toLocaleString('vi-VN')} đ</p>
+                            <p class="total-price">SỐ TIỀN PHẢI THU: ${Number(order.ThanhTien).toLocaleString('vi-VN')} đ</p>
+                        </div>
+                        
+                        <div style="margin-top: 40px; text-align: center; font-style: italic; color: #666; border-top: 1px solid #eee; padding-top: 20px;">
+                            <p>Cảm ơn quý khách đã mua sắm tại Figure Collect!</p>
+                            <p>Quay video unbox để được hỗ trợ tốt nhất khi có sự cố.</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Đóng chuỗi HTML
+            combinedHtml += `
+                <script>
+                    window.onload = function() { window.print(); }
+                </script>
+                </body></html>
+            `;
+
+            res.send(combinedHtml);
+
+        } catch (error) {
+            console.error("Lỗi khi in hóa đơn hàng loạt: ", error);
+            res.status(500).json({ success: false, message: "Lỗi server khi in hóa đơn!" });
+        } finally {
+            connection.release();
+        }
+    },
+
     xuatExcelDonHang: async (req, res) => {
         try {
             const { NgayBatDau, NgayKetThuc, timkiem, trangthaitt, minPrice, maxPrice } = req.query;
