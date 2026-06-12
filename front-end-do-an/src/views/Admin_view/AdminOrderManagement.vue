@@ -319,33 +319,45 @@
           </div>
 
           <div class="p-8 space-y-6 flex-1">
-            <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm">
-              <div class="p-4 bg-slate-50/50">
-                <p class="text-slate-400 font-medium mb-1">Ngày đặt</p>
-                <p class="font-semibold text-slate-800">{{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
+            
+            <div class="relative">
+              
+              <button v-if="getCurrentStatusCode() < 3" 
+                      @click="openEditInfoModal" 
+                      class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-sky-500 hover:border-sky-300 rounded-lg shadow-sm transition-all z-10" 
+                      title="Sửa thông tin nhận hàng">
+                  <span class="material-symbols-outlined text-[16px]">edit</span>
+              </button>
+
+              <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm">
+                <div class="p-4 bg-slate-50/50">
+                  <p class="text-slate-400 font-medium mb-1">Ngày đặt</p>
+                  <p class="font-semibold text-slate-800">{{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
+                </div>
+                <div class="p-4 bg-slate-50/50">
+                  <p class="text-slate-400 font-medium mb-1">Trạng thái đơn</p>
+                  <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).class}`">
+                    {{ getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).text }}
+                  </span>
+                </div>
+                <div class="p-4 bg-slate-50/50">
+                  <p class="text-slate-400 font-medium mb-1">Khách hàng</p>
+                  <p class="font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.TenNguoiNhan || 'Khách vãng lai' }}</p>
+                </div>
+                <div class="p-4 bg-slate-50/50">
+                  <p class="text-slate-400 font-medium mb-1">Số điện thoại</p>
+                  <p class="font-semibold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.SDTNguoiNhan || 'N/A' }}</p>
+                </div>
+                <div class="p-4 md:col-span-2">
+                  <p class="text-slate-400 font-medium mb-1">Địa chỉ giao hàng</p>
+                  <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
+                </div>
+                <div class="p-4 md:col-span-2">
+                  <p class="text-slate-400 font-medium mb-1">Ghi chú</p>
+                  <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có ghi chú.' }}</p>
+                </div>
               </div>
-              <div class="p-4 bg-slate-50/50">
-                <p class="text-slate-400 font-medium mb-1">Trạng thái đơn</p>
-                <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).class}`">
-                  {{ getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).text }}
-                </span>
-              </div>
-              <div class="p-4 bg-slate-50/50">
-                <p class="text-slate-400 font-medium mb-1">Khách hàng</p>
-                <p class="font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.TenNguoiNhan || 'Khách vãng lai' }}</p>
-              </div>
-              <div class="p-4 bg-slate-50/50">
-                <p class="text-slate-400 font-medium mb-1">Số điện thoại</p>
-                <p class="font-semibold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.SDTNguoiNhan || 'N/A' }}</p>
-              </div>
-              <div class="p-4 md:col-span-2">
-                <p class="text-slate-400 font-medium mb-1">Địa chỉ giao hàng</p>
-                <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
-              </div>
-              <div class="p-4 md:col-span-2">
-                <p class="text-slate-400 font-medium mb-1">Ghi chú</p>
-                <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có ghi chú.' }}</p>
-              </div>
+              
             </div>
 
             <div v-if="selectedOrder.ThongTinGiaoHang?.MaVanDon" class="flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl p-4 animate-[fadeIn_0.3s_ease-out]">
@@ -505,6 +517,42 @@
           </div>
         </div>
       </div>
+
+      <div v-if="isEditInfoModalOpen" class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col border-t-4 border-sky-400">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sky-500">edit_square</span> Cập nhật thông tin giao hàng
+          </h3>
+          <button @click="isEditInfoModalOpen = false" class="text-slate-400 hover:text-rose-500 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tên người nhận <span class="text-rose-500">*</span></label>
+            <input v-model="editInfoForm.hoten" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Số điện thoại <span class="text-rose-500">*</span></label>
+            <input v-model="editInfoForm.sdt" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Địa chỉ giao hàng <span class="text-rose-500">*</span></label>
+            <textarea v-model="editInfoForm.diachi" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white resize-none"></textarea>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="isEditInfoModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
+          <button @click="submitEditInfo" class="px-5 py-2.5 text-sm font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-lg shadow-sky-500/20 rounded-xl transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">save</span> Lưu thay đổi
+          </button>
+        </div>
+      </div>
+    </div>
+
     </div>
   </div>
   <div 
@@ -1581,6 +1629,60 @@ const exportExcelReport = async () => {
     catch(error) { 
       console.error(error); 
       toastStore.showToast("Lỗi kết nối máy chủ", "error");
+    }
+  }; 
+
+  // --- QUẢN LÝ SỬA THÔNG TIN ĐƠN HÀNG ---
+  const isEditInfoModalOpen = ref(false);
+  const editInfoForm = ref({ MaDH: '', hoten: '', sdt: '', diachi: '' });
+
+  const openEditInfoModal = () => {
+    // Đổ dữ liệu hiện tại vào form
+    editInfoForm.value = {
+      MaDH: selectedOrder.value.MaDH,
+      hoten: selectedOrder.value.ThongTinGiaoHang?.TenNguoiNhan || '',
+      sdt: selectedOrder.value.ThongTinGiaoHang?.SDTNguoiNhan || '',
+      diachi: selectedOrder.value.ThongTinGiaoHang?.DiaChiGiao || ''
+    };
+    isEditInfoModalOpen.value = true;
+  };
+
+  const submitEditInfo = async () => {
+    // Kiểm tra rỗng
+    if (!editInfoForm.value.hoten.trim() || !editInfoForm.value.sdt.trim() || !editInfoForm.value.diachi.trim()) {
+      toastStore.showToast("Vui lòng nhập đầy đủ Tên, SĐT và Địa chỉ!", "warning");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      // LƯU Ý: Sửa lại đường dẫn API này cho khớp với file router.js ở Backend của bạn
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update-info`, { 
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editInfoForm.value)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toastStore.showToast("Cập nhật thông tin giao hàng thành công!", "success");
+        isEditInfoModalOpen.value = false;
+        
+        // Cập nhật lại Modal Chi tiết đơn hàng ngay lập tức
+        await viewOrderDetails({ id: editInfoForm.value.MaDH });
+        
+        // Làm mới danh sách phía sau
+        fetchOrders(); 
+      } else {
+        toastStore.showToast(result.message || "Không thể cập nhật thông tin.", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi sửa thông tin:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
     }
   };
     
