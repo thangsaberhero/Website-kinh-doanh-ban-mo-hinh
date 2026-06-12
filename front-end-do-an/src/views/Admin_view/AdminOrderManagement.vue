@@ -1863,15 +1863,16 @@ const exportExcelReport = async () => {
   const executeConfirmPayment = async () => {
     try {
       const token = localStorage.getItem('token');
+      const orderId = orderToPay.value.id || orderToPay.value.MaDH; // Lấy đúng ID dù bấm từ ngoài hay trong Modal
+
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/payment-status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        // ĐÃ BỔ SUNG: Truyền thêm số tiền cần thu và phương thức để Backend xử lý
         body: JSON.stringify({ 
-          MaDH: orderToPay.value.MaDH,
+          MaDH: orderId,
           SoTienThu: amountToCollect.value,
           PhuongThuc: collectionMethod.value
         })
@@ -1883,10 +1884,10 @@ const exportExcelReport = async () => {
         toastStore.showToast("Xác nhận thu tiền thành công!", "success");
         isPaymentConfirmModalOpen.value = false;
         
-        // Cập nhật giao diện local
-        if (selectedOrder.value && selectedOrder.value.ThongTinGiaoHang) {
-            selectedOrder.value.ThongTinGiaoHang.TrangThaiThanhToan = result.TrangThaiThanhToan || "Đã thanh toán";
-        }
+        // 🔴 ĐÃ SỬA: Tự động gọi lại API Chi tiết đơn hàng để load ngay Lịch sử giao dịch mới lên UI
+        await viewOrderDetails({ id: orderId });
+        
+        // Làm mới danh sách đơn hàng ở màn hình nền
         fetchOrders(); 
       } 
       else {
@@ -1928,9 +1929,9 @@ const exportExcelReport = async () => {
         toastStore.showToast("Xác nhận hoàn tiền thành công!", "success");
         isRefundConfirmModalOpen.value = false;
         
-        if (selectedOrder.value && selectedOrder.value.ThongTinGiaoHang) {
-            selectedOrder.value.ThongTinGiaoHang.TrangThaiThanhToan = result.TrangThaiThanhToan;
-        }
+        // 🔴 ĐÃ SỬA: Tự động cập nhật Lịch sử giao dịch (dòng hoàn tiền âm)
+        await viewOrderDetails({ id: orderToRefund.value });
+        
         fetchOrders(); 
       } else {
         toastStore.showToast(result.message || "Không thể xác nhận hoàn tiền.", "error");
