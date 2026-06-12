@@ -198,16 +198,24 @@
                   
                   <td class="px-6 py-4">
                     <div class="flex flex-col">
-                      
                       <div class="flex items-center gap-2">
                         <span class="font-bold text-slate-900 text-sm">{{ order.code }}</span>
                         <span class="text-[9px] px-1.5 py-0.5 rounded border font-black tracking-widest whitespace-nowrap transition-all"
                               :class="order.saleType?.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
                           {{ order.saleType?.toLowerCase().includes('order') ? 'ORDER' : 'SẴN' }}
                         </span>
+
+                        <div v-if="order.note" class="relative group/note cursor-help flex items-center justify-center">
+                          <span class="material-symbols-outlined text-rose-500 text-[18px] animate-pulse">edit_note</span>
+                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-lg opacity-0 group-hover/note:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-slate-700 whitespace-normal">
+                            <p class="font-bold text-rose-400 uppercase tracking-widest mb-1 text-[9px]">Ghi chú của khách:</p> 
+                            {{ order.note }}
+                          </div>
+                        </div>
                       </div>
                       
                       <span class="text-[11px] font-semibold text-slate-600 mt-0.5">{{ order.customer }}</span>
+                      
                       <span class="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-1">
                         <span class="material-symbols-outlined text-[13px] text-slate-400">badge</span>
                         NV: <span class="font-bold text-slate-500">{{ order.staffName }}</span>
@@ -217,9 +225,20 @@
                   
                   <td class="px-6 py-4">
                     <div class="flex flex-col items-start gap-1.5">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border shadow-sm" :class="getOrderStatusBadge(order.orderStatus).class">
-                        {{ getOrderStatusBadge(order.orderStatus).text }}
-                      </span>
+                      <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border shadow-sm" :class="getOrderStatusBadge(order.orderStatus).class">
+                          {{ getOrderStatusBadge(order.orderStatus).text }}
+                        </span>
+                        
+                        <div v-if="isSLA_Breached(order)" class="relative group/sla cursor-help flex items-center justify-center">
+                          <span class="material-symbols-outlined text-amber-500 text-[16px] drop-shadow-sm">warning</span>
+                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-lg opacity-0 group-hover/sla:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-slate-700 whitespace-normal">
+                            <span class="font-bold text-amber-400 block mb-1">Cảnh báo SLA:</span> 
+                            Đơn hàng này đã chờ duyệt quá <strong class="text-rose-400">24 tiếng</strong>. Cần liên hệ khách hoặc đóng gói ngay!
+                          </div>
+                        </div>
+                      </div>
+                      
                       <span class="text-[11px] font-medium text-slate-400">{{ order.time }} - {{ order.date }}</span>
                     </div>
                   </td>
@@ -1558,7 +1577,9 @@ const exportExcelReport = async () => {
             transactionDate: item.NgayThanhToan ? new Date(item.NgayThanhToan).toLocaleString('vi-VN') : 'Chưa thu tiền',
             saleType: item.LoaiHinhBan || 'Có sẵn',
             carrier: item.HangVanChuyen || 'Chưa gán hãng', 
-            trackingCode: item.MaVanDon || null
+            trackingCode: item.MaVanDon || null,
+            note: item.Note || '',
+            rawDate: item.NgayLapDon
           };
         });
       }
@@ -1567,6 +1588,17 @@ const exportExcelReport = async () => {
     } finally {
       isLoading.value = false;
     }
+  };
+
+  const isSLA_Breached = (order) => {
+    if (order.orderStatus.toUpperCase().includes('CHỜ DUYỆT')) {
+      const orderDate = new Date(order.rawDate);
+      const now = new Date();
+      // Tính chênh lệch giờ
+      const diffHours = Math.abs(now - orderDate) / (1000 * 60 * 60);
+      return diffHours >= 24; // Nếu lớn hơn hoặc bằng 24 tiếng thì báo động
+    }
+    return false;
   };
 
   let fetchTimeout = null;

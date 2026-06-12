@@ -738,7 +738,7 @@ const donhang_admin = {
             const sql_core = `
                 SELECT dh.MaDH, dh.MaDonHangHienThi, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.HangVanChuyen, dh.MaVanDon,
-                dh.ThanhTien, dh.TrangThaiThanhToan,
+                dh.ThanhTien, dh.TrangThaiThanhToan, dh.Note,
                 (
                     SELECT DISTINCT mh.LoaiHinhBan 
                     FROM ChiTietDonHang ctdh
