@@ -3,9 +3,9 @@
     <TheHeader />
 
     <main class="flex-1">
-      <section v-if="heroNews.id" class="relative w-full h-[85vh] min-h-[500px] overflow-hidden">
+      <section v-if="heroNews.id" class="relative w-full h-[65vh] sm:h-[75vh] md:h-[85vh] min-h-[420px] md:min-h-[500px] overflow-hidden">
         <div class="absolute inset-0">
-          <img :src="heroNews.image" :alt="heroNews.title" class="w-full h-full object-cover" />
+          <img :src="heroNews.image" :alt="heroNews.title" class="w-full h-full object-cover object-top md:object-center" />
           <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
           <div class="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent"></div>
         </div>
@@ -16,9 +16,8 @@
             </span>
             <span class="text-on-surface-variant text-xs font-bold tracking-widest uppercase">• {{ heroNews.readTime }} phút đọc</span>
           </div>
-          <h1 class="font-headline text-3xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white leading-tight mb-4 md:mb-6 uppercase max-w-4xl" v-html="heroNews.titleHtml">
-          </h1>
-          <p class="font-body text-base md:text-lg text-on-surface-variant max-w-2xl mb-8 leading-relaxed font-medium">
+          <h1 class="font-headline text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white leading-tight mb-4 md:mb-6 uppercase max-w-4xl" v-html="heroNews.titleHtml"></h1>
+          <p class="font-body text-sm md:text-lg text-on-surface-variant max-w-2xl mb-6 md:mb-8 leading-relaxed font-medium line-clamp-2 md:line-clamp-none">
             {{ heroNews.summary }}
           </p>
           <div>
@@ -78,7 +77,7 @@
               <article v-for="post in displayNews" :key="post.id" @click="router.push(`/news/${post.id}`)"
                        class="group flex flex-col cursor-pointer relative mt-4">
                 
-                <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-4 shadow-md group-hover:shadow-primary/20 group-hover:shadow-lg transition-all duration-300 border border-outline-variant/20 group-hover:border-primary/50">
+                <div class="relative w-full aspect-video md:aspect-[4/3] rounded-2xl overflow-hidden mb-4 shadow-md group-hover:shadow-primary/20 group-hover:shadow-lg transition-all duration-300 border border-outline-variant/20 group-hover:border-primary/50">
                   <img :src="post.image" :alt="post.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   
                   <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300"></div>
