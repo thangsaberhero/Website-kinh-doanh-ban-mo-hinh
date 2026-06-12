@@ -181,6 +181,7 @@
                   <th class="px-6 py-5 w-12 text-center"></th>
                   <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Mã đơn & Khách</th>
                   <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Trạng thái & Ngày</th>
+                  <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Vận chuyển</th>
                   <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Giá trị đơn</th>
                   <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Giao dịch TT (Thực tế)</th>
                   <th class="px-6 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Thao tác</th>
@@ -219,18 +220,23 @@
                       <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border shadow-sm" :class="getOrderStatusBadge(order.orderStatus).class">
                         {{ getOrderStatusBadge(order.orderStatus).text }}
                       </span>
-                      
                       <span class="text-[11px] font-medium text-slate-400">{{ order.time }} - {{ order.date }}</span>
-                      
-                      <div v-if="order.trackingCode" class="mt-1 flex flex-col gap-0.5 bg-sky-50/80 border border-sky-100/70 px-2 py-1 rounded-lg w-full max-w-[150px] shadow-sm">
-                        <p class="text-[9px] font-bold text-sky-600 flex items-center gap-1">
-                          <span class="material-symbols-outlined text-[12px]">local_shipping</span>
-                          {{ order.carrier }}
-                        </p>
-                        <p class="text-[10px] font-black text-slate-700 tracking-wider font-mono uppercase truncate" :title="order.trackingCode">
-                          {{ order.trackingCode }}
-                        </p>
-                      </div>
+                    </div>
+                  </td>
+                  
+                  <td class="px-6 py-4">
+                    <div v-if="order.trackingCode" class="flex flex-col gap-0.5 bg-sky-50/80 border border-sky-100/70 px-2 py-1.5 rounded-lg w-full max-w-[140px] shadow-sm">
+                      <p class="text-[9px] font-bold text-sky-600 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">local_shipping</span>
+                        {{ order.carrier }}
+                      </p>
+                      <p class="text-[10px] font-black text-slate-700 tracking-wider font-mono uppercase truncate" :title="order.trackingCode">
+                        {{ order.trackingCode }}
+                      </p>
+                    </div>
+                    <div v-else class="flex items-center gap-1 text-[10px] font-medium text-slate-300 italic">
+                      <span class="material-symbols-outlined text-[14px]">hourglass_empty</span>
+                      Chưa có mã
                     </div>
                   </td>
                   
