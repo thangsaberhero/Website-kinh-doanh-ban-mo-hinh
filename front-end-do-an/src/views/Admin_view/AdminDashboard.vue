@@ -917,7 +917,7 @@
             const customerName = order.TenKH || order.TenNguoiNhan || 'Khách vãng lai';
             
             return {
-              id: order.MaDH,
+              id: order.MaDonHangHienThi,
               avatarText: customerName.charAt(0).toUpperCase(),
               customerName: customerName,
               email: order.SDTNguoiNhan || 'Không có SĐT', 
