@@ -2,7 +2,15 @@
   <div class="bg-background text-on-background selection:bg-primary selection:text-on-primary-fixed min-h-screen flex flex-col font-body">
     <TheHeader />  
     <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">     
-      <aside class="w-72 hidden lg:flex flex-col border-r border-outline-variant/30 bg-surface-container-low overflow-y-auto custom-scrollbar">
+      <aside 
+        :class="[
+          'fixed inset-y-0 left-0 z-50 w-72 bg-surface-container-low border-r border-outline-variant/30 overflow-y-auto custom-scrollbar transform transition-transform duration-300 lg:relative lg:translate-x-0 lg:flex lg:flex-col shadow-2xl lg:shadow-none',
+          showMobileFilter ? 'translate-x-0' : '-translate-x-full'
+        ]"
+      >
+        <button @click="showMobileFilter = false" class="lg:hidden absolute top-4 right-4 w-8 h-8 bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center text-white">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
         <div class="p-8">
           <div class="flex items-center gap-3 mb-10">
             <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
@@ -78,6 +86,8 @@
         </div>    
       </aside>
 
+      <div v-if="showMobileFilter" @click="showMobileFilter = false" class="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"></div>
+
       <main class="flex-1 overflow-y-auto bg-surface p-6 lg:p-12 custom-scrollbar">
         <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
@@ -86,34 +96,33 @@
             </h1>
             <p class="text-gray-400 max-w-xl font-medium">Khám phá những tạo tác tinh xảo nhất từ thế giới Anime và Mecha. Mỗi mô hình là một câu chuyện huyền thoại.</p>
           </div>
-          <div class="flex flex-col items-end gap-3 text-sm shrink-0">
-            <div class="flex items-center gap-3">
-                <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Hiển thị:</span>
-                <select 
-                    v-model="limit" 
-                    class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
-                >
-                    <option value="9">9 Sản phẩm</option>
-                    <option value="18">18 Sản phẩm</option>
-                    <option value="27">27 Sản phẩm</option>
-                </select>
+          <div class="flex flex-wrap items-center gap-3 text-sm shrink-0 mt-4 md:mt-0">         
+            <button @click="showMobileFilter = true" class="lg:hidden flex items-center gap-2 bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold hover:bg-primary hover:text-black transition-colors w-full sm:w-auto justify-center">
+              <span class="material-symbols-outlined text-sm">filter_list</span>
+              <span class="text-xs uppercase tracking-widest">Bộ lọc</span>
+            </button>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+              <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Hiển thị:</span>
+              <select v-model="limit" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
+                <option value="9">9 SP</option>
+                <option value="18">18 SP</option>
+                <option value="27">27 SP</option>
+              </select>
             </div>
             
-            <div class="flex items-center gap-3">
-              <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Sắp xếp:</span>
-              <select 
-                v-model="sortBy" 
-                class="bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest"
-              >
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+              <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Sắp xếp:</span>
+              <select v-model="sortBy" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
                 <option value="newest">Mới nhất</option>
-                <option value="price_asc">Giá Thấp đến Cao</option>
-                <option value="price_desc">Giá Cao đến Thấp</option>
+                <option value="price_asc">Giá Tăng</option>
+                <option value="price_desc">Giá Giảm</option>
               </select>
             </div>
           </div>
         </header>
 
-        <div v-if="productList.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div v-if="productList.length > 0" class="grid grid-cols-2 xl:grid-cols-3 gap-3 md:gap-8">
           <ProductCard 
             v-for="sp in productList" 
             :key="sp.MaMoHinh" 
@@ -174,15 +183,15 @@
         </div>
 
         <section class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="md:col-span-2 bg-gradient-to-br from-primary-dim to-secondary-container p-10 rounded-2xl flex flex-col justify-center relative overflow-hidden">
+          <div class="md:col-span-2 bg-gradient-to-br from-primary-dim to-secondary-container p-6 md:p-10 rounded-2xl flex flex-col justify-center relative overflow-hidden">
             <div class="absolute right-0 top-0 w-1/2 h-full opacity-20 pointer-events-none">
               <span class="material-symbols-outlined text-[20rem] -mr-20 -mt-10 text-white">rocket_launch</span>
             </div>
             <h2 class="text-3xl font-headline font-bold text-white mb-4 z-10">GIA NHẬP BIỆT ĐỘI COLLECTOR</h2>
             <p class="text-white/80 max-w-md mb-8 z-10 font-medium">Đăng ký để nhận thông báo sớm nhất về các đợt Pre-order giới hạn và nhận voucher 100k cho đơn hàng đầu tiên.</p>
-            <div class="flex gap-4 max-w-md z-10">
+            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-md z-10">
               <input class="flex-1 bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder:text-white/70 focus:ring-1 focus:ring-white outline-none font-medium" placeholder="Email của bạn..." type="email"/>
-              <button class="bg-white text-primary-dim px-8 font-bold rounded-lg hover:bg-primary-fixed hover:text-white transition-colors shadow-lg">ĐĂNG KÝ</button>
+              <button class="bg-white text-primary-dim px-8 py-3 font-bold rounded-lg hover:bg-primary-fixed hover:text-white transition-colors shadow-lg">ĐĂNG KÝ</button>
             </div>
           </div>
           <div class="bg-surface-container p-10 rounded-2xl flex flex-col justify-center border border-outline-variant/30">
@@ -224,6 +233,7 @@
   const totalPages = ref(1);
   const totalItems = ref(0);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const showMobileFilter = ref(false);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
