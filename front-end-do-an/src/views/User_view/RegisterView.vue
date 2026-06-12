@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen flex items-center justify-center relative overflow-hidden">
     
-    <router-link to="/login" class="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
+    <router-link to="/login" class="hidden lg:flex fixed top-6 left-6 z-50 items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
       <span class="material-symbols-outlined text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
       <span class="text-sm font-bold text-white/90 tracking-wide">Quay lại đăng nhập</span>
     </router-link>
@@ -25,7 +25,7 @@
     </div>
 
     <main class="relative z-10 w-full max-w-6xl p-4 md:p-8">
-      <div class="animate-slide-up glass-panel w-full overflow-hidden rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row min-h-[750px]">
+      <div class="animate-slide-up glass-panel w-full overflow-hidden rounded-3xl md:rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row min-h-[auto] md:min-h-[750px]">
         
         <!-- NỬA TRÁI: SLIDER ẢNH NỀN -->
         <div class="hidden lg:flex lg:w-3/5 relative min-h-[600px] border-r border-white/5 overflow-hidden">
@@ -80,11 +80,11 @@
         </div>
 
         <!-- NỬA PHẢI: FORM ĐĂNG KÝ -->
-        <div class="w-full lg:w-2/5 p-8 md:p-10 lg:p-12 bg-surface/20 backdrop-blur-md flex flex-col justify-center overflow-y-auto custom-scrollbar">
+        <div class="w-full lg:w-2/5 p-5 sm:p-8 md:p-10 lg:p-12 bg-surface/20 backdrop-blur-md flex flex-col justify-center overflow-y-auto custom-scrollbar">
           <div class="w-full max-w-md mx-auto relative min-h-[500px] flex flex-col justify-center">
             
             <!-- Hiển thị Tên thương hiệu động ở bản Mobile -->
-            <div class="lg:hidden flex items-center gap-2 mb-10 absolute top-0 left-0">
+            <div class="lg:hidden flex items-center justify-between mb-6 relative w-full">
               <router-link to="/" class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
                 <span class="font-headline text-xl font-bold tracking-tight">{{ systemStore.settings.shop_name || 'FigureCollect' }}</span>
@@ -113,7 +113,7 @@
             <transition name="fade-slide" mode="out-in">              
               <div v-if="step === 1" key="step1">
                 <div class="mb-8 text-center">
-                  <h2 class="font-headline text-3xl font-bold text-on-surface mb-2">Đăng ký</h2>
+                  <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface mb-3">Đăng ký</h2>
                   <p class="text-on-surface-variant text-sm">Tạo tài khoản mới hoàn toàn miễn phí.</p>
                 </div>
 
@@ -211,7 +211,7 @@
                         required 
                         :disabled="countdown === 0"
                         placeholder="••••••" 
-                        class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-4 pl-12 pr-4 text-on-surface text-center text-2xl tracking-[1em] transition-all input-focus-glow font-bold disabled:opacity-50" 
+                        class="w-full bg-surface-container-highest/50 border-none border-b-2 border-outline/30 focus:border-primary focus:ring-0 rounded-lg py-4 pl-12 pr-4 text-on-surface text-center text-xl md:text-2xl tracking-[0.5em] md:tracking-[1em] transition-all input-focus-glow font-bold disabled:opacity-50" 
                       />
                     </div>
                   </div>

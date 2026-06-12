@@ -9,15 +9,15 @@
         
         <a class="font-headline text-xl md:text-2xl font-bold tracking-tighter text-primary cursor-pointer" @click="router.push('/')">{{ systemStore.settings.shop_name || 'FigureCollect' }}</a>
         <div class="hidden md:flex items-center gap-8">
-          <router-link to="/category" class="text-sm font-medium hover:text-primary transition-colors">Cửa hàng</router-link>
-          <router-link to="/news" class="text-sm font-medium hover:text-primary transition-colors">Tin tức</router-link>
-          <router-link to="/contact" class="text-sm font-medium hover:text-primary transition-colors">Liên hệ</router-link>
-          <router-link to="/truy-xuat/" class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff] hover:text-primary transition-colors">Truy xuất Blockchain</router-link>
+          <router-link to="/category" active-class="text-primary font-bold" class="text-sm font-medium hover:text-primary transition-colors">Cửa hàng</router-link>
+          <router-link to="/news" active-class="text-primary font-bold" class="text-sm font-medium hover:text-primary transition-colors">Tin tức</router-link>
+          <router-link to="/contact" active-class="text-primary font-bold" class="text-sm font-medium hover:text-primary transition-colors">Liên hệ</router-link>
+          <router-link to="/truy-xuat/" active-class="text-primary font-bold" class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff] hover:text-primary transition-colors">Truy xuất Blockchain</router-link>
         </div>
       </div>
 
       <div class="flex items-center gap-3 md:gap-6">
-        <button @click="router.push('/search')" class="lg:hidden hover:text-primary transition-colors p-1">
+        <button @click="showMobileSearch = !showMobileSearch" class="lg:hidden hover:text-primary transition-colors p-1">
           <span class="material-symbols-outlined text-[22px]">search</span>
         </button>
         
@@ -208,11 +208,66 @@
     >
       <div v-if="showMobileMenu" class="md:hidden absolute top-full left-0 w-full bg-surface-container-high border-b border-outline-variant/20 shadow-xl z-40">
         <div class="flex flex-col px-4 py-2">
-          <a class="py-3 border-b border-white/5 text-sm font-medium" @click="router.push('/category'); showMobileMenu = false">Cửa hàng</a>
-          <a class="py-3 border-b border-white/5 text-sm font-medium" @click="router.push('/news'); showMobileMenu = false">Tin tức</a>
-          <a class="py-3 border-b border-white/5 text-sm font-medium" @click="router.push('/contact'); showMobileMenu = false">Liên hệ</a>
-          <a class="py-3 text-sm font-medium" @click="router.push('/wishlist'); showMobileMenu = false">Mô hình yêu thích</a>
+          <router-link to="/category" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Cửa hàng</router-link>
+          <router-link to="/news" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Tin tức</router-link>
+          <router-link to="/contact" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Liên hệ</router-link>
+          <router-link to="/wishlist" @click="showMobileMenu = false" class="py-3 text-sm font-medium">Mô hình yêu thích</router-link>
           <router-link to="/truy-xuat/" @click="showMobileMenu = false" class="py-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
+        </div>
+      </div>
+    </transition>
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 -translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-4"
+    >
+      <div v-if="showMobileSearch" class="lg:hidden absolute top-full left-0 w-full bg-surface-container-high border-b border-outline-variant/20 shadow-xl z-30 p-4">
+        <div class="relative flex items-center bg-surface-container px-4 py-2.5 rounded-lg border border-outline-variant/20 focus-within:border-primary/50 transition-colors">
+          <span class="material-symbols-outlined text-outline text-xl mr-2">search</span>
+          <input 
+            v-model="searchQuery" 
+            @input="handleSearch"
+            @keyup.enter="submitSearch(); showMobileSearch = false"
+            class="bg-transparent border-none focus:ring-0 text-sm w-full pr-8 placeholder:text-outline text-on-surface outline-none" 
+            placeholder="Tìm kiếm mô hình..." 
+            type="text"
+          />
+          <button 
+            v-if="searchQuery" 
+            @click="clearSearch"
+            class="absolute right-3 text-outline hover:text-on-surface transition-colors"
+          >
+            <span class="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
+
+        <div v-if="searchQuery" class="mt-3 bg-surface-container-lowest rounded-xl overflow-hidden max-h-[50vh] overflow-y-auto custom-scrollbar border border-white/5 shadow-inner">
+          <div v-if="isSearching" class="p-4 text-center text-sm text-outline flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined animate-spin text-primary">progress_activity</span>
+            Đang tìm kiếm...
+          </div>
+          <div v-else-if="searchResults.length === 0" class="p-4 text-center text-sm text-outline">
+            Không tìm thấy mô hình nào.
+          </div>
+          <div v-else class="py-2">
+            <div 
+              v-for="item in searchResults" 
+              :key="item.MaMoHinh" 
+              @click="goToProduct(item.MaMoHinh); showMobileSearch = false"
+              class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0"
+            >
+              <div class="w-12 h-12 shrink-0 rounded bg-surface-container border border-white/10 overflow-hidden">
+                <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
+              </div>
+              <div class="flex-1">
+                <h4 class="text-sm font-bold text-on-surface line-clamp-1">{{ item.TenMH }}</h4>
+                <span class="text-primary font-bold text-xs">{{ formatPrice(item.DonGia) }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </transition>

@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen flex items-center justify-center relative overflow-hidden">
     
-    <router-link to="/" class="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
+    <router-link to="/" class="hidden lg:flex fixed top-6 left-6 z-50 items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
       <span class="material-symbols-outlined text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
       <span class="text-sm font-bold text-white/90 tracking-wide">Quay lại</span>
     </router-link>
@@ -25,7 +25,7 @@
     </div>
 
     <main class="relative z-10 w-full max-w-6xl p-4 md:p-8">
-      <div class="animate-slide-up glass-panel w-full overflow-hidden rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row min-h-[750px]">
+      <div class="animate-slide-up glass-panel w-full overflow-hidden rounded-3xl md:rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row min-h-[auto] md:min-h-[750px]">
         
         <!-- NỬA TRÁI: SLIDER ẢNH NỀN -->
         <div class="hidden lg:flex lg:w-3/5 relative min-h-[600px] border-r border-white/5 overflow-hidden">
@@ -87,10 +87,10 @@
         </div>
 
         <!-- NỬA PHẢI: FORM ĐĂNG NHẬP -->
-        <div class="w-full lg:w-2/5 p-8 md:p-12 lg:p-14 bg-surface/20 backdrop-blur-md flex flex-col justify-center overflow-y-auto">
+        <div class="w-full lg:w-2/5 p-5 sm:p-8 md:p-12 lg:p-14 bg-surface/20 backdrop-blur-md flex flex-col justify-center overflow-y-auto">
           <div class="w-full max-w-md mx-auto">
             
-            <div class="lg:hidden flex items-center justify-between mb-12">
+            <div class="lg:hidden flex items-center justify-between mb-6 relative w-full">
               <router-link to="/" class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-on-surface/80">arrow_back</span>
                 <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">deployed_code</span>
@@ -99,7 +99,7 @@
             </div>
 
             <div class="mb-10 text-center">
-              <h2 class="font-headline text-4xl font-bold text-on-surface mb-3">Đăng nhập</h2>
+              <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface mb-3">Đăng nhập</h2>
               <p class="text-on-surface-variant">Tiếp tục hành trình săn tìm những siêu phẩm hiếm có của bạn.</p>
             </div>
 
@@ -173,11 +173,11 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-              <button @click="handleGoogleLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
+              <button @click="handleGoogleLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.21-3.21C17.54 1.84 14.99 1 12 1 7.37 1 3.4 3.65 1.5 7.5l3.86 3c.91-2.72 3.47-4.46 6.64-4.46z" fill="#EA4335"></path><path d="M23.49 12.27c0-.81-.07-1.59-.21-2.34H12v4.42h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.88 3.39-8.47z" fill="#4285F4"></path><path d="M5.36 14.5c-.23-.68-.36-1.41-.36-2.17s.13-1.49.36-2.17l-3.86-3C.68 8.65 0 10.25 0 12s.68 3.35 1.5 4.84l3.86-2.34z" fill="#FBBC05"></path><path d="M12 23c3.12 0 5.73-1.03 7.64-2.8l-3.66-2.84c-1.06.71-2.42 1.14-3.98 1.14-3.17 0-5.84-2.14-6.8-5.04l-3.86 3C3.51 20.35 7.42 23 12 23z" fill="#34A853"></path></svg>
                 <span class="text-sm font-semibold text-white">Google</span>
               </button>
-              <button @click="handleFacebookLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
+              <button @click="handleFacebookLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
                 <svg class="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
                 <span class="text-sm font-semibold text-white">Facebook</span>
               </button>
