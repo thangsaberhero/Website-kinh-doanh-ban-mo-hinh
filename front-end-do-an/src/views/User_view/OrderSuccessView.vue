@@ -22,7 +22,7 @@
             </span>
           </div>
           
-          <h1 class="font-headline text-5xl md:text-7xl font-bold tracking-tighter mb-6 italic"
+          <h1 class="font-headline text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter mb-6 italic"
               :class="isPaymentFailed ? 'text-rose-500' : 'text-primary neon-glow'">
             {{ isPaymentFailed ? 'THANH TOÁN THẤT BẠI!' : 'ĐẶT HÀNG THÀNH CÔNG!' }}
           </h1>
@@ -34,16 +34,17 @@
         </section>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <div class="md:col-span-2 bg-surface-container-low p-8 rounded-2xl relative overflow-hidden border border-outline-variant/15 shadow-xl">
+          <div class="md:col-span-2 bg-surface-container-low p-5 md:p-8 rounded-2xl relative overflow-hidden border border-outline-variant/15 shadow-xl">
             <div class="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
               <span class="material-symbols-outlined text-[150px]">{{ isPaymentFailed ? 'error' : 'verified' }}</span>
             </div>
             <div class="flex flex-col h-full justify-between relative z-10">
               <div class="mb-6">
                 <span class="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold" :class="isPaymentFailed ? 'text-rose-500' : 'text-primary'">Mã đơn hàng</span>
-                <h2 class="font-headline text-4xl font-bold text-white tracking-tight">Mã: {{ orderIdDisplay }}</h2>
+                <h2 class="font-headline text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight break-all">Mã: {{ orderIdDisplay }}</h2>
               </div>
-              <div class="grid grid-cols-2 gap-8">
+              
+              <div class="grid grid-cols-2 gap-4 pt-6 border-t border-outline-variant/20">
                 <div>
                   <span class="text-[10px] uppercase tracking-[0.2em] text-outline mb-1 block font-bold">Ngày đặt</span>
                   <p class="text-white font-medium">{{ formatTime(orderInfo.NgayLapDon) }}</p>
@@ -58,7 +59,7 @@
             </div>
           </div>
 
-          <div class="bg-surface-container-high p-8 rounded-2xl border-l-4 shadow-xl" :class="isPaymentFailed ? 'border-rose-500' : 'border-primary'">
+          <div class="bg-surface-container-high p-5 md:p-8 rounded-2xl border-l-4 shadow-xl" :class="isPaymentFailed ? 'border-rose-500' : 'border-primary'">
             <span class="text-[10px] uppercase tracking-[0.2em] mb-4 block font-bold" :class="isPaymentFailed ? 'text-rose-500' : 'text-primary'">Tóm tắt đơn hàng</span>
             <div class="space-y-4">
               <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
@@ -81,7 +82,7 @@
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
           <button @click="router.push('/orders')" 
-                  class="w-full sm:w-auto px-10 py-4 text-on-primary-fixed font-headline font-bold uppercase tracking-widest text-sm rounded-lg hover:brightness-110 active:scale-95 transition-all"
+                  class="w-full sm:w-auto px-6 py-3.5 sm:px-10 sm:py-4 text-on-primary-fixed font-headline font-bold uppercase tracking-widest text-xs sm:text-sm rounded-lg hover:brightness-110 active:scale-95 transition-all"
                   :class="isPaymentFailed ? 'bg-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-r from-primary to-primary-container neon-glow'">
             Xem lại đơn hàng
           </button>
@@ -93,134 +94,128 @@
             Thanh toán lại
           </button>
         </div>
-
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, onMounted, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router'; 
-import { useAuthStore } from '../../stores/auth';
+  import TheHeader from '../../components/TheHeader.vue';
+  import { ref, onMounted, computed } from 'vue';
+  import { useRouter, useRoute } from 'vue-router'; 
+  import { useAuthStore } from '../../stores/auth';
 
-const router = useRouter();
-const route = useRoute(); 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const router = useRouter();
+  const route = useRoute(); 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const orderInfo = ref({});
-const orderItems = ref([]);
-const totalQty = ref(0);
-const orderIdDisplay = ref('');
+  const orderInfo = ref({});
+  const orderItems = ref([]);
+  const totalQty = ref(0);
+  const orderIdDisplay = ref('');
 
-// --- LOGIC PHÁT HIỆN TRẠNG THÁI THANH TOÁN TỪ URL ---
-const isPaymentFailed = computed(() => {
-  // 1. Check MoMo (resultCode != 0)
-  if (route.query.resultCode && route.query.resultCode !== '0') return true;
-  // 2. Check ZaloPay (status != 1)
-  if (route.query.status && route.query.status !== '1') return true;
-  
-  return false;
-});
+  // --- LOGIC PHÁT HIỆN TRẠNG THÁI THANH TOÁN TỪ URL ---
+  const isPaymentFailed = computed(() => {
+    // 1. Check MoMo (resultCode != 0)
+    if (route.query.resultCode && route.query.resultCode !== '0') return true;
+    // 2. Check ZaloPay (status != 1)
+    if (route.query.status && route.query.status !== '1') return true;
+    
+    return false;
+  });
 
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-const formatTime = (dateString) => {
-  if (!dateString) return 'Đang cập nhật';
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes} - ${day}/${month}/${year}`;
-};
-
-const fetchOrderdata = async () => {
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  
-  if (!token || !userString) {
-    router.push('/login');
-    return;
-  }
-  
-  // Lấy maDH từ biến maDH mới (hoặc tương thích ngược với orderId cũ nếu khách chọn COD)
-  let rawMaDH = route.query.maDH || route.query.orderId; 
-
-  if (!rawMaDH) {
-    router.push('/');
-    return;
-  }
-
-  // Đề phòng trường hợp Frontend cũ truyền 1 cục Array vào
-  const maDH = Array.isArray(rawMaDH) ? rawMaDH[0] : rawMaDH;
-  // orderIdDisplay.value = maDH;
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      orderInfo.value = result.data.ThongTinGiaoHang; 
-      orderItems.value = result.data.DanhSachHang;
-      totalQty.value = orderItems.value.reduce((sum, item) => sum + item.SoLuong, 0);
-      
-      // 🔥 BỔ SUNG DÒNG NÀY ĐỂ CẬP NHẬT MÃ HIỂN THỊ XỊN
-      if (orderInfo.value.MaDonHangHienThi) {
-        orderIdDisplay.value = orderInfo.value.MaDonHangHienThi;
-      }
-    }
-  } catch (error) {
-    console.error("Lỗi khi tải thông tin hóa đơn:", error);
-  }
-}
-const scrollToTopCustom = (duration = 1000) => {
-    const startPosition = window.scrollY;
-    const startTime = performance.now();
-
-    const animateScroll = (currentTime) => {
-      const timeElapsed = currentTime - startTime;
-      let progress = Math.min(timeElapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-      // Thực hiện cuộn
-      window.scrollTo(0, startPosition * (1 - easeProgress));
-
-      // Nếu chưa hết thời gian thì tiếp tục gọi animation
-      if (timeElapsed < duration) {
-        requestAnimationFrame(animateScroll);
-      }
-    };
-
-    requestAnimationFrame(animateScroll);
+  const formatTime = (dateString) => {
+    if (!dateString) return 'Đang cập nhật';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes} - ${day}/${month}/${year}`;
   };
 
-onMounted(() => {
-  scrollToTopCustom();
-  fetchOrderdata(); 
-});
+  const fetchOrderdata = async () => {
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    
+    if (!token || !userString) {
+      router.push('/login');
+      return;
+    }
+    
+    // Lấy maDH từ biến maDH mới (hoặc tương thích ngược với orderId cũ nếu khách chọn COD)
+    let rawMaDH = route.query.maDH || route.query.orderId; 
+
+    if (!rawMaDH) {
+      router.push('/');
+      return;
+    }
+
+    // Đề phòng trường hợp Frontend cũ truyền 1 cục Array vào
+    const maDH = Array.isArray(rawMaDH) ? rawMaDH[0] : rawMaDH;
+    // orderIdDisplay.value = maDH;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        orderInfo.value = result.data.ThongTinGiaoHang; 
+        orderItems.value = result.data.DanhSachHang;
+        totalQty.value = orderItems.value.reduce((sum, item) => sum + item.SoLuong, 0);
+        
+        // 🔥 BỔ SUNG DÒNG NÀY ĐỂ CẬP NHẬT MÃ HIỂN THỊ XỊN
+        if (orderInfo.value.MaDonHangHienThi) {
+          orderIdDisplay.value = orderInfo.value.MaDonHangHienThi;
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải thông tin hóa đơn:", error);
+    }
+  }
+  const scrollToTopCustom = (duration = 1000) => {
+      const startPosition = window.scrollY;
+      const startTime = performance.now();
+
+      const animateScroll = (currentTime) => {
+        const timeElapsed = currentTime - startTime;
+        let progress = Math.min(timeElapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+        // Thực hiện cuộn
+        window.scrollTo(0, startPosition * (1 - easeProgress));
+
+        // Nếu chưa hết thời gian thì tiếp tục gọi animation
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
+    };
+
+  onMounted(() => {
+    scrollToTopCustom();
+    fetchOrderdata(); 
+  });
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+  .neon-glow {
+    text-shadow: 0 0 10px rgba(255, 143, 115, 0.5), 0 0 20px rgba(255, 143, 115, 0.3);
+  }
 
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-
-.neon-glow {
-  text-shadow: 0 0 10px rgba(255, 143, 115, 0.5), 0 0 20px rgba(255, 143, 115, 0.3);
-}
-
-button.neon-glow {
-  text-shadow: none;
-  box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
-}
+  button.neon-glow {
+    text-shadow: none;
+    box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
+  }
 </style>

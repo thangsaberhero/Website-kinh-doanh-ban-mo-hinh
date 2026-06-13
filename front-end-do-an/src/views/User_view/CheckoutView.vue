@@ -3,49 +3,48 @@
     
     <TheHeader />
 
-    <main class="flex-grow w-full max-w-7xl mx-auto px-6 py-12">
-      <form @submit.prevent="processCheckout" class="flex flex-col lg:grid lg:grid-cols-12 gap-12 items-start">
-        
+    <main class="flex-grow w-full max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+      <form @submit.prevent="processCheckout" class="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">        
         <div class="lg:col-span-7 w-full space-y-12">
           
           <section>
             <div class="flex items-center gap-3 mb-8">
-                <span class="text-primary font-headline text-3xl font-bold italic">01</span>
-                <h2 class="text-2xl font-headline font-bold uppercase tracking-tight text-white">Thông tin giao hàng</h2>
+              <span class="text-primary font-headline text-2xl md:text-3xl font-bold italic">01</span>
+              <h2 class="text-xl md:text-2xl font-headline font-bold uppercase tracking-tight text-white">Thông tin giao hàng</h2>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Họ và tên</label>
-                  <input v-model="shippingInfo.name" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Nguyễn Văn A" type="text"/>
-                </div>
-                
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Số điện thoại</label>
-                  <input v-model="shippingInfo.phone" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="090 123 4567" type="tel"/>
-                </div>
-                
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Địa chỉ nhận hàng</label>
-                  <input v-model="shippingInfo.address" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300" placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố" type="text"/>
-                </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Họ và tên</label>
+                <input v-model="shippingInfo.name" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-3 md:p-4 transition-all duration-300" placeholder="Nguyễn Văn A" type="text"/>
+              </div>
+              
+              <div class="md:col-span-2">
+                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Số điện thoại</label>
+                <input v-model="shippingInfo.phone" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-3 md:p-4 transition-all duration-300" placeholder="090 123 4567" type="tel"/>
+              </div>
+              
+              <div class="md:col-span-2">
+                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Địa chỉ nhận hàng</label>
+                <input v-model="shippingInfo.address" required class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-3 md:p-4 transition-all duration-300" placeholder="Số nhà, Tên đường, Quận/Huyện, Tỉnh/Thành phố" type="text"/>
+              </div>
 
-                <div class="md:col-span-2">
-                  <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Ghi chú đơn hàng (Tùy chọn)</label>
-                  <textarea v-model="shippingInfo.note" rows="2" class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-4 transition-all duration-300 custom-scrollbar" placeholder="Ghi chú thêm về thời gian giao hàng, yêu cầu đóng gói..."></textarea>
-                </div>
-            </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-label uppercase tracking-widest text-outline mb-2">Ghi chú đơn hàng (Tùy chọn)</label>
+                <textarea v-model="shippingInfo.note" rows="2" class="w-full bg-surface-container-highest border-0 border-b border-outline-variant focus:border-primary focus:ring-0 text-on-surface p-3 md:p-4 transition-all duration-300 custom-scrollbar" placeholder="Ghi chú thêm về thời gian giao hàng, yêu cầu đóng gói..."></textarea>
+              </div>
+          </div>
         </section>
 
         <section>
             <div class="flex items-center gap-3 mb-8">
-              <span class="text-primary font-headline text-3xl font-bold italic">02</span>
-              <h2 class="text-2xl font-headline font-bold uppercase tracking-tight text-white">Phương thức thanh toán</h2>
+              <span class="text-primary font-headline text-2xl md:text-3xl font-bold italic">02</span>
+              <h2 class="text-xl md:text-2xl font-headline font-bold uppercase tracking-tight text-white">Phương thức thanh toán</h2>
             </div>
             
             <div class="space-y-4">
               <div v-if="isPaymentMethodEnabled('momo')" :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'momo' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
-                <label class="flex items-center gap-4 cursor-pointer p-6">
+                <label class="flex items-center gap-4 cursor-pointer p-4 md:p-6">
                   <input v-model="paymentMethod" value="momo" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
                   <span class="flex-grow font-bold text-white">Thanh toán qua Ví MoMo</span>
                   <span class="material-symbols-outlined text-outline text-[#A50064]">account_balance_wallet</span>
@@ -53,7 +52,7 @@
               </div>
 
               <div v-if="isPaymentMethodEnabled('zalo')" :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'zalopay' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
-                <label class="flex items-center gap-4 cursor-pointer p-6">
+                <label class="flex items-center gap-4 cursor-pointer p-4 md:p-6">
                   <input v-model="paymentMethod" value="zalopay" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
                   <span class="flex-grow font-bold text-white">Thanh toán qua ZaloPay</span>
                   <span class="material-symbols-outlined text-outline text-[#0068FF]">account_balance_wallet</span>
@@ -64,12 +63,12 @@
                   <h3 class="text-xs font-label uppercase tracking-widest text-outline mb-4">Tùy chọn thanh toán</h3>
                   <div class="flex flex-col gap-3">
                     <label class="flex items-center gap-3 cursor-pointer">
-                        <input v-model="momoType" value="Thanh toán toàn bộ" type="radio" class="text-primary w-4 h-4" />
-                        <span class="text-sm font-medium text-white">Thanh toán toàn bộ (100%)</span>
+                      <input v-model="momoType" value="Thanh toán toàn bộ" type="radio" class="text-primary w-4 h-4" />
+                      <span class="text-sm font-medium text-white">Thanh toán toàn bộ (100%)</span>
                     </label>
                     <label v-if="requiresDeposit" class="flex items-center gap-3 cursor-pointer">
-                        <input v-model="momoType" value="Cọc một phần" type="radio" class="text-primary w-4 h-4" />
-                        <span class="text-sm font-medium text-white">Chỉ đặt cọc trước (Theo quy định sản phẩm)</span>
+                      <input v-model="momoType" value="Cọc một phần" type="radio" class="text-primary w-4 h-4" />
+                      <span class="text-sm font-medium text-white">Chỉ đặt cọc trước (Theo quy định sản phẩm)</span>
                     </label>
                   </div>
               </div>
@@ -89,14 +88,14 @@
         </div>
 
         <aside class="lg:col-span-5 w-full sticky top-24">
-          <div class="bg-surface-container-high rounded-2xl p-8 shadow-2xl relative overflow-hidden border border-outline-variant/20">
+          <div class="bg-surface-container-high rounded-2xl p-5 md:p-8 shadow-2xl relative overflow-hidden border border-outline-variant/20">
             <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
             
             <h2 class="text-xl font-headline font-bold uppercase tracking-widest mb-6 border-b border-outline-variant/20 pb-4 text-white">Tóm tắt đơn hàng</h2>
             
             <div class="space-y-6 mb-6 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
               <div v-for="item in checkoutItems" :key="item.MaPhanLoai" class="flex gap-4">
-                <div class="w-20 h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
+                <div class="w-16 h-16 md:w-20 md:h-20 bg-surface-container-lowest border border-outline-variant/10 rounded-lg overflow-hidden flex-shrink-0">
                   <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
                 </div>
                 <div class="flex-grow flex flex-col justify-center">
@@ -105,18 +104,18 @@
                   
                   <div v-if="Number(item.DonGiaKhuyenMai) < Number(item.DonGia)">
                       <div v-if="item.SoLuongMuaGiaGoc === 0">
-                          <span class="mt-1 block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
-                          <span class="text-[10px] text-tertiary px-1 py-0.5 bg-tertiary/10 border border-tertiary/20 rounded inline-block mt-1">Giá Sale</span>
+                        <span class="mt-1 block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
+                        <span class="text-[10px] text-tertiary px-1 py-0.5 bg-tertiary/10 border border-tertiary/20 rounded inline-block mt-1">Giá Sale</span>
                       </div>
                       <div v-else class="mt-1">
-                          <span class="block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
-                          <span class="text-[10px] text-error font-bold block mt-1">Vượt giới hạn ưu đãi!</span>
-                          <span class="text-[11px] text-tertiary block">{{ item.SoLuongDuocGiamGia }} SP x {{ formatPrice(item.DonGiaKhuyenMai) }} (Sale)</span>
-                          <span class="text-[11px] text-outline block">{{ item.SoLuongMuaGiaGoc }} SP x {{ formatPrice(item.DonGia) }} (Gốc)</span>
+                        <span class="block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
+                        <span class="text-[10px] text-error font-bold block mt-1">Vượt giới hạn ưu đãi!</span>
+                        <span class="text-[11px] text-tertiary block">{{ item.SoLuongDuocGiamGia }} SP x {{ formatPrice(item.DonGiaKhuyenMai) }} (Sale)</span>
+                        <span class="text-[11px] text-outline block">{{ item.SoLuongMuaGiaGoc }} SP x {{ formatPrice(item.DonGia) }} (Gốc)</span>
                       </div>
                   </div>
                   <div v-else>
-                      <span class="mt-1 block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
+                    <span class="mt-1 block text-primary font-headline font-bold">{{ formatPrice(item.ThanhTien) }}</span>
                   </div>
                 </div>
               </div>
@@ -200,7 +199,7 @@
     <div v-if="isVoucherModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
       <div class="bg-surface-container-high rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] border border-outline-variant/20">
         
-        <div class="px-6 py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container shrink-0">
+        <div class="px-4 py-4 md:px-6 md:py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container shrink-0">
           <h3 class="text-lg font-headline font-bold text-white flex items-center gap-2">
             <span class="material-symbols-outlined text-primary">sell</span>
             Chọn Mã Giảm Giá
@@ -210,8 +209,7 @@
           </button>
         </div>
 
-        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 bg-surface-container-low space-y-6">
-          
+        <div class="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1 bg-surface-container-low space-y-6">          
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-3">Thêm mã giảm giá cá nhân</label>
             <div class="flex gap-2">
@@ -269,373 +267,371 @@
               <p class="text-sm text-outline font-medium">Hiện tại chưa có mã giảm giá nào.</p>
             </div>
           </div>
-
         </div>
 
-        <div class="px-6 py-5 border-t border-outline-variant/20 bg-surface-container flex gap-3 shrink-0">
+        <div class="px-4 py-4 md:px-6 md:py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container shrink-0">
           <button @click="isVoucherModalOpen = false" class="flex-1 py-3.5 rounded-xl font-bold text-outline hover:text-white bg-surface-container-highest transition-colors text-sm">Đóng</button>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import TheHeader from '../../components/TheHeader.vue';
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../../stores/auth';
-import { useToastStore } from '../../stores/toast';
+  import TheHeader from '../../components/TheHeader.vue';
+  import { ref, reactive, computed, onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth';
+  import { useToastStore } from '../../stores/toast';
 
-const router = useRouter();
-const authStore = useAuthStore();
-const toastStore = useToastStore();
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const router = useRouter();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const isProcessing = ref(false);
-const paymentMethod = ref(''); 
-const checkoutItems = ref([]);
+  const isProcessing = ref(false);
+  const paymentMethod = ref(''); 
+  const checkoutItems = ref([]);
 
-const momoType = ref('Thanh toán toàn bộ');
-const requiresDeposit = computed(() => checkoutItems.value.some(item => item.TienCocToiThieu > 0));
+  const momoType = ref('Thanh toán toàn bộ');
+  const requiresDeposit = computed(() => checkoutItems.value.some(item => item.TienCocToiThieu > 0));
 
-const shippingInfo = reactive({
-  name: '',
-  phone: '',
-  address: '',
-  note: ''
-});
+  const shippingInfo = reactive({
+    name: '',
+    phone: '',
+    address: '',
+    note: ''
+  });
 
-// Giữ nguyên summary được Backend trả về cho Flash Sale
-const cartSummary = ref({ subtotal: 0, discount: 0, totalPrice: 0 });
+  // Giữ nguyên summary được Backend trả về cho Flash Sale
+  const cartSummary = ref({ subtotal: 0, discount: 0, totalPrice: 0 });
 
-// ===============================================
-// HỆ THỐNG VOUCHER (MÃ GIẢM GIÁ)
-// ===============================================
-const isVoucherModalOpen = ref(false);
-const isFetchingVouchers = ref(false);
-const availableVouchers = ref([]);
-const selectedVoucher = ref(null);
-const voucherInputCode = ref('');
+  // ===============================================
+  // HỆ THỐNG VOUCHER (MÃ GIẢM GIÁ)
+  // ===============================================
+  const isVoucherModalOpen = ref(false);
+  const isFetchingVouchers = ref(false);
+  const availableVouchers = ref([]);
+  const selectedVoucher = ref(null);
+  const voucherInputCode = ref('');
 
-// 1. Mở Modal và Load API Voucher
-const openVoucherModal = async () => {
-  isVoucherModalOpen.value = true;
-  await fetchVouchers();
-};
-
-// 2. Gọi API danh sách Voucher
-const fetchVouchers = async () => {
-  isFetchingVouchers.value = true;
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API_BASE_URL}/api/don_hang/get_magg`, {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      availableVouchers.value = data.data;
-    }
-  } catch (error) {
-    console.error("Lỗi lấy danh sách Voucher:", error);
-  } finally {
-    isFetchingVouchers.value = false;
-  }
-};
-
-// 3. Hàm kiểm tra điều kiện (Đơn tối thiểu)
-const isEligible = (voucher) => {
-  // cartSummary.totalPrice ở đây chính là (Tiền Hàng - Tiền Flash Sale)
-  return cartSummary.value.totalPrice >= voucher.MucGiaToiThieu;
-};
-
-// 4. Bấm "Chọn" ở List
-const selectVoucherFromList = (voucher) => {
-  selectedVoucher.value = voucher;
-  isVoucherModalOpen.value = false;
-  toastStore.showToast(`Đã áp dụng mã: ${voucher.MaVoucher}`, "success");
-};
-
-// 5. Bấm nút "Áp dụng" khi nhập tay
-const applyVoucherByCode = () => {
-  const code = voucherInputCode.value.trim().toUpperCase();
-  const found = availableVouchers.value.find(v => v.MaVoucher.toUpperCase() === code);
-  
-  if (found) {
-    if (isEligible(found)) {
-      selectVoucherFromList(found);
-      voucherInputCode.value = '';
-    } else {
-      toastStore.showToast(`Đơn hàng chưa đạt tối thiểu ${formatPrice(found.MucGiaToiThieu)} để dùng mã này!`, "error");
-    }
-  } else {
-    toastStore.showToast("Mã voucher không tồn tại hoặc đã hết hạn!", "error");
-  }
-};
-
-// 6. Xóa Voucher đang chọn
-const removeVoucher = () => {
-  selectedVoucher.value = null;
-  toastStore.showToast("Đã bỏ áp dụng mã giảm giá", "success");
-};
-
-// 7. Tính số tiền Voucher giảm được (Mô phỏng logic Backend)
-const voucherDiscountAmount = computed(() => {
-  if (!selectedVoucher.value) return 0;
-  const v = selectedVoucher.value;
-  const currentTotal = cartSummary.value.totalPrice; 
-
-  if (currentTotal < v.MucGiaToiThieu) return 0; // Đề phòng
-
-  if (v.LoaiGiamGia === 'TienMat') {
-    return Number(v.ChietKhau);
-  } else if (v.LoaiGiamGia === 'ChietKhau') {
-    const tinhGiam = currentTotal * (Number(v.ChietKhau) / 100);
-    return Math.min(tinhGiam, Number(v.GiaTriGiamToiDa || tinhGiam));
-  }
-  return 0;
-});
-
-// 8. TỔNG TIỀN CUỐI CÙNG SAU KHI TRỪ VOUCHER
-const finalTotal = computed(() => {
-  return Math.max(0, cartSummary.value.totalPrice - voucherDiscountAmount.value);
-});
-
-// Helper hiển thị cho Voucher
-const formatVoucherDesc = (v) => {
-  if (v.LoaiGiamGia === 'TienMat') return `Giảm ${formatPrice(v.ChietKhau)}`;
-  return `Giảm ${v.ChietKhau}% (Tối đa ${formatPrice(v.GiaTriGiamToiDa)})`;
-};
-const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleDateString('vi-VN');
-};
-
-// Hàm định dạng tiền tệ
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-
-// ===============================================
-// HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
-// ===============================================
-const scrollToTopCustom = (duration = 1000) => {
-    const startPosition = window.scrollY;
-    const startTime = performance.now();
-
-    const animateScroll = (currentTime) => {
-      const timeElapsed = currentTime - startTime;
-      let progress = Math.min(timeElapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-      // Thực hiện cuộn
-      window.scrollTo(0, startPosition * (1 - easeProgress));
-
-      // Nếu chưa hết thời gian thì tiếp tục gọi animation
-      if (timeElapsed < duration) {
-        requestAnimationFrame(animateScroll);
-      }
-    };
-
-    requestAnimationFrame(animateScroll);
+  // 1. Mở Modal và Load API Voucher
+  const openVoucherModal = async () => {
+    isVoucherModalOpen.value = true;
+    await fetchVouchers();
   };
-  const activePaymentMethods = ref([]);
 
-  const fetchActivePayments = async () => {
+  // 2. Gọi API danh sách Voucher
+  const fetchVouchers = async () => {
+    isFetchingVouchers.value = true;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/setting/admin/public-payment-methods`);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/don_hang/get_magg`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const data = await res.json();
-      if (data.success) {
-        activePaymentMethods.value = data.data.filter(p => p.TrangThaiHoatDong === 1).map(p => p.TenPhuongThuc.toLowerCase());
+      if (res.ok && data.success) {
+        availableVouchers.value = data.data;
       }
     } catch (error) {
-      console.error("Lỗi lấy cổng thanh toán:", error);
+      console.error("Lỗi lấy danh sách Voucher:", error);
+    } finally {
+      isFetchingVouchers.value = false;
     }
   };
 
-  const isPaymentMethodEnabled = (keyword) => {
-    return activePaymentMethods.value.some(name => name.includes(keyword.toLowerCase()));
+  // 3. Hàm kiểm tra điều kiện (Đơn tối thiểu)
+  const isEligible = (voucher) => {
+    // cartSummary.totalPrice ở đây chính là (Tiền Hàng - Tiền Flash Sale)
+    return cartSummary.value.totalPrice >= voucher.MucGiaToiThieu;
   };
 
-onMounted(async () => {
-  scrollToTopCustom();
-  window.scroll(0,0);
-  await fetchActivePayments();
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
+  // 4. Bấm "Chọn" ở List
+  const selectVoucherFromList = (voucher) => {
+    selectedVoucher.value = voucher;
+    isVoucherModalOpen.value = false;
+    toastStore.showToast(`Đã áp dụng mã: ${voucher.MaVoucher}`, "success");
+  };
 
-  if (!token || !userString) {
-    toastStore.showToast("Vui lòng đăng nhập để đặt hàng!", "error");
-    router.push('/login');
-    return;
-  }
-
-  const userObj = JSON.parse(userString);
-
-  try {
-    const resInfo = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`,{
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const dataInfo = await resInfo.json();
+  // 5. Bấm nút "Áp dụng" khi nhập tay
+  const applyVoucherByCode = () => {
+    const code = voucherInputCode.value.trim().toUpperCase();
+    const found = availableVouchers.value.find(v => v.MaVoucher.toUpperCase() === code);
     
-    if (resInfo.ok && dataInfo.data) {
-      const userData = dataInfo.data;
-      shippingInfo.name = userData.TenKH || userData.TenDN || '';
-      shippingInfo.phone = userData.SDT || '';
-      shippingInfo.address = userData.diachi || userData.DiaChi || '';
-    }
-
-    const resCart = await fetch(`${API_BASE_URL}/api/don_hang/watch`, {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const dataCart = await resCart.json();
-
-    if (dataCart.success) {
-      checkoutItems.value = dataCart.data;
-      cartSummary.value = dataCart.cartSummary;
-      
-      if (checkoutItems.value.length === 0) {
-        toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
-        router.push('/cart');
+    if (found) {
+      if (isEligible(found)) {
+        selectVoucherFromList(found);
+        voucherInputCode.value = '';
+      } else {
+        toastStore.showToast(`Đơn hàng chưa đạt tối thiểu ${formatPrice(found.MucGiaToiThieu)} để dùng mã này!`, "error");
       }
+    } else {
+      toastStore.showToast("Mã voucher không tồn tại hoặc đã hết hạn!", "error");
     }
-  } catch (error) {
-    console.error("Lỗi khi tải dữ liệu Checkout:", error);
-    toastStore.showToast("Không thể tải thông tin đặt hàng, vui lòng thử lại!", "error");
-  }
-});
+  };
 
-// ===============================================
-// XỬ LÝ ĐẶT HÀNG (Gọi API Xác Nhận Đơn Hàng)
-// ===============================================
-const processCheckout = async () => {
-  if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
-    toastStore.showToast("Vui lòng điền đầy đủ thông tin giao hàng!", "error");
-    return;
-  }
+  // 6. Xóa Voucher đang chọn
+  const removeVoucher = () => {
+    selectedVoucher.value = null;
+    toastStore.showToast("Đã bỏ áp dụng mã giảm giá", "success");
+  };
 
-  if (checkoutItems.value.length === 0) {
-    toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
-    return;
-  }
+  // 7. Tính số tiền Voucher giảm được (Mô phỏng logic Backend)
+  const voucherDiscountAmount = computed(() => {
+    if (!selectedVoucher.value) return 0;
+    const v = selectedVoucher.value;
+    const currentTotal = cartSummary.value.totalPrice; 
 
-  if (!paymentMethod.value) {
-    toastStore.showToast("Vui lòng chọn phương thức thanh toán!", "error");
-    return; 
-  }
+    if (currentTotal < v.MucGiaToiThieu) return 0; // Đề phòng
 
-  if (paymentMethod.value === 'cod' && requiresDeposit.value) {
-    toastStore.showToast("Đơn hàng chứa sản phẩm bắt buộc cọc, không thể dùng COD!", "error");
-    return; 
-  }
+    if (v.LoaiGiamGia === 'TienMat') {
+      return Number(v.ChietKhau);
+    } else if (v.LoaiGiamGia === 'ChietKhau') {
+      const tinhGiam = currentTotal * (Number(v.ChietKhau) / 100);
+      return Math.min(tinhGiam, Number(v.GiaTriGiamToiDa || tinhGiam));
+    }
+    return 0;
+  });
 
-  isProcessing.value = true;
-  
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  
-  if (!token || !userString) {
-    toastStore.showToast("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!", "error");
-    router.push('/login');
-    return;
-  }
+  // 8. TỔNG TIỀN CUỐI CÙNG SAU KHI TRỪ VOUCHER
+  const finalTotal = computed(() => {
+    return Math.max(0, cartSummary.value.totalPrice - voucherDiscountAmount.value);
+  });
 
-  try {
-    // 🔥 ĐÃ BỔ SUNG TRUYỀN MaGG XUỐNG BACKEND ĐỂ ÁP DỤNG VOUCHER 🔥
-    const payload = {
-      TenNguoiNhan: shippingInfo.name,
-      SDTNguoiNhan: shippingInfo.phone,
-      DiaChiGiao: shippingInfo.address,
-      Note: shippingInfo.note,
-      MaGG: selectedVoucher.value ? selectedVoucher.value.MaGG : null 
+  // Helper hiển thị cho Voucher
+  const formatVoucherDesc = (v) => {
+    if (v.LoaiGiamGia === 'TienMat') return `Giảm ${formatPrice(v.ChietKhau)}`;
+    return `Giảm ${v.ChietKhau}% (Tối đa ${formatPrice(v.GiaTriGiamToiDa)})`;
+  };
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('vi-VN');
+  };
+
+  // Hàm định dạng tiền tệ
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+  // ===============================================
+  // HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
+  // ===============================================
+  const scrollToTopCustom = (duration = 1000) => {
+      const startPosition = window.scrollY;
+      const startTime = performance.now();
+
+      const animateScroll = (currentTime) => {
+        const timeElapsed = currentTime - startTime;
+        let progress = Math.min(timeElapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+        // Thực hiện cuộn
+        window.scrollTo(0, startPosition * (1 - easeProgress));
+
+        // Nếu chưa hết thời gian thì tiếp tục gọi animation
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
+    };
+    const activePaymentMethods = ref([]);
+
+    const fetchActivePayments = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/setting/admin/public-payment-methods`);
+        const data = await res.json();
+        if (data.success) {
+          activePaymentMethods.value = data.data.filter(p => p.TrangThaiHoatDong === 1).map(p => p.TenPhuongThuc.toLowerCase());
+        }
+      } catch (error) {
+        console.error("Lỗi lấy cổng thanh toán:", error);
+      }
     };
 
-    const response = await fetch(`${API_BASE_URL}/api/don_hang/xacnhan`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
+    const isPaymentMethodEnabled = (keyword) => {
+      return activePaymentMethods.value.some(name => name.includes(keyword.toLowerCase()));
+    };
 
-    const data = await response.json();
+  onMounted(async () => {
+    scrollToTopCustom();
+    window.scroll(0,0);
+    await fetchActivePayments();
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
 
-    if (!response.ok) {
-      toastStore.showToast(data.message, "error");
-      isProcessing.value = false;
+    if (!token || !userString) {
+      toastStore.showToast("Vui lòng đăng nhập để đặt hàng!", "error");
+      router.push('/login');
       return;
     }
 
-    toastStore.showToast("🎉 " + data.message, "success");
-    
-    // Xử lý cổng thanh toán
-    if (paymentMethod.value === 'momo') {
-      const momoRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/momo/create`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ MaDH: data.MaDonHang, HinhThuc: momoType.value })
+    const userObj = JSON.parse(userString);
+
+    try {
+      const resInfo = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`,{
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      const momoData = await momoRes.json();
+      const dataInfo = await resInfo.json();
       
-      if (momoRes.ok && momoData.checkoutUrl) window.location.href = momoData.checkoutUrl;
-      else { toastStore.showToast("Lỗi tạo cổng thanh toán MoMo", "error"); isProcessing.value = false; }
-    } 
-    else if (paymentMethod.value === 'zalopay') {
-      const zaloRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/zalopay/create`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ MaDH: data.MaDonHang, HinhThuc: momoType.value })
+      if (resInfo.ok && dataInfo.data) {
+        const userData = dataInfo.data;
+        shippingInfo.name = userData.TenKH || userData.TenDN || '';
+        shippingInfo.phone = userData.SDT || '';
+        shippingInfo.address = userData.diachi || userData.DiaChi || '';
+      }
+
+      const resCart = await fetch(`${API_BASE_URL}/api/don_hang/watch`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      const zaloData = await zaloRes.json();
-      
-      if (zaloRes.ok && zaloData.checkoutUrl) window.location.href = zaloData.checkoutUrl;
-      else { toastStore.showToast("Lỗi tạo cổng thanh toán ZaloPay", "error"); isProcessing.value = false; }
-    } 
-    else {
-      router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
+      const dataCart = await resCart.json();
+
+      if (dataCart.success) {
+        checkoutItems.value = dataCart.data;
+        cartSummary.value = dataCart.cartSummary;
+        
+        if (checkoutItems.value.length === 0) {
+          toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
+          router.push('/cart');
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu Checkout:", error);
+      toastStore.showToast("Không thể tải thông tin đặt hàng, vui lòng thử lại!", "error");
+    }
+  });
+
+  // ===============================================
+  // XỬ LÝ ĐẶT HÀNG (Gọi API Xác Nhận Đơn Hàng)
+  // ===============================================
+  const processCheckout = async () => {
+    if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
+      toastStore.showToast("Vui lòng điền đầy đủ thông tin giao hàng!", "error");
+      return;
     }
 
-  } catch (error) {
-    console.error("Lỗi quá trình đặt hàng:", error);
-    toastStore.showToast("Đã xảy ra lỗi, vui lòng thử lại sau!", "error");
-  } finally {
-    if (paymentMethod.value === 'cod') isProcessing.value = false;
-  }
-};
+    if (checkoutItems.value.length === 0) {
+      toastStore.showToast("Giỏ hàng của bạn đang trống!", "error");
+      return;
+    }
+
+    if (!paymentMethod.value) {
+      toastStore.showToast("Vui lòng chọn phương thức thanh toán!", "error");
+      return; 
+    }
+
+    if (paymentMethod.value === 'cod' && requiresDeposit.value) {
+      toastStore.showToast("Đơn hàng chứa sản phẩm bắt buộc cọc, không thể dùng COD!", "error");
+      return; 
+    }
+
+    isProcessing.value = true;
+    
+    const token = localStorage.getItem('token');
+    const userString = localStorage.getItem('user');
+    
+    if (!token || !userString) {
+      toastStore.showToast("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!", "error");
+      router.push('/login');
+      return;
+    }
+
+    try {
+      // 🔥 ĐÃ BỔ SUNG TRUYỀN MaGG XUỐNG BACKEND ĐỂ ÁP DỤNG VOUCHER 🔥
+      const payload = {
+        TenNguoiNhan: shippingInfo.name,
+        SDTNguoiNhan: shippingInfo.phone,
+        DiaChiGiao: shippingInfo.address,
+        Note: shippingInfo.note,
+        MaGG: selectedVoucher.value ? selectedVoucher.value.MaGG : null 
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/xacnhan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toastStore.showToast(data.message, "error");
+        isProcessing.value = false;
+        return;
+      }
+
+      toastStore.showToast("🎉 " + data.message, "success");
+      
+      // Xử lý cổng thanh toán
+      if (paymentMethod.value === 'momo') {
+        const momoRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/momo/create`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ MaDH: data.MaDonHang, HinhThuc: momoType.value })
+        });
+        const momoData = await momoRes.json();
+        
+        if (momoRes.ok && momoData.checkoutUrl) window.location.href = momoData.checkoutUrl;
+        else { toastStore.showToast("Lỗi tạo cổng thanh toán MoMo", "error"); isProcessing.value = false; }
+      } 
+      else if (paymentMethod.value === 'zalopay') {
+        const zaloRes = await fetch(`${API_BASE_URL}/api/don_hang/payment/zalopay/create`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ MaDH: data.MaDonHang, HinhThuc: momoType.value })
+        });
+        const zaloData = await zaloRes.json();
+        
+        if (zaloRes.ok && zaloData.checkoutUrl) window.location.href = zaloData.checkoutUrl;
+        else { toastStore.showToast("Lỗi tạo cổng thanh toán ZaloPay", "error"); isProcessing.value = false; }
+      } 
+      else {
+        router.push({ path: '/ordersuccess', query: { orderId: data.MaDonHang } });
+      }
+
+    } catch (error) {
+      console.error("Lỗi quá trình đặt hàng:", error);
+      toastStore.showToast("Đã xảy ra lỗi, vui lòng thử lại sau!", "error");
+    } finally {
+      if (paymentMethod.value === 'cod') isProcessing.value = false;
+    }
+  };
 </script>
 
 <style scoped>
-.neon-glow {
-  box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
-}
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
+  }
 
-.input-focus-glow:focus {
-  box-shadow: 0 10px 15px -3px rgba(255, 143, 115, 0.05);
-}
+  .input-focus-glow:focus {
+    box-shadow: 0 10px 15px -3px rgba(255, 143, 115, 0.05);
+  }
 
-.slide-down {
-  animation: slideDown 0.3s ease-out forwards;
-  transform-origin: top;
-}
-@keyframes slideDown {
-  from { opacity: 0; transform: scaleY(0.9); }
-  to { opacity: 1; transform: scaleY(1); }
-}
+  .slide-down {
+    animation: slideDown 0.3s ease-out forwards;
+    transform-origin: top;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: scaleY(0.9); }
+    to { opacity: 1; transform: scaleY(1); }
+  }
 
-/* Modal Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
+  /* Modal Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
 </style>
