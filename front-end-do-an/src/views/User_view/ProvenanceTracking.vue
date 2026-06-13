@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#0d0e12] text-white pb-24">
     <TheHeader />
 
-    <div class="relative h-[450px] bg-[url('https://images8.alphacoders.com/102/1029194.jpg')] bg-cover bg-center flex items-center justify-center text-center">
+    <div class="relative h-[300px] md:h-[450px] bg-[url('https://images8.alphacoders.com/102/1029194.jpg')] bg-cover bg-center flex items-center justify-center text-center">
       <div class="absolute inset-0 bg-gradient-to-b from-[#0d0e12]/40 to-[#0d0e12]"></div>
       <div class="relative z-10 px-4">
         <h1 class="text-4xl md:text-6xl font-black tracking-wider text-white my-2.5 drop-shadow-[0_0_20px_rgba(255,107,74,0.5)] uppercase">
@@ -20,8 +20,7 @@
       </div>
     </div>
 
-    <div class="max-w-[1300px] mx-auto -mt-20 px-5 relative z-20">
-
+    <div class="max-w-[1300px] mx-auto -mt-12 md:-mt-20 px-4 md:px-5 relative z-20">
       <div class="bg-[#1c1d21]/95 border border-[#ff6b4a]/15 rounded-[24px] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)] backdrop-blur-md mb-10 max-w-[900px] mx-auto">
         <div class="border border-transparent rounded-full px-2 py-1 focus-within:border-[#ff6b4a] focus-within:shadow-[0_0_8px_rgba(255,107,74,0.3)] transition-all duration-300">
           <div class="flex items-center">
@@ -36,7 +35,7 @@
             <button
               @click="handleSearch"
               :disabled="isLoadingSearch"
-              class="bg-[#ff6b4a] text-white border-none py-3.5 px-10 rounded-full font-extrabold cursor-pointer transition duration-300 hover:bg-[#ff8566] hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,74,0.4)] disabled:opacity-50"
+              class="bg-[#ff6b4a] text-white border-none py-3 md:py-3.5 px-5 md:px-10 rounded-full font-extrabold cursor-pointer transition duration-300 hover:bg-[#ff8566] hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,74,0.4)] disabled:opacity-50 whitespace-nowrap"
             >
               {{ isLoadingSearch ? 'Đang tìm...' : 'TRUY XUẤT' }}
             </button>
@@ -96,7 +95,6 @@
 
       <transition name="fade">
         <div v-if="productData" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1.5fr_1.5fr] gap-6 mt-5">
-
           <div class="bg-[#15161a] border border-[#2a2b30] rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1">
             <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
               <h3 class="text-base font-bold text-white">📦 Thông tin sản phẩm</h3>
@@ -165,13 +163,13 @@
             <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
               <h3 class="text-base font-bold text-white">🗺️ Bản Đồ Vị Trí</h3>
             </div>
-            <div class="relative w-full h-full flex-1 min-h-[350px]">
+            <div class="relative w-full h-full flex-1 min-h-[250px] md:min-h-[350px]">
               <div class="absolute top-4 right-4 z-20">
                 <div class="bg-[#ff6b4a]/15 border border-[#ff6b4a]/40 text-[#ff6b4a] py-1.5 px-3 rounded-full text-xs font-bold flex items-center gap-2 backdrop-blur-sm">
                   <span class="w-2 h-2 bg-[#ff6b4a] rounded-full animate-ping"></span> LIVE TRACKING
                 </div>
               </div>
-              <div id="real-map" class="w-full h-full min-h-[350px] rounded-xl z-10"></div>
+              <div id="real-map" class="w-full h-full min-h-[250px] md:min-h-[350px] rounded-xl z-10"></div>
             </div>
           </div>
 
@@ -187,8 +185,8 @@
           <div class="bg-[#1c1d21] p-6 rounded-2xl border border-dashed border-zinc-700">
             <h3 class="text-base font-bold mb-4 text-gray-200">1. Khởi tạo sản phẩm (Mint NFT)</h3>
             <div class="space-y-3">
-              <input v-model="mintForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-sm outline-none focus:border-[#ff6b4a] transition-colors">
-              <input v-model="mintForm.manufacturer" type="text" placeholder="Nhà sản xuất..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="mintForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="mintForm.manufacturer" type="text" placeholder="Nhà sản xuất..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
               <button @click="handleMint" :disabled="isLoadingMint" class="w-full p-3 rounded-lg font-bold cursor-pointer border-none bg-[#ff6b4a] text-white hover:bg-[#ff8566] transition-colors disabled:opacity-50">
                 {{ isLoadingMint ? 'Đang ghi Blockchain...' : 'KÍCH HOẠT (MINT)' }}
               </button>
