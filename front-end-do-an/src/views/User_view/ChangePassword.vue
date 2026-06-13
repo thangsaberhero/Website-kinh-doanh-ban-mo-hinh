@@ -113,14 +113,12 @@
               </div>
             </div>
 
-            <div class="p-8 md:px-10 flex flex-col sm:flex-row items-center justify-between gap-6 bg-surface-container-low/30">
-              <button @click="resetForm" type="button" class="flex-1 md:flex-none py-3.5 md:py-0 text-xs font-bold uppercase tracking-widest text-outline bg-surface-container md:bg-transparent border border-outline-variant/30 md:border-transparent rounded-lg md:rounded-none hover:text-white transition-colors text-center">
+            <div class="p-5 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4 border-t border-outline-variant/15 bg-surface-container-low/30">
+              <button type="button" @click="resetForm" class="w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-white bg-surface-container-highest border border-outline-variant/30 rounded-lg hover:bg-surface-bright transition-colors text-center">
                 Hủy thay đổi
               </button>
-              <button 
-                type="submit" 
-                :disabled="isSaving || !isFormValid"
-                class="flex-[2] md:flex-none w-full sm:w-auto bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-widest px-0 md:px-8 py-3.5 rounded-lg neon-glow hover:brightness-110 active:scale-95 transition-all flex items-center justify-center md:justify-start gap-2"
+              <button type="submit" :disabled="isSaving || !isFormValid"
+                class="w-full sm:w-auto bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-widest px-8 py-3.5 rounded-lg neon-glow hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <span v-if="isSaving" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                 {{ isSaving ? 'ĐANG XỬ LÝ...' : 'CẬP NHẬT MẬT KHẨU' }}
