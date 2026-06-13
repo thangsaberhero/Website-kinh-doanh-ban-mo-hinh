@@ -307,8 +307,9 @@
                     <td class="px-6 py-4 align-middle text-right">
                       <div class="flex flex-col items-end justify-center gap-1">
                         
-                        <div v-if="product.variants && product.variants.length > 1" class="pr-3">
-                          <span class="text-sm font-bold text-slate-900 font-mono">{{ product.sellPrice }} đ</span>
+                        <div v-if="product.variants && product.variants.length > 1" class="flex items-center justify-end gap-1">
+                          <span class="text-sm font-bold text-slate-900 font-mono">{{ product.sellPrice }}</span>
+                          <span class="text-xs font-bold text-slate-600">đ</span>
                         </div>
 
                         <div v-else class="inline-flex items-center justify-end gap-1 group/edit relative">
