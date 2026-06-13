@@ -909,24 +909,24 @@
                 
                 <input type="file" ref="editGalleryInputRef" class="hidden" accept="image/*" multiple @change="handleEditGalleryUpload">
                 
-                <div ref="galleryGridRef" class="grid grid-cols-4 md:grid-cols-5 gap-3 whitespace-normal">
+                <div ref="galleryGridRef" class="grid grid-cols-3 xl:grid-cols-4 gap-4 whitespace-normal mt-3">
                   <div v-for="(item, index) in editingProduct.galleryItems" 
                        :key="item.id" 
-                       class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group bg-white shadow-sm hover:shadow-lg transition-all cursor-grab active:cursor-grabbing hover:border-rose-300">
+                       class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group bg-white shadow-sm hover:shadow-lg transition-all cursor-grab active:cursor-grabbing hover:border-rose-400">
                     
-                    <img :src="item.url" class="w-full h-full object-contain p-1">
+                    <img :src="item.url" class="w-full h-full object-contain bg-slate-50">
                     
-                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-between p-1.5">
+                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-between p-2">
                       <div class="w-full flex justify-end">
                         <button @click.stop="removeEditGalleryImage(index)" 
-                                class="w-6 h-6 bg-white border border-rose-100 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow"
+                                class="w-7 h-7 bg-white border border-rose-100 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-md transform hover:scale-105"
                                 title="Xóa ảnh này">
-                          <span class="material-symbols-outlined text-[14px]">delete</span>
+                          <span class="material-symbols-outlined text-[16px]">delete</span>
                         </button>
                       </div>
                       
                       <div class="w-full text-center">
-                        <span class="text-[10px] font-bold text-white bg-slate-900/50 px-2 py-0.5 rounded-full line-clamp-1 break-all">
+                        <span class="text-[11px] font-bold text-white bg-slate-900/60 px-3 py-1 rounded-full line-clamp-1 break-all backdrop-blur-sm">
                           Ảnh {{ index + 1 }}
                         </span>
                       </div>
@@ -935,9 +935,9 @@
                   
                   <button v-if="(editingProduct.galleryItems?.length || 0) < 10"
                           @click="triggerEditGalleryInput" 
-                          class="aspect-square rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-400 hover:bg-sky-50 transition-all gap-1 group">
-                    <span class="material-symbols-outlined text-[24px]">add</span>
-                    <span class="text-[9px] font-bold text-slate-500 group-hover:text-sky-600">Thêm ảnh</span>
+                          class="aspect-square rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-400 hover:bg-sky-50 transition-all gap-1.5 group">
+                    <span class="material-symbols-outlined text-[28px] group-hover:scale-110 transition-transform">add_photo_alternate</span>
+                    <span class="text-[10px] font-bold text-slate-500 group-hover:text-sky-600">Thêm ảnh</span>
                   </button>
                 </div>
                 
@@ -1572,6 +1572,8 @@
             file: null
           }));
         }
+        
+        isEditModalOpen.value = true;
 
         // Kích hoạt Kéo thả an toàn với Vue
         nextTick(() => {
