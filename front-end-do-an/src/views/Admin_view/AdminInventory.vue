@@ -239,14 +239,19 @@
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto min-h-[300px]">
             <table class="w-full text-left border-collapse whitespace-nowrap">
-              <thead>
-                <tr class="bg-slate-50/50 border-b border-slate-100">
-                  <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Tên sản phẩm</th>
-                  <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold">Loại Hình Bán</th>
-                  <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Giá nhập</th>
-                  <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-right">Giá bán</th>
-                  <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-center">Tồn kho</th>
-                  <th class="px-8 py-5 text-[10px] uppercase tracking-widest text-slate-400 font-bold text-center w-24">Hành động</th>
+              <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200">
+                <tr>
+                  <th class="px-8 py-4 font-semibold">
+                    <div class="flex items-center gap-4">
+                      <div class="w-6"></div>
+                      <span>Tên sản phẩm</span>
+                    </div>
+                  </th>
+                  <th class="px-8 py-4 font-semibold">Loại hình bán</th>
+                  <th class="px-8 py-4 font-semibold text-right">Giá nhập</th>
+                  <th class="px-8 py-4 font-semibold text-right">Giá bán</th>
+                  <th class="px-8 py-4 font-semibold text-center">Tồn kho</th>
+                  <th class="px-8 py-4 font-semibold text-center">Hành động</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
@@ -313,7 +318,15 @@
                     </td>
                     
                     <td class="px-8 py-4 text-center">
-                      </td>
+                      <div class="flex justify-center gap-2">
+                        <button @click.stop="openEditModal(product)" class="p-2 text-slate-400 hover:text-sky-500 bg-white border border-slate-200 hover:border-sky-200 rounded-lg transition-all shadow-sm group relative" title="Sửa thông tin">
+                          <span class="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
+                        <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="p-2 text-slate-400 hover:text-rose-500 bg-white border border-slate-200 hover:border-rose-200 rounded-lg transition-all shadow-sm" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
+                          <span class="material-symbols-outlined text-[16px]">{{ product.isVisible === 1 ? 'visibility_off' : 'visibility' }}</span>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
 
                   <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/50 shadow-inner">
