@@ -18,3 +18,14 @@
 .animate-slide-up {
   animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+.material-symbols-outlined {
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  /* Đảm bảo icon luôn có kích thước vuông vắn kể cả khi chưa tải xong */
+  display: inline-block;
+  line-height: 1;
+}
