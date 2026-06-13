@@ -14,9 +14,9 @@
           <p class="text-on-surface-variant font-medium">Quản lý thông tin liên hệ và địa chỉ giao hàng của bạn.</p>
         </header>
 
-        <div class="glass-panel p-5 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">
+        <div class="glass-panel p-5 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl min-h-[500px]">
           <div v-if="isLoading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface/50 backdrop-blur-sm">
-            <span class="material-symbols-outlined animate-spin text-primary text-5xl mb-4">autorenew</span>
+            <span class="material-symbols-outlined animate-spin text-primary text-5xl mb-4">settings</span>
             <p class="text-sm font-bold text-on-surface-variant uppercase tracking-widest animate-pulse">Đang đồng bộ dữ liệu...</p>
           </div>
 
