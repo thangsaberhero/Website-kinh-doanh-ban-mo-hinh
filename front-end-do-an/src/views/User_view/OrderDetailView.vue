@@ -1,6 +1,5 @@
 <template>
-  <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
-    
+  <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">    
     <TheHeader />
 
     <main class="flex-1 pt-8 pb-24 px-6 max-w-7xl mx-auto w-full relative">
@@ -18,11 +17,10 @@
             {{ "Mã: " + (orderInfo.MaDonHangHienThi || route.params.id) }}
           </h1>
         </div>
-        <div class="flex flex-wrap gap-4">
-          
+        <div class="flex flex-col sm:flex-row flex-wrap gap-3 w-full md:w-auto mt-6 md:mt-0">      
           <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && !isExpired(orderInfo.NgayLapDon)"
                   @click="showPaymentModal = true" 
-                  class="px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
+                  class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
             <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
             Thanh toán ngay ({{ formatCountdown(orderInfo.NgayLapDon) }})
           </button>
@@ -36,25 +34,23 @@
 
           <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa thanh toán'"
                   @click="showCancelModal = true"
-                  class="px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center gap-2 transition-all active:scale-95">
+                  class="w-full sm:w-auto px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all active:scale-95">
             <span class="material-symbols-outlined text-lg">cancel</span>
             Hủy đơn hàng
           </button>
 
-          <button v-else class="px-6 py-3 bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-bold rounded-lg flex items-center gap-2 transition-all border border-outline-variant/15">
-            <span class="material-symbols-outlined text-lg">support_agent</span>
-            Liên hệ hỗ trợ
+          <button v-else class="w-full sm:w-auto px-6 py-3.5 bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all border border-outline-variant/15">
+            <span class="material-symbols-outlined text-lg">support_agent</span> Liên hệ hỗ trợ
           </button>
 
-          <button @click="router.push('/category')" class="px-8 py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-bold rounded-lg flex items-center gap-2 transition-all hover:brightness-110 active:scale-95 shadow-lg shadow-primary/20">
+          <button @click="router.push('/category')" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all hover:brightness-110 active:scale-95 shadow-lg shadow-primary/20">
             Tiếp tục mua sắm
           </button>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div class="lg:col-span-8 space-y-8">
-          
+        <div class="lg:col-span-8 space-y-8">       
           <section class="glass-panel rounded-xl p-8 border border-outline-variant/10 shadow-xl">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 border-b border-outline-variant/10 pb-5">
               <h3 class="font-headline text-lg font-bold flex items-center gap-2 text-white">
@@ -138,11 +134,11 @@
                 
                 <div class="mt-auto md:mt-0 md:text-right flex flex-row md:flex-col justify-between items-end">
                   <span class="text-[10px] md:text-xs text-outline font-bold uppercase tracking-widest">SL: {{ item.SoLuong < 10 ? '0'+item.SoLuong : item.SoLuong }}</span>
-                  <div class="text-right mt-1">
-                    <div v-if="item.LaHangKhuyenMai === 1" class="text-[10px] md:text-xs text-outline line-through mb-0.5">
+                  <div class="text-right mt-1 shrink-0">
+                    <div v-if="item.LaHangKhuyenMai === 1" class="text-[10px] md:text-xs text-outline line-through mb-0.5 whitespace-nowrap">
                       {{ formatPrice(item.DonGiaGoc * item.SoLuong) }}
                     </div>
-                    <span class="text-base md:text-2xl font-headline font-black text-primary">{{ formatPrice(item.ThanhTienSP) }}</span>
+                    <span class="text-base md:text-2xl font-headline font-black text-primary whitespace-nowrap">{{ formatPrice(item.ThanhTienSP) }}</span>
                   </div>
                 </div>
               </div>
@@ -151,9 +147,7 @@
         </div>
 
         <div class="lg:col-span-4 space-y-8 sticky top-24">
-          <section class="glass-panel rounded-xl p-6 border border-outline-variant/10 shadow-xl">
-            
-            <!-- 🔥 ĐÃ BỔ SUNG NÚT SỬA THÔNG TIN -->
+          <section class="glass-panel rounded-xl p-6 border border-outline-variant/10 shadow-xl">            
             <div class="flex items-center justify-between gap-3 mb-6 border-b border-outline-variant/10 pb-4">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
@@ -312,7 +306,7 @@
       </div>
     </div>
 
-    <!-- 🔥 ĐÃ BỔ SUNG: MODAL SỬA THÔNG TIN ĐỊA CHỈ -->
+    <!-- MODAL SỬA THÔNG TIN ĐỊA CHỈ -->
     <div v-if="showEditAddressModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div class="bg-surface-container-high border border-outline-variant/30 rounded-3xl p-5 md:p-8 max-w-md w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
         <div class="flex justify-between items-center mb-6">
@@ -348,333 +342,332 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '../../stores/auth';
-import { useToastStore } from '../../stores/toast';
-import TheHeader from '../../components/TheHeader.vue';
+  import { ref, computed, onMounted, onUnmounted } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth';
+  import { useToastStore } from '../../stores/toast';
+  import TheHeader from '../../components/TheHeader.vue';
 
-const authStore = useAuthStore();
-const toastStore = useToastStore();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore();
 
-const router = useRouter();
-const route = useRoute();
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const router = useRouter();
+  const route = useRoute();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-const orderItems = ref([]); 
-const orderInfo = ref({});
-const orderStatus = ref([]);
-const order = ref([]);
+  const orderItems = ref([]); 
+  const orderInfo = ref({});
+  const orderStatus = ref([]);
+  const order = ref([]);
 
-// QUẢN LÝ THANH TOÁN LẠI
-const showPaymentModal = ref(false);
-const repayMethod = ref('Thanh toán toàn bộ');
-const paymentGateway = ref('momo'); 
-const isProcessingPayment = ref(false);
+  // QUẢN LÝ THANH TOÁN LẠI
+  const showPaymentModal = ref(false);
+  const repayMethod = ref('Thanh toán toàn bộ');
+  const paymentGateway = ref('momo'); 
+  const isProcessingPayment = ref(false);
 
-// QUẢN LÝ HỦY ĐƠN HÀNG
-const showCancelModal = ref(false);
-const isCanceling = ref(false);
+  // QUẢN LÝ HỦY ĐƠN HÀNG
+  const showCancelModal = ref(false);
+  const isCanceling = ref(false);
 
-// 🔥 ĐÃ BỔ SUNG: QUẢN LÝ SỬA ĐỊA CHỈ
-const showEditAddressModal = ref(false);
-const isUpdatingAddress = ref(false);
-const editAddressForm = ref({
-  hoten: '',
-  sdt: '',
-  diachi: ''
-});
-
-const currentOrderStatus = computed(() => {
-  if (orderStatus.value && orderStatus.value.length > 0) {
-    return orderStatus.value[orderStatus.value.length - 1].TenTrangThai;
-  }
-  return '';
-});
-
-const now = ref(Date.now());
-let timerInterval;
-
-const formatTime = (dateString) => {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${hours}:${minutes}, ${day}/${month}`;
-};
-
-const getRemainingTime = (dateString) => {
-  if (!dateString) return 0;
-  const createdTime = new Date(dateString).getTime();
-  const expireTime = createdTime + 15 * 60 * 1000; 
-  return expireTime - now.value;
-};
-
-const formatCountdown = (dateString) => {
-  const diff = getRemainingTime(dateString);
-  if (diff <= 0) return '00:00';
-  const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
-  const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-};
-
-const isExpired = (dateString) => {
-  return getRemainingTime(dateString) <= 0;
-};
-
-// Lộ trình động (Dynamic Timeline)
-const dynamicSteps = computed(() => {
-  const status = currentOrderStatus.value;
-  
-  if (status === 'Đã hủy') {
-    return [
-      { name: 'Chờ duyệt', icon: 'receipt_long' },
-      { name: 'Đã hủy', icon: 'cancel' }
-    ];
-  }
-  
-  if (status === 'Đang hoàn hàng' || status === 'Đã hoàn hàng') {
-    return [
-      { name: 'Chờ duyệt', icon: 'receipt_long' },
-      { name: 'Đang vận chuyển', icon: 'local_shipping' },
-      { name: 'Đã hoàn hàng', icon: 'keyboard_return' }
-    ];
-  }
-
-  return [
-    { name: 'Chờ duyệt', icon: 'receipt_long' },
-    { name: 'Đang đóng gói', icon: 'inventory_2' },
-    { name: 'Đang vận chuyển', icon: 'local_shipping' },
-    { name: 'Đã giao', icon: 'check_circle' }
-  ];
-});
-
-const timeline = computed(() => {
-  const latestStepName = currentOrderStatus.value;
-
-  return dynamicSteps.value.map((step) => {
-    const safeOrderStatus = orderStatus.value || [];
-    const dbRecord = safeOrderStatus.find(s => s.TenTrangThai === step.name);
-    let currentStatus = 'pending';
-    let timeString = null;
-    
-    if (dbRecord) {
-      timeString = formatTime(dbRecord.ThoiGian);
-      currentStatus = (step.name === latestStepName) ? 'active' : 'completed';
-    }
-    
-    if (latestStepName === 'Đã hủy' && step.name === 'Chờ duyệt') {
-       currentStatus = 'completed';
-    }
-    
-    return { ...step, status: currentStatus, time: timeString };
+  // QUẢN LÝ SỬA ĐỊA CHỈ
+  const showEditAddressModal = ref(false);
+  const isUpdatingAddress = ref(false);
+  const editAddressForm = ref({
+    hoten: '',
+    sdt: '',
+    diachi: ''
   });
-});
 
-const progressWidth = computed(() => {
-  if (!orderStatus.value || orderStatus.value.length === 0) return '0%';
-  const latestStepName = currentOrderStatus.value;
-  let currentIndex = dynamicSteps.value.findIndex(s => s.name === latestStepName);
-  if (currentIndex === -1) currentIndex = 0;
-  return `${(currentIndex / (dynamicSteps.value.length - 1)) * 100}%`;
-});
-
-const fetchOrderdata = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    router.push('/login');
-    return;
-  }
-  const maDH = route.params.id;
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      orderInfo.value = result.data.ThongTinGiaoHang; 
-      orderItems.value = result.data.DanhSachHang;
-      orderStatus.value = result.data.Trang_thai_don_hang;
-      document.title = `Mã ${orderInfo.value.MaDonHangHienThi || maDH} | FigureCollect`;
-    } else {
-      order.value = [];
+  const currentOrderStatus = computed(() => {
+    if (orderStatus.value && orderStatus.value.length > 0) {
+      return orderStatus.value[orderStatus.value.length - 1].TenTrangThai;
     }
-  } catch (error) {
-    console.error("Lỗi khi tải thông tin đơn hàng:", error);
-  }
-}
+    return '';
+  });
 
-// 🔥 ĐÃ BỔ SUNG: HÀM MỞ MODAL & COPY DATA CŨ
-const openEditAddressModal = () => {
-  editAddressForm.value = {
-    hoten: orderInfo.value.TenNguoiNhan,
-    sdt: orderInfo.value.SDTNguoiNhan,
-    diachi: orderInfo.value.DiaChiGiao
+  const now = ref(Date.now());
+  let timerInterval;
+
+  const formatTime = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${hours}:${minutes}, ${day}/${month}`;
   };
-  showEditAddressModal.value = true;
-};
 
-// 🔥 ĐÃ BỔ SUNG: HÀM GỬI YÊU CẦU CẬP NHẬT ĐỊA CHỈ
-const submitUpdateAddress = async () => {
-  // Validate cơ bản
-  if (!editAddressForm.value.hoten.trim() || !editAddressForm.value.sdt.trim() || !editAddressForm.value.diachi.trim()) {
-    return toastStore.showToast("Vui lòng điền đầy đủ thông tin!", "error");
-  }
-  
-  const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
-  if (!phoneRegex.test(editAddressForm.value.sdt.trim())) {
-    return toastStore.showToast("Số điện thoại không hợp lệ!", "error");
-  }
+  const getRemainingTime = (dateString) => {
+    if (!dateString) return 0;
+    const createdTime = new Date(dateString).getTime();
+    const expireTime = createdTime + 15 * 60 * 1000; 
+    return expireTime - now.value;
+  };
 
-  isUpdatingAddress.value = true;
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/don_hang/fix`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ 
-        MaDH: route.params.id,
-        hoten: editAddressForm.value.hoten,
-        sdt: editAddressForm.value.sdt,
-        diachi: editAddressForm.value.diachi
-      }) 
-    });
+  const formatCountdown = (dateString) => {
+    const diff = getRemainingTime(dateString);
+    if (diff <= 0) return '00:00';
+    const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+    const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  const isExpired = (dateString) => {
+    return getRemainingTime(dateString) <= 0;
+  };
+
+  // Lộ trình động (Dynamic Timeline)
+  const dynamicSteps = computed(() => {
+    const status = currentOrderStatus.value;
     
-    const data = await response.json();
-    
-    if (response.ok) {
-      toastStore.showToast("Đã cập nhật thông tin giao hàng!", "success");
-      showEditAddressModal.value = false;
-      fetchOrderdata(); // Load lại data để giao diện cập nhật tên/địa chỉ mới
-    } else {
-      toastStore.showToast(data.message, "error");
+    if (status === 'Đã hủy') {
+      return [
+        { name: 'Chờ duyệt', icon: 'receipt_long' },
+        { name: 'Đã hủy', icon: 'cancel' }
+      ];
     }
-  } catch (error) {
-    console.error("Lỗi khi cập nhật địa chỉ:", error);
-    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
-  } finally {
-    isUpdatingAddress.value = false;
-  }
-};
-
-const handleRepay = async () => {
-  const token = localStorage.getItem('token');
-  isProcessingPayment.value = true;
-  try {
-    const endpoint = paymentGateway.value === 'momo' ? '/api/don_hang/payment/momo/create' : '/api/don_hang/payment/zalopay/create';
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ MaDH: route.params.id, HinhThuc: repayMethod.value })
-    });
-    const data = await response.json();
-    if (response.ok) window.location.href = data.checkoutUrl;
-    else toastStore.showToast(data.message, "error");
-  } catch (error) {
-    toastStore.showToast("Lỗi kết nối máy chủ", "error");
-  } finally {
-    isProcessingPayment.value = false;
-  }
-};
-
-const confirmCancelOrder = async () => {
-  isCanceling.value = true;
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/don_hang/cancel`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ MaDH: route.params.id }) 
-    });
     
-    const data = await response.json();
-    
-    if (response.ok) {
-      toastStore.showToast("Đã hủy đơn hàng thành công!", "success");
-      showCancelModal.value = false;
-      fetchOrderdata(); 
-    } else {
-      toastStore.showToast(data.message, "error");
+    if (status === 'Đang hoàn hàng' || status === 'Đã hoàn hàng') {
+      return [
+        { name: 'Chờ duyệt', icon: 'receipt_long' },
+        { name: 'Đang vận chuyển', icon: 'local_shipping' },
+        { name: 'Đã hoàn hàng', icon: 'keyboard_return' }
+      ];
     }
-  } catch (error) {
-    console.error("Lỗi khi hủy đơn:", error);
-    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
-  } finally {
-    isCanceling.value = false;
-  }
-};
 
-const copyTrackingCode = async (code) => {
-  if (!code) return;
-  try {
-    await navigator.clipboard.writeText(code);
-    toastStore.showToast(`Đã copy mã vận đơn: ${code}`, "success");
-  } catch (err) {
-    console.error('Lỗi khi copy: ', err);
-    toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
-  }
-};
+    return [
+      { name: 'Chờ duyệt', icon: 'receipt_long' },
+      { name: 'Đang đóng gói', icon: 'inventory_2' },
+      { name: 'Đang vận chuyển', icon: 'local_shipping' },
+      { name: 'Đã giao', icon: 'check_circle' }
+    ];
+  });
 
-const scrollToTopCustom = (duration = 1000) => {
-    const startPosition = window.scrollY;
-    const startTime = performance.now();
+  const timeline = computed(() => {
+    const latestStepName = currentOrderStatus.value;
 
-    const animateScroll = (currentTime) => {
-      const timeElapsed = currentTime - startTime;
-      let progress = Math.min(timeElapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-      // Thực hiện cuộn
-      window.scrollTo(0, startPosition * (1 - easeProgress));
-
-      // Nếu chưa hết thời gian thì tiếp tục gọi animation
-      if (timeElapsed < duration) {
-        requestAnimationFrame(animateScroll);
+    return dynamicSteps.value.map((step) => {
+      const safeOrderStatus = orderStatus.value || [];
+      const dbRecord = safeOrderStatus.find(s => s.TenTrangThai === step.name);
+      let currentStatus = 'pending';
+      let timeString = null;
+      
+      if (dbRecord) {
+        timeString = formatTime(dbRecord.ThoiGian);
+        currentStatus = (step.name === latestStepName) ? 'active' : 'completed';
       }
+      
+      if (latestStepName === 'Đã hủy' && step.name === 'Chờ duyệt') {
+        currentStatus = 'completed';
+      }
+      
+      return { ...step, status: currentStatus, time: timeString };
+    });
+  });
+
+  const progressWidth = computed(() => {
+    if (!orderStatus.value || orderStatus.value.length === 0) return '0%';
+    const latestStepName = currentOrderStatus.value;
+    let currentIndex = dynamicSteps.value.findIndex(s => s.name === latestStepName);
+    if (currentIndex === -1) currentIndex = 0;
+    return `${(currentIndex / (dynamicSteps.value.length - 1)) * 100}%`;
+  });
+
+  const fetchOrderdata = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    const maDH = route.params.id;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        orderInfo.value = result.data.ThongTinGiaoHang; 
+        orderItems.value = result.data.DanhSachHang;
+        orderStatus.value = result.data.Trang_thai_don_hang;
+        document.title = `Mã ${orderInfo.value.MaDonHangHienThi || maDH} | FigureCollect`;
+      } else {
+        order.value = [];
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải thông tin đơn hàng:", error);
+    }
+  }
+
+  // HÀM MỞ MODAL & COPY DATA CŨ
+  const openEditAddressModal = () => {
+    editAddressForm.value = {
+      hoten: orderInfo.value.TenNguoiNhan,
+      sdt: orderInfo.value.SDTNguoiNhan,
+      diachi: orderInfo.value.DiaChiGiao
+    };
+    showEditAddressModal.value = true;
+  };
+
+  // HÀM GỬI YÊU CẦU CẬP NHẬT ĐỊA CHỈ
+  const submitUpdateAddress = async () => {
+    // Validate cơ bản
+    if (!editAddressForm.value.hoten.trim() || !editAddressForm.value.sdt.trim() || !editAddressForm.value.diachi.trim()) {
+      return toastStore.showToast("Vui lòng điền đầy đủ thông tin!", "error");
+    }
+    
+    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+    if (!phoneRegex.test(editAddressForm.value.sdt.trim())) {
+      return toastStore.showToast("Số điện thoại không hợp lệ!", "error");
+    }
+
+    isUpdatingAddress.value = true;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/fix`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          MaDH: route.params.id,
+          hoten: editAddressForm.value.hoten,
+          sdt: editAddressForm.value.sdt,
+          diachi: editAddressForm.value.diachi
+        }) 
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toastStore.showToast("Đã cập nhật thông tin giao hàng!", "success");
+        showEditAddressModal.value = false;
+        fetchOrderdata(); // Load lại data để giao diện cập nhật tên/địa chỉ mới
+      } else {
+        toastStore.showToast(data.message, "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật địa chỉ:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    } finally {
+      isUpdatingAddress.value = false;
+    }
+  };
+
+  const handleRepay = async () => {
+    const token = localStorage.getItem('token');
+    isProcessingPayment.value = true;
+    try {
+      const endpoint = paymentGateway.value === 'momo' ? '/api/don_hang/payment/momo/create' : '/api/don_hang/payment/zalopay/create';
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ MaDH: route.params.id, HinhThuc: repayMethod.value })
+      });
+      const data = await response.json();
+      if (response.ok) window.location.href = data.checkoutUrl;
+      else toastStore.showToast(data.message, "error");
+    } catch (error) {
+      toastStore.showToast("Lỗi kết nối máy chủ", "error");
+    } finally {
+      isProcessingPayment.value = false;
+    }
+  };
+
+  const confirmCancelOrder = async () => {
+    isCanceling.value = true;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/cancel`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ MaDH: route.params.id }) 
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toastStore.showToast("Đã hủy đơn hàng thành công!", "success");
+        showCancelModal.value = false;
+        fetchOrderdata(); 
+      } else {
+        toastStore.showToast(data.message, "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi hủy đơn:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    } finally {
+      isCanceling.value = false;
+    }
+  };
+
+  const copyTrackingCode = async (code) => {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      toastStore.showToast(`Đã copy mã vận đơn: ${code}`, "success");
+    } catch (err) {
+      console.error('Lỗi khi copy: ', err);
+      toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
+    }
+  };
+
+  const scrollToTopCustom = (duration = 1000) => {
+      const startPosition = window.scrollY;
+      const startTime = performance.now();
+
+      const animateScroll = (currentTime) => {
+        const timeElapsed = currentTime - startTime;
+        let progress = Math.min(timeElapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+        // Thực hiện cuộn
+        window.scrollTo(0, startPosition * (1 - easeProgress));
+
+        // Nếu chưa hết thời gian thì tiếp tục gọi animation
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
     };
 
-    requestAnimationFrame(animateScroll);
-  };
+  onMounted(() => {
+    scrollToTopCustom();
+    fetchOrderdata();
+    if (!authStore.user) {
+      const userString = localStorage.getItem('user');
+      if (userString) authStore.user = JSON.parse(userString);
+    }
+    window.scrollTo(0, 0); 
+    timerInterval = setInterval(() => { now.value = Date.now(); }, 1000);
+  });
 
-onMounted(() => {
-  scrollToTopCustom();
-  fetchOrderdata();
-  if (!authStore.user) {
-    const userString = localStorage.getItem('user');
-    if (userString) authStore.user = JSON.parse(userString);
-  }
-  window.scrollTo(0, 0); 
-  timerInterval = setInterval(() => { now.value = Date.now(); }, 1000);
-});
-
-onUnmounted(() => { clearInterval(timerInterval); });
+  onUnmounted(() => { clearInterval(timerInterval); });
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
-.font-headline { font-family: 'Space Grotesk', sans-serif; }
-.font-body { font-family: 'Manrope', sans-serif; }
-.glass-panel { background: rgba(28, 31, 43, 0.4); backdrop-filter: blur(16px); }
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
+  .glass-panel { 
+    background: rgba(28, 31, 43, 0.4); 
+    backdrop-filter: blur(16px); 
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 </style>
