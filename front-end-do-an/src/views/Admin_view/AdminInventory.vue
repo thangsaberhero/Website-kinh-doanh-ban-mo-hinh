@@ -843,7 +843,7 @@
 
               <div class="space-y-4">
                 <div v-for="(variant, index) in editingProduct.variants" :key="index" class="bg-slate-50 p-4 rounded-xl border border-slate-200 relative group transition-all hover:shadow-md hover:border-purple-200">
-                  <button @click.prevent="removeEditVariant(index, variant.id)" class="absolute -top-2.5 -right-2.5 w-7 h-7 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-sm transition-all hover:bg-rose-500 hover:text-white">
+                  <button @click.prevent="confirmRemoveVariant(index, variant.id)" class="absolute -top-2.5 -right-2.5 w-7 h-7 bg-white border border-rose-100 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-sm transition-all hover:bg-rose-500 hover:text-white z-10">
                     <span class="material-symbols-outlined text-[14px]">close</span>
                   </button>
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
@@ -992,6 +992,27 @@
           <span class="material-symbols-outlined text-[18px]">save</span> 
           Lưu tất cả thay đổi
         </button>
+      </div>
+    </div>
+  </div>
+  <div v-if="isDeleteVariantModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+      <div class="p-6 text-center">
+        <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+          <span class="material-symbols-outlined text-rose-500 text-[32px]">warning</span>
+        </div>
+        
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Xóa phân loại này?</h3>
+        <p class="text-sm text-slate-500 mb-6 font-medium">Bạn có chắc chắn muốn dọn dẹp phân loại này khỏi hệ thống? Dữ liệu sẽ chính thức bị xóa sau khi bạn bấm <span class="font-bold text-slate-700">Lưu tất cả thay đổi</span>.</p>
+        
+        <div class="flex gap-3 justify-center">
+          <button @click="isDeleteVariantModalOpen = false" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors flex-1">
+            Hủy bỏ
+          </button>
+          <button @click="executeRemoveVariant" class="px-5 py-2.5 rounded-xl font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all flex-1 active:scale-95">
+            Xóa ngay
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1530,16 +1551,32 @@
     editingProduct.value.variants.push({ name: '', sellPrice: 0, stock: 0 });
   };
 
-  const removeEditVariant = (index, variantId) => {
-    if (confirm("Bạn có chắc muốn dọn dẹp phân loại này khỏi hệ thống?")) {
-      // Nếu là phân loại cũ đã có trong DB (có mang theo variant.id)
-      if (variantId) {
-        // Đẩy ID này vào mảng chờ xóa
-        editingProduct.value.deletedVariantIds.push(variantId);
-      }
-      // Xóa khỏi giao diện hiện tại
-      editingProduct.value.variants.splice(index, 1);
+  // =====================================================
+  // LOGIC: XÓA PHÂN LOẠI VỚI CUSTOM MODAL
+  // =====================================================
+  const isDeleteVariantModalOpen = ref(false); // Trạng thái đóng/mở Modal xóa
+  const variantToDelete = ref({ index: null, id: null }); // Lưu tạm vị trí cần xóa
+
+  // Hàm 1: Mở Modal và ghi nhớ mục tiêu
+  const confirmRemoveVariant = (index, variantId) => {
+    variantToDelete.value = { index, id: variantId };
+    isDeleteVariantModalOpen.value = true;
+  };
+
+  // Hàm 2: Thực thi lệnh xóa khi user bấm "Xóa ngay" trong Modal
+  const executeRemoveVariant = () => {
+    const { index, id } = variantToDelete.value;
+    
+    // Nếu là phân loại cũ đã có trong DB (có mang theo variant.id)
+    if (id) {
+      editingProduct.value.deletedVariantIds.push(id); // Đưa vào sổ đen chờ xóa
     }
+    
+    // Xóa khỏi giao diện hiện tại
+    editingProduct.value.variants.splice(index, 1);
+    
+    // Đóng Modal
+    isDeleteVariantModalOpen.value = false;
   };
 
   watch(() => editingProduct.value.category, async (newMaDM) => {
