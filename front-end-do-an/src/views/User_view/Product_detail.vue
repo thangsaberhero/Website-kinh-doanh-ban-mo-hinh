@@ -5,17 +5,18 @@
     <main v-if="product" class="flex-1 max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-12 w-full">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div class="lg:col-span-7 space-y-6">
-          <div ref="imageContainer" class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20 aspect-square md:aspect-auto md:min-h-[500px]"
+          
+          <div ref="imageContainer" class="relative bg-surface-container-low rounded-2xl overflow-hidden group border border-outline-variant/10 w-full aspect-square flex items-center justify-center shadow-sm cursor-zoom-in"
             @mousemove="handleMouseMove"
             @mouseenter="isZooming = true"
             @mouseleave="isZooming = false"
             @click="openLightbox(allImages.indexOf(mainImage))"
           >
             <div class="absolute top-4 left-4 z-10 flex gap-2">
-              <span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-sm">
+              <span class="bg-secondary-container text-on-secondary-container text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase shadow-md border border-white/5">
                 {{ product.LoaiHinhBan }}
               </span>
-              <span class="bg-surface-bright text-on-surface text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-sm border border-outline-variant/30">
+              <span class="bg-surface-bright text-on-surface text-[10px] font-black px-3 py-1 rounded-full tracking-widest uppercase shadow-md border border-outline-variant/30">
                 {{ product.TrangThai }}
               </span>
             </div>
@@ -23,44 +24,44 @@
             <img 
               :src="(mainImage && mainImage.startsWith('http')) ? mainImage : `${API_BASE_URL}/Images_product/${mainImage}`" 
               :alt="product.TenMH" 
-              class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+              class="w-full h-full object-contain p-4 transform group-hover:scale-105 transition-transform duration-500"
             />
+            
             <div v-show="isZooming"
-              class="hidden md:block absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
+              class="hidden md:block absolute z-30 pointer-events-none border-2 border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.6)] rounded-2xl bg-surface-container-low"
               :style="{
-                width: '240px',          
-                height: '240px',         
+                width: '220px',          
+                height: '220px',         
                 left: `${zoomPosition.x}%`, 
                 top: `${zoomPosition.y}%`,  
                 transform: 'translate(-50%, -50%)', 
                 backgroundImage: `url(${(mainImage && mainImage.startsWith('http')) ? mainImage : API_BASE_URL + '/Images_product/' + mainImage})`,
                 backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                backgroundSize: '400%'
+                backgroundSize: '350%'
               }"
             ></div>
 
-            <div class="absolute bottom-6 right-6 flex flex-col gap-2 z-10">
-              <button class="p-3 bg-surface-bright/80 backdrop-blur rounded-full hover:bg-primary hover:text-on-primary transition-all shadow-xl">
-                <span class="material-symbols-outlined">zoom_in</span>
-              </button>
+            <div class="absolute bottom-4 right-4 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div class="p-2.5 bg-slate-900/60 backdrop-blur text-white rounded-full shadow-lg">
+                <span class="material-symbols-outlined text-[20px] block">zoom_in</span>
+              </div>
             </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </div>
 
           <transition-group
             name="thumbnail"
             tag="div"
-            class="flex gap-2 md:gap-4 overflow-hidden mt-4 p-1 w-full"
+            class="flex gap-3 overflow-hidden mt-4 p-1 w-full"
           >
             <button
               v-for="anh in displayImages"
               :key="anh"
               @click="selectImage(anh)"
-              class="flex-shrink-0 aspect-square bg-surface-container-high rounded-lg overflow-hidden transition-all duration-300 transform"
-              :class="mainImage === anh ? 'border-2 border-primary shadow-[0_0_15px_rgba(255,61,0,0.4)] scale-100' : 'border border-outline-variant/30 hover:border-primary/50 opacity-60 hover:opacity-100 scale-95'"
-              style="width: calc((100% - 4rem) / 5);"
+              class="flex-shrink-0 aspect-square bg-surface-container-high rounded-xl overflow-hidden transition-all duration-300 transform p-1 bg-slate-900/20 border"
+              :class="mainImage === anh ? 'border-primary shadow-[0_0_15px_rgba(255,143,115,0.4)] scale-100' : 'border-white/5 hover:border-primary/50 opacity-50 hover:opacity-100 scale-95'"
+              style="width: calc((100% - 3rem) / 5);"
             >
-              <img :src="(anh && anh.startsWith('http')) ? anh : `${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-cover"/>
+              <img :src="(anh && anh.startsWith('http')) ? anh : `${API_BASE_URL}/Images_product/${anh}`" class="w-full h-full object-contain rounded-lg"/>
             </button>
           </transition-group>
         </div>
