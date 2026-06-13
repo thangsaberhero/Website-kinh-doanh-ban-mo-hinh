@@ -77,11 +77,11 @@
                   <div class="pl-0 md:pl-11 mt-2 md:mt-0 space-y-3">
                     <p>Bạn có thể săn lùng mô hình qua 2 cách:</p>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li>Sử dụng thanh <strong class="text-white">Tìm kiếm</strong> (biểu tượng kính lúp) ở góc trên màn hình nếu bạn đã có sẵn mục tiêu (VD: "Gundam", "Nendoroid", "Naruto").</li>
-                        <li>Truy cập mục <strong class="text-white">Cửa hàng</strong> để sử dụng bộ lọc nâng cao, tinh chỉnh theo Danh mục, Mức giá, hoặc Thương hiệu yêu thích.</li>
+                      <li>Sử dụng thanh <strong class="text-white">Tìm kiếm</strong> (biểu tượng kính lúp) ở góc trên màn hình nếu bạn đã có sẵn mục tiêu (VD: "Gundam", "Nendoroid", "Naruto").</li>
+                      <li>Truy cập mục <strong class="text-white">Cửa hàng</strong> để sử dụng bộ lọc nâng cao, tinh chỉnh theo Danh mục, Mức giá, hoặc Thương hiệu yêu thích.</li>
                     </ul>
                     <p class="text-sm bg-surface-container-highest inline-block px-3 py-1.5 rounded-lg border border-outline-variant/30">
-                        💡 <strong class="text-white">Mẹo:</strong> Chú ý trạng thái sản phẩm hiển thị trên ảnh: <span class="text-primary font-bold">Còn hàng</span> (Sẵn sàng giao ngay) hoặc <span class="text-tertiary font-bold">Pre-order</span> (Hàng đặt trước).
+                      💡 <strong class="text-white">Mẹo:</strong> Chú ý trạng thái sản phẩm hiển thị trên ảnh: <span class="text-primary font-bold">Còn hàng</span> (Sẵn sàng giao ngay) hoặc <span class="text-tertiary font-bold">Pre-order</span> (Hàng đặt trước).
                     </p>
                   </div>
                 </section>
@@ -107,9 +107,9 @@
                   <div class="pl-0 md:pl-11 mt-2 md:mt-0 space-y-3">
                     <p>Nhấp vào nút <strong class="text-primary">"Thanh toán ngay"</strong> và thực hiện các bước cuối cùng:</p>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li>Điền đầy đủ và chính xác <strong class="text-white">Thông tin người nhận</strong> (Họ tên, Số điện thoại, Địa chỉ giao hàng chi tiết).</li>
-                        <li>Nhập <strong class="text-white">Mã giảm giá/Voucher</strong> (nếu có) vào ô quy định và ấn "Áp dụng" để hệ thống trừ tiền trực tiếp.</li>
-                        <li>Lựa chọn phương thức thanh toán phù hợp: Nhận hàng trả tiền (COD) hoặc Thanh toán trực tuyến (MoMo/Chuyển khoản).</li>
+                      <li>Điền đầy đủ và chính xác <strong class="text-white">Thông tin người nhận</strong> (Họ tên, Số điện thoại, Địa chỉ giao hàng chi tiết).</li>
+                      <li>Nhập <strong class="text-white">Mã giảm giá/Voucher</strong> (nếu có) vào ô quy định và ấn "Áp dụng" để hệ thống trừ tiền trực tiếp.</li>
+                      <li>Lựa chọn phương thức thanh toán phù hợp: Nhận hàng trả tiền (COD) hoặc Thanh toán trực tuyến (MoMo/Chuyển khoản).</li>
                     </ul>
                   </div>
                 </section>
@@ -205,9 +205,9 @@
                     <div>
                     <h4 class="font-headline text-lg font-bold mb-2 uppercase tracking-widest text-error">Quy định Đồng kiểm & Nhận hàng</h4>
                     <ul class="list-disc pl-5 space-y-2 text-sm text-white/90">
-                        <li>Quý khách vui lòng <strong class="text-error font-bold">QUAY VIDEO LIỀN MẠCH, KHÔNG CẮT GHÉP</strong> toàn bộ quá trình mở kiện hàng (từ lúc hộp carton còn nguyên băng keo của shop).</li>
-                        <li>Video unboxing là bằng chứng <strong class="underline">bắt buộc</strong> để FigureCollect hỗ trợ khiếu nại với đơn vị vận chuyển hoặc đổi trả nếu có rủi ro hư gãy mô hình bên trong.</li>
-                        <li>Nếu thấy kiện hàng bên ngoài có dấu hiệu bẹp nát nghiêm trọng, rách thủng hoặc băng keo bị rọc xé, quý khách có quyền <strong>Từ chối nhận hàng</strong> và liên hệ ngay Hotline 0795.209.255 để được hỗ trợ.</li>
+                      <li>Quý khách vui lòng <strong class="text-error font-bold">QUAY VIDEO LIỀN MẠCH, KHÔNG CẮT GHÉP</strong> toàn bộ quá trình mở kiện hàng (từ lúc hộp carton còn nguyên băng keo của shop).</li>
+                      <li>Video unboxing là bằng chứng <strong class="underline">bắt buộc</strong> để FigureCollect hỗ trợ khiếu nại với đơn vị vận chuyển hoặc đổi trả nếu có rủi ro hư gãy mô hình bên trong.</li>
+                      <li>Nếu thấy kiện hàng bên ngoài có dấu hiệu bẹp nát nghiêm trọng, rách thủng hoặc băng keo bị rọc xé, quý khách có quyền <strong>Từ chối nhận hàng</strong> và liên hệ ngay Hotline 0795.209.255 để được hỗ trợ.</li>
                     </ul>
                     </div>
                 </div>
@@ -266,24 +266,24 @@
                   </h3>
                   <div class="relative pl-4 border-l-2 border-primary/30 space-y-8">
                     <div class="relative">
-                        <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary ring-4 ring-background"></span>
-                        <h4 class="font-bold text-white">Bước 1: Báo cáo sự cố (Trong vòng 3 ngày)</h4>
-                        <p class="text-sm mt-1">Kể từ khi hệ thống báo giao hàng thành công, quý khách có tối đa 3 ngày để liên hệ với FigureCollect qua Zalo/Fanpage, cung cấp Video Unbox và hình ảnh chụp cận cảnh chỗ bị lỗi.</p>
+                      <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary ring-4 ring-background"></span>
+                      <h4 class="font-bold text-white">Bước 1: Báo cáo sự cố (Trong vòng 3 ngày)</h4>
+                      <p class="text-sm mt-1">Kể từ khi hệ thống báo giao hàng thành công, quý khách có tối đa 3 ngày để liên hệ với FigureCollect qua Zalo/Fanpage, cung cấp Video Unbox và hình ảnh chụp cận cảnh chỗ bị lỗi.</p>
                     </div>
                     <div class="relative">
-                        <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-surface-container border-2 border-primary ring-4 ring-background"></span>
-                        <h4 class="font-bold text-white">Bước 2: Chờ xét duyệt</h4>
-                        <p class="text-sm mt-1">Đội ngũ Kỹ thuật sẽ xem xét bằng chứng và phản hồi phương án giải quyết (Đổi mới, Hoàn tiền, hoặc Đền bù một phần) trong vòng 24 - 48 giờ làm việc.</p>
+                      <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-surface-container border-2 border-primary ring-4 ring-background"></span>
+                      <h4 class="font-bold text-white">Bước 2: Chờ xét duyệt</h4>
+                      <p class="text-sm mt-1">Đội ngũ Kỹ thuật sẽ xem xét bằng chứng và phản hồi phương án giải quyết (Đổi mới, Hoàn tiền, hoặc Đền bù một phần) trong vòng 24 - 48 giờ làm việc.</p>
                     </div>
                     <div class="relative">
-                        <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-surface-container border-2 border-primary ring-4 ring-background"></span>
-                        <h4 class="font-bold text-white">Bước 3: Đóng gói hoàn trả</h4>
-                        <p class="text-sm mt-1">Nếu được xác nhận đổi/trả, quý khách vui lòng đóng gói lại toàn bộ mô hình, phụ kiện, vỉ nhựa và Artbox cẩn thận như lúc nhận để gửi về kho của Shop. (Shop sẽ chịu 100% phí ship 2 chiều cho kiện hàng này).</p>
+                      <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-surface-container border-2 border-primary ring-4 ring-background"></span>
+                      <h4 class="font-bold text-white">Bước 3: Đóng gói hoàn trả</h4>
+                      <p class="text-sm mt-1">Nếu được xác nhận đổi/trả, quý khách vui lòng đóng gói lại toàn bộ mô hình, phụ kiện, vỉ nhựa và Artbox cẩn thận như lúc nhận để gửi về kho của Shop. (Shop sẽ chịu 100% phí ship 2 chiều cho kiện hàng này).</p>
                     </div>
                     <div class="relative">
-                        <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary ring-4 ring-background"></span>
-                        <h4 class="font-bold text-white">Bước 4: Nhận sản phẩm mới / Hoàn tiền</h4>
-                        <p class="text-sm mt-1">Ngay khi nhận được hàng hoàn và kiểm tra tình trạng đúng như báo cáo, Shop sẽ lập tức gửi kiện hàng mới hoặc chuyển khoản hoàn tiền 100% giá trị sản phẩm (theo thỏa thuận) cho quý khách.</p>
+                      <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary ring-4 ring-background"></span>
+                      <h4 class="font-bold text-white">Bước 4: Nhận sản phẩm mới / Hoàn tiền</h4>
+                      <p class="text-sm mt-1">Ngay khi nhận được hàng hoàn và kiểm tra tình trạng đúng như báo cáo, Shop sẽ lập tức gửi kiện hàng mới hoặc chuyển khoản hoàn tiền 100% giá trị sản phẩm (theo thỏa thuận) cho quý khách.</p>
                     </div>
                   </div>
                 </section>
