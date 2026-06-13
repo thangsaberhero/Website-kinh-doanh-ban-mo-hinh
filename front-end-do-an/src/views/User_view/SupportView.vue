@@ -56,10 +56,9 @@
             <button @click="changeTab('payment')" :class="['px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold', activeTab === 'payment' ? 'bg-primary text-on-primary-fixed' : 'bg-surface-container text-outline']">Thanh toán</button>
           </div>
   
-          <div class="glass-panel p-8 md:p-10 rounded-2xl border border-outline-variant/20 shadow-2xl">
-            
+          <div class="glass-panel p-5 sm:p-8 md:p-10 rounded-2xl border border-outline-variant/20 shadow-2xl">            
             <article v-if="activeTab === 'guide'" class="space-y-8 text-on-surface-variant leading-relaxed">
-              <h1 class="text-3xl font-headline font-bold text-white mb-8 uppercase border-b border-outline-variant/15 pb-4">Hướng dẫn đặt hàng</h1>
+              <h1 class="text-2xl md:text-3xl font-headline font-bold text-white mb-6 md:mb-8 uppercase border-b border-outline-variant/15 pb-4">Hướng dẫn đặt hàng</h1>
             
               <div class="space-y-10">
                 <section>
@@ -67,7 +66,7 @@
                     <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm border border-primary/30 shrink-0">1</span>
                     Đăng nhập hoặc Đăng ký tài khoản
                   </h3>
-                  <p class="pl-11">Để bắt đầu hành trình sưu tập và quản lý giỏ hàng dễ dàng, bạn vui lòng Đăng nhập vào hệ thống. Nếu chưa có tài khoản, hãy dành 1 phút để Đăng ký. Việc sở hữu tài khoản sẽ giúp bạn tra cứu lịch sử đơn hàng, tích lũy điểm thưởng và nhận các voucher độc quyền từ FigureCollect.</p>
+                  <p class="pl-0 md:pl-11 mt-2 md:mt-0">Để bắt đầu hành trình sưu tập và quản lý giỏ hàng dễ dàng, bạn vui lòng Đăng nhập vào hệ thống. Nếu chưa có tài khoản, hãy dành 1 phút để Đăng ký. Việc sở hữu tài khoản sẽ giúp bạn tra cứu lịch sử đơn hàng, tích lũy điểm thưởng và nhận các voucher độc quyền từ FigureCollect.</p>
                 </section>
 
                 <section>
@@ -75,7 +74,7 @@
                     <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm border border-primary/30 shrink-0">2</span>
                     Tìm kiếm và lựa chọn bảo vật
                   </h3>
-                  <div class="pl-11 space-y-3">
+                  <div class="pl-0 md:pl-11 mt-2 md:mt-0 space-y-3">
                     <p>Bạn có thể săn lùng mô hình qua 2 cách:</p>
                     <ul class="list-disc pl-5 space-y-2">
                         <li>Sử dụng thanh <strong class="text-white">Tìm kiếm</strong> (biểu tượng kính lúp) ở góc trên màn hình nếu bạn đã có sẵn mục tiêu (VD: "Gundam", "Nendoroid", "Naruto").</li>
@@ -92,8 +91,8 @@
                     <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm border border-primary/30 shrink-0">3</span>
                     Kiểm tra Giỏ hàng & Áp dụng ưu đãi
                   </h3>
-                  <p class="pl-11 mb-3">Bấm vào nút <strong class="text-white">"Thêm vào giỏ"</strong> khi đã chốt được sản phẩm. Sau đó, truy cập icon Giỏ hàng (góc phải trên cùng) để:</p>
-                  <ul class="list-disc pl-16 space-y-2">
+                  <p class="pl-0 md:pl-11 mt-2 md:mt-0 mb-3">Bấm vào nút <strong class="text-white">"Thêm vào giỏ"</strong> khi đã chốt được sản phẩm. Sau đó, truy cập icon Giỏ hàng (góc phải trên cùng) để:</p>
+                  <ul class="list-disc pl-5 md:pl-16 space-y-2 mt-2 md:mt-0">
                     <li>Tăng/giảm số lượng hoặc xóa sản phẩm không cần thiết.</li>
                     <li>Kiểm tra các sản phẩm đang được tự động áp dụng mức giá <strong class="text-error">Flash Sale</strong> (nếu có).</li>
                     <li>Xem trước tổng số tiền Tạm tính trước khi qua bước tiếp theo.</li>
@@ -105,7 +104,7 @@
                     <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm border border-primary/30 shrink-0">4</span>
                     Điền thông tin và Thanh toán
                   </h3>
-                  <div class="pl-11 space-y-3">
+                  <div class="pl-0 md:pl-11 mt-2 md:mt-0 space-y-3">
                     <p>Nhấp vào nút <strong class="text-primary">"Thanh toán ngay"</strong> và thực hiện các bước cuối cùng:</p>
                     <ul class="list-disc pl-5 space-y-2">
                         <li>Điền đầy đủ và chính xác <strong class="text-white">Thông tin người nhận</strong> (Họ tên, Số điện thoại, Địa chỉ giao hàng chi tiết).</li>
@@ -120,11 +119,11 @@
                     <span class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm border border-primary/30 shrink-0">5</span>
                     Xác nhận & Theo dõi tiến trình
                   </h3>
-                  <p class="pl-11">Sau khi bấm "Đặt hàng", hệ thống sẽ thông báo giao dịch thành công kèm Mã đơn hàng. Bất cứ lúc nào, bạn cũng có thể click vào Avatar > chọn <strong class="text-white">"Đơn hàng của tôi"</strong> để theo dõi tiến trình: <em class="text-outline">Chờ duyệt → Đang đóng gói → Đang vận chuyển → Đã giao</em>.</p>
+                  <p class="pl-0 md:pl-11 mt-2 md:mt-0">Sau khi bấm "Đặt hàng", hệ thống sẽ thông báo giao dịch thành công kèm Mã đơn hàng. Bất cứ lúc nào, bạn cũng có thể click vào Avatar > chọn <strong class="text-white">"Đơn hàng của tôi"</strong> để theo dõi tiến trình: <em class="text-outline">Chờ duyệt → Đang đóng gói → Đang vận chuyển → Đã giao</em>.</p>
                 </section>
               </div>
 
-              <div class="mt-12 bg-tertiary/10 border border-tertiary/30 p-8 rounded-2xl flex gap-5 items-start relative overflow-hidden shadow-lg shadow-tertiary/5">
+              <div class="mt-12 bg-tertiary/10 border border-tertiary/30 p-5 md:p-8 rounded-2xl flex flex-col md:flex-row gap-3 md:gap-5 items-start relative overflow-hidden shadow-lg shadow-tertiary/5">
                 <div class="absolute right-0 top-0 opacity-10 transform translate-x-8 -translate-y-8">
                   <span class="material-symbols-outlined text-[120px] text-tertiary">rocket_launch</span>
                 </div>
@@ -141,7 +140,7 @@
             </article>
   
             <article v-else-if="activeTab === 'shipping'" class="space-y-8 text-on-surface-variant leading-relaxed">
-              <h1 class="text-3xl font-headline font-bold text-white mb-8 uppercase border-b border-outline-variant/15 pb-4">Chính sách vận chuyển</h1>
+              <h1 class="text-2xl md:text-3xl font-headline font-bold text-white mb-6 md:mb-8 uppercase border-b border-outline-variant/15 pb-4">Chính sách vận chuyển</h1>
             
               <div class="space-y-10">
                 <section>
@@ -183,17 +182,17 @@
                     </h3>
                     <p class="mb-4">Chúng tôi thấu hiểu rằng đối với dân sưu tập, Box (Hộp đựng mô hình) cũng quan trọng không kém gì bản thân mô hình. Vì vậy, 100% đơn hàng tại FigureCollect đều trải qua quy trình đóng gói nghiêm ngặt:</p>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                      <div class="bg-surface-container-highest p-4 rounded-xl border border-outline-variant/10">
+                      <div class="bg-surface-container-highest p-4 md:p-5 rounded-xl border border-outline-variant/10">
                         <span class="material-symbols-outlined text-4xl text-primary mb-2">layers</span>
                         <h4 class="font-bold text-white text-sm mb-1">Bọc Xốp Foam 3 Lớp</h4>
                         <p class="text-[11px]">Bảo vệ toàn diện, chống va đập trực tiếp vào Artbox.</p>
                       </div>
-                      <div class="bg-surface-container-highest p-4 rounded-xl border border-outline-variant/10">
+                      <div class="bg-surface-container-highest p-4 md:p-5 rounded-xl border border-outline-variant/10">
                         <span class="material-symbols-outlined text-4xl text-tertiary mb-2">check_box_outline_blank</span>
                         <h4 class="font-bold text-white text-sm mb-1">Gia Cố Góc Cạnh</h4>
                         <p class="text-[11px]">Sử dụng nẹp góc cứng để chống móp méo 8 góc của hộp.</p>
                       </div>
-                      <div class="bg-surface-container-highest p-4 rounded-xl border border-outline-variant/10">
+                      <div class="bg-surface-container-highest p-4 md:p-5 rounded-xl border border-outline-variant/10">
                         <span class="material-symbols-outlined text-4xl text-secondary mb-2">unarchive</span>
                         <h4 class="font-bold text-white text-sm mb-1">Thùng Carton Dày 5 Lớp</h4>
                         <p class="text-[11px]">Lớp áo giáp ngoài cùng vững chắc trước mọi thời tiết.</p>
@@ -216,7 +215,7 @@
             </article>
   
             <article v-else-if="activeTab === 'return'" class="space-y-8 text-on-surface-variant leading-relaxed">
-              <h1 class="text-3xl font-headline font-bold text-white mb-8 uppercase border-b border-outline-variant/15 pb-4">Chính sách đổi trả & Bảo hành</h1>
+              <h1 class="text-2xl md:text-3xl font-headline font-bold text-white mb-6 md:mb-8 uppercase border-b border-outline-variant/15 pb-4">Chính sách đổi trả & Bảo hành</h1>
             
               <div class="space-y-10">
                 <section>
@@ -265,7 +264,7 @@
                     <span class="material-symbols-outlined text-primary text-2xl">sync</span>
                     3. Quy trình 4 bước xử lý đổi trả
                   </h3>
-                  <div class="relative pl-4 border-l-2 border-primary/30 space-y-6">
+                  <div class="relative pl-4 border-l-2 border-primary/30 space-y-8">
                     <div class="relative">
                         <span class="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary ring-4 ring-background"></span>
                         <h4 class="font-bold text-white">Bước 1: Báo cáo sự cố (Trong vòng 3 ngày)</h4>
@@ -292,7 +291,7 @@
             </article>
 
             <article v-else-if="activeTab === 'payment'" class="space-y-6 text-on-surface-variant">
-              <h1 class="text-3xl font-headline font-bold text-white mb-6 uppercase border-b border-outline-variant/15 pb-4">Chính sách thanh toán</h1>
+              <h1 class="text-2xl md:text-3xl font-headline font-bold text-white mb-6 md:mb-8 uppercase border-b border-outline-variant/15 pb-4">Chính sách thanh toán</h1>
 
               <section>
                 <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
