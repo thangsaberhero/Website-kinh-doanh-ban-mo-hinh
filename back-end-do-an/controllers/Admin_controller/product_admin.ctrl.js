@@ -963,7 +963,7 @@ const product_admin = {
             const {MaTK} = req.user.id;
             const sql_xoa_mem = `
                                 Update MoHinh
-                                Set TrangThai = 'Ngừng kinh doanh', HienThi = 0
+                                Set HienThi = 0
                                 Where MaMoHinh = ?`;
             const [ket_qua] = await connection.query(sql_xoa_mem, [MaMH]);
             if(ket_qua.affectedRows === 0){

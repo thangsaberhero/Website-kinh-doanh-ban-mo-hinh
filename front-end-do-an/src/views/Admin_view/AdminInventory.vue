@@ -1619,7 +1619,7 @@
       const token = localStorage.getItem('token');
 
       // Gửi API cập nhật trạng thái
-      const response = await fetch(`${API_BASE_URL}/api/product_admin/update_visibility/${productId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/toggle_visibility/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1627,7 +1627,7 @@
         },
         body: JSON.stringify({ HienThi: newStatus })
       });
-
+      
       const result = await response.json();
 
       if (response.ok && result.success) {
