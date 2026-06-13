@@ -250,74 +250,113 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
-                <tr v-for="product in products" :key="product.id" 
-                    class="transition-colors group"
-                    :class="product.stock <= 3 ? 'bg-rose-50/30 hover:bg-rose-50/60' : 'hover:bg-slate-50/80'">
+                <template v-for="product in products" :key="product.id">
                   
-                  <td class="px-8 py-4">
-                    <div class="flex items-center gap-4">
-                      <div class="w-16 h-16 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden shadow-inner shrink-0 p-0.5">
-                        <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-lg"/>
-                      </div>
-                      <div class="flex flex-col">
-                        <p class="font-bold text-slate-900 text-[15px] mb-1.5 truncate max-w-[250px]" :title="product.name">{{ product.name }}</p>
-                        
-                        <div class="flex flex-wrap items-center gap-1.5">
-                          <span class="text-[9px] px-2 py-0.5 rounded-lg font-bold uppercase border shadow-sm inline-block"
-                                :class="getBrandColor(product.brand)">
-                            {{ product.brand }}
+                  <tr class="transition-colors group hover:bg-slate-50/80 cursor-pointer" @click="toggleRow(product.id)">
+                    
+                    <td class="px-8 py-4">
+                      <div class="flex items-center gap-4">
+                        <button v-if="product.variants && product.variants.length > 0" 
+                                class="w-6 h-6 rounded bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-sky-100 hover:text-sky-600 transition-colors">
+                          <span class="material-symbols-outlined text-[18px] transition-transform" 
+                                :class="expandedRows.includes(product.id) ? 'rotate-180 text-sky-500' : ''">
+                            expand_more
                           </span>
-                          
-                          <span v-if="product.characterName" class="text-[10px] bg-sky-50 text-sky-600 border border-sky-100/70 px-2 py-0.5 rounded font-bold flex items-center gap-0.5 shadow-sm">
-                            <span class="material-symbols-outlined text-[12px]">person</span>
-                            {{ product.characterName }}
-                          </span>
-
-                          <span v-if="product.series" class="text-[10px] bg-purple-50 text-purple-600 border border-purple-100/70 px-2 py-0.5 rounded font-bold flex items-center gap-0.5 shadow-sm">
-                            <span class="material-symbols-outlined text-[12px]">movie</span>
-                            {{ product.series }}
-                          </span>
+                        </button>
+                        <div v-else class="w-6"></div> <div class="w-12 h-12 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-0.5">
+                          <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
+                        </div>
+                        <div class="flex flex-col">
+                          <p class="font-bold text-slate-900 text-[14px] truncate max-w-[200px]">{{ product.name }}</p>
+                          <div class="flex items-center gap-1.5 mt-1">
+                            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border" :class="getBrandColor(product.brand)">
+                              {{ product.brand }}
+                            </span>
+                            <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100">{{ product.characterName }}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  
-                  <td class="px-8 py-4">
-                    <p class="font-bold text-slate-700 text-sm mb-1">{{ product.selltype}}</p>
-                    <p class="text-[11px] font-semibold text-slate-400">Scale: <span class="text-slate-500">{{ product.scale }}</span></p>
-                  </td>
-                  
-                  <td class="px-8 py-4 text-sm font-semibold text-slate-400 text-right">{{ product.basePrice }}đ</td>
-                  <td class="px-8 py-4 text-sm font-bold text-slate-900 text-right">{{ product.sellPrice }}đ</td>
-                  
-                  <td class="px-8 py-4 text-center">
-                    <div v-if="product.stock > 3">
-                      <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold border border-emerald-100 shadow-sm">{{ product.stock }}</span>
-                    </div>
-                    <div v-else class="flex flex-col items-center">
-                      <span class="px-3 py-1 bg-rose-100 text-rose-600 rounded-full text-xs font-bold border border-rose-200 shadow-sm">{{ product.stock }}</span>
-                      <span class="text-[9px] text-rose-400 font-bold mt-1 uppercase tracking-tighter">Sắp hết!</span>
-                    </div>
-                  </td>
-                  
-                  <td class="px-8 py-4">
-                    <div class="flex justify-center gap-2">
-                      <button @click="openEditModal(product)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-[#ff8f73] hover:bg-[#ff8f73]/10 rounded-xl transition-all border border-transparent hover:border-[#ff8f73]/20" title="Sửa thông tin">
-                        <span class="material-symbols-outlined text-[20px]">edit</span>
-                      </button>
-                      <button @click="toggleVisibility(product)" 
-                              class="w-9 h-9 flex items-center justify-center rounded-xl transition-all border border-transparent"
-                              :class="product.isVisible === 1 
-                                ? 'text-sky-500 hover:bg-sky-50 hover:border-sky-100' 
-                                : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100'"
-                              :title="product.isVisible === 1 ? 'Sản phẩm đang hiện - Nhấn để ẩn' : 'Sản phẩm đang ẩn - Nhấn để hiện'">
-                        <span class="material-symbols-outlined text-[20px]">
-                          {{ product.isVisible === 1 ? 'visibility' : 'visibility_off' }} 
-                        </span>
-                      </button>
-                    </div>  
-                  </td>
-                </tr>
+                    </td>
+                    
+                    <td class="px-8 py-4">
+                      <p class="font-bold text-slate-700 text-xs">{{ product.selltype }}</p>
+                    </td>
+                    
+                    <td class="px-8 py-4 text-right">
+                      <div v-if="product.variants && product.variants.length > 0">
+                        <span class="text-xs font-bold text-slate-500 italic">Xem phân loại</span>
+                      </div>
+                      <div v-else class="group/edit relative inline-block">
+                        <input type="text" 
+                               v-model="product.sellPrice" 
+                               @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
+                               class="w-24 text-right text-sm font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none transition-colors"
+                               title="Nhấn Enter để lưu">
+                        <span class="material-symbols-outlined absolute -left-5 top-0.5 text-[14px] text-slate-300 opacity-0 group-hover/edit:opacity-100 pointer-events-none">edit</span>
+                      </div>
+                    </td>
+                    
+                    <td class="px-8 py-4 text-center">
+                      <div v-if="product.variants && product.variants.length > 0">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">Tổng: {{ product.stock }}</span>
+                      </div>
+                      <div v-else class="group/edit relative inline-flex items-center justify-center">
+                        <input type="number" 
+                               v-model="product.stock" 
+                               @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
+                               class="w-16 text-center text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full border border-emerald-100 hover:border-emerald-300 focus:border-emerald-500 focus:bg-white focus:outline-none transition-all py-1">
+                      </div>
+                    </td>
+                    
+                    <td class="px-8 py-4 text-center">
+                      </td>
+                  </tr>
+
+                  <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/50 shadow-inner">
+                    <td colspan="6" class="p-0 border-b border-slate-200/60">
+                      <div class="px-16 py-4">
+                        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                          <table class="w-full text-left">
+                            <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400">
+                              <tr>
+                                <th class="py-2.5 px-4 w-1/2">Tên phân loại</th>
+                                <th class="py-2.5 px-4 text-right">Giá bán (VNĐ)</th>
+                                <th class="py-2.5 px-4 text-center">Tồn kho</th>
+                              </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                              <tr v-for="variant in product.variants" :key="variant.id" class="hover:bg-slate-50/50 transition-colors group/row">
+                                <td class="py-2.5 px-4">
+                                  <span class="text-xs font-bold text-slate-700 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> {{ variant.name }}
+                                  </span>
+                                </td>
+                                
+                                <td class="py-2 px-4 text-right">
+                                  <input type="text" 
+                                         v-model="variant.sellPrice" 
+                                         @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
+                                         class="w-24 text-right text-xs font-bold text-sky-600 bg-transparent border-b border-dashed border-slate-300 focus:border-sky-500 focus:bg-sky-50 focus:outline-none transition-all px-1 py-0.5">
+                                </td>
+                                
+                                <td class="py-2 px-4 text-center">
+                                  <input type="number" 
+                                         v-model="variant.stock" 
+                                         @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
+                                         class="w-16 text-center text-xs font-bold text-slate-700 bg-transparent border border-dashed border-slate-300 rounded focus:border-sky-500 focus:bg-sky-50 focus:outline-none transition-all py-0.5">
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <div class="px-4 py-2 bg-slate-50 text-[10px] text-slate-400 font-medium italic text-right">
+                            * Gõ số và nhấn Enter tại ô để lưu nhanh thay đổi
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                </template>
               </tbody>
             </table>
           </div>
@@ -1062,6 +1101,8 @@
             sellPrice: Number(item.DonGia || 0).toLocaleString('vi-VN'),
             stock: item.SoLuong || 0,
             isVisible: item.HienThi,
+            defaultVariantId: item.defaultVariantId, 
+            variants: item.DS_PhanLoai || [],
             thumbnailUrl: (item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) 
               ? item.AnhDaiDien 
               : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`
@@ -1651,6 +1692,51 @@
       toastStore.showToast("Không thể xuất báo cáo lúc này!", "error");
     } finally {
       isExporting.value = false;
+    }
+  };
+
+  const expandedRows = ref([]); // Mảng chứa ID các sản phẩm đang được xổ xuống
+
+  const toggleRow = (productId) => {
+    if (expandedRows.value.includes(productId)) {
+      expandedRows.value = expandedRows.value.filter(id => id !== productId);
+    } else {
+      expandedRows.value.push(productId);
+    }
+  };
+
+  // --- HÀM GỌI API LƯU NHANH KHI NHẤN ENTER ---
+  const quickUpdateVariant = async (variantId, newPrice, newStock) => {
+    if (!variantId) {
+        toastStore.showToast("Lỗi: Không xác định được mã phân loại!", "error");
+        return;
+    }
+    
+    try {
+      // 1. Loại bỏ các dấu chấm, phẩy (nếu có) trong chuỗi giá tiền (VD: "6.700.000" -> 6700000)
+      const numericPrice = Number(String(newPrice).replace(/\D/g, ''));
+      const token = localStorage.getItem('token');
+
+      // 2. Bắn dữ liệu xuống API
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/quick_update/${variantId}`, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ DonGia: numericPrice, SoLuong: newStock })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+          toastStore.showToast("Đã lưu nhanh Giá & Tồn kho!", "success");
+      } else {
+          toastStore.showToast(result.message || "Lỗi khi lưu nhanh!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi quick update:", error);
+      toastStore.showToast("Không thể kết nối máy chủ!", "error");
     }
   };
 

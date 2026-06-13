@@ -906,6 +906,53 @@ const product_admin = {
             if (connection) connection.release();
         }
     },
+
+    cap_nhat_nhanh_phan_loai: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            const MaPhanLoai = req.params.id; 
+            const { DonGia, SoLuong } = req.body;
+            const MaTK = req.user.id;
+
+            // 1. Kiểm tra phân loại có tồn tại không
+            const [checkPL] = await connection.query(`SELECT MaMoHinh, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [MaPhanLoai]);
+            if (checkPL.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin phân loại!' });
+            }
+
+            const { MaMoHinh, ChiTietPhanLoai } = checkPL[0];
+
+            // 2. Cập nhật bảng PhanLoai
+            await connection.query(`UPDATE PhanLoai SET DonGia = ?, SoLuong = ? WHERE MaPhanLoai = ?`, [DonGia, SoLuong, MaPhanLoai]);
+
+            // 3. ĐỒNG BỘ THÔNG MINH: Nếu phân loại này là bản 'Mặc định', phải update luôn giá bán ở bảng MoHinh cha
+            if (ChiTietPhanLoai === 'Mặc định') {
+                await connection.query(`UPDATE MoHinh SET DonGia = ? WHERE MaMoHinh = ?`, [DonGia, MaMoHinh]);
+            }
+
+            // 4. Ghi Log hệ thống
+            const [mh] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMoHinh]);
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const noiDungLog = `Sửa nhanh giá/tồn kho cho phân loại [${ChiTietPhanLoai}] của SP #${MaMoHinh}: "${mh[0]?.TenMH}"`;
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'PRODUCT_QUICK_UPDATE', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            await connection.commit();
+            res.status(200).json({ success: true, message: 'Cập nhật thành công!' });
+        } catch (error) {
+            await connection.rollback();
+            console.error("Lỗi cập nhật nhanh: ", error);
+            res.status(500).json({ success: false, message: 'Lỗi server!' });
+        } finally {
+            connection.release();
+        }
+    },
     
     //Xoá theo cách ẩn với khách hàng, tránh ảnh hướng báo cáo thống kê
     An_mat_hang: async(req, res) =>{
@@ -1182,6 +1229,25 @@ const product_admin = {
 
             const sql_params = [...value, limit, offset]
             const [products] = await db.query(sql_ds, sql_params);
+
+            if (products.length > 0) {
+                const productIds = products.map(p => p.MaMoHinh);
+                const [variants] = await db.query(`SELECT MaPhanLoai, MaMoHinh, ChiTietPhanLoai, DonGia, SoLuong FROM PhanLoai WHERE MaMoHinh IN (?)`, [productIds]);
+                
+                products.forEach(p => {
+                    // Lọc ra các phân loại thuộc về sản phẩm này
+                    const spVariants = variants.filter(v => v.MaMoHinh === p.MaMoHinh);
+                    
+                    // Lấy ra ID của bản Mặc định để gán cho chức năng sửa dòng chính
+                    const defaultVar = spVariants.find(v => v.ChiTietPhanLoai === 'Mặc định');
+                    p.defaultVariantId = defaultVar ? defaultVar.MaPhanLoai : null;
+                    
+                    // Gom các bản Mở rộng (Khác mặc định) vào một mảng variants riêng
+                    p.DS_PhanLoai = spVariants
+                        .filter(v => v.ChiTietPhanLoai !== 'Mặc định')
+                        .map(v => ({ id: v.MaPhanLoai, name: v.ChiTietPhanLoai, sellPrice: v.DonGia, stock: v.SoLuong }));
+                });
+            }
 
             const sql_summary = `
                 SELECT 
