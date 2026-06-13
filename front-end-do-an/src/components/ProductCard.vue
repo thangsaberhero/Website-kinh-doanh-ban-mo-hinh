@@ -57,7 +57,7 @@
         </div>
         
         <div class="pt-1">
-          <div v-if="product.DonGiaKhuyenMai" class="flex items-baseline gap-2">
+          <div v-if="product.DonGiaKhuyenMai && (Number(product.DonGia) > Number(product.DonGiaKhuyenMai))" class="flex items-baseline gap-2">
             <span :class="['text-base md:text-xl font-headline font-bold tracking-tight', product.SoLuong === 0 ? 'text-outline' : 'text-primary']">
               {{ formatPrice(product.DonGiaKhuyenMai) }}
             </span>

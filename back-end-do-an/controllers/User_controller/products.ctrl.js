@@ -789,7 +789,7 @@ const product_view = {
                 // BƯỚC 3: QUÉT KHO HÀNG VÀ SẮP XẾP ƯU TIÊN
                 // ==========================================
                 sql = `
-                    SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX, mh.TrangThai,
+                    SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.KichThuoc, hsx.TenHSX, mh.TrangThai, mh.DonGia
                            (SELECT COALESCE(SUM(SoLuong), 0) FROM PhanLoai WHERE MaMoHinh = mh.MaMoHinh) AS SoLuong,
                            
                            -- Tích hợp tính giá khuyến mãi chuẩn chỉ
