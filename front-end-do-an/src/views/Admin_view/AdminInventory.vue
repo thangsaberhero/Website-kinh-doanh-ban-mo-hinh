@@ -320,11 +320,14 @@
                         <div class="flex items-center gap-1 group/edit bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg transition-all" 
                              @click.stop>
                           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cọc:</span>
+                          
                           <input type="text" 
-                                 v-model="product.rawMinDeposit" 
+                                 :value="formatCurrency(product.rawMinDeposit)" 
+                                 @input="handleCurrencyInput($event, product, 'rawMinDeposit')"
                                  @keyup.enter="quickUpdateDeposit(product.id, product.rawMinDeposit)"
-                                 class="w-16 text-right text-xs font-bold text-slate-700 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-400 focus:outline-none transition-colors font-mono"
+                                 class="w-20 text-right text-xs font-bold text-slate-700 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-400 focus:outline-none transition-colors font-mono"
                                  title="Nhấn Enter để lưu giá cọc">
+                                 
                           <span class="text-[9px] font-bold text-slate-500">đ</span>
                         </div>
 
@@ -332,7 +335,10 @@
                     </td>
 
                     <td class="px-6 py-4 align-middle text-right">
-                      <p class="font-bold text-slate-500 text-xs font-mono">{{ product.basePrice }} đ</p>
+                      <div class="flex items-center justify-end gap-1">
+                        <span class="text-sm font-bold text-slate-500 font-mono">{{ product.basePrice }}</span>
+                        <span class="text-xs font-bold text-slate-600">đ</span>
+                      </div>
                     </td>
                     
                     <td class="px-6 py-4 align-middle text-right">
