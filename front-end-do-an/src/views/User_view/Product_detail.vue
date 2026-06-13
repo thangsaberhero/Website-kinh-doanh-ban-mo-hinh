@@ -349,25 +349,32 @@
 
             <div v-for="review in reviews" :key="review.MaDG" class="group border-b border-white/5 pb-8">
               <div class="flex justify-between items-start mb-4">
-                <div class="flex gap-4">
-                  <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-white/10 flex items-center justify-center font-headline font-bold text-white">
+                <div class="flex gap-3 md:gap-4 mb-4">
+                  <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-white/10 flex items-center justify-center font-headline font-bold text-white">
                     <img v-if="review.AnhDaiDien" :src="review.AnhDaiDien" class="w-full h-full object-cover">
-                    <span v-else class="material-symbols-outlined text-primary text-xl">person</span>
+                    <span v-else class="material-symbols-outlined text-primary text-lg md:text-xl">person</span>
                   </div>
-                  <div>
-                    <div class="text-white font-bold text-sm flex items-center gap-2">
-                      {{ review.TenKH }}
-                      <span class="text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded uppercase font-black border border-green-500/30 flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[10px]">verified</span> Đã mua hàng
-                      </span>
+                  
+                  <div class="flex-1">
+                    <div class="flex flex-wrap justify-between items-start gap-2">
+                      <div class="text-white font-bold text-sm flex flex-wrap items-center gap-2">
+                        {{ review.TenKH }}
+                        <!-- Thêm whitespace-nowrap để bảo vệ chữ không rớt dòng -->
+                        <span class="text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded uppercase font-black border border-green-500/30 flex items-center gap-1 whitespace-nowrap">
+                          <span class="material-symbols-outlined text-[10px]">verified</span> Đã mua hàng
+                        </span>
+                      </div>
                     </div>
-                    <div class="flex text-primary text-[10px] mt-1.5">
-                      <span v-for="s in 5" :key="s" class="material-symbols-outlined text-[14px]" :style="{ fontVariationSettings: s <= review.SoSao ? `'FILL' 1` : `'FILL' 0` }">star</span>
-                      <span v-if="review.ChiTietPhanLoai" class="ml-3 text-on-surface-variant font-medium text-xs">Phân loại: {{ review.ChiTietPhanLoai }}</span>
+                    
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                      <div class="flex text-primary">
+                        <span v-for="s in 5" :key="s" class="material-symbols-outlined text-[12px] md:text-[14px]" :style="{ fontVariationSettings: s <= review.SoSao ? `'FILL' 1` : `'FILL' 0` }">star</span>
+                      </div>
+                      <span v-if="review.ChiTietPhanLoai" class="text-on-surface-variant font-medium text-[10px] md:text-xs">Phân loại: {{ review.ChiTietPhanLoai }}</span>
                     </div>
                   </div>
                 </div>
-                <span class="text-[10px] text-outline font-bold uppercase bg-surface-container px-2 py-1 rounded">{{ formatDate(review.ThoiGianDG) }}</span>
+                <span class="text-[9px] md:text-[10px] text-outline font-bold uppercase bg-surface-container px-2 py-1 rounded whitespace-nowrap">{{ formatDate(review.ThoiGianDG) }}</span>
               </div>
 
               <p class="text-on-surface-variant text-sm leading-relaxed mb-5 pl-0 md:pl-16 mt-3 md:mt-0">
@@ -431,7 +438,7 @@
           <h3 class="text-2xl font-headline font-black text-white uppercase italic tracking-wider">Có thể bạn sẽ thích</h3>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           <ProductCard
             v-for="item in relatedProducts"
             :key="item.MaMoHinh"
