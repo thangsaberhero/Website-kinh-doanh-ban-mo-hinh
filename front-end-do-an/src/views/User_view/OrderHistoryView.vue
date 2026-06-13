@@ -14,7 +14,7 @@
           <p class="text-on-surface-variant font-medium">Theo dõi và kiểm tra lịch sử các kho báu bạn đã sở hữu.</p>
         </header>
 
-        <div class="flex gap-2 overflow-x-auto hide-scrollbar md:custom-scrollbar pb-4 mb-8">
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-4 mb-8">
           <button 
             v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đã hoàn hàng', 'Đã hủy']" 
             :key="tab"
@@ -118,13 +118,23 @@
             <p class="text-on-surface-variant">Thư mục "{{ activeTab }}" của bạn đang trống.</p>
           </div>
 
-          <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-10 mb-4">
-            <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"><span class="material-symbols-outlined">chevron_left</span></button>
-            <button v-for="p in totalPages" :key="p" @click="changePage(p)" :class="['w-10 h-10 flex items-center justify-center rounded-lg font-bold text-sm transition-all border', currentPage === p ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container-low text-on-surface hover:bg-surface-container-highest border-outline-variant/20']">{{ p }}</button>
-            <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20"><span class="material-symbols-outlined">chevron_right</span></button>
+          <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 sm:gap-3 mt-10 mb-4">            
+            <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20 shrink-0">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <div class="md:hidden flex items-center justify-center px-4 h-10 bg-surface-container rounded-lg border border-outline-variant/20 text-sm font-bold text-on-surface tracking-widest">
+              {{ currentPage }} / {{ totalPages }}
+            </div>
+            <div class="hidden md:flex items-center gap-2 flex-wrap justify-center">
+              <button v-for="p in totalPages" :key="p" @click="changePage(p)" :class="['w-10 h-10 flex items-center justify-center rounded-lg font-bold text-sm transition-all border', currentPage === p ? 'bg-primary text-black border-primary shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container-low text-on-surface hover:bg-surface-container-highest border-outline-variant/20']">
+                {{ p }}
+              </button>
+            </div>
+            <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="w-10 h-10 flex items-center justify-center bg-surface-container-high rounded-lg hover:text-primary disabled:opacity-30 disabled:hover:text-current transition-colors border border-outline-variant/20 shrink-0">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
           </div>
         </div>
-
       </main>
     </div>
     
@@ -407,4 +417,6 @@
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
   }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
