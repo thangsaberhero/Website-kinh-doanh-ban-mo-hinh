@@ -238,16 +238,19 @@
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto bg-white rounded-2xl border border-slate-100 shadow-sm custom-scrollbar">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse whitespace-nowrap">
               
               <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200">
                 <tr>
-                  <th class="py-4 pl-6 pr-0 w-8 text-center"></th> <th class="px-2 py-4 font-semibold text-left">Tên sản phẩm</th>
-                  <th class="px-8 py-4 font-semibold text-left">Loại hình bán</th>
-                  <th class="px-8 py-4 font-semibold text-right">Giá nhập</th>
-                  <th class="px-8 py-4 font-semibold text-right">Giá bán</th>
-                  <th class="px-8 py-4 font-semibold text-center">Tồn kho</th>
-                  <th class="px-8 py-4 font-semibold text-center">Hành động</th>
+                  <th class="py-4 pl-6 pr-2 w-[52px] text-center"></th> 
+                  
+                  <th class="py-4 pl-0 pr-4 font-semibold text-left">Tên sản phẩm</th>
+                  
+                  <th class="px-6 py-4 font-semibold text-left">Loại hình bán</th>
+                  <th class="px-6 py-4 font-semibold text-right">Giá nhập</th>
+                  <th class="px-6 py-4 font-semibold text-right">Giá bán</th>
+                  <th class="px-6 py-4 font-semibold text-center">Tồn kho</th>
+                  <th class="px-6 py-4 font-semibold text-center">Hành động</th>
                 </tr>
               </thead>
 
@@ -256,20 +259,20 @@
                   
                   <tr class="transition-colors group hover:bg-slate-50/80 cursor-pointer" @click="toggleRow(product.id)">
                     
-                    <td class="py-4 pl-6 pr-0 text-center">
+                    <td class="py-4 pl-6 pr-2 w-[52px] align-middle text-center">
                       <button v-if="product.variants && product.variants.length > 0" 
                               @click.stop="toggleRow(product.id)"
-                              class="w-6 h-6 rounded bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors mx-auto">
-                        <span class="material-symbols-outlined text-[18px] transition-transform duration-200" 
+                              class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors mx-auto">
+                        <span class="material-symbols-outlined text-[20px] transition-transform duration-200" 
                               :class="expandedRows.includes(product.id) ? 'rotate-180 text-[#ff8f73]' : ''">
                           expand_more
                         </span>
                       </button>
                     </td>
 
-                    <td class="px-2 py-4">
+                    <td class="py-4 pl-0 pr-4 align-middle">
                       <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-0.5">
+                        <div class="w-11 h-11 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-[1px]">
                           <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
                         </div>
                         <div class="flex flex-col">
@@ -285,17 +288,17 @@
                       </div>
                     </td>
                     
-                    <td class="px-8 py-4">
+                    <td class="px-6 py-4 align-middle">
                       <p class="font-bold text-slate-700 text-xs">{{ product.selltype }}</p>
                     </td>
 
-                    <td class="px-8 py-4 text-right">
+                    <td class="px-6 py-4 align-middle text-right">
                       <p class="font-bold text-slate-500 text-xs font-mono">{{ product.basePrice }} đ</p>
                     </td>
                     
-                    <td class="px-8 py-4 text-right">
+                    <td class="px-6 py-4 align-middle text-right">
                       <div v-if="product.variants && product.variants.length > 0">
-                        <span class="text-xs font-bold text-slate-400 italic bg-slate-100 px-2 py-1 rounded border border-slate-200/60">Xem phân loại</span>
+                        <span class="text-[11px] font-bold text-slate-400 italic bg-slate-100 px-2 py-1 rounded border border-slate-200/60">Nhiều phân loại</span>
                       </div>
                       <div v-else class="inline-flex items-center justify-end gap-1 group/edit relative">
                         <input type="text" 
@@ -307,40 +310,40 @@
                       </div>
                     </td>
                     
-                    <td class="px-8 py-4 text-center">
+                    <td class="px-6 py-4 align-middle text-center">
                       <div v-if="product.variants && product.variants.length > 0" class="flex justify-center">
-                        <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">Tổng: {{ product.stock }}</span>
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">Tổng: {{ product.stock }}</span>
                       </div>
                       <div v-else class="flex justify-center items-center">
                         <input type="number" 
                                v-model="product.stock" 
                                @click.stop
                                @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                               class="w-16 text-center text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full border border-emerald-100 hover:border-emerald-300 focus:border-emerald-500 focus:bg-white focus:outline-none transition-all py-1">
+                               class="w-16 text-center text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full border border-emerald-100 hover:border-emerald-300 focus:border-emerald-500 focus:bg-white focus:outline-none transition-all py-0.5">
                       </div>
                     </td>
                     
-                    <td class="px-8 py-4 text-center">
+                    <td class="px-6 py-4 align-middle text-center">
                       <div class="flex justify-center items-center gap-3">
-                        <button @click.stop="openEditModal(product)" class="text-slate-400 hover:text-sky-500 transition-colors p-1 flex items-center justify-center" title="Sửa thông tin">
-                          <span class="material-symbols-outlined text-[18px]">edit</span>
+                        <button @click.stop="openEditModal(product)" class="text-slate-400 hover:text-sky-500 transition-colors flex items-center justify-center" title="Sửa thông tin">
+                          <span class="material-symbols-outlined text-[20px]">edit</span>
                         </button>
-                        <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="text-slate-400 hover:text-rose-500 transition-colors p-1 flex items-center justify-center" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
-                          <span class="material-symbols-outlined text-[18px]">{{ product.isVisible === 1 ? 'visibility_off' : 'visibility' }}</span>
+                        <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
+                          <span class="material-symbols-outlined text-[20px]">{{ product.isVisible === 1 ? 'visibility_off' : 'visibility' }}</span>
                         </button>
                       </div>
                     </td>
                   </tr>
 
-                  <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/40 shadow-inner">
+                  <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/50 shadow-inner">
                     <td colspan="7" class="p-0 border-b border-slate-200/60">
-                      <div class="px-16 py-4 animate-[fadeIn_0.2s_ease-out]">
+                      <div class="pl-[52px] pr-6 py-4 animate-[fadeIn_0.2s_ease-out]">
                         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                           <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400">
                               <tr>
                                 <th class="py-2.5 px-5 w-1/2">Tên phân loại sản phẩm</th>
-                                <th class="py-2.5 px-5 text-right">Gía bán trực tiếp</th>
+                                <th class="py-2.5 px-5 text-right">Giá bán trực tiếp</th>
                                 <th class="py-2.5 px-5 text-center">Tồn kho</th>
                               </tr>
                             </thead>
