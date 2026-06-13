@@ -14,8 +14,7 @@
           <p class="text-on-surface-variant font-medium">Theo dõi và kiểm tra lịch sử các kho báu bạn đã sở hữu.</p>
         </header>
 
-        <!-- ĐÃ BỔ SUNG: 2 Tab Đang hoàn hàng và Đã hoàn hàng -->
-        <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-4 mb-8">
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar md:custom-scrollbar pb-4 mb-8">
           <button 
             v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đã hoàn hàng', 'Đã hủy']" 
             :key="tab"

@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <div class="flex flex-row md:flex-col gap-0 flex-1 overflow-x-auto custom-scrollbar px-2 md:px-0 pb-0">  
+    <div class="flex flex-row md:flex-col gap-0 flex-1 overflow-x-auto hide-scrollbar md:custom-scrollbar px-2 md:px-0 pb-0">  
       <router-link to="/profile" 
         class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
         active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
@@ -40,10 +40,6 @@
         active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
         <span class="material-symbols-outlined text-[18px] md:text-[24px]">inventory_2</span> <span>Lịch sử đơn hàng</span>
       </router-link>
-      <button @click="handleLogout" 
-        class="flex md:hidden shrink-0 items-center gap-2 px-5 py-4 text-xs font-bold transition-all text-error/80 hover:text-error hover:bg-error/10 border-b-4 border-transparent">
-        <span class="material-symbols-outlined text-[18px]">logout</span> <span>Đăng xuất</span>
-      </button>
     </div>
 
     <div class="p-4 md:p-6 border-t border-outline-variant/10 hidden md:block">
