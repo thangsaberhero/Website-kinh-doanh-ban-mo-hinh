@@ -105,7 +105,7 @@
                   <span class="material-symbols-outlined text-lg">{{ step.icon }}</span>
                 </div>
 
-                <span :class="['text-[11px] font-bold uppercase tracking-tighter whitespace-nowrap', step.status === 'active' ? (step.name === 'Đã hủy' ? 'text-error' : (step.name.includes('hoàn hàng') ? 'text-orange-400' : 'text-primary')) : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
+                <span :class="['text-[9px] md:text-[11px] font-bold uppercase tracking-tighter text-center max-w-[70px] md:max-w-none leading-tight mt-1', step.status === 'active' ? (step.name === 'Đã hủy' ? 'text-error' : (step.name.includes('hoàn hàng') ? 'text-orange-400' : 'text-primary')) : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
                   {{ step.name }}
                 </span>
                 <span v-if="step.time" class="text-[10px] text-outline mt-1">{{ step.time }}</span>
@@ -119,28 +119,30 @@
               Danh Sách Sản Phẩm
             </h3>
             
-            <div v-for="item in orderItems" :key="item.MaPhanLoai + '-' + item.LaHangKhuyenMai" @click="router.push(`/product/${item.MaMoHinh}`)" class="glass-panel group cursor-pointer overflow-hidden flex flex-col md:flex-row items-center border border-outline-variant/10 rounded-xl transition-all hover:bg-surface-container-high/60 hover:border-primary/30">
-              <div class="w-full md:w-48 h-48 bg-surface-container-lowest overflow-hidden flex items-center justify-center p-4">
+            <div v-for="item in orderItems" :key="item.MaPhanLoai + '-' + item.LaHangKhuyenMai" @click="router.push(`/product/${item.MaMoHinh}`)" class="glass-panel group cursor-pointer overflow-hidden flex flex-row items-stretch border border-outline-variant/10 rounded-xl transition-all hover:bg-surface-container-high/60 hover:border-primary/30">
+              <div class="w-24 h-auto md:w-48 md:h-48 shrink-0 bg-surface-container-lowest overflow-hidden flex items-center justify-center p-2 md:p-4">
                 <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"/>
               </div>
-              <div class="flex-1 p-6 flex flex-col md:flex-row justify-between w-full">
-                <div class="space-y-2">
-                  <div class="flex gap-2 mb-1">
-                    <span class="px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 text-[10px] font-black uppercase rounded-full">{{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</span>
-                    <span v-if="item.LaHangKhuyenMai === 1" class="px-2 py-0.5 bg-error/10 text-error border border-error/20 text-[10px] font-black uppercase rounded-full flex items-center gap-1">
-                      <span class="material-symbols-outlined text-[12px]">local_fire_department</span> SALE
+              
+              <div class="flex-1 p-3 md:p-6 flex flex-col md:flex-row justify-between w-full gap-2 md:gap-0">
+                <div class="space-y-1 md:space-y-2">
+                  <div class="flex flex-wrap gap-1 md:gap-2 mb-1">
+                    <span class="px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 text-[9px] md:text-[10px] font-black uppercase rounded-full">{{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}</span>
+                    <span v-if="item.LaHangKhuyenMai === 1" class="px-2 py-0.5 bg-error/10 text-error border border-error/20 text-[9px] md:text-[10px] font-black uppercase rounded-full flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[10px] md:text-[12px]">local_fire_department</span> SALE
                     </span>
                   </div>
-                  <h4 class="font-headline text-xl font-bold text-white group-hover:text-primary transition-colors">{{ item.TenMH }}</h4>
-                  <p class="text-sm text-outline font-medium tracking-tight">Mã định danh: {{ item.MaPhanLoai }}</p>
+                  <h4 class="font-headline text-sm md:text-xl font-bold text-white group-hover:text-primary transition-colors line-clamp-2">{{ item.TenMH }}</h4>
+                  <p class="text-[10px] md:text-sm text-outline font-medium tracking-tight">Mã định danh: {{ item.MaPhanLoai }}</p>
                 </div>
-                <div class="mt-4 md:mt-0 md:text-right flex flex-col justify-between">
-                  <span class="text-xs text-outline font-bold uppercase tracking-widest">Số lượng: {{ item.SoLuong < 10 ? '0'+item.SoLuong : item.SoLuong }}</span>
+                
+                <div class="mt-auto md:mt-0 md:text-right flex flex-row md:flex-col justify-between items-end">
+                  <span class="text-[10px] md:text-xs text-outline font-bold uppercase tracking-widest">SL: {{ item.SoLuong < 10 ? '0'+item.SoLuong : item.SoLuong }}</span>
                   <div class="text-right mt-1">
-                    <div v-if="item.LaHangKhuyenMai === 1" class="text-xs text-outline line-through mb-0.5">
+                    <div v-if="item.LaHangKhuyenMai === 1" class="text-[10px] md:text-xs text-outline line-through mb-0.5">
                       {{ formatPrice(item.DonGiaGoc * item.SoLuong) }}
                     </div>
-                    <span class="text-2xl font-headline font-black text-primary">{{ formatPrice(item.ThanhTienSP) }}</span>
+                    <span class="text-base md:text-2xl font-headline font-black text-primary">{{ formatPrice(item.ThanhTienSP) }}</span>
                   </div>
                 </div>
               </div>
@@ -247,7 +249,7 @@
 
     <!-- MODAL THANH TOÁN -->
     <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-5 md:p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
         <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
         <p class="text-sm text-on-surface-variant mb-6">Mã đơn: <span class="font-bold text-primary">{{ orderInfo.MaDonHangHienThi || route.params.id }}</span></p>
         
@@ -289,7 +291,7 @@
 
     <!-- MODAL HỦY ĐƠN HÀNG -->
     <div v-if="showCancelModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div class="bg-surface-container-high border border-error/30 rounded-3xl p-8 max-w-md w-full shadow-[0_0_50px_rgba(244,63,94,0.15)] animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-surface-container-high border border-error/30 rounded-3xl p-5 md:p-8 max-w-md w-full shadow-[0_0_50px_rgba(244,63,94,0.15)] animate-[fadeIn_0.2s_ease-out]">
         <div class="flex flex-col items-center text-center mb-6">
           <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center text-error mb-4 border border-error/20">
             <span class="material-symbols-outlined text-3xl">warning</span>
@@ -312,7 +314,7 @@
 
     <!-- 🔥 ĐÃ BỔ SUNG: MODAL SỬA THÔNG TIN ĐỊA CHỈ -->
     <div v-if="showEditAddressModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div class="bg-surface-container-high border border-outline-variant/30 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-3xl p-5 md:p-8 max-w-md w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
         <div class="flex justify-between items-center mb-6">
           <h3 class="font-headline text-xl font-bold text-white uppercase tracking-widest">Sửa địa chỉ giao hàng</h3>
           <button @click="showEditAddressModal = false" class="text-outline hover:text-error transition-colors">
@@ -323,15 +325,15 @@
         <div class="space-y-4 mb-8">
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Họ và tên người nhận</label>
-            <input v-model="editAddressForm.hoten" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập họ và tên" />
+            <input v-model="editAddressForm.hoten" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập họ và tên" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Số điện thoại</label>
-            <input v-model="editAddressForm.sdt" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập số điện thoại (VD: 098...)" />
+            <input v-model="editAddressForm.sdt" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập số điện thoại (VD: 098...)" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Địa chỉ chi tiết</label>
-            <textarea v-model="editAddressForm.diachi" rows="3" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors resize-none" placeholder="Nhập số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+            <textarea v-model="editAddressForm.diachi" rows="3" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-white focus:outline-none focus:border-primary transition-colors resize-none" placeholder="Nhập số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
           </div>
         </div>
 
