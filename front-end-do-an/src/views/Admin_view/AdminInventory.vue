@@ -297,7 +297,38 @@
                     </td>
                     
                     <td class="px-6 py-4 align-middle">
-                      <p class="font-bold text-slate-700 text-xs">{{ product.selltype }}</p>
+                      <div class="flex flex-col items-start justify-center gap-1.5">
+                        
+                        <div class="relative" @click.stop>
+                          <select v-model="product.selltype" 
+                                  @change="quickUpdateSellType(product.id, product.selltype)"
+                                  class="text-xs font-bold pl-2 pr-6 py-1 rounded-md border appearance-none outline-none transition-colors shadow-sm cursor-pointer"
+                                  :class="{
+                                    'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300 focus:ring-2 focus:ring-purple-100': product.selltype?.toLowerCase().includes('order'),
+                                    'bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-100': product.selltype === 'Có sẵn'
+                                  }">
+                            <option value="Có sẵn" class="text-slate-700 font-medium">Có sẵn</option>
+                            <option value="Pre-order" class="text-slate-700 font-medium">Pre-order</option>
+                            <option value="Order" class="text-slate-700 font-medium">Order</option>
+                          </select>
+                          <span class="material-symbols-outlined absolute right-1.5 top-1/2 -translate-y-1/2 text-[14px] pointer-events-none"
+                                :class="product.selltype === 'Có sẵn' ? 'text-emerald-500' : 'text-purple-500'">
+                            arrow_drop_down
+                          </span>
+                        </div>
+
+                        <div class="flex items-center gap-1 group/edit bg-slate-50 border border-slate-200 px-2 py-0.5 rounded transition-all" 
+                             @click.stop>
+                          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cọc:</span>
+                          <input type="text" 
+                                 v-model="product.rawMinDeposit" 
+                                 @keyup.enter="quickUpdateDeposit(product.id, product.rawMinDeposit)"
+                                 class="w-14 text-right text-xs font-bold text-slate-700 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-400 focus:outline-none transition-colors font-mono"
+                                 title="Nhấn Enter để lưu giá cọc">
+                          <span class="text-[9px] font-bold text-slate-500">đ</span>
+                        </div>
+
+                      </div>
                     </td>
 
                     <td class="px-6 py-4 align-middle text-right">
@@ -1795,6 +1826,57 @@
       }
     } catch (error) {
       console.error("Lỗi quick update:", error);
+      toastStore.showToast("Không thể kết nối máy chủ!", "error");
+    }
+  };
+
+  const quickUpdateSellType = async (productId, newSellType) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/quick_update_selltype/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ LoaiHinhBan: newSellType })
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toastStore.showToast("Đã cập nhật loại hình bán!", "success");
+      } else {
+        toastStore.showToast(result.message || "Lỗi khi cập nhật!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi quickUpdateSellType:", error);
+      toastStore.showToast("Không thể kết nối máy chủ!", "error");
+    }
+  };
+
+  const quickUpdateDeposit = async (productId, rawDeposit) => {
+    try {
+      // Ép kiểu: Lọc bỏ hết dấu chấm, chữ cái, chỉ lấy số (VD: "500.000" -> 500000)
+      const numericDeposit = Number(String(rawDeposit).replace(/\D/g, ''));
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/quick_update_deposit/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ TienCocToiThieu: numericDeposit })
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toastStore.showToast("Đã lưu nhanh mức giá cọc!", "success");
+      } else {
+        toastStore.showToast(result.message || "Lỗi khi lưu giá cọc!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi quickUpdateDeposit:", error);
       toastStore.showToast("Không thể kết nối máy chủ!", "error");
     }
   };

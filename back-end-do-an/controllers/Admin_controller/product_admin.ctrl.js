@@ -953,6 +953,65 @@ const product_admin = {
             connection.release();
         }
     },
+
+    cap_nhat_loai_hinh_ban_nhanh: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            const MaMH = req.params.id;
+            const { LoaiHinhBan } = req.body;
+            const MaTK = req.user.id;
+
+            // 1. Cập nhật bảng Mô Hình
+            await connection.query(`UPDATE MoHinh SET LoaiHinhBan = ? WHERE MaMoHinh = ?`, [LoaiHinhBan, MaMH]);
+
+            // 2. Lấy tên để ghi log (Bảo mật theo dõi nhân viên)
+            const [kiem_tra] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMH]);
+            const tenMHStr = kiem_tra.length > 0 ? kiem_tra[0].TenMH : 'Không xác định';
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            // 3. Ghi Log
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'UPDATE_SELLTYPE', ?, ?, NOW())
+            `, [MaTK, `Đổi loại hình bán thành [${LoaiHinhBan}] cho SP #${MaMH}: "${tenMHStr}"`, userIp]);
+
+            res.status(200).json({ success: true, message: 'Cập nhật thành công!' });
+        } catch (error) {
+            console.error("Lỗi cập nhật loại hình bán: ", error);
+            res.status(500).json({ success: false, message: 'Lỗi server!' });
+        } finally {
+            connection.release();
+        }
+    },
+
+    cap_nhat_gia_coc_nhanh: async (req, res) => {
+        const connection = await db.getConnection();
+        try {
+            const MaMH = req.params.id;
+            const { TienCocToiThieu } = req.body;
+            const MaTK = req.user.id;
+
+            await connection.query(`UPDATE MoHinh SET TienCocToiThieu = ? WHERE MaMoHinh = ?`, [TienCocToiThieu, MaMH]);
+
+            const [kiem_tra] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMH]);
+            const tenMHStr = kiem_tra.length > 0 ? kiem_tra[0].TenMH : 'Không xác định';
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            await connection.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
+                VALUES (?, 'UPDATE_DEPOSIT', ?, ?, NOW())
+            `, [MaTK, `Cập nhật giá cọc [${TienCocToiThieu}đ] cho SP #${MaMH}: "${tenMHStr}"`, userIp]);
+
+            res.status(200).json({ success: true, message: 'Cập nhật giá cọc thành công!' });
+        } catch (error) {
+            console.error("Lỗi cập nhật giá cọc: ", error);
+            res.status(500).json({ success: false, message: 'Lỗi server!' });
+        } finally {
+            connection.release();
+        }
+    },
     
     //Xoá theo cách ẩn với khách hàng, tránh ảnh hướng báo cáo thống kê
     An_mat_hang: async(req, res) =>{
