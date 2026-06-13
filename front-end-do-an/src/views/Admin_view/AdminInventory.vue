@@ -306,7 +306,7 @@
                         <div class="relative" @click.stop>
                           <select v-model="product.selltype" 
                                   @change="quickUpdateSellType(product.id, product.selltype)"
-                                  class="text-xs font-bold pl-3 pr-2 py-1.5 rounded-lg border outline-none transition-colors shadow-sm cursor-pointer"
+                                  class="text-xs font-bold pl-3 pr-8 py-1.5 min-w-[105px] rounded-lg border outline-none transition-colors shadow-sm cursor-pointer"
                                   :class="{
                                     'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300 focus:ring-2 focus:ring-purple-100': product.selltype?.toLowerCase().includes('order'),
                                     'bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-100': product.selltype === 'Có sẵn'
@@ -315,7 +315,7 @@
                             <option value="Pre-order" class="text-slate-700 font-medium">Pre-order</option>
                             <option value="Order" class="text-slate-700 font-medium">Order</option>
                           </select>
-                          </div>
+                        </div>
 
                         <div class="flex items-center gap-1 group/edit bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg transition-all" 
                              @click.stop>
