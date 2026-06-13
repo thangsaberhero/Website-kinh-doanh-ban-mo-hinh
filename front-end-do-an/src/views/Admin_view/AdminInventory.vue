@@ -237,47 +237,49 @@
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto min-h-[300px]">
-            <table class="w-full text-left border-collapse whitespace-nowrap">
+          <div class="overflow-x-auto bg-white rounded-2xl border border-slate-100 shadow-sm custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+              
               <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200">
                 <tr>
-                  <th class="px-8 py-4 font-semibold">
-                    <div class="flex items-center gap-4">
-                      <div class="w-6"></div>
-                      <span>Tên sản phẩm</span>
-                    </div>
-                  </th>
-                  <th class="px-8 py-4 font-semibold">Loại hình bán</th>
+                  <th class="py-4 px-4 w-12 text-center"></th> <th class="px-4 py-4 font-semibold text-left">Tên sản phẩm</th>
+                  <th class="px-8 py-4 font-semibold text-left">Loại hình bán</th>
                   <th class="px-8 py-4 font-semibold text-right">Giá nhập</th>
                   <th class="px-8 py-4 font-semibold text-right">Giá bán</th>
                   <th class="px-8 py-4 font-semibold text-center">Tồn kho</th>
                   <th class="px-8 py-4 font-semibold text-center">Hành động</th>
                 </tr>
               </thead>
+
               <tbody class="divide-y divide-slate-50">
                 <template v-for="product in products" :key="product.id">
                   
                   <tr class="transition-colors group hover:bg-slate-50/80 cursor-pointer" @click="toggleRow(product.id)">
                     
-                    <td class="px-8 py-4">
+                    <td class="py-4 px-4 text-center">
+                      <button v-if="product.variants && product.variants.length > 0" 
+                              @click.stop="toggleRow(product.id)"
+                              class="w-6 h-6 rounded bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors mx-auto">
+                        <span class="material-symbols-outlined text-[18px] transition-transform duration-200" 
+                              :class="expandedRows.includes(product.id) ? 'rotate-180 text-[#ff8f73]' : ''">
+                          expand_more
+                        </span>
+                      </button>
+                    </td>
+
+                    <td class="px-4 py-4">
                       <div class="flex items-center gap-4">
-                        <button v-if="product.variants && product.variants.length > 0" 
-                                class="w-6 h-6 rounded bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-sky-100 hover:text-sky-600 transition-colors">
-                          <span class="material-symbols-outlined text-[18px] transition-transform" 
-                                :class="expandedRows.includes(product.id) ? 'rotate-180 text-sky-500' : ''">
-                            expand_more
-                          </span>
-                        </button>
-                        <div v-else class="w-6"></div> <div class="w-12 h-12 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-0.5">
+                        <div class="w-12 h-12 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-0.5">
                           <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
                         </div>
                         <div class="flex flex-col">
-                          <p class="font-bold text-slate-900 text-[14px] truncate max-w-[200px]">{{ product.name }}</p>
-                          <div class="flex items-center gap-1.5 mt-1">
-                            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border" :class="getBrandColor(product.brand)">
+                          <p class="font-bold text-slate-900 text-[14px] truncate max-w-[220px]" :title="product.name">{{ product.name }}</p>
+                          <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border shadow-sm" :class="getBrandColor(product.brand)">
                               {{ product.brand }}
                             </span>
-                            <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100">{{ product.characterName }}</span>
+                            <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100 shadow-sm">{{ product.characterName }}</span>
+                            <span v-if="product.series" class="text-[9px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold border border-purple-100 shadow-sm">{{ product.series }}</span>
                           </div>
                         </div>
                       </div>
@@ -288,30 +290,31 @@
                     </td>
 
                     <td class="px-8 py-4 text-right">
-                      <p class="font-bold text-slate-500 text-xs">{{ product.basePrice }} đ</p>
+                      <p class="font-bold text-slate-500 text-xs font-mono">{{ product.basePrice }} đ</p>
                     </td>
                     
                     <td class="px-8 py-4 text-right">
                       <div v-if="product.variants && product.variants.length > 0">
-                        <span class="text-xs font-bold text-slate-500 italic">Xem phân loại</span>
+                        <span class="text-xs font-bold text-slate-400 italic bg-slate-100 px-2 py-1 rounded border border-slate-200/60">Xem phân loại</span>
                       </div>
-                      <div v-else class="group/edit relative inline-block">
+                      <div v-else class="inline-flex items-center justify-end gap-1 group/edit relative">
                         <input type="text" 
                                v-model="product.sellPrice" 
+                               @click.stop
                                @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                               class="w-24 text-right text-sm font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none transition-colors"
-                               title="Nhấn Enter để lưu">
-                        <span class="material-symbols-outlined absolute -left-5 top-0.5 text-[14px] text-slate-300 opacity-0 group-hover/edit:opacity-100 pointer-events-none">edit</span>
+                               class="w-20 text-right text-sm font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none transition-colors py-0.5 font-mono">
+                        <span class="text-xs font-bold text-slate-600">đ</span>
                       </div>
                     </td>
                     
                     <td class="px-8 py-4 text-center">
-                      <div v-if="product.variants && product.variants.length > 0">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">Tổng: {{ product.stock }}</span>
+                      <div v-if="product.variants && product.variants.length > 0" class="flex justify-center">
+                        <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">Tổng: {{ product.stock }}</span>
                       </div>
-                      <div v-else class="group/edit relative inline-flex items-center justify-center">
+                      <div v-else class="flex justify-center items-center">
                         <input type="number" 
                                v-model="product.stock" 
+                               @click.stop
                                @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
                                class="w-16 text-center text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full border border-emerald-100 hover:border-emerald-300 focus:border-emerald-500 focus:bg-white focus:outline-none transition-all py-1">
                       </div>
@@ -319,44 +322,47 @@
                     
                     <td class="px-8 py-4 text-center">
                       <div class="flex justify-center gap-2">
-                        <button @click.stop="openEditModal(product)" class="p-2 text-slate-400 hover:text-sky-500 bg-white border border-slate-200 hover:border-sky-200 rounded-lg transition-all shadow-sm group relative" title="Sửa thông tin">
+                        <button @click.stop="openEditModal(product)" class="p-2 text-slate-400 hover:text-sky-500 bg-white border border-slate-200 hover:border-sky-200 rounded-lg transition-all shadow-sm flex items-center justify-center" title="Sửa thông tin">
                           <span class="material-symbols-outlined text-[16px]">edit</span>
                         </button>
-                        <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="p-2 text-slate-400 hover:text-rose-500 bg-white border border-slate-200 hover:border-rose-200 rounded-lg transition-all shadow-sm" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
+                        <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="p-2 text-slate-400 hover:text-rose-500 bg-white border border-slate-200 hover:border-rose-200 rounded-lg transition-all shadow-sm flex items-center justify-center" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
                           <span class="material-symbols-outlined text-[16px]">{{ product.isVisible === 1 ? 'visibility_off' : 'visibility' }}</span>
                         </button>
                       </div>
                     </td>
                   </tr>
 
-                  <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/50 shadow-inner">
-                    <td colspan="6" class="p-0 border-b border-slate-200/60">
-                      <div class="px-16 py-4">
+                  <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/40 shadow-inner">
+                    <td colspan="7" class="p-0 border-b border-slate-200/60">
+                      <div class="px-16 py-4 animate-[fadeIn_0.2s_ease-out]">
                         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                           <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400">
                               <tr>
-                                <th class="py-2.5 px-4 w-1/2">Tên phân loại</th>
-                                <th class="py-2.5 px-4 text-right">Giá bán (VNĐ)</th>
-                                <th class="py-2.5 px-4 text-center">Tồn kho</th>
+                                <th class="py-2.5 px-5 w-1/2">Tên phân loại sản phẩm</th>
+                                <th class="py-2.5 px-5 text-right">Giá bán trực tiếp</th>
+                                <th class="py-2.5 px-5 text-center">Tồn kho</th>
                               </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
-                              <tr v-for="variant in product.variants" :key="variant.id" class="hover:bg-slate-50/50 transition-colors group/row">
-                                <td class="py-2.5 px-4">
+                              <tr v-for="variant in product.variants" :key="variant.id" class="hover:bg-slate-50/50 transition-colors">
+                                <td class="py-3 px-5">
                                   <span class="text-xs font-bold text-slate-700 flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> {{ variant.name }}
                                   </span>
                                 </td>
                                 
-                                <td class="py-2 px-4 text-right">
-                                  <input type="text" 
-                                         v-model="variant.sellPrice" 
-                                         @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
-                                         class="w-24 text-right text-xs font-bold text-sky-600 bg-transparent border-b border-dashed border-slate-300 focus:border-sky-500 focus:bg-sky-50 focus:outline-none transition-all px-1 py-0.5">
+                                <td class="py-2 px-5 text-right">
+                                  <div class="flex items-center justify-end gap-1">
+                                    <input type="text" 
+                                           v-model="variant.sellPrice" 
+                                           @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
+                                           class="w-20 text-right text-xs font-bold text-sky-600 bg-transparent border-b border-dashed border-slate-300 focus:border-sky-500 focus:bg-sky-50 focus:outline-none transition-all px-1 py-0.5 font-mono">
+                                    <span class="text-xs font-bold text-sky-600">đ</span>
+                                  </div>
                                 </td>
                                 
-                                <td class="py-2 px-4 text-center">
+                                <td class="py-2 px-5 text-center">
                                   <input type="number" 
                                          v-model="variant.stock" 
                                          @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
@@ -365,8 +371,8 @@
                               </tr>
                             </tbody>
                           </table>
-                          <div class="px-4 py-2 bg-slate-50 text-[10px] text-slate-400 font-medium italic text-right">
-                            * Gõ số và nhấn Enter tại ô để lưu nhanh thay đổi
+                          <div class="px-5 py-2 bg-slate-50 text-[10px] text-slate-400 font-medium italic text-right border-t border-slate-100">
+                            💡 Thay đổi số liệu và nhấn <span class="font-bold text-slate-600">Enter</span> để áp dụng lưu nhanh
                           </div>
                         </div>
                       </div>
