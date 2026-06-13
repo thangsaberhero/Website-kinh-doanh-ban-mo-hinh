@@ -1398,7 +1398,7 @@ const donhang_user = {
             
             const amountNum = Math.max(1000, Number(soTienCanThanhToan)); 
             const extraData = Buffer.from(HinhThuc || "").toString('base64'); 
-            const requestType = "captureWallet";
+            const requestType = "payWithMethod";
 
             const rawSignature = `accessKey=${accessKey}&amount=${amountNum}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
 
