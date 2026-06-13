@@ -163,7 +163,7 @@
 
       <section v-if="suggestions.length > 0" class="mt-24 pt-16 border-t border-outline-variant/15">
         <h2 class="text-3xl font-headline font-bold tracking-tight uppercase mb-8 text-white">Có thể bạn sẽ thích</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           <ProductCard 
             v-for="sp in suggestions" 
             :key="sp.MaMoHinh" 

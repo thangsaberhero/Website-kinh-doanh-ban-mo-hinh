@@ -8,7 +8,7 @@
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
         <header class="mb-10">
-          <h1 class="text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
             Quản lý <span class="text-primary italic">Đơn hàng</span>
           </h1>
           <p class="text-on-surface-variant font-medium">Theo dõi và kiểm tra lịch sử các kho báu bạn đã sở hữu.</p>

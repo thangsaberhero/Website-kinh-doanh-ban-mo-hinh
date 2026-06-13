@@ -9,7 +9,7 @@
 
         <header class="mb-12">
           <div class="flex items-center gap-4 mb-2">
-            <h1 class="text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white">
               Danh Sách <span class="text-primary italic">Yêu Thích</span>
             </h1>
           </div>

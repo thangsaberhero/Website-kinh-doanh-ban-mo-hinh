@@ -24,27 +24,25 @@
 
     <div class="max-w-[1300px] mx-auto -mt-12 md:-mt-20 px-4 md:px-5 relative z-20">
       <div class="bg-[#1c1d21]/95 border border-[#ff6b4a]/15 rounded-[24px] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)] backdrop-blur-md mb-10 max-w-[900px] mx-auto">
-        <div class="border border-transparent rounded-2xl md:rounded-full p-2 md:px-2 md:py-1 focus-within:border-[#ff6b4a] focus-within:shadow-[0_0_8px_rgba(255,107,74,0.3)] transition-all duration-300">
-          <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-0">
-            <div class="flex items-center flex-1 bg-transparent px-2 md:px-0">
-              <span class="text-xl ml-1 md:ml-3">🔍</span>
-              <input
-                v-model="searchQuery"
-                @keyup.enter="handleSearch"
-                type="text"
-                placeholder="Nhập mã Serial..."
-                class="w-full min-w-0 bg-transparent border-none text-white text-base outline-none px-3 focus:outline-none focus:ring-0"
-              >
-            </div>
-            
-            <button
-              @click="handleSearch"
-              :disabled="isLoadingSearch"
-              class="w-full md:w-auto bg-[#ff6b4a] text-white border-none py-3 md:py-3.5 px-5 md:px-10 rounded-xl md:rounded-full font-extrabold cursor-pointer transition duration-300 hover:bg-[#ff8566] hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,74,0.4)] disabled:opacity-50 whitespace-nowrap"
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-2">         
+          <div class="flex items-center flex-1 bg-black/20 border border-zinc-700 focus-within:border-[#ff6b4a] focus-within:shadow-[0_0_10px_rgba(255,107,74,0.2)] rounded-xl md:rounded-full px-3 py-1 md:py-1 transition-all duration-300">
+            <span class="text-xl ml-1">🔍</span>
+            <input
+              v-model="searchQuery"
+              @keyup.enter="handleSearch"
+              type="text"
+              placeholder="Nhập mã Serial..."
+              class="w-full min-w-0 bg-transparent border-none text-white text-base outline-none px-3 py-2.5 focus:outline-none focus:ring-0"
             >
-              {{ isLoadingSearch ? 'Đang tìm...' : 'TRUY XUẤT' }}
-            </button>
           </div>
+          
+          <button
+            @click="handleSearch"
+            :disabled="isLoadingSearch"
+            class="w-full md:w-auto bg-[#ff6b4a] text-white border-none py-3.5 md:py-3.5 px-5 md:px-10 rounded-xl md:rounded-full font-extrabold cursor-pointer transition duration-300 hover:bg-[#ff8566] hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,74,0.4)] disabled:opacity-50 whitespace-nowrap"
+          >
+            {{ isLoadingSearch ? 'Đang tìm...' : 'TRUY XUẤT' }}
+          </button>
         </div>
         <p v-if="errorMsg" class="text-red-500 mt-4 text-center font-medium">{{ errorMsg }}</p>
       </div>
