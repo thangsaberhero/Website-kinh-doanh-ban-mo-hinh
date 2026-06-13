@@ -39,7 +39,7 @@
             Hủy đơn hàng
           </button>
 
-          <button v-else class="w-full sm:w-auto px-6 py-3.5 bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all border border-outline-variant/15">
+          <button v-else @click="router.push('/contact')" class="w-full sm:w-auto px-6 py-3.5 bg-surface-container-high hover:bg-surface-bright text-on-surface text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all border border-outline-variant/15">
             <span class="material-symbols-outlined text-lg">support_agent</span> Liên hệ hỗ trợ
           </button>
 
