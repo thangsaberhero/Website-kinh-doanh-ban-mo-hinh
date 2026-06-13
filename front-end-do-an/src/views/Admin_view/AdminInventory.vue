@@ -242,17 +242,12 @@
               
               <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200">
                 <tr>
-                  <th class="py-4 pl-6 pr-4 font-semibold text-left">
-                    <div class="flex items-center gap-3">
-                      <div class="w-6 shrink-0"></div> 
-                      <span>Tên sản phẩm</span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-4 font-semibold text-left">Loại hình bán</th>
-                  <th class="px-6 py-4 font-semibold text-right">Giá nhập</th>
-                  <th class="px-6 py-4 font-semibold text-right">Giá bán</th>
-                  <th class="px-6 py-4 font-semibold text-center">Tồn kho</th>
-                  <th class="px-6 py-4 font-semibold text-center">Hành động</th>
+                  <th class="px-8 py-4 font-semibold text-left">Tên sản phẩm</th>
+                  <th class="px-8 py-4 font-semibold text-left">Loại hình bán</th>
+                  <th class="px-8 py-4 font-semibold text-right">Giá nhập</th>
+                  <th class="px-8 py-4 font-semibold text-right">Giá bán</th>
+                  <th class="px-8 py-4 font-semibold text-center">Tồn kho</th>
+                  <th class="px-8 py-4 font-semibold text-center">Hành động</th>
                 </tr>
               </thead>
 
@@ -261,48 +256,43 @@
                   
                   <tr class="transition-colors group hover:bg-slate-50/80 cursor-pointer" @click="toggleRow(product.id)">
                     
-                    <td class="py-4 pl-6 pr-4 align-middle">
-                      <div class="flex items-center gap-3">
-                        
-                        <div class="w-6 shrink-0 flex items-center justify-center">
-                          <button v-if="product.variants && product.variants.length > 0" 
-                                  @click.stop="toggleRow(product.id)"
-                                  class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors">
-                            <span class="material-symbols-outlined text-[20px] transition-transform duration-200" 
-                                  :class="expandedRows.includes(product.id) ? 'rotate-180 text-[#ff8f73]' : ''">
-                              expand_more
+                    <td class="px-8 py-4 align-middle relative">
+                      
+                      <button v-if="product.variants && product.variants.length > 0" 
+                              @click.stop="toggleRow(product.id)"
+                              class="absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors">
+                        <span class="material-symbols-outlined text-[20px] transition-transform duration-200" 
+                              :class="expandedRows.includes(product.id) ? 'rotate-180 text-[#ff8f73]' : ''">
+                          expand_more
+                        </span>
+                      </button>
+
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-[1px]">
+                          <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
+                        </div>
+                        <div class="flex flex-col">
+                          <p class="font-bold text-slate-900 text-[14px] truncate max-w-[220px]" :title="product.name">{{ product.name }}</p>
+                          <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border shadow-sm" :class="getBrandColor(product.brand)">
+                              {{ product.brand }}
                             </span>
-                          </button>
-                        </div>
-
-                        <div class="flex items-center gap-4">
-                          <div class="w-11 h-11 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-[1px]">
-                            <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
-                          </div>
-                          <div class="flex flex-col">
-                            <p class="font-bold text-slate-900 text-[14px] truncate max-w-[220px]" :title="product.name">{{ product.name }}</p>
-                            <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                              <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border shadow-sm" :class="getBrandColor(product.brand)">
-                                {{ product.brand }}
-                              </span>
-                              <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100 shadow-sm">{{ product.characterName }}</span>
-                              <span v-if="product.series" class="text-[9px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold border border-purple-100 shadow-sm">{{ product.series }}</span>
-                            </div>
+                            <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100 shadow-sm">{{ product.characterName }}</span>
+                            <span v-if="product.series" class="text-[9px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold border border-purple-100 shadow-sm">{{ product.series }}</span>
                           </div>
                         </div>
-
                       </div>
                     </td>
                     
-                    <td class="px-6 py-4 align-middle">
+                    <td class="px-8 py-4 align-middle">
                       <p class="font-bold text-slate-700 text-xs">{{ product.selltype }}</p>
                     </td>
 
-                    <td class="px-6 py-4 align-middle text-right">
+                    <td class="px-8 py-4 align-middle text-right">
                       <p class="font-bold text-slate-500 text-xs font-mono">{{ product.basePrice }} đ</p>
                     </td>
                     
-                    <td class="px-6 py-4 align-middle text-right">
+                    <td class="px-8 py-4 align-middle text-right">
                       <div v-if="product.variants && product.variants.length > 0">
                         <span class="text-[11px] font-bold text-slate-400 italic bg-slate-100 px-2 py-1 rounded border border-slate-200/60">Nhiều phân loại</span>
                       </div>
@@ -316,7 +306,7 @@
                       </div>
                     </td>
                     
-                    <td class="px-6 py-4 align-middle text-center">
+                    <td class="px-8 py-4 align-middle text-center">
                       <div v-if="product.variants && product.variants.length > 0" class="flex justify-center">
                         <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">Tổng: {{ product.stock }}</span>
                       </div>
@@ -329,7 +319,7 @@
                       </div>
                     </td>
                     
-                    <td class="px-6 py-4 align-middle text-center">
+                    <td class="px-8 py-4 align-middle text-center">
                       <div class="flex justify-center items-center gap-3">
                         <button @click.stop="openEditModal(product)" class="text-slate-400 hover:text-sky-500 transition-colors flex items-center justify-center" title="Sửa thông tin">
                           <span class="material-symbols-outlined text-[20px]">edit</span>
@@ -343,7 +333,7 @@
 
                   <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/50 shadow-inner">
                     <td colspan="6" class="p-0 border-b border-slate-200/60">
-                      <div class="pl-[60px] pr-6 py-4 animate-[fadeIn_0.2s_ease-out]">
+                      <div class="pl-[96px] pr-8 py-4 animate-[fadeIn_0.2s_ease-out]">
                         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                           <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400">
@@ -1622,43 +1612,37 @@
   };
 
   // --- HÀM ẨN/HIỆN NHANH SẢN PHẨM ---
-  const toggleVisibility = async (product) => {
+  // --- HÀM ẨN/HIỆN SẢN PHẨM NHANH ---
+  const toggleVisibility = async (productId, currentStatus) => {
     try {
-      // Đảo ngược trạng thái hiện tại (Đang 1 thì thành 0, đang 0 thì thành 1)
-      const newStatus = product.isVisible === 1 ? 0 : 1; 
-      
-      // Lấy vé thông hành
+      const newStatus = currentStatus === 1 ? 0 : 1;
       const token = localStorage.getItem('token');
 
-      // Gọi API cập nhật nhanh trạng thái
-      // (Lưu ý: Đảm bảo Backend của bạn có route PUT /toggle_visibility/:id)
-      const response = await fetch(`${API_BASE_URL}/api/product_admin/toggle_visibility/${product.id}`, {
+      // Gửi API cập nhật trạng thái
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/update_visibility/${productId}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        // Chỉ gửi đúng 1 trường dữ liệu cần cập nhật để tối ưu băng thông
-        body: JSON.stringify({ HienThi: newStatus }) 
+        body: JSON.stringify({ HienThi: newStatus })
       });
 
       const result = await response.json();
 
-      if (result.success || response.ok) {
-        // Cập nhật lại object product trên giao diện ngay lập tức
-        product.isVisible = newStatus;
-        
-        // Thông báo bằng Toast màu xanh
-        toastStore.showToast(
-          newStatus === 1 ? "Đã bật hiển thị sản phẩm trên web!" : "Đã ẩn sản phẩm khỏi web!", 
-          "success"
-        );
+      if (response.ok && result.success) {
+        // Cập nhật giao diện thành công
+        const productIndex = products.value.findIndex(p => p.id === productId);
+        if (productIndex !== -1) {
+          products.value[productIndex].isVisible = newStatus;
+        }
+        toastStore.showToast(newStatus === 1 ? "Đã hiển thị sản phẩm!" : "Đã ẩn sản phẩm khỏi cửa hàng!", "success");
       } else {
-        toastStore.showToast(result.message || "Lỗi khi cập nhật trạng thái", "error");
+        toastStore.showToast(result.message || "Lỗi khi đổi trạng thái!", "error");
       }
     } catch (error) {
-      console.error("Lỗi ẩn/hiện sản phẩm:", error);
-      toastStore.showToast("Lỗi máy chủ khi thao tác!", "error");
+      console.error("Lỗi toggle visibility:", error);
+      toastStore.showToast("Không thể kết nối máy chủ!", "error");
     }
   };
 
