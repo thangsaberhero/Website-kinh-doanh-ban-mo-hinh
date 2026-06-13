@@ -477,81 +477,10 @@
     }
   };
 
-  const increaseQty = async (item) => {
-    // 1. Lưu lại số lượng cũ phòng trường hợp API bị lỗi để còn phục hồi
-    const oldQty = item.SoLuong;
+  const updateTimeouts = ref({});
 
-    // 2. TĂNG SỐ LƯỢNG TRÊN GIAO DIỆN TRƯỚC (Cho khách hàng thấy mượt mà)
-    // (Lưu ý: Bạn có thể thay số 10 bằng item.SoLuongTon nếu API có trả về tồn kho)
-    if (item.SoLuong < item.TonKho) {
-      item.SoLuong++;
-      // Tự động tính lại Thành Tiền cho món đó ngay lập tức
-      item.ThanhTien = item.DonGia * item.SoLuong; 
-    } else {
-      toastStore.showToast("Đã đạt số lượng mua tối đa!", "error");
-      return; // Dừng lại không gọi API nữa
-    }
-
-    // 3. Lấy thông tin vé (Token) và Mã Khách Hàng
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
-    
-    if (!token || !userString) {
-      toastStore.showToast("Vui lòng đăng nhập lại!", "error");
-      return;
-    }
-    const maKH = JSON.parse(userString).MaKH;
-
-    // 4. GỌI API BÁO CHO BACKEND CẬP NHẬT DATABASE
-    try {
-      const payload = {
-        MaKH: parseInt(maKH),
-        MaPhanLoai: item.MaPhanLoai, // Gửi đúng mã phân loại của món đó
-        soluong: item.SoLuong        // Gửi con số MỚI NHẤT xuống Database
-      };
-
-      const response = await fetch(`${API_BASE_URL}/api/don_hang/update`, {
-        method: 'POST', // Chú ý kiểm tra lại xem Backend của bạn dùng POST hay PUT cho link này nhé
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Nếu Backend báo lỗi (VD: Trong kho không đủ hàng)
-        throw new Error(data.message || "Lỗi cập nhật từ Server");
-      }
-      await fetchCartData(true);
-      window.dispatchEvent(new Event('cart-updated'));
-      // Tùy chọn: Hiện thông báo nhỏ gọn (toast) thành công nếu thích
-      // toastStore.showToast("Đã cập nhật số lượng", "success");
-
-    } catch (error) {
-      console.error("Lỗi cập nhật số lượng:", error);
-      toastStore.showToast("Không thể cập nhật số lượng lúc này!", "error");
-      
-      // BƯỚC QUAN TRỌNG: Nếu API lỗi, phải hoàn tác (Rollback) giao diện về số cũ
-      item.SoLuong = oldQty;
-      item.ThanhTien = item.DonGia * item.SoLuong; 
-    }
-  };
-
-  const decreaseQty = async (item) => {
-    const oldQty = item.SoLuong;
-
-    if (item.SoLuong > 1) {
-      item.SoLuong--;
-      item.ThanhTien = item.DonGia * item.SoLuong; 
-    } 
-    else {
-      confirmRemoveItem(item);
-      return; 
-    }
-
+  // 2. Hàm gom API lại (Chỉ chạy khi khách đã ngừng bấm)
+  const syncItemQtyToServer = async (item, oldQty) => {
     const token = localStorage.getItem('token');
     const userString = localStorage.getItem('user');
     
@@ -578,15 +507,63 @@
       });
 
       if (!response.ok) throw new Error("Lỗi cập nhật từ Server");
+      
+      // Chỉ tải lại nền khi API cuối cùng đã được xác nhận thành công
       await fetchCartData(true);
       window.dispatchEvent(new Event('cart-updated'));
-    } 
-    catch (error) {
+
+    } catch (error) {
       console.error("Lỗi cập nhật số lượng:", error);
       toastStore.showToast("Không thể cập nhật số lượng lúc này!", "error");
+      // Nếu lỗi, rollback về số cũ
       item.SoLuong = oldQty;
       item.ThanhTien = item.DonGia * item.SoLuong; 
     }
+  };
+
+  const increaseQty = (item) => {
+    const oldQty = item.SoLuong;
+
+    // Cập nhật UI tức thì
+    if (item.SoLuong < item.TonKho) {
+      item.SoLuong++;
+      item.ThanhTien = item.DonGia * item.SoLuong; 
+    } else {
+      toastStore.showToast("Đã đạt số lượng mua tối đa!", "error");
+      return; 
+    }
+
+    // Xóa cái hẹn giờ cũ nếu khách vẫn đang bấm liên tục
+    if (updateTimeouts.value[item.MaPhanLoai]) {
+      clearTimeout(updateTimeouts.value[item.MaPhanLoai]);
+    }
+
+    // Đặt hẹn giờ mới: Chờ 500ms (0.5s) sau cú click cuối cùng mới gửi Server
+    updateTimeouts.value[item.MaPhanLoai] = setTimeout(() => {
+      syncItemQtyToServer(item, oldQty);
+    }, 500);
+  };
+
+  // 4. Hàm Giảm số lượng
+  const decreaseQty = (item) => {
+    const oldQty = item.SoLuong;
+
+    // Cập nhật UI tức thì
+    if (item.SoLuong > 1) {
+      item.SoLuong--;
+      item.ThanhTien = item.DonGia * item.SoLuong; 
+    } else {
+      confirmRemoveItem(item);
+      return; 
+    }
+
+    if (updateTimeouts.value[item.MaPhanLoai]) {
+      clearTimeout(updateTimeouts.value[item.MaPhanLoai]);
+    }
+
+    updateTimeouts.value[item.MaPhanLoai] = setTimeout(() => {
+      syncItemQtyToServer(item, oldQty);
+    }, 500);
   };
 
   const removeItem = async (maPL) => { 
