@@ -281,6 +281,10 @@
                     <td class="px-8 py-4">
                       <p class="font-bold text-slate-700 text-xs">{{ product.selltype }}</p>
                     </td>
+
+                    <td class="px-8 py-4 text-right">
+                      <p class="font-bold text-slate-500 text-xs">{{ product.basePrice }} đ</p>
+                    </td>
                     
                     <td class="px-8 py-4 text-right">
                       <div v-if="product.variants && product.variants.length > 0">
