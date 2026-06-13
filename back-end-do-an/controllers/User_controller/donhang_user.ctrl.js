@@ -1568,7 +1568,8 @@ const donhang_user = {
             const embed_data = JSON.stringify({ 
                 redirecturl: `${DOMAIN_FRONTEND}/ordersuccess?maDH=${MaDH}`,
                 hinhThuc: HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit',
-                maDonHangHienThi: maHienThi
+                maDonHangHienThi: maHienThi,
+                maDH_Goc: MaDH
             });
 
             const item = JSON.stringify([{}]); // Bắt chước mảng rỗng của bạn kia
@@ -1657,11 +1658,12 @@ const donhang_user = {
             const hinhThuc = embed_data.hinhThuc === 'full' ? 'Thanh toán toàn bộ' : 'Cọc một phần';            
             const amount = dataJson.amount;
             const transId = dataJson.zp_trans_id;
+            const maDH_Goc = embed_data.maDH_Goc;
 
             await connection.beginTransaction();
 
-            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan, Note FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
-            const [don_hang] = await connection.query(sql_tim_don, [maHienThiGoc]);
+            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan, Note FROM DonHang WHERE MaDH = ? LIMIT 1`;
+            const [don_hang] = await connection.query(sql_tim_don, [maDH_Goc]);
 
             if (don_hang.length > 0) {
                 const MaDH = don_hang[0].MaDH;
