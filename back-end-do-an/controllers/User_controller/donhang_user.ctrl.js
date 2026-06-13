@@ -1383,9 +1383,9 @@ const donhang_user = {
             }
 
             // 2. Lấy thông tin từ .env
-            const partnerCode = process.env.MOMO_PARTNER_CODE || "MOMO";
-            const accessKey = process.env.MOMO_ACCESS_KEY || "F8BBA842ECF85";
-            const secretkey = process.env.MOMO_SECRET_KEY || "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+            const partnerCode = process.env.MOMO_PARTNER_CODE;
+            const accessKey = process.env.MOMO_ACCESS_KEY;
+            const secretkey = process.env.MOMO_SECRET_KEY;
             const DOMAIN_BACKEND = process.env.DOMAIN_BACKEND; 
             const DOMAIN_FRONTEND = process.env.DOMAIN_FRONTEND;
 
@@ -1397,7 +1397,8 @@ const donhang_user = {
             const ipnUrl = `${DOMAIN_BACKEND}/api/don_hang/payment/momo/ipn`; 
             
             const amountNum = Math.max(1000, Number(soTienCanThanhToan)); 
-            const extraData = Buffer.from(HinhThuc || "").toString('base64'); 
+            const safeHinhThuc = HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit';
+            const extraData = Buffer.from(safeHinhThuc).toString('base64');
             const requestType = "payWithMethod";
 
             const rawSignature = `accessKey=${accessKey}&amount=${amountNum}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
@@ -1479,7 +1480,7 @@ const donhang_user = {
                 }
 
                 const decodedExtraData = Buffer.from(extraData, 'base64').toString('utf8');
-                const hinhThuc = decodedExtraData;
+                const hinhThuc = decodedExtraData === 'full' ? 'Thanh toán toàn bộ' : 'Cọc một phần';
                 const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
 
                 // 🔥 CHỐT CHẶN: XỬ LÝ KHÁCH THANH TOÁN TRỄ SAU KHI CRON ĐÃ HỦY
@@ -1568,8 +1569,7 @@ const donhang_user = {
             const embed_data = JSON.stringify({ 
                 redirecturl: `${DOMAIN_FRONTEND}/ordersuccess?maDH=${MaDH}`,
                 hinhThuc: HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit',
-                maDonHangHienThi: maHienThi,
-                maDH_Goc: MaDH
+                maDonHangHienThi: maHienThi
             });
 
             const item = JSON.stringify([{}]); // Bắt chước mảng rỗng của bạn kia
@@ -1672,8 +1672,8 @@ const donhang_user = {
 
             await connection.beginTransaction();
 
-            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan, Note FROM DonHang WHERE MaDH = ? LIMIT 1`;
-            const [don_hang] = await connection.query(sql_tim_don, [maDH_Goc]);
+            const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan, Note FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
+            const [don_hang] = await connection.query(sql_tim_don, [maHienThiGoc]);
 
             if (don_hang.length > 0) {
                 console.log("✅ 3. Đã tìm thấy đơn hàng trong Database. Bắt đầu Update...");
