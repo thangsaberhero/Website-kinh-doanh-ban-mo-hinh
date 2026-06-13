@@ -12,7 +12,10 @@
         </p>
       </div>
 
-      <div v-if="cartItems.length > 0" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div v-if="isLoading" class="flex justify-center items-center py-32">
+        <span class="material-symbols-outlined animate-spin text-primary text-5xl">settings</span>
+      </div>
+      <div v-else-if="cartItems.length > 0" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div class="lg:col-span-8 space-y-4">
 
           <div class="flex flex-col sm:flex-row justify-between items-center bg-surface-container-low p-4 rounded-xl border border-outline-variant/10 mb-2">
@@ -228,8 +231,7 @@
   import ProductCard from '../../components/ProductCard.vue';
   import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useToastStore } from '../../stores/toast';
-  
+  import { useToastStore } from '../../stores/toast'; 
 
   const router = useRouter();
   const toastStore = useToastStore();
@@ -238,6 +240,7 @@
   const isClearCartModalOpen = ref(false);
   const isDeleteItemModalOpen = ref(false);
   const itemToDelete = ref(null);
+  const isLoading = ref(true);
 
   const sortBy = ref('default');
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -262,10 +265,8 @@
       router.push('/login');
       return;
     }
-
-    const queryParams = new URLSearchParams({
-        sapxep: sortBy.value
-      }).toString();
+    if (!isBackgroundLoad) isLoading.value = true;
+    const queryParams = new URLSearchParams({ sapxep: sortBy.value }).toString();oString();
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/don_hang/watch/?${queryParams}`, {
@@ -291,8 +292,12 @@
         cartItems.value = []; 
       }
       fetchSuggestions();
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Lỗi khi tải giỏ hàng:", error);
+    }
+    finally {
+      if (!isBackgroundLoad) isLoading.value = false; // Tắt loading khi xong
     }
   };
 

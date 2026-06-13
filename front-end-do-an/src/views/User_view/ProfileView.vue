@@ -14,8 +14,13 @@
           <p class="text-on-surface-variant font-medium">Quản lý thông tin liên hệ và địa chỉ giao hàng của bạn.</p>
         </header>
 
-        <div class="glass-panel p-5 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">          
-          <form @submit.prevent="saveProfile" class="relative z-10 space-y-10">
+        <div class="glass-panel p-5 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">
+          <div v-if="isLoading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface/50 backdrop-blur-sm">
+            <span class="material-symbols-outlined animate-spin text-primary text-5xl mb-4">autorenew</span>
+            <p class="text-sm font-bold text-on-surface-variant uppercase tracking-widest animate-pulse">Đang đồng bộ dữ liệu...</p>
+          </div>
+
+          <form v-else @submit.prevent="saveProfile" class="relative z-10 space-y-10">
             <div class="flex flex-col sm:flex-row items-center gap-8 pb-8 border-b border-outline-variant/15">
               <div class="relative group cursor-pointer shrink-0">
                 <div class="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-surface-container-highest overflow-hidden neon-glow transition-all duration-300 group-hover:border-primary/50">
@@ -130,6 +135,7 @@
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const isSaving = ref(false);
+  const isLoading = ref(true);
   const isAvatarRemoved = ref(false); 
   const ngayTaoFromDB = ref(null);   
 
@@ -170,6 +176,8 @@
 
   const fetchUserData = async () => {
     if (!currentUser) return;
+    isLoading.value = true;
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`, {headers: {'Authorization': `Bearer ${token}`}});
@@ -199,6 +207,9 @@
     } 
     catch (error) {
       console.error("Lỗi kéo thông tin người dùng:", error);
+    }
+    finally {
+      isLoading.value = false;
     }
   };
 
