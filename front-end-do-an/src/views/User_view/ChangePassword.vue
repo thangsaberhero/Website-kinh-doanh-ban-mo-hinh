@@ -1,20 +1,20 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
     <TheHeader />
-    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
+    <div class="flex flex-col md:flex-row flex-1 w-full max-w-7xl mx-auto overflow-hidden">
       <UserSidebar />
 
       <main class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
         <header class="mb-10">
-          <h1 class="text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
             Đổi <span class="text-primary italic">Mật khẩu</span>
           </h1>
           <p class="text-on-surface-variant font-medium">Bảo vệ kho báu của bạn bằng cách cập nhật mật khẩu mạnh mẽ.</p>
         </header>
 
-        <div class="glass-panel rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">
+        <div class="glass-panel p-5 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">
           <form @submit.prevent="updatePassword" class="relative z-10 divide-y divide-outline-variant/15">
             <div class="p-8 md:p-10">
               <div class="flex items-start gap-4 mb-8">

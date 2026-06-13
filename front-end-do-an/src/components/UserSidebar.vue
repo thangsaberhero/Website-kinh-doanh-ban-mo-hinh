@@ -1,46 +1,58 @@
 <template>
-    <aside class="w-72 hidden md:flex flex-col border-r border-outline-variant/20 bg-surface-container-low pt-8">
-      <div class="px-6 flex flex-col items-center gap-3 mb-8">
-        <div class="relative group cursor-pointer">
-          <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
-            <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="userAvatar"/>
-          </div>
-          <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
-            <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
-          </div>
+  <aside class="w-full md:w-72 flex flex-col border-b md:border-b-0 md:border-r border-outline-variant/20 bg-surface-container-low pt-4 md:pt-8 shrink-0 z-20">   
+    <div class="px-4 md:px-6 flex flex-row md:flex-col items-center gap-4 md:gap-3 mb-4 md:mb-8">
+      <div class="relative group cursor-pointer shrink-0">
+        <div class="w-12 h-12 md:w-24 md:h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
+          <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="userAvatar"/>
         </div>
-        <div class="text-center">
-          <h3 class="font-headline font-bold text-lg text-on-surface">
-            {{ authStore.user?.username || authStore.user?.TenKH || 'Collector' }}
-          </h3>
-          
-          <p :class="['text-[10px] uppercase tracking-widest font-bold mt-0.5', memberTier.color]">
-            {{ memberTier.name }}
-          </p>
+        <div class="absolute bottom-0 right-0 bg-primary w-4 h-4 md:w-7 md:h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
+          <span class="material-symbols-outlined text-[10px] md:text-[14px] text-on-primary font-bold">verified</span>
         </div>
       </div>
-  
-      <div class="flex flex-col gap-1 flex-1">
-        <router-link to="/profile" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
-          <span class="material-symbols-outlined">person</span> <span>Thông tin cá nhân</span>
-        </router-link>
-        <router-link v-if="!isSocialAccount" to="/change-password" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
-          <span class="material-symbols-outlined">lock</span> <span>Đổi mật khẩu</span>
-        </router-link>
-        <router-link to="/wishlist" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
-          <span class="material-symbols-outlined">favorite</span> <span>Danh sách yêu thích</span>
-        </router-link>
-        <router-link to="/orders" class="flex items-center gap-3 px-6 py-4 text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" active-class="!text-primary border-r-4 border-primary bg-gradient-to-r from-primary/10 to-transparent">
-          <span class="material-symbols-outlined">inventory_2</span> <span>Lịch sử đơn hàng</span>
-        </router-link>
+      
+      <div class="text-left md:text-center flex-1">
+        <h3 class="font-headline font-bold text-base md:text-lg text-on-surface line-clamp-1">
+          {{ authStore.user?.username || authStore.user?.TenKH || 'Collector' }}
+        </h3>
+        <p :class="['text-[9px] md:text-[10px] uppercase tracking-widest font-bold mt-0.5', memberTier.color]">
+          {{ memberTier.name }}
+        </p>
       </div>
-  
-      <div class="p-6 border-t border-outline-variant/10">
-        <button @click="handleLogout" class="flex items-center gap-3 text-sm font-bold transition-all text-outline hover:text-error w-full">
-          <span class="material-symbols-outlined">logout</span> <span>Đăng xuất</span>
-        </button>
-      </div>
-    </aside>
+    </div>
+
+    <div class="flex flex-row md:flex-col gap-0 flex-1 overflow-x-auto custom-scrollbar px-2 md:px-0 pb-0">  
+      <router-link to="/profile" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
+        <span class="material-symbols-outlined text-[18px] md:text-[24px]">person</span> <span>Thông tin cá nhân</span>
+      </router-link>  
+      <router-link v-if="!isSocialAccount" to="/change-password" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
+        <span class="material-symbols-outlined text-[18px] md:text-[24px]">lock</span> <span>Đổi mật khẩu</span>
+      </router-link>    
+      <router-link to="/wishlist" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
+        <span class="material-symbols-outlined text-[18px] md:text-[24px]">favorite</span> <span>Danh sách yêu thích</span>
+      </router-link>    
+      <router-link to="/orders" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
+        <span class="material-symbols-outlined text-[18px] md:text-[24px]">inventory_2</span> <span>Lịch sử đơn hàng</span>
+      </router-link>
+      <button @click="handleLogout" 
+        class="flex md:hidden shrink-0 items-center gap-2 px-5 py-4 text-xs font-bold transition-all text-error/80 hover:text-error hover:bg-error/10 border-b-4 border-transparent">
+        <span class="material-symbols-outlined text-[18px]">logout</span> <span>Đăng xuất</span>
+      </button>
+    </div>
+
+    <div class="p-4 md:p-6 border-t border-outline-variant/10 hidden md:block">
+      <button @click="handleLogout" class="flex items-center gap-3 text-sm font-bold transition-all text-outline hover:text-error w-full">
+        <span class="material-symbols-outlined">logout</span> <span>Đăng xuất</span>
+      </button>
+    </div>
+  </aside>
 </template>
   
 <script setup>

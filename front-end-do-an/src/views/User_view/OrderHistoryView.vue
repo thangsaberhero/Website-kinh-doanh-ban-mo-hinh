@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
     <TheHeader />
-    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
+    <div class="flex flex-col md:flex-row flex-1 w-full max-w-7xl mx-auto overflow-hidden">
       <UserSidebar />
 
       <main class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
@@ -31,12 +31,12 @@
             <div 
               v-for="order in filteredOrders" 
               :key="order.MaDH"
-              class="group bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/20 rounded-2xl p-6 transition-all duration-300 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden"
+              class="group bg-surface-container-low hover:bg-surface-container-highest border border-outline-variant/20 rounded-2xl p-4 md:p-6 transition-all duration-300 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden"
             >
               <div class="absolute top-0 right-0 w-32 h-32 bg-primary/0 blur-3xl -z-10 group-hover:bg-primary/10 transition-colors"></div>
               
               <div class="flex items-center gap-6">
-                <div class="w-20 h-20 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex-shrink-0 p-2 overflow-hidden relative">
+                <div class="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex-shrink-0 p-2 overflow-hidden relative">
                   <div v-if="order.TongSoSanPham > 1" class="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-sm z-10">
                     <span class="font-bold text-white text-sm">+{{ order.TongSoSanPham - 1 }}</span>
                   </div>
@@ -51,7 +51,7 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 flex-grow">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 lg:gap-8 flex-grow">
                   <div class="flex flex-col gap-1">
                     <span class="text-[10px] font-bold text-primary tracking-widest uppercase">Mã đơn</span>
                     <span class="text-lg font-headline font-bold text-white tracking-tight">{{ order.MaDonHangHienThi || order.MaDH }}</span>
@@ -130,7 +130,7 @@
     </div>
     
     <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-5 sm:p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
         <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
         <p class="text-sm text-on-surface-variant mb-6">Mã đơn: <span class="font-bold text-primary">{{ selectedOrder?.MaDonHangHienThi || selectedOrder?.MaDH }}</span></p>
         

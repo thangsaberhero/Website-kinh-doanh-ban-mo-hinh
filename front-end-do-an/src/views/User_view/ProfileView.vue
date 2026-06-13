@@ -1,21 +1,20 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
     <TheHeader />
-    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
+    <div class="flex flex-col md:flex-row flex-1 w-full max-w-7xl mx-auto overflow-hidden">
       <UserSidebar />
 
       <main class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
         <header class="mb-10">
-          <h1 class="text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
             Hồ sơ <span class="text-primary italic">Cá nhân</span>
           </h1>
           <p class="text-on-surface-variant font-medium">Quản lý thông tin liên hệ và địa chỉ giao hàng của bạn.</p>
         </header>
 
-        <div class="glass-panel p-8 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">
-          
+        <div class="glass-panel p-5 md:p-10 rounded-2xl relative overflow-hidden border border-outline-variant/20 shadow-2xl">          
           <form @submit.prevent="saveProfile" class="relative z-10 space-y-10">
             <div class="flex flex-col sm:flex-row items-center gap-8 pb-8 border-b border-outline-variant/15">
               <div class="relative group cursor-pointer shrink-0">
@@ -83,11 +82,11 @@
 
             </div>
 
-            <div class="pt-8 flex items-center justify-between border-t border-outline-variant/15">
-              <button type="button" @click="fetchUserData" class="text-xs font-bold uppercase tracking-widest text-outline hover:text-white transition-colors">
+            <div class="pt-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 border-t border-outline-variant/15">
+              <button type="button" class="w-full sm:w-auto py-3 md:py-0 text-xs font-bold uppercase tracking-widest text-outline hover:text-white transition-colors">
                 Hủy thay đổi
               </button>
-              <button type="submit" class="bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-widest px-8 py-3.5 rounded-lg neon-glow hover:brightness-110 active:scale-95 transition-all flex items-center gap-2">
+              <button type="submit" class="w-full sm:w-auto bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-widest px-8 py-3.5 rounded-lg neon-glow hover:brightness-110 active:scale-95 transition-all flex items-center gap-2">
                 <span v-if="isSaving" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                 {{ isSaving ? 'ĐANG LƯU...' : 'LƯU THAY ĐỔI' }}
               </button>
@@ -111,7 +110,6 @@
             <h5 class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Đã đánh giá</h5>
             <p class="text-3xl font-headline font-bold text-white">{{ stats.totalReviews }} <span class="text-sm font-medium text-primary">Lượt</span></p>
           </div>
-
         </div>
       </main>
     </div>

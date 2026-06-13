@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background min-h-screen flex flex-col font-body text-on-surface selection:bg-primary selection:text-on-primary-fixed">
     <TheHeader />
-    <div class="flex flex-1 w-full max-w-7xl mx-auto overflow-hidden">
+    <div class="flex flex-col md:flex-row flex-1 w-full max-w-7xl mx-auto overflow-hidden">
       <UserSidebar />
 
       <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-12 custom-scrollbar relative">
@@ -77,7 +77,6 @@
               </button>
             </div>
           </div>
-
         </TransitionGroup>
 
         <div v-if="totalPages > 1 && !isLoading" class="mt-12 flex justify-center items-center gap-2 pb-12">
