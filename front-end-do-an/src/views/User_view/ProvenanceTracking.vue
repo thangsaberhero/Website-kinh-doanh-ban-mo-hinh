@@ -2,10 +2,12 @@
   <div class="min-h-screen bg-[#0d0e12] text-white pb-24">
     <TheHeader />
 
-    <div class="relative h-[300px] md:h-[450px] bg-[url('https://images8.alphacoders.com/102/1029194.jpg')] bg-cover bg-center flex items-center justify-center text-center">
-      <div class="absolute inset-0 bg-gradient-to-b from-[#0d0e12]/40 to-[#0d0e12]"></div>
-      <div class="relative z-10 px-4">
-        <h1 class="text-4xl md:text-6xl font-black tracking-wider text-white my-2.5 drop-shadow-[0_0_20px_rgba(255,107,74,0.5)] uppercase">
+    <div class="relative h-[300px] md:h-[420px] bg-[#0d0e12] overflow-hidden flex items-center justify-center text-center">
+      <div class="absolute inset-0 opacity-[0.07]" style="background-image: linear-gradient(#ff6b4a 1px, transparent 1px), linear-gradient(to right, #ff6b4a 1px, transparent 1px); background-size: 40px 40px;"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,107,74,0.12)_0%,transparent_70%)]"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0d0e12]/50 to-[#0d0e12]"></div>
+      <div class="relative z-20 px-4 isolate">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black tracking-wider text-white my-2.5 drop-shadow-[0_0_25px_rgba(255,107,74,0.4)] uppercase">
           Truy xuất Blockchain
         </h1>
         <p class="text-sm md:text-lg text-[#ff6b4a] tracking-[4px] font-medium uppercase">
@@ -78,17 +80,18 @@
             <h3 class="text-xl font-bold">Bảo mật & Cốt lõi công nghệ</h3>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20">
-              <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0">🛡️</div>
+            <div class="group flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#ff6b4a]/40 hover:shadow-[0_10px_25px_rgba(255,107,74,0.12)] hover:bg-[#ff6b4a]/[0.02]">
+              <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#ff6b4a]/20">🛡️</div>
               <div>
-                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg">Dữ liệu Immutable (Không thể thay đổi)</h4>
+                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg transition-colors duration-300 group-hover:text-white">Dữ liệu Immutable (Không thể thay đổi)</h4>
                 <p class="text-gray-400 text-sm leading-relaxed">Mọi thông tin một khi đã được ghi vào mạng lưới Blockchain sẽ tồn tại vĩnh viễn. Không một cá nhân hay tổ chức nào có thể tự ý can thiệp hay sửa đổi.</p>
               </div>
             </div>
-            <div class="flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20">
-              <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0">💎</div>
+
+            <div class="group flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#ff6b4a]/40 hover:shadow-[0_10px_25px_rgba(255,107,74,0.12)] hover:bg-[#ff6b4a]/[0.02]">
+              <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#ff6b4a]/20">💎</div>
               <div>
-                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg">Định danh độc bản (Digital Twin)</h4>
+                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg transition-colors duration-300 group-hover:text-white">Định danh độc bản (Digital Twin)</h4>
                 <p class="text-gray-400 text-sm leading-relaxed">Mỗi mô hình vật lý được liên kết với một chữ ký số duy nhất trên Smart Contract, loại bỏ hoàn toàn rủi ro hàng giả trên thị trường sưu tầm.</p>
               </div>
             </div>
@@ -158,7 +161,13 @@
                   </div>
                 </div>
               </div>
-              <p v-else class="text-center text-gray-500 py-10">Sản phẩm chưa có lịch sử hành trình.</p>
+              <div v-else class="flex flex-col items-center justify-center text-center py-16 px-4">
+                <div class="w-16 h-16 bg-[#1c1d21] border border-zinc-800 rounded-full flex items-center justify-center mb-5 shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+                  <span class="text-2xl opacity-60">⏳</span>
+                </div>
+                <h4 class="text-gray-300 font-bold text-base mb-1">Chưa có dữ liệu hành trình</h4>
+                <p class="text-zinc-600 text-sm mt-1">Thông tin sẽ được ghi nhận lên mạng lưới Blockchain ngay khi sản phẩm bắt đầu di chuyển.</p>
+              </div>
             </div>
           </div>
 
@@ -166,13 +175,21 @@
             <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
               <h3 class="text-base font-bold text-white">🗺️ Bản Đồ Vị Trí</h3>
             </div>
-            <div class="relative w-full h-full flex-1 min-h-[250px] md:min-h-[350px]">
-              <div class="absolute top-4 right-4 z-20">
-                <div class="bg-[#ff6b4a]/15 border border-[#ff6b4a]/40 text-[#ff6b4a] py-1.5 px-3 rounded-full text-xs font-bold flex items-center gap-2 backdrop-blur-sm">
+            <div class="relative w-full h-full flex-1 min-h-[250px] md:min-h-[350px] flex items-center justify-center rounded-xl overflow-hidden bg-[#1c1d21] border border-[#2a2b30]/50">
+              <div v-if="productData.history && productData.history.length > 0" class="absolute top-4 right-4 z-30">
+                <div class="bg-[#ff6b4a]/15 border border-[#ff6b4a]/40 text-[#ff6b4a] py-1.5 px-3 rounded-full text-xs font-bold flex items-center gap-2 backdrop-blur-sm shadow-[0_0_10px_rgba(255,107,74,0.2)]">
                   <span class="w-2 h-2 bg-[#ff6b4a] rounded-full animate-ping"></span> LIVE TRACKING
                 </div>
               </div>
-              <div id="real-map" class="w-full h-full min-h-[250px] md:min-h-[350px] rounded-xl z-10"></div>
+              <div v-if="!productData.history || productData.history.length === 0" class="absolute inset-0 flex flex-col items-center justify-center z-20 bg-[#15161a]">
+                <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>            
+                <div class="text-5xl mb-4 opacity-20 grayscale">🗺️</div>
+                <p class="text-zinc-500 text-sm font-medium z-10">Bản đồ sẽ hiển thị khi có tọa độ vị trí</p>
+              </div>
+              <div id="real-map" 
+                  class="absolute inset-0 w-full h-full z-10 transition-opacity duration-500"
+                  :class="{ 'opacity-0 pointer-events-none': !productData.history || productData.history.length === 0 }">
+              </div>
             </div>
           </div>
         </div>
