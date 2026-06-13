@@ -525,7 +525,7 @@
         // Nếu Backend báo lỗi (VD: Trong kho không đủ hàng)
         throw new Error(data.message || "Lỗi cập nhật từ Server");
       }
-      await fetchCartData();
+      await fetchCartData(true);
       window.dispatchEvent(new Event('cart-updated'));
       // Tùy chọn: Hiện thông báo nhỏ gọn (toast) thành công nếu thích
       // toastStore.showToast("Đã cập nhật số lượng", "success");
@@ -578,7 +578,7 @@
       });
 
       if (!response.ok) throw new Error("Lỗi cập nhật từ Server");
-      await fetchCartData();
+      await fetchCartData(true);
       window.dispatchEvent(new Event('cart-updated'));
     } 
     catch (error) {
