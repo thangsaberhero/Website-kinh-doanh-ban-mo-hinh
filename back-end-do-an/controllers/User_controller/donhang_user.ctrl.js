@@ -1636,29 +1636,39 @@ const donhang_user = {
     },
 
     zalopay_ipn: async (req, res) => {
+        console.log("\n🚀 ===== [ZALOPAY IPN] BẮT ĐẦU NHẬN THÔNG BÁO =====");
         const connection = await db.getConnection();
         let result = {};
         
         try {
+            console.log("👉 Dữ liệu thô nhận được từ ZaloPay:", req.body);
             const config = { key2: process.env.ZALO_KEY2 };
+
+            if (!config.key2) {
+                console.error("❌ LỖI NGHIÊM TRỌNG: KHÔNG TÌM THẤY ZALO_KEY2 TRONG BIẾN MÔI TRƯỜNG ENV!");
+            }
 
             const dataStr = req.body.data;
             const reqMac = req.body.mac;
             const mac = crypto.createHmac('sha256', config.key2).update(dataStr).digest('hex');
 
             if (reqMac !== mac) {
+                console.error("❌ LỖI: CHỮ KÝ MAC KHÔNG KHỚP! (Có thể do sai KEY2)");
                 result.return_code = -1;
                 result.return_message = "mac not equal";
                 return res.status(400).json(result);
             }
 
+            console.log("✅ 1. Chữ ký hợp lệ!");
+
             const dataJson = JSON.parse(dataStr);
             const embed_data = JSON.parse(dataJson.embed_data); 
-            const maHienThiGoc = embed_data.maDonHangHienThi;
+            const maDH_Goc = embed_data.maDH_Goc;
             const hinhThuc = embed_data.hinhThuc === 'full' ? 'Thanh toán toàn bộ' : 'Cọc một phần';            
             const amount = dataJson.amount;
             const transId = dataJson.zp_trans_id;
-            const maDH_Goc = embed_data.maDH_Goc;
+
+            console.log(`📦 2. Bóc tách đơn: MaDH_Goc = ${maDH_Goc} | Số tiền = ${amount} | Mã GD = ${transId}`);
 
             await connection.beginTransaction();
 
@@ -1666,6 +1676,7 @@ const donhang_user = {
             const [don_hang] = await connection.query(sql_tim_don, [maDH_Goc]);
 
             if (don_hang.length > 0) {
+                console.log("✅ 3. Đã tìm thấy đơn hàng trong Database. Bắt đầu Update...");
                 const MaDH = don_hang[0].MaDH;
                 const trangThaiHienTai = don_hang[0].TrangThaiThanhToan;
 
@@ -1673,24 +1684,38 @@ const donhang_user = {
                     
                     const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
 
-                    // 🔥 CHỐT CHẶN: XỬ LÝ KHÁCH THANH TOÁN TRỄ QUA ZALOPAY
+                    // Cập nhật trạng thái
                     if (trangThaiHienTai === 'Đã hủy') {
                         const noteMoi = (don_hang[0].Note || "") + "\n🚨 CẢNH BÁO: KHÁCH THANH TOÁN TRỄ QUA ZALOPAY KHI ĐƠN ĐÃ BỊ HỦY. ADMIN KIỂM TRA LẠI TỒN KHO!";
                         await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ?, Note = ? WHERE MaDH = ?`, [trangThaiMoi, noteMoi, MaDH]);
                     } else {
                         await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
                     }
+                    console.log(`✅ 4. Đã Update trạng thái thành: ${trangThaiMoi}`);
 
+                    // =========================================================
+                    // 🔴 THAY ĐỔI CỰC KỲ QUAN TRỌNG Ở ĐÂY
+                    // =========================================================
+                    // Hãy tra cứu lại trong bảng PhuongThucThanhToan của bồ, xem ZaloPay là ID số mấy. 
+                    // Ví dụ: ZaloPay là số 4 thì thay thành số 4!
+                    const MA_PT_ZALOPAY = 4; // <--- SỬA SỐ NÀY CHO KHỚP VỚI DATABASE CỦA BỒ!
+                    
+                    console.log(`⏳ 5. Đang Insert lịch sử vào bảng ThanhToan với MaPT = ${MA_PT_ZALOPAY}...`);
                     await connection.query(`
                         INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
-                        VALUES (2, ?, NOW(), ?, ?, 'Thành công', ?)
-                    `, [MaDH, amount, hinhThuc, transId]);
+                        VALUES (?, ?, NOW(), ?, ?, 'Thành công', ?)
+                    `, [MA_PT_ZALOPAY, MaDH, amount, hinhThuc, transId]);
 
                     await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
+                } else {
+                    console.log("⚠️ Đơn hàng đã được thanh toán từ trước, bỏ qua ghi nhận trùng lặp.");
                 }
+            } else {
+                console.error(`❌ LỖI: KHÔNG TÌM THẤY ĐƠN HÀNG CÓ MÃ: ${maDH_Goc} TRONG DATABASE!`);
             }
 
             await connection.commit();
+            console.log("🎉 ===== [ZALOPAY IPN] LƯU DATABASE THÀNH CÔNG! =====");
             
             result.return_code = 1;
             result.return_message = "success";
@@ -1698,7 +1723,7 @@ const donhang_user = {
 
         } catch (error) {
             await connection.rollback();
-            console.error("Lỗi xử lý IPN ZaloPay:", error);
+            console.error("❌ ===== LỖI SẬP HỆ THỐNG IPN ZALOPAY =====", error);
             result.return_code = 0; 
             result.return_message = error.message;
             return res.status(500).json(result);
