@@ -1235,17 +1235,18 @@ const product_admin = {
                 const [variants] = await db.query(`SELECT MaPhanLoai, MaMoHinh, ChiTietPhanLoai, DonGia, SoLuong FROM PhanLoai WHERE MaMoHinh IN (?)`, [productIds]);
                 
                 products.forEach(p => {
-                    // Lọc ra các phân loại thuộc về sản phẩm này
                     const spVariants = variants.filter(v => v.MaMoHinh === p.MaMoHinh);
                     
-                    // Lấy ra ID của bản Mặc định để gán cho chức năng sửa dòng chính
                     const defaultVar = spVariants.find(v => v.ChiTietPhanLoai === 'Mặc định');
                     p.defaultVariantId = defaultVar ? defaultVar.MaPhanLoai : null;
                     
-                    // Gom các bản Mở rộng (Khác mặc định) vào một mảng variants riêng
-                    p.DS_PhanLoai = spVariants
-                        .filter(v => v.ChiTietPhanLoai !== 'Mặc định')
-                        .map(v => ({ id: v.MaPhanLoai, name: v.ChiTietPhanLoai, sellPrice: v.DonGia, stock: v.SoLuong }));
+                    // KHÔNG DÙNG .filter(v => v.ChiTietPhanLoai !== 'Mặc định') nữa bồ nhé
+                    p.DS_PhanLoai = spVariants.map(v => ({ 
+                        id: v.MaPhanLoai, 
+                        name: v.ChiTietPhanLoai, 
+                        sellPrice: v.DonGia, 
+                        stock: v.SoLuong 
+                    }));
                 });
             }
 
