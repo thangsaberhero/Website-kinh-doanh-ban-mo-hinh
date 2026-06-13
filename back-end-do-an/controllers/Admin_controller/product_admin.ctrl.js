@@ -740,14 +740,51 @@ const product_admin = {
                 TenMH, MaHSX, MaDM, MaChiTietDM, TenNhanVat, Series, ChatLieu, DonGia, TrangThai, ThongTinChiTiet,
                 LoaiHinhBan, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DanhSachPhanLoai, HienThi, MaVach_Serial, AnhCuCanXoa
             } = req.body;
+            const [spHienTai] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMH]);
+            if (spHienTai.length === 0) {
+                await connection.rollback();
+                return res.status(404).json({ success: false, message: "Sản phẩm không tồn tại hoặc đã bị xóa khỏi hệ thống!" });
+            }
+            
+            // Giữ lại tên cũ để xài cho phần Ghi Log hệ thống ở cuối cùng
+            const tenMhCu = spHienTai[0].TenMH;
 
-            // 1. KIỂM TRA TRÙNG LẶP (Đã sửa cú pháp và logic MaMoHinh != ?)
-            const sql_kiem_tra_trung = `SELECT MaMoHinh FROM MoHinh WHERE (TenMH = ? OR MaVach_Serial = ?) AND MaMoHinh != ? LIMIT 1`;
-            const [so_sanh_trung_lap] = await connection.query(sql_kiem_tra_trung, [TenMH, MaVach_Serial, MaMH]);
+            // =======================================================
+            // 0. KIỂM TRA TÍNH HỢP LỆ CỦA DỮ LIỆU ĐẦU VÀO (BẢO MẬT)
+            // =======================================================
+            if (!TenMH || TenMH.trim() === '') {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Tên sản phẩm không được để trống!" });
+            }
+            if (Number(DonGia) < 0 || Number(GiaNhap) < 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Giá tiền không được là số âm!" });
+            }
+
+            // =======================================================
+            // 1. KIỂM TRA TRÙNG LẶP (ĐÃ FIX LỖI MÃ VẠCH RỖNG)
+            // =======================================================
+            let sql_kiem_tra_trung = `SELECT TenMH, MaVach_Serial FROM MoHinh WHERE TenMH = ? AND MaMoHinh != ? LIMIT 1`;
+            let params_kiem_tra = [TenMH.trim(), MaMH];
+
+            // Chỉ đưa mã vạch vào vòng kiểm tra NẾU người dùng thực sự có nhập mã vạch
+            if (MaVach_Serial && MaVach_Serial.trim() !== '') {
+                sql_kiem_tra_trung = `SELECT TenMH, MaVach_Serial FROM MoHinh WHERE (TenMH = ? OR MaVach_Serial = ?) AND MaMoHinh != ? LIMIT 1`;
+                params_kiem_tra = [TenMH.trim(), MaVach_Serial.trim(), MaMH];
+            }
+
+            const [so_sanh_trung_lap] = await connection.query(sql_kiem_tra_trung, params_kiem_tra);
             
             if (so_sanh_trung_lap.length > 0) {
                 await connection.rollback();
-                return res.status(400).json({ success: false, message: "Đã có sản phẩm khác trùng Tên hoặc Mã vạch (Serial)!" });
+                // Báo lỗi thông minh: Trùng cái gì thì báo đích danh cái đó
+                const loaiTrung = (so_sanh_trung_lap[0].TenMH.toLowerCase() === TenMH.trim().toLowerCase()) 
+                                  ? "Tên sản phẩm" 
+                                  : "Mã vạch (Serial)";
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Đã có sản phẩm khác trong hệ thống trùng ${loaiTrung}!` 
+                });
             }
 
             // 2. PARSE JSON PHÂN LOẠI
@@ -797,24 +834,43 @@ const product_admin = {
             }
 
             // 6. XÓA ẢNH BỘ SƯU TẬP CŨ TRONG DATABASE
-            if (AnhCuCanXoa && AnhCuCanXoa !== 'undefined') {
-                const arrXoa = JSON.parse(AnhCuCanXoa);
-                if (Array.isArray(arrXoa) && arrXoa.length > 0) {
-                    const placeholders = arrXoa.map(() => '?').join(',');
-                    await connection.query(
-                        `DELETE FROM AnhMoHinh WHERE MaMoHinh = ? AND LinkAnh IN (${placeholders})`, 
-                        [MaMH, ...arrXoa]
-                    );
-                }
+            let thuTuBoSuuTap = [];
+            if (req.body.ThuTuBoSuuTap && req.body.ThuTuBoSuuTap !== 'undefined') {
+                thuTuBoSuuTap = JSON.parse(req.body.ThuTuBoSuuTap);
             }
 
-            // 7. THÊM ẢNH BỘ SƯU TẬP MỚI (BULK INSERT)
+            // . Lấy danh sách các file ảnh MỚI vừa được upload (nếu có)
+            let danhSachAnhMoi = [];
             if (req.files && req.files['BoSuuTapAnhMoi']) {
-                const valuesAnhMoi = req.files['BoSuuTapAnhMoi'].map(file => [
-                    file.path || file.secure_url || file.url || file.filename, 
-                    MaMH
-                ]);
-                await connection.query(`INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES ?`, [valuesAnhMoi]);
+                danhSachAnhMoi = req.files['BoSuuTapAnhMoi'].map(file => {
+                    return file.path || file.secure_url || file.url || file.filename;
+                });
+            }
+
+            // . XÓA TOÀN BỘ DATA ẢNH PHỤ HIỆN TẠI TRONG SQL
+            // (Yên tâm, ảnh vật lý trong máy vẫn còn, ta chỉ reset dữ liệu nối bảng)
+            await connection.query(`DELETE FROM AnhMoHinh WHERE MaMoHinh = ?`, [MaMH]);
+
+            // . INSERT LẠI TỪ ĐẦU THEO ĐÚNG THỨ TỰ
+            if (thuTuBoSuuTap.length > 0) {
+                let newFileIndex = 0;
+                
+                // Trộn lẫn tên ảnh cũ và tên ảnh mới theo đúng vị trí kéo thả
+                const valuesAnh = thuTuBoSuuTap.map(item => {
+                    if (item.startsWith('NEW_FILE_')) {
+                        // Rút ảnh mới ra xài
+                        const tenAnhMoi = danhSachAnhMoi[newFileIndex];
+                        newFileIndex++;
+                        return [tenAnhMoi, MaMH];
+                    } else {
+                        // Tên ảnh cũ
+                        return [item, MaMH]; 
+                    }
+                });
+
+                // Cú pháp Bulk Insert thần thánh của MySQL
+                const sql_them_anh = `INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES ?`;
+                await connection.query(sql_them_anh, [valuesAnh]);
             }
 
             // 8. XỬ LÝ PHÂN LOẠI MỞ RỘNG (SỬA ĐỒNG LOẠT VÀ THÊM MỚI BULK INSERT)

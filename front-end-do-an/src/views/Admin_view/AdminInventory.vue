@@ -1746,16 +1746,25 @@
     }
     
     // Bộ sưu tập ảnh mới
+    const finalGalleryOrder = [];
+    let newFileCounter = 0;
+
     if (editingProduct.value.galleryItems && editingProduct.value.galleryItems.length > 0) {
-      const newFiles = editingProduct.value.galleryItems.filter(item => item.type === 'new');
-      newFiles.forEach(item => {
-        formData.append('BoSuuTapAnhMoi', item.file);
+      editingProduct.value.galleryItems.forEach(item => {
+        if (item.type === 'old') {
+          // Nếu là ảnh cũ -> Lấy cái tên file (VD: 1779808139432.jpg) nhét vào mảng
+          finalGalleryOrder.push(item.url.split('/').pop());
+        } else if (item.type === 'new') {
+          // Nếu là ảnh mới -> Gửi file lên server, đồng thời đánh dấu vị trí của nó bằng nhãn NEW_FILE_
+          formData.append('BoSuuTapAnhMoi', item.file);
+          finalGalleryOrder.push(`NEW_FILE_${newFileCounter}`);
+          newFileCounter++;
+        }
       });
     }
 
-    if (editingProduct.value.deletedOldImages && editingProduct.value.deletedOldImages.length > 0) {
-        formData.append('AnhCuCanXoa', JSON.stringify(editingProduct.value.deletedOldImages));
-    }
+    // Gửi cái mảng thứ tự cuối cùng này xuống Backend
+    formData.append('ThuTuBoSuuTap', JSON.stringify(finalGalleryOrder));
 
     try {
       const token = localStorage.getItem('token');
