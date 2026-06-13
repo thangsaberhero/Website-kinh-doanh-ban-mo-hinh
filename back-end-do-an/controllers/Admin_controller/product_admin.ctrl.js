@@ -737,8 +737,8 @@ const product_admin = {
             const MaTK = req.user.id;
 
             const {
-                TenMH, MaHSX, MaDM, MaChiTietDM, TenNhanVat, Series, ChatLieu, DonGia, TrangThai, ThongTinChiTiet,
-                LoaiHinhBan, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DanhSachPhanLoai, HienThi, MaVach_Serial, AnhCuCanXoa
+                TenMH, MaHSX, MaDM, MaChiTietDM, TenNhanVat, Series, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, GiaNhap,
+                LoaiHinhBan, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DanhSachPhanLoai, HienThi, MaVach_Serial
             } = req.body;
             const [spHienTai] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMH]);
             if (spHienTai.length === 0) {
