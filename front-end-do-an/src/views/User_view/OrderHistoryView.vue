@@ -17,7 +17,7 @@
         <!-- ĐÃ BỔ SUNG: 2 Tab Đang hoàn hàng và Đã hoàn hàng -->
         <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-4 mb-8">
           <button 
-            v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đang hoàn hàng', 'Đã hoàn hàng', 'Đã hủy']" 
+            v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đã hoàn hàng', 'Đã hủy']" 
             :key="tab"
             @click="activeTab = tab"
             :class="['px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300', activeTab === tab ? 'bg-primary text-on-primary-fixed shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container border border-outline-variant/20 text-outline hover:text-white hover:border-outline-variant']"
@@ -304,15 +304,13 @@
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-  // ĐÃ BỔ SUNG: Màu sắc cho 2 trạng thái Hoàn hàng
   const getStatusColor = (status) => {
     switch(status) {
       case 'Đang vận chuyển': return 'bg-tertiary/10 text-tertiary border-tertiary/20';
       case 'Đã giao': return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'Đang đóng gói': return 'bg-secondary/10 text-secondary border-secondary/20';
       case 'Chờ duyệt': return 'bg-secondary/10 text-secondary border-secondary/20';  
-      case 'Đang hoàn hàng': return 'bg-orange-500/10 text-orange-400 border-orange-500/20'; // Màu cam cảnh báo
-      case 'Đã hoàn hàng': return 'bg-purple-500/10 text-purple-400 border-purple-500/20'; // Màu tím khác biệt
+      case 'Đã hoàn hàng': return 'bg-purple-500/10 text-purple-400 border-purple-500/20'; 
       case 'Đã hủy': return 'bg-error/10 text-error border-error/20';
       default: return 'bg-outline/10 text-outline border-outline/20';
     }

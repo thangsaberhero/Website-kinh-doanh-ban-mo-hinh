@@ -444,7 +444,6 @@ const dynamicSteps = computed(() => {
     return [
       { name: 'Chờ duyệt', icon: 'receipt_long' },
       { name: 'Đang vận chuyển', icon: 'local_shipping' },
-      { name: 'Đang hoàn hàng', icon: 'assignment_return' },
       { name: 'Đã hoàn hàng', icon: 'keyboard_return' }
     ];
   }
