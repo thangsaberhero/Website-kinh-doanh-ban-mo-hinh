@@ -292,30 +292,57 @@
                       <p class="font-bold text-slate-500 text-xs font-mono">{{ product.basePrice }} đ</p>
                     </td>
                     
-                    <td class="px-8 py-4 align-middle text-right">
-                      <div v-if="product.variants && product.variants.length > 0">
-                        <span class="text-[11px] font-bold text-slate-400 italic bg-slate-100 px-2 py-1 rounded border border-slate-200/60">Nhiều phân loại</span>
-                      </div>
-                      <div v-else class="inline-flex items-center justify-end gap-1 group/edit relative">
-                        <input type="text" 
-                               v-model="product.sellPrice" 
-                               @click.stop
-                               @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                               class="w-20 text-right text-sm font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none transition-colors py-0.5 font-mono">
-                        <span class="text-xs font-bold text-slate-600">đ</span>
+                    <td class="px-6 py-4 align-middle text-right">
+                      <div class="flex flex-col items-end justify-center gap-1">
+                        
+                        <div class="inline-flex items-center justify-end gap-1 group/edit relative">
+                          <input type="text" 
+                                 v-model="product.sellPrice" 
+                                 @click.stop
+                                 @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
+                                 class="w-20 text-right text-sm font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none transition-colors py-0.5 font-mono"
+                                 title="Nhấn Enter để cập nhật nhanh giá bản mặc định">
+                          <span class="text-xs font-bold text-slate-600">đ</span>
+                        </div>
+
+                        <span v-if="product.variants && product.variants.length > 0" 
+                              class="text-[9px] font-bold text-sky-600 bg-sky-50 border border-sky-100/70 px-1.5 py-0.5 rounded shadow-sm"
+                              title="Sản phẩm này có nhiều phiên bản, đây là giá của bản mặc định">
+                          Bản mặc định
+                        </span>
+                        <span v-else 
+                              class="text-[9px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm">
+                          Một giá duy nhất
+                        </span>
+
                       </div>
                     </td>
                     
-                    <td class="px-8 py-4 align-middle text-center">
-                      <div v-if="product.variants && product.variants.length > 0" class="flex justify-center">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">Tổng: {{ product.stock }}</span>
+                    <td class="px-6 py-4 align-middle text-center">
+                      
+                      <div v-if="product.variants && product.variants.length > 0" class="flex flex-col items-center justify-center gap-1.5">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">
+                          Tổng: {{ product.stock }}
+                        </span>
+                        
+                        <span v-if="product.variants.some(v => v.stock <= 0)" 
+                              class="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-0.5 animate-pulse" 
+                              title="Có phân loại đã hết hàng!">
+                          <span class="material-symbols-outlined text-[12px]">warning</span> Lệch kho
+                        </span>
                       </div>
-                      <div v-else class="flex justify-center items-center">
-                        <input type="number" 
-                               v-model="product.stock" 
-                               @click.stop
-                               @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                               class="w-16 text-center text-xs font-bold text-emerald-600 bg-emerald-50 rounded-full border border-emerald-100 hover:border-emerald-300 focus:border-emerald-500 focus:bg-white focus:outline-none transition-all py-0.5">
+                      
+                      <div v-else class="flex flex-col items-center justify-center gap-1">
+                        <div class="inline-flex items-center justify-center">
+                          <input type="number" 
+                                 v-model="product.stock" 
+                                 @click.stop
+                                 @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
+                                 class="w-16 text-center text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
+                                 :class="product.stock <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200 hover:border-rose-300 focus:border-rose-500' : 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:border-emerald-300 focus:border-emerald-500'">
+                        </div>
+                        
+                        <span v-if="product.stock <= 0" class="text-[9px] font-black text-rose-500 tracking-wider">HẾT HÀNG</span>
                       </div>
                     </td>
                     
