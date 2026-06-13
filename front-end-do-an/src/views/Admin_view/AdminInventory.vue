@@ -203,20 +203,24 @@
             </div>
           </div> -->
           
-          <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center gap-4 relative overflow-hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 relative z-10">
-              <div class="flex flex-1 items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 w-full max-w-md focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-400/20 transition-all shadow-inner">
-                <span class="material-symbols-outlined text-slate-400 text-[18px]">search</span>
-                <input v-model="searchQuery" type="text" placeholder="Tìm tên SP, nhân vật, anime, quét mã vạch..." class="w-full bg-transparent text-xs font-bold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400">
+          <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-start gap-5 relative overflow-hidden">
+            
+            <div class="flex flex-col sm:flex-row gap-3 relative z-10">
+              
+              <div class="flex flex-1 items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 w-full focus-within:border-sky-400 focus-within:ring-4 focus-within:ring-sky-400/20 transition-all shadow-inner">
+                <span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+                <input v-model="searchQuery" type="text" placeholder="Tìm tên SP, nhân vật, anime, quét mã vạch..." class="w-full bg-transparent text-sm font-bold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400">
               </div>
+
               <button 
                 @click="isFilterPanelOpen = true"
-                class="flex items-center gap-1 text-[11px] bg-[#ff8f73]/10 text-[#ff8f73] px-3 py-1.5 rounded-lg font-bold hover:bg-[#ff8f73]/20 transition-colors"
+                class="flex items-center justify-center gap-2 bg-[#ff8f73]/10 text-[#ff8f73] px-5 py-3 rounded-xl font-bold hover:bg-[#ff8f73]/20 transition-colors shrink-0 whitespace-nowrap"
               >
-                <span class="material-symbols-outlined text-[16px]">tune</span>
+                <span class="material-symbols-outlined text-[18px]">tune</span>
                 Bộ lọc nâng cao
               </button>
             </div>
+
             <div class="flex flex-wrap gap-2 relative z-10">
               <button 
                 v-for="brand in Brands" :key="brand.MaHSX"
