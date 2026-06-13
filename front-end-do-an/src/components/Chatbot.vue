@@ -55,6 +55,9 @@
                 <div class="text-xs text-[#ff7a59] font-bold mt-1">
                   {{ formatPrice(sp.GiaThucTe || sp.GiaGoc || sp.DonGia) }}
                 </div>
+                <div v-if="sp.ChatLieu" class="text-[11px] text-gray-300 mt-0.5 truncate">
+                  Chất liệu: {{ sp.ChatLieu }}
+                </div>
                 <div v-if="sp.TongSoLuong !== undefined" class="text-[11px] text-gray-400 mt-0.5">
                   {{ Number(sp.TongSoLuong) > 0 ? `Còn ${sp.TongSoLuong} sản phẩm` : 'Tạm hết hàng' }}
                 </div>

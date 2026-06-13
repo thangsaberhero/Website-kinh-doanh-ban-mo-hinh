@@ -106,6 +106,9 @@ const projectId = dialogflowAuth.projectId;
 console.log("Dialogflow credential source:", dialogflowAuth.source);
 console.log("Dialogflow projectId:", projectId);
 
+// Giới hạn số sản phẩm trả về trong mỗi câu trả lời chatbot để UI không bị quá dài.
+const CHATBOT_PRODUCT_LIMIT = 5;
+
 // ======================================================
 // 2. REGEX / INTENT CONFIG
 // ======================================================
@@ -127,6 +130,8 @@ const STATIC_RULES = [
 
 const INVENTORY_REGEX = /(còn hàng|con hang|còn không|con khong|còn ko|con ko|tồn kho|ton kho|còn sẵn|con san|hết hàng|het hang|check hàng|check hang|kiểm tra hàng|kiem tra hang|check kho|kiem tra kho)/i;
 const REVIEW_REGEX = /(đánh giá|danh gia|review|nhận xét|nhan xet|khách đánh giá|khach danh gia|có tốt không|co tot khong)/i;
+const MATERIAL_REGEX = /(chất liệu|chat lieu|vật liệu|vat lieu|làm bằng|lam bang|được làm từ|duoc lam tu|nhựa|nhua|pvc|abs|resin|kim loại|kim loai|metal|acrylic|gỗ|go|polyester|cotton|vải|vai)/i;
+const MATERIAL_SEARCH_REGEX = /(pvc|abs|resin|acrylic|metal|kim loại|kim loai|nhựa|nhua|gỗ|go|polyester|cotton|vải|vai)|(?:chất liệu|chat lieu|vật liệu|vat lieu|làm bằng|lam bang|được làm từ|duoc lam tu)\s+(?!gì\b|gi\b|nào\b|nao\b)([a-zA-ZÀ-ỹ0-9]+)/i;
 const PROMOTION_REGEX = /(khuyến mãi|khuyen mai|giảm giá|giam gia|sale|ưu đãi|uu dai|voucher|mã giảm|ma giam)/i;
 const HOT_PRODUCT_REGEX = /(sản phẩm hot|san pham hot|bán chạy|ban chay|bestseller|best seller|mẫu hot|mau hot|mẫu bán chạy|mau ban chay|mẫu nào hot|mau nao hot|mẫu nào bán chạy|mau nao ban chay|mô hình hot|mo hinh hot|figure hot|sản phẩm nổi bật|san pham noi bat|mô hình nổi bật|mo hinh noi bat|gợi ý.*(hot|bán chạy|ban chay|nổi bật|noi bat)|goi y.*(hot|ban chay|noi bat)|top.*(sản phẩm|san pham|mô hình|mo hinh|figure)|mua nhiều|mua nhieu|được mua nhiều|duoc mua nhieu|được yêu thích|duoc yeu thich)/i;
 
@@ -165,7 +170,8 @@ const SQL_DIALOGFLOW_INTENTS = new Set([
     "tra_cuu_don_hang",
     "hoi_khuyen_mai",
     "goi_y_san_pham_hot",
-    "hoi_danh_gia_san_pham"
+    "hoi_danh_gia_san_pham",
+    "tim_theo_chat_lieu"
 ]);
 
 const STATIC_FALLBACK_TEXT = {
@@ -251,7 +257,7 @@ const cleanProductKeyword = (rawText = "") => {
         "mô hình", "mo hinh", "sản phẩm", "san pham", "sp", "đồ chơi", "do choi", "món", "mon", "figure", "mẫu", "mau", "bé", "be",
         "nhân vật", "nhan vat", "loại", "loai", "dòng", "dong", "hàng", "hang", "shop", "ơi", "oi", "tôi", "toi", "mình", "minh",
         "bạn", "ban", "anh", "chị", "chi", "em", "admin", "ad", "dạ", "da", "ạ", "của", "cua", "cho", "muốn", "muon",
-        "có", "co", "còn", "con", "không", "khong", "ko", "nào", "nao", "và", "va", "với", "voi", "về", "ve", "các", "cac","tài chính",
+        "có", "co", "còn", "con", "không", "khong", "ko", "nào", "nao", "và", "va", "với", "voi", "về", "ve", "các", "cac","tài chính", "chất liệu", "chat lieu", "vật liệu", "vat lieu", "làm bằng", "lam bang", "được làm từ", "duoc lam tu",
         "nhé", "nhe", "nha", "nè", "ne", "đi", "di", "thế", "the", "vậy", "vay", "hả", "ha", "đang", "dang","thì","thi","vài", "vai","hợp lý", "hop ly","bây giờ", "bay gio","hiện tại", "hien tai","mua được gì", "mua duoc gi","được gì", "duoc gi","có gì", "co gi","gì", "gi",
         "mua được", "mua duoc", "được", "duoc", "vừa", "vua", "phù hợp", "phu hop", "dưới", "duoi", "trên", "tren", "khoảng", "khoang", "tầm", "tam", "giá", "gia", "triệu", "trieu", "tr", "k", "ngàn", "nghìn", "ngan", "nghin", "củ", "cu"
     ];
@@ -288,7 +294,8 @@ const SQL_INTENTS_NEED_SLOT_EXTRACTION = new Set([
     "tim_theo_danh_muc",
     "tu_van_theo_gia",
     "tra_cuu_don_hang",
-    "hoi_danh_gia_san_pham"
+    "hoi_danh_gia_san_pham",
+    "tim_theo_chat_lieu"
 ]);
 
 const parseMoneyValue = (value) => {
@@ -368,6 +375,7 @@ const normalizeAiSlots = (slots = {}) => {
         phone: clean(slots.phone),
         orderCode: clean(slots.orderCode || slots.maDonHang || slots.maDon),
         serialCode: clean(slots.serialCode || slots.serial || slots.maSerial),
+        materialKeyword: clean(slots.materialKeyword || slots.material || slots.ChatLieu || slots.chatLieu),
         reviewKeyword: cleanMeaningfulKeyword(slots.reviewKeyword || slots.productKeyword || slots.productName || slots.characterName)
     };
 };
@@ -396,12 +404,16 @@ Schema JSON bắt buộc:
   "phone": "số điện thoại nếu có",
   "orderCode": "mã đơn nếu có",
   "serialCode": "mã serial/truy xuất nếu có",
+  "materialKeyword": "chất liệu nếu khách tìm sản phẩm theo chất liệu, ví dụ PVC, ABS, Resin; nếu không có thì rỗng",
   "reviewKeyword": "tên sản phẩm cần xem đánh giá nếu có"
 }
 
 Quy tắc:
 - Chỉ được lấy productKeyword từ Câu khách hàng hiện tại, không được lấy từ Dialogflow parameters nếu câu hiện tại không nhắc lại sản phẩm đó.
 - Không đưa các từ giao tiếp như tôi, mình, shop, thì, được, mua được, hợp lý vào productKeyword.
+- Intent này chỉ dùng để TÌM KIẾM SẢN PHẨM THEO CHẤT LIỆU, không dùng để trả lời riêng "sản phẩm này chất liệu gì".
+- Nếu khách tìm theo chất liệu như "có mô hình chất liệu PVC không" thì materialKeyword = "PVC" và productKeyword = "".
+- Nếu khách hỏi "miku chất liệu gì" thì productKeyword = "miku" và materialKeyword = "" để luồng thông tin sản phẩm hiển thị card có ChatLieu.
 - Nếu khách hỏi chung theo ngân sách như "chưa biết mua mô hình gì", "mua được gì", "mẫu nào hợp lý", "nên mua gì" thì productKeyword phải là "".
 - Chỉ điền productKeyword khi có tên rõ ràng của nhân vật/sản phẩm/series, ví dụ: miku, luffy, naruto, one piece.
 - Với câu như "tôi có 2 củ", "khoảng 2 triệu", "ngân sách 2tr" => hiểu là maxPrice = 2000000, minPrice = 0.
@@ -572,6 +584,13 @@ const decideIntent = (textRaw, dfResult) => {
     if (INVENTORY_REGEX.test(textRaw) || INVENTORY_REGEX.test(normalized)) return { intentName: "kiem_tra_ton_kho", source: "rule_inventory" };
     if (HOT_PRODUCT_REGEX.test(textRaw) || HOT_PRODUCT_REGEX.test(normalized)) return { intentName: "goi_y_san_pham_hot", source: "rule_hot_product" };
     if (PROMOTION_REGEX.test(textRaw) || PROMOTION_REGEX.test(normalized)) return { intentName: "hoi_khuyen_mai", source: "rule_promotion" };
+    if (MATERIAL_SEARCH_REGEX.test(textRaw) || MATERIAL_SEARCH_REGEX.test(normalized)) return { intentName: "tim_theo_chat_lieu", source: "rule_material_search" };
+
+    // Nếu khách hỏi kiểu "miku chất liệu gì" thì không coi là tìm theo chất liệu.
+    // Để luồng tìm sản phẩm xử lý, vì card sản phẩm đã hiển thị ChatLieu.
+    if ((MATERIAL_REGEX.test(textRaw) || MATERIAL_REGEX.test(normalized)) && cleanedKeyword) {
+        return { intentName: "hoi_thong_tin_san_pham", source: "rule_product_material_info" };
+    }
 
     // Ưu tiên giá trước danh mục để câu "gợi ý sản phẩm khoảng 2 củ" không bị bắt nhầm.
     if (PRICE_REGEX.test(textRaw) && (hasShoppingIntent || !hasOrderIntent)) return { intentName: "tu_van_theo_gia", source: "rule_price" };
@@ -611,8 +630,9 @@ const productSelect = `
     ctdm.TenChiTietDM,
     m.TenNhanVat,
     m.Series,
+    m.ChatLieu,
     m.AnhDaiDien,
-    COALESCE(NULLIF(TRIM(m.AnhDaiDien), ''), (SELECT NULLIF(TRIM(LinkAnh), '') FROM AnhMoHinh WHERE MaMoHinh = m.MaMoHinh AND NULLIF(TRIM(LinkAnh), '') IS NOT NULL ORDER BY LinkAnh ASC LIMIT 1)) AS LinkAnh,   
+    COALESCE((SELECT NULLIF(a.LinkAnh, '') FROM AnhMoHinh a WHERE a.MaMoHinh = m.MaMoHinh AND a.LinkAnh IS NOT NULL AND a.LinkAnh <> '' LIMIT 1), NULLIF(m.AnhDaiDien, '')) AS LinkAnh,
     COALESCE(NULLIF(m.DonGia, 0), MIN(NULLIF(p.DonGia, 0)), 0) AS GiaThucTe,
     COALESCE(SUM(p.SoLuong), 0) AS TongSoLuong
 `;
@@ -627,19 +647,19 @@ const productFrom = `
 const productGroup = `
     GROUP BY
         m.MaMoHinh, m.TenMH, m.TrangThai, m.MaDM, m.MaChiTietDM,
-        d.TenDM, ctdm.TenChiTietDM, m.TenNhanVat, m.Series, m.AnhDaiDien, m.DonGia
+        d.TenDM, ctdm.TenChiTietDM, m.TenNhanVat, m.Series, m.ChatLieu, m.AnhDaiDien, m.DonGia
 `;
 
 const productVisibilityWhere = "m.HienThi = 1";
 
 const productSearchCondition = `
     (
-        m.TenMH LIKE ? OR m.ThongTinChiTiet LIKE ? OR m.TenNhanVat LIKE ? OR m.Series LIKE ?
+        m.TenMH LIKE ? OR m.ThongTinChiTiet LIKE ? OR m.TenNhanVat LIKE ? OR m.Series LIKE ? OR m.ChatLieu LIKE ?
         OR d.TenDM LIKE ? OR ctdm.TenChiTietDM LIKE ?
     )
 `;
 
-const likeParams = (keyword) => Array(6).fill(`%${String(keyword || "").trim()}%`);
+const likeParams = (keyword) => Array(7).fill(`%${String(keyword || "").trim()}%`);
 
 const queryProducts = async ({ keyword = "", minPrice = 0, maxPrice = 999999999, limit = 5, categoryOnly = false } = {}) => {
     const params = [];
@@ -710,7 +730,7 @@ const queryProductsNearPrice = async ({ keyword = "", targetPrice = 0, limit = 5
 
 const timSanPhamTheoTen = async (keyword) => {
     try {
-        return await queryProducts({ keyword, limit: 5 });
+        return await queryProducts({ keyword, limit: CHATBOT_PRODUCT_LIMIT });
     } catch (error) {
         console.error("Lỗi timSanPhamTheoTen:", error.message || error);
         return [];
@@ -719,7 +739,7 @@ const timSanPhamTheoTen = async (keyword) => {
 
 const timSanPhamTheoDanhMuc = async (keyword) => {
     try {
-        return await queryProducts({ keyword, limit: 8, categoryOnly: true });
+        return await queryProducts({ keyword, limit: CHATBOT_PRODUCT_LIMIT, categoryOnly: true });
     } catch (error) {
         console.error("Lỗi timSanPhamTheoDanhMuc:", error.message || error);
         return [];
@@ -728,7 +748,7 @@ const timSanPhamTheoDanhMuc = async (keyword) => {
 
 const checkInventory = async (keyword) => {
     try {
-        const products = await queryProducts({ keyword, limit: 5 });
+        const products = await queryProducts({ keyword, limit: CHATBOT_PRODUCT_LIMIT });
         return { success: true, found: products.length > 0, products, data: products[0] || null };
     } catch (error) {
         console.error("Lỗi SQL checkInventory:", error.message || error);
@@ -736,9 +756,58 @@ const checkInventory = async (keyword) => {
     }
 };
 
+const MATERIAL_KEYWORDS = [
+    "PVC", "ABS", "Resin", "Acrylic", "Metal", "Kim loại", "Nhựa", "Gỗ", "Polyester", "Cotton", "Vải"
+];
+
+const extractMaterialKeyword = (text = "") => {
+    const raw = String(text || "").toLowerCase();
+    const normalized = normalizeVietnamese(raw);
+
+    for (const material of MATERIAL_KEYWORDS) {
+        const materialNorm = normalizeVietnamese(material);
+        if (raw.includes(material.toLowerCase()) || normalized.includes(materialNorm)) {
+            return material;
+        }
+    }
+
+    const match = normalized.match(/(?:chat lieu|vat lieu|lam bang|duoc lam tu)\s+([a-z0-9\s+-]{2,30})/i);
+    if (match) {
+        const cleaned = cleanMeaningfulKeyword(match[1]);
+        if (cleaned) return cleaned;
+    }
+
+    return "";
+};
+
+const timSanPhamTheoChatLieu = async (materialKeyword, limit = CHATBOT_PRODUCT_LIMIT) => {
+    try {
+        const params = [`%${String(materialKeyword || "").trim()}%`, Number(limit) || 8];
+        const sql = `
+            SELECT *
+            FROM (
+                SELECT ${productSelect}
+                ${productFrom}
+                WHERE ${productVisibilityWhere}
+                  AND m.ChatLieu LIKE ?
+                ${productGroup}
+            ) AS product_result
+            ORDER BY CASE WHEN product_result.TongSoLuong > 0 THEN 0 ELSE 1 END,
+                     product_result.TongSoLuong DESC,
+                     product_result.MaMoHinh DESC
+            LIMIT ?
+        `;
+        const [rows] = await pool.query(sql, params);
+        return rows;
+    } catch (error) {
+        console.error("Lỗi timSanPhamTheoChatLieu:", error.message || error);
+        return [];
+    }
+};
+
 const timSanPhamTheoGia = async (keyword, minPrice, maxPrice) => {
     try {
-        return await queryProducts({ keyword, minPrice, maxPrice, limit: 5 });
+        return await queryProducts({ keyword, minPrice, maxPrice, limit: CHATBOT_PRODUCT_LIMIT });
     } catch (error) {
         console.error("Lỗi timSanPhamTheoGia:", error.message || error);
         return [];
@@ -750,14 +819,14 @@ const timSanPhamGanGia = async (keyword, minPrice, maxPrice) => {
         const targetPrice = (Number(minPrice) || 0) > 0 && (Number(maxPrice) || 0) < 999999999
             ? ((Number(minPrice) + Number(maxPrice)) / 2)
             : ((Number(maxPrice) || Number(minPrice)) || 0);
-        return await queryProductsNearPrice({ keyword, targetPrice, limit: 5 });
+        return await queryProductsNearPrice({ keyword, targetPrice, limit: CHATBOT_PRODUCT_LIMIT });
     } catch (error) {
         console.error("Lỗi timSanPhamGanGia:", error.message || error);
         return [];
     }
 };
 
-const laySanPhamNoiBatFallback = async (limit = 5) => {
+const laySanPhamNoiBatFallback = async (limit = CHATBOT_PRODUCT_LIMIT) => {
     try {
         return await queryProducts({ limit, categoryOnly: true });
     } catch (error) {
@@ -766,7 +835,7 @@ const laySanPhamNoiBatFallback = async (limit = 5) => {
     }
 };
 
-const laySanPhamHot = async (limit = 5) => {
+const laySanPhamHot = async (limit = CHATBOT_PRODUCT_LIMIT) => {
     try {
         const sql = `
             SELECT ${productSelect},
@@ -819,13 +888,13 @@ const laySanPhamHot = async (limit = 5) => {
     }
 };
 
-const laySanPhamKhuyenMai = async (limit = 5) => {
+const laySanPhamKhuyenMai = async (limit = CHATBOT_PRODUCT_LIMIT) => {
     try {
         const sql = `
             SELECT
                 m.MaMoHinh, m.TenMH, m.TrangThai, m.MaDM, m.MaChiTietDM,
-                d.TenDM, ctdm.TenChiTietDM, m.TenNhanVat, m.Series, m.AnhDaiDien,
-                COALESCE(NULLIF(TRIM(m.AnhDaiDien), ''), (SELECT NULLIF(TRIM(LinkAnh), '') FROM AnhMoHinh WHERE MaMoHinh = m.MaMoHinh AND NULLIF(TRIM(LinkAnh), '') IS NOT NULL ORDER BY LinkAnh ASC LIMIT 1)) AS LinkAnh,
+                d.TenDM, ctdm.TenChiTietDM, m.TenNhanVat, m.Series, m.ChatLieu, m.AnhDaiDien,
+                COALESCE((SELECT NULLIF(a.LinkAnh, '') FROM AnhMoHinh a WHERE a.MaMoHinh = m.MaMoHinh AND a.LinkAnh IS NOT NULL AND a.LinkAnh <> '' LIMIT 1), NULLIF(m.AnhDaiDien, '')) AS LinkAnh,
                 km.TenKM,
                 MIN(
                     CASE
@@ -850,7 +919,7 @@ const laySanPhamKhuyenMai = async (limit = 5) => {
               AND COALESCE(ctkm.SoLuongKM, 0) > COALESCE(ctkm.SoLuongDaDung, 0)
             GROUP BY
                 m.MaMoHinh, m.TenMH, m.TrangThai, m.MaDM, m.MaChiTietDM,
-                d.TenDM, ctdm.TenChiTietDM, m.TenNhanVat, m.Series, m.AnhDaiDien, km.TenKM
+                d.TenDM, ctdm.TenChiTietDM, m.TenNhanVat, m.Series, m.ChatLieu, m.AnhDaiDien, km.TenKM
             ORDER BY GiaThucTe ASC, COALESCE(SUM(p.SoLuong), 0) DESC
             LIMIT ?
         `;
@@ -1009,6 +1078,7 @@ const mergeSlots = (localSlots = {}, aiSlots = {}) => ({
     phone: pickKeyword(aiSlots.phone, localSlots.phone),
     orderCode: pickKeyword(aiSlots.orderCode, localSlots.orderCode),
     serialCode: pickKeyword(aiSlots.serialCode, localSlots.serialCode),
+    materialKeyword: pickKeyword(aiSlots.materialKeyword, localSlots.materialKeyword),
     reviewKeyword: pickProductKeyword(aiSlots.reviewKeyword, aiSlots.productKeyword, localSlots.reviewKeyword, localSlots.productKeyword)
 });
 
@@ -1019,6 +1089,7 @@ const extractSlotsLocally = (message, intentName, dfResult = {}) => {
         : { minPrice: null, maxPrice: null, keyword: "" };
 
     const order = extractOrderLookup(message, dfResult);
+    const materialKeyword = extractMaterialKeyword(message);
     const categoryKeyword = detectCategoryKeyword(dfResult.DanhMuc || dfResult.keywords || message);
     const productKeyword = intentName === "tu_van_theo_gia"
         ? pickProductKeyword(parsedPrice.keyword)
@@ -1032,6 +1103,7 @@ const extractSlotsLocally = (message, intentName, dfResult = {}) => {
         phone: order.sdt || "",
         orderCode: order.maDon || "",
         serialCode: "",
+        materialKeyword,
         reviewKeyword: productKeyword
     };
 };
@@ -1132,16 +1204,22 @@ const chatWithAI = async (req, res) => {
         const intentName = decision.intentName;
         const aiSlots = await extractSlotsForSqlIntent(cleanMessage, intentName, dfResult);
 
-        const sendBot = (botMessage, products = [], extra = {}) => res.status(200).json({
-            message: compactHtmlResponse(botMessage),
-            products,
-            sessionId,
-            intent: intentName,
-            confidence: dfResult.confidence || 0,
-            source: decision.source,
-            suggestions: [],
-            ...extra
-        });
+        const sendBot = (botMessage, products = [], extra = {}) => {
+            const limitedProducts = Array.isArray(products)
+                ? products.slice(0, CHATBOT_PRODUCT_LIMIT)
+                : [];
+
+            return res.status(200).json({
+                message: compactHtmlResponse(botMessage),
+                products: limitedProducts,
+                sessionId,
+                intent: intentName,
+                confidence: dfResult.confidence || 0,
+                source: decision.source,
+                suggestions: [],
+                ...extra
+            });
+        };
 
         if (intentName === "can_clarify") {
             return sendBot("Dạ mình chưa chắc ý bạn muốn hỏi ạ. Bạn muốn shop hỗ trợ tìm sản phẩm, tư vấn theo giá, kiểm tra đơn hàng hay hỏi chính sách ạ?", []);
@@ -1260,6 +1338,21 @@ const chatWithAI = async (req, res) => {
                 dbData = await laySanPhamHot();
                 responseMessage = dbData.length ? "Dạ đây là các mẫu nổi bật/bán chạy shop gợi ý cho bạn ạ 👇" : "Dạ hiện tại shop chưa có sản phẩm phù hợp để gợi ý ạ.";
                 break;
+
+            case "tim_theo_chat_lieu": {
+                const materialKeyword = pickKeyword(aiSlots.materialKeyword, extractMaterialKeyword(cleanMessage));
+
+                if (!materialKeyword) {
+                    responseMessage = "Dạ bạn muốn tìm sản phẩm theo chất liệu nào ạ? Ví dụ: <b>PVC</b>, <b>ABS</b>, <b>Resin</b>, <b>Nhựa</b> hoặc <b>Acrylic</b>.";
+                    break;
+                }
+
+                dbData = await timSanPhamTheoChatLieu(materialKeyword);
+                responseMessage = dbData.length
+                    ? `Dạ shop tìm thấy các mẫu có chất liệu "${escapeHtml(materialKeyword)}" đây ạ 👇`
+                    : `Dạ shop chưa tìm thấy sản phẩm nào có chất liệu "${escapeHtml(materialKeyword)}" ạ.`;
+                break;
+            }
 
             case "hoi_danh_gia_san_pham": {
                 const keyword = pickProductKeyword(aiSlots.reviewKeyword, aiSlots.productKeyword, cleanProductKeyword(dfResult.keywords || cleanMessage));
