@@ -242,10 +242,12 @@
               
               <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200">
                 <tr>
-                  <th class="py-4 pl-6 pr-2 w-[52px] text-center"></th> 
-                  
-                  <th class="py-4 pl-0 pr-4 font-semibold text-left">Tên sản phẩm</th>
-                  
+                  <th class="py-4 pl-6 pr-4 font-semibold text-left">
+                    <div class="flex items-center gap-3">
+                      <div class="w-6 shrink-0"></div> 
+                      <span>Tên sản phẩm</span>
+                    </div>
+                  </th>
                   <th class="px-6 py-4 font-semibold text-left">Loại hình bán</th>
                   <th class="px-6 py-4 font-semibold text-right">Giá nhập</th>
                   <th class="px-6 py-4 font-semibold text-right">Giá bán</th>
@@ -259,32 +261,36 @@
                   
                   <tr class="transition-colors group hover:bg-slate-50/80 cursor-pointer" @click="toggleRow(product.id)">
                     
-                    <td class="py-4 pl-6 pr-2 w-[52px] align-middle text-center">
-                      <button v-if="product.variants && product.variants.length > 0" 
-                              @click.stop="toggleRow(product.id)"
-                              class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors mx-auto">
-                        <span class="material-symbols-outlined text-[20px] transition-transform duration-200" 
-                              :class="expandedRows.includes(product.id) ? 'rotate-180 text-[#ff8f73]' : ''">
-                          expand_more
-                        </span>
-                      </button>
-                    </td>
-
-                    <td class="py-4 pl-0 pr-4 align-middle">
-                      <div class="flex items-center gap-4">
-                        <div class="w-11 h-11 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-[1px]">
-                          <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
-                        </div>
-                        <div class="flex flex-col">
-                          <p class="font-bold text-slate-900 text-[14px] truncate max-w-[220px]" :title="product.name">{{ product.name }}</p>
-                          <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                            <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border shadow-sm" :class="getBrandColor(product.brand)">
-                              {{ product.brand }}
+                    <td class="py-4 pl-6 pr-4 align-middle">
+                      <div class="flex items-center gap-3">
+                        
+                        <div class="w-6 shrink-0 flex items-center justify-center">
+                          <button v-if="product.variants && product.variants.length > 0" 
+                                  @click.stop="toggleRow(product.id)"
+                                  class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors">
+                            <span class="material-symbols-outlined text-[20px] transition-transform duration-200" 
+                                  :class="expandedRows.includes(product.id) ? 'rotate-180 text-[#ff8f73]' : ''">
+                              expand_more
                             </span>
-                            <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100 shadow-sm">{{ product.characterName }}</span>
-                            <span v-if="product.series" class="text-[9px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold border border-purple-100 shadow-sm">{{ product.series }}</span>
+                          </button>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                          <div class="w-11 h-11 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-[1px]">
+                            <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
+                          </div>
+                          <div class="flex flex-col">
+                            <p class="font-bold text-slate-900 text-[14px] truncate max-w-[220px]" :title="product.name">{{ product.name }}</p>
+                            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                              <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border shadow-sm" :class="getBrandColor(product.brand)">
+                                {{ product.brand }}
+                              </span>
+                              <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100 shadow-sm">{{ product.characterName }}</span>
+                              <span v-if="product.series" class="text-[9px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold border border-purple-100 shadow-sm">{{ product.series }}</span>
+                            </div>
                           </div>
                         </div>
+
                       </div>
                     </td>
                     
@@ -336,8 +342,8 @@
                   </tr>
 
                   <tr v-if="expandedRows.includes(product.id) && product.variants && product.variants.length > 0" class="bg-slate-50/50 shadow-inner">
-                    <td colspan="7" class="p-0 border-b border-slate-200/60">
-                      <div class="pl-[52px] pr-6 py-4 animate-[fadeIn_0.2s_ease-out]">
+                    <td colspan="6" class="p-0 border-b border-slate-200/60">
+                      <div class="pl-[60px] pr-6 py-4 animate-[fadeIn_0.2s_ease-out]">
                         <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                           <table class="w-full text-left">
                             <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400">
@@ -354,7 +360,6 @@
                                     <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> {{ variant.name }}
                                   </span>
                                 </td>
-                                
                                 <td class="py-2 px-5 text-right">
                                   <div class="flex items-center justify-end gap-1">
                                     <input type="text" 
@@ -364,7 +369,6 @@
                                     <span class="text-xs font-bold text-sky-600">đ</span>
                                   </div>
                                 </td>
-                                
                                 <td class="py-2 px-5 text-center">
                                   <input type="number" 
                                          v-model="variant.stock" 
