@@ -1695,11 +1695,10 @@
   const removeEditGalleryImage = (index) => {
     const removedItem = editingProduct.value.galleryItems.splice(index, 1)[0];
     
-    // Nếu xóa trúng ảnh cũ -> Đưa vào danh sách cần chém ở Backend
     if (removedItem.type === 'old') {
-      const filename = removedItem.url.split('/').pop();
+      // 🔴 ĐÃ SỬA: Dùng trực tiếp removedItem.id
       if(!editingProduct.value.deletedOldImages) editingProduct.value.deletedOldImages = [];
-      editingProduct.value.deletedOldImages.push(filename);
+      editingProduct.value.deletedOldImages.push(removedItem.id);
     }
   };
 
@@ -1752,10 +1751,9 @@
     if (editingProduct.value.galleryItems && editingProduct.value.galleryItems.length > 0) {
       editingProduct.value.galleryItems.forEach(item => {
         if (item.type === 'old') {
-          // Nếu là ảnh cũ -> Lấy cái tên file (VD: 1779808139432.jpg) nhét vào mảng
-          finalGalleryOrder.push(item.url.split('/').pop());
+          // 🔴 ĐÃ SỬA: Dùng trực tiếp item.id (chứa link gốc từ DB), không dùng split('/').pop() nữa!
+          finalGalleryOrder.push(item.id); 
         } else if (item.type === 'new') {
-          // Nếu là ảnh mới -> Gửi file lên server, đồng thời đánh dấu vị trí của nó bằng nhãn NEW_FILE_
           formData.append('BoSuuTapAnhMoi', item.file);
           finalGalleryOrder.push(`NEW_FILE_${newFileCounter}`);
           newFileCounter++;
