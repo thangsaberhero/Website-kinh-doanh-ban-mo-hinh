@@ -1391,7 +1391,7 @@ const donhang_user = {
 
             const requestId = partnerCode + new Date().getTime();
             const orderId = maHienThi + "_" + new Date().getTime();
-            const orderInfo = "Thanh toán đơn hàng " + maHienThi;
+            const orderInfo = "Thanh toan don hang " + maHienThi;
             
             const redirectUrl = `${DOMAIN_FRONTEND}/ordersuccess?maDH=${MaDH}`; 
             const ipnUrl = `${DOMAIN_BACKEND}/api/don_hang/payment/momo/ipn`; 
@@ -1406,7 +1406,7 @@ const donhang_user = {
 
             const requestBody = JSON.stringify({
                 partnerCode, accessKey, requestId, amount: amountNum, orderId, orderInfo,
-                redirectUrl, ipnUrl, extraData, requestType, signature, lang: 'vi', orderExpireTime: 15
+                redirectUrl, ipnUrl, extraData, requestType, signature, lang: 'vi'
             });
 
             // 5. Gửi Request lên MoMo
