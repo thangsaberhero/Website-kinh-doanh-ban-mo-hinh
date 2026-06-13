@@ -17,9 +17,9 @@
           </span>
         </div>
         
-        <div v-if="product.dongiakhuyenmai" class="absolute top-3 right-3 z-10">
+        <div v-if="product.DonGia && product.DonGiaKhuyenMai && (Number(product.DonGia) > Number(product.DonGiaKhuyenMai))" class="absolute top-3 right-3 z-10">
           <span class="bg-rose-500 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-sm">
-            -{{ Math.round((1 - product.dongiakhuyenmai / product.DonGia) * 100) }}%
+            -{{ Math.round((1 - Number(product.DonGiaKhuyenMai) / Number(product.DonGia)) * 100) }}%
           </span>
         </div>
 
@@ -57,7 +57,8 @@
         </div>
         
         <div class="pt-1">
-          <div v-if="product.DonGiaKhuyenMai && (Number(product.DonGia) > Number(product.DonGiaKhuyenMai))" class="flex items-baseline gap-2">
+          
+          <div v-if="product.DonGia && product.DonGiaKhuyenMai && (Number(product.DonGia) > Number(product.DonGiaKhuyenMai))" class="flex items-baseline gap-2">
             <span :class="['text-base md:text-xl font-headline font-bold tracking-tight', product.SoLuong === 0 ? 'text-outline' : 'text-primary']">
               {{ formatPrice(product.DonGiaKhuyenMai) }}
             </span>
@@ -68,9 +69,10 @@
         
           <div v-else>
             <span :class="['text-base md:text-xl font-headline font-bold tracking-tight', product.SoLuong === 0 ? 'text-outline' : 'text-primary']">
-              {{ formatPrice(product.DonGia) }}
+              {{ formatPrice(product.DonGiaKhuyenMai || product.DonGia || 0) }}
             </span>
           </div>
+          
         </div>
       </div>
     </router-link>
