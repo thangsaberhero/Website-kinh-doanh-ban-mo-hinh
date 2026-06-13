@@ -266,7 +266,7 @@
       return;
     }
     if (!isBackgroundLoad) isLoading.value = true;
-    const queryParams = new URLSearchParams({ sapxep: sortBy.value }).toString();oString();
+    const queryParams = new URLSearchParams({ sapxep: sortBy.value }).toString();
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/don_hang/watch/?${queryParams}`, {
@@ -297,7 +297,7 @@
       console.error("Lỗi khi tải giỏ hàng:", error);
     }
     finally {
-      if (!isBackgroundLoad) isLoading.value = false; // Tắt loading khi xong
+      if (!isBackgroundLoad) isLoading.value = false;
     }
   };
 
