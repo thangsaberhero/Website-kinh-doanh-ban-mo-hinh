@@ -1383,11 +1383,11 @@ const donhang_user = {
             }
 
             // 2. Lấy thông tin từ .env
-            const partnerCode = process.env.MOMO_PARTNER_CODE;
-            const accessKey = process.env.MOMO_ACCESS_KEY;
-            const secretkey = process.env.MOMO_SECRET_KEY;
-            const DOMAIN_BACKEND = process.env.DOMAIN_BACKEND; 
-            const DOMAIN_FRONTEND = process.env.DOMAIN_FRONTEND;
+            const partnerCode = process.env.MOMO_PARTNER_CODE.trim();
+            const accessKey = process.env.MOMO_ACCESS_KEY.trim();
+            const secretkey = process.env.MOMO_SECRET_KEY.trim();
+            const DOMAIN_BACKEND = process.env.DOMAIN_BACKEND.trim(); 
+            const DOMAIN_FRONTEND = process.env.DOMAIN_FRONTEND.trim();
 
             const requestId = partnerCode + new Date().getTime();
             const orderId = maHienThi + "_" + new Date().getTime();
