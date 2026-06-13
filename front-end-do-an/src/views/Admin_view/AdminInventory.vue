@@ -629,22 +629,26 @@
               
               <div>
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Ảnh đại diện chính (*)</label>
-                <div class="flex gap-4 items-start">
-                  <div class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 relative group shrink-0 flex items-center justify-center">
-                    <template v-if="!newProduct.thumbnailUrl">
-                        <span class="material-symbols-outlined text-slate-300 text-[32px]">image</span>
-                    </template>
-                    <template v-else>
-                        <img :src="newProduct.thumbnailUrl" class="w-full h-full object-contain">
-                    </template>
-                  </div>
-                  <div class="flex-1">
-                    <input type="file" ref="fileInputRef" class="hidden" accept="image/*" @change="handleFileUpload">
-                    <button @click="triggerFileInput" class="w-full border-2 border-dashed border-slate-300 rounded-xl h-24 flex flex-col items-center justify-center gap-1 hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 transition-all cursor-pointer group">
-                      <span class="material-symbols-outlined text-slate-400 group-hover:text-[#ff8f73] transition-colors">cloud_upload</span>
-                      <span class="text-[10px] font-bold text-slate-500 group-hover:text-[#ff8f73] text-center px-2">Tải ảnh lên</span>
-                    </button>
-                  </div>
+                <input type="file" ref="fileInputRef" class="hidden" accept="image/*" @change="handleFileUpload">
+                
+                <div @click="triggerFileInput"
+                     class="w-40 aspect-square rounded-2xl overflow-hidden border-2 border-dashed transition-all cursor-pointer group flex flex-col items-center justify-center relative"
+                     :class="newProduct.thumbnailUrl ? 'border-slate-200 bg-white shadow-sm' : 'border-slate-300 hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 bg-slate-50'">
+                  
+                  <template v-if="!newProduct.thumbnailUrl">
+                    <span class="material-symbols-outlined text-[32px] text-slate-300 group-hover:text-[#ff8f73] group-hover:scale-110 transition-all">add_photo_alternate</span>
+                    <span class="text-[10px] font-bold text-slate-500 group-hover:text-[#ff8f73] mt-2">Tải ảnh lên</span>
+                  </template>
+                  
+                  <template v-else>
+                    <img :src="newProduct.thumbnailUrl" class="w-full h-full object-contain p-1">
+                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                      <div class="flex flex-col items-center gap-1">
+                        <span class="material-symbols-outlined text-white text-[24px]">change_circle</span>
+                        <span class="text-[10px] font-bold text-white">Đổi ảnh khác</span>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
 
@@ -895,17 +899,26 @@
               
               <div>
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Ảnh đại diện chính (*)</label>
-                <div class="flex gap-4 items-start">
-                  <div class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 relative group shrink-0">
-                    <img :src="editingProduct.thumbnailUrl" class="w-full h-full object-contain">
-                  </div>
-                  <div class="flex-1">
-                    <input type="file" ref="editFileInputRef" class="hidden" accept="image/*" @change="handleEditFileUpload">
-                    <button @click="triggerEditFileInput" class="w-full border-2 border-dashed border-slate-300 rounded-xl h-24 flex flex-col items-center justify-center gap-1 hover:border-rose-400 hover:bg-rose-50 transition-all cursor-pointer group">
-                      <span class="material-symbols-outlined text-slate-400 group-hover:text-rose-500 transition-colors">cloud_upload</span>
-                      <span class="text-[10px] font-bold text-slate-500 group-hover:text-rose-500 text-center px-2">Đổi ảnh đại diện</span>
-                    </button>
-                  </div>
+                <input type="file" ref="editFileInputRef" class="hidden" accept="image/*" @change="handleEditFileUpload">
+                
+                <div @click="triggerEditFileInput"
+                     class="w-40 aspect-square rounded-2xl overflow-hidden border-2 border-dashed transition-all cursor-pointer group flex flex-col items-center justify-center relative"
+                     :class="editingProduct.thumbnailUrl ? 'border-slate-200 bg-white shadow-sm' : 'border-slate-300 hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 bg-slate-50'">
+                  
+                  <template v-if="!editingProduct.thumbnailUrl">
+                    <span class="material-symbols-outlined text-[32px] text-slate-300 group-hover:text-[#ff8f73] group-hover:scale-110 transition-all">add_photo_alternate</span>
+                    <span class="text-[10px] font-bold text-slate-500 group-hover:text-[#ff8f73] mt-2">Tải ảnh lên</span>
+                  </template>
+                  
+                  <template v-else>
+                    <img :src="editingProduct.thumbnailUrl" class="w-full h-full object-contain p-1">
+                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                      <div class="flex flex-col items-center gap-1">
+                        <span class="material-symbols-outlined text-white text-[24px]">change_circle</span>
+                        <span class="text-[10px] font-bold text-white">Đổi ảnh khác</span>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
 
@@ -1335,7 +1348,7 @@
   };
 
   const triggerFileInput = () => {
-    if(!newProduct.value.thumbnailUrl && fileInputRef.value) fileInputRef.value.click();
+    if (fileInputRef.value) fileInputRef.value.click();
   }
 
   const handleFileUpload = (event) => {
@@ -1344,6 +1357,7 @@
       newProduct.value.thumbnailFile = file;
       newProduct.value.thumbnailUrl = URL.createObjectURL(file);
     }
+    if (fileInputRef.value) fileInputRef.value.value = '';
   }
 
   const removeThumbnail = () => {
@@ -1675,13 +1689,16 @@
   });
 
   // --- XỬ LÝ ẢNH ĐẠI DIỆN ---
-  const triggerEditFileInput = () => { if (editFileInputRef.value) editFileInputRef.value.click(); };
+  const triggerEditFileInput = () => { 
+    if (editFileInputRef.value) editFileInputRef.value.click(); 
+  };
   const handleEditFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       editingProduct.value.thumbnailFile = file;
       editingProduct.value.thumbnailUrl = URL.createObjectURL(file);
     }
+    if (editFileInputRef.value) editFileInputRef.value.value = '';
   };
 
   // --- XỬ LÝ BỘ SƯU TẬP ẢNH (GALLERY) ---
