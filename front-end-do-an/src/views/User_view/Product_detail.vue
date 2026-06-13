@@ -2,15 +2,14 @@
   <div class="bg-background text-on-surface selection:bg-primary selection:text-on-primary min-h-screen flex flex-col font-body">
     <TheHeader />
 
-    <main v-if="product" class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-
+    <main v-if="product" class="flex-1 max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-12 w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
         <div class="lg:col-span-7 space-y-6">
-          <div ref="imageContainer" class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20"
-              @mousemove="handleMouseMove"
-              @mouseenter="isZooming = true"
-              @mouseleave="isZooming = false"
-              @click="openLightbox(allImages.indexOf(mainImage))"
+          <div ref="imageContainer" class="relative bg-surface-container-low rounded-lg overflow-hidden group border border-outline-variant/20 aspect-square md:aspect-auto md:min-h-[500px]"
+            @mousemove="handleMouseMove"
+            @mouseenter="isZooming = true"
+            @mouseleave="isZooming = false"
+            @click="openLightbox(allImages.indexOf(mainImage))"
           >
             <div class="absolute top-4 left-4 z-10 flex gap-2">
               <span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-3 py-1 rounded-full tracking-widest uppercase shadow-sm">
@@ -27,7 +26,7 @@
               class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
             />
             <div v-show="isZooming"
-              class="absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
+              class="hidden md:block absolute z-30 pointer-events-none border-2 border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl bg-surface-container-low"
               :style="{
                 width: '240px',          
                 height: '240px',         
@@ -51,7 +50,7 @@
           <transition-group
             name="thumbnail"
             tag="div"
-            class="flex gap-4 overflow-hidden mt-4 p-1 w-full"
+            class="flex gap-2 md:gap-4 overflow-hidden mt-4 p-1 w-full"
           >
             <button
               v-for="anh in displayImages"
@@ -73,7 +72,7 @@
               <span class="text-outline-variant">•</span>
               <span class="text-on-surface-variant text-xs font-medium uppercase tracking-wider">Mô Hình</span>
             </div>
-            <h1 class="font-headline text-4xl lg:text-5xl font-bold tracking-tight mb-4 leading-[1.1] text-white">{{ product.TenMH }}</h1>
+            <h1 class="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 leading-[1.1] text-white">{{ product.TenMH }}</h1>
             <div class="flex items-baseline gap-4 mt-6">
               <span class="font-headline text-3xl font-bold">
                 <div v-if="selectedVariant && Number(selectedVariant.DonGiaKhuyenMai) < Number(selectedVariant.DonGia)">
@@ -148,17 +147,17 @@
             </div>
 
             <div class="space-y-4 pt-6 border-t border-outline-variant/15 mt-auto">
-              <div class="flex items-center gap-4">
-                <div class="flex items-center bg-surface-container-highest rounded border border-outline-variant/20 h-14">
-                  <button @click="buyQuantity > 1 && buyQuantity--" class="px-5 hover:text-primary transition-colors text-outline"><span class="material-symbols-outlined">remove</span></button>
-                  <span class="w-10 text-center font-bold text-xl text-white">{{ buyQuantity }}</span>
-                  <button @click="buyQuantity < (selectedVariant ? selectedVariant.SoLuong : 0) && buyQuantity++" class="px-5 hover:text-primary transition-colors text-outline"><span class="material-symbols-outlined">add</span></button>
+              <div class="flex items-center gap-2 md:gap-4">
+                <div class="flex items-center bg-surface-container-highest rounded border border-outline-variant/20 h-12 md:h-14">
+                  <button @click="buyQuantity > 1 && buyQuantity--" class="px-3 md:px-5 hover:text-primary transition-colors text-outline"><span class="material-symbols-outlined">remove</span></button>
+                  <span class="w-8 md:w-10 text-center font-bold text-lg md:text-xl text-white">{{ buyQuantity }}</span>
+                  <button @click="buyQuantity < (selectedVariant ? selectedVariant.SoLuong : 0) && buyQuantity++" class="px-3 md:px-5 hover:text-primary transition-colors text-outline"><span class="material-symbols-outlined">add</span></button>
                 </div>
 
                 <button
                   @click="addToCart"
                   :disabled="!selectedVariant || selectedVariant.SoLuong === 0"
-                  :class="['flex-1 h-14 font-headline font-bold uppercase tracking-widest rounded transition-all text-sm px-4',
+                  :class="['flex-1 h-12 md:h-14 font-headline font-bold uppercase tracking-widest rounded transition-all text-xs md:text-sm px-2 md:px-4',
                     (!selectedVariant || selectedVariant.SoLuong === 0)
                       ? 'bg-surface-container-high text-outline cursor-not-allowed'
                       : 'bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-[0_0_20px_rgba(255,143,115,0.3)] hover:brightness-110 active:scale-95'
@@ -172,15 +171,15 @@
                 </button>
 
                 <button
-                    @click="toggleFavorite"
-                    title="Thêm/Bỏ yêu thích"
-                    :class="['w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
-                             isFavorite
-                             ? 'bg-red-950/50 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:bg-red-950'
-                             : 'bg-surface-container-low border-outline-variant/30 text-outline hover:border-primary/50 hover:text-primary']">
-                    <span class="material-symbols-outlined font-bold text-3xl">
-                        {{ isFavorite ? 'favorite' : 'favorite_border' }}
-                    </span>
+                  @click="toggleFavorite"
+                  title="Thêm/Bỏ yêu thích"
+                  :class="['w-12 h-12 md:w-14 md:h-14 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
+                            isFavorite
+                            ? 'bg-red-950/50 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:bg-red-950'
+                            : 'bg-surface-container-low border-outline-variant/30 text-outline hover:border-primary/50 hover:text-primary']">
+                  <span class="material-symbols-outlined font-bold text-3xl">
+                    {{ isFavorite ? 'favorite' : 'favorite_border' }}
+                  </span>
                 </button>
               </div>
             </div>
@@ -253,7 +252,7 @@
 
       <section class="max-w-7xl mx-auto px-6 pb-24 w-full border-t border-white/5 pt-16">
         <h3 class="font-headline text-3xl font-bold text-white mb-10 text-center uppercase tracking-widest">Đánh giá từ cộng đồng</h3>
-        <div class="bg-surface-container-low rounded-2xl p-8 lg:p-12 border border-white/5 shadow-2xl mb-12 flex flex-col md:flex-row items-center justify-between gap-12">
+        <div class="bg-surface-container-low rounded-2xl p-5 md:p-8 lg:p-12 border border-white/5 shadow-2xl mb-12 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
           <div class="text-center md:w-1/3">
             <div class="text-7xl font-headline font-black text-primary drop-shadow-[0_0_15px_rgba(255,61,0,0.3)]">
               {{ reviewMeta.avgRating }}<span class="text-2xl text-on-surface-variant font-bold">/5</span>
@@ -273,9 +272,8 @@
         </div>
 
         <div class="flex flex-col lg:flex-row gap-12">
-
           <div class="lg:w-1/3">
-            <div v-if="canReview" class="sticky top-24 ...">
+            <div v-if="canReview" class="lg:sticky lg:top-24 relative">
               <h4 class="font-headline text-lg font-bold text-white mb-2">Bạn đã trải nghiệm siêu phẩm này?</h4>
 
               <form @submit.prevent="submitReview" class="space-y-4">
@@ -372,17 +370,17 @@
                 <span class="text-[10px] text-outline font-bold uppercase bg-surface-container px-2 py-1 rounded">{{ formatDate(review.ThoiGianDG) }}</span>
               </div>
 
-              <p class="text-on-surface-variant text-sm leading-relaxed mb-5 pl-16">
+              <p class="text-on-surface-variant text-sm leading-relaxed mb-5 pl-0 md:pl-16 mt-3 md:mt-0">
                 {{ review.NoiDung }}
               </p>
 
-              <div v-if="review.HinhAnh && review.HinhAnh.length > 0" class="flex flex-wrap gap-3 pl-16 mb-5">
+              <div v-if="review.HinhAnh && review.HinhAnh.length > 0" class="flex flex-wrap gap-3 pl-0 md:pl-16 mb-5">
                 <div v-for="(img, idx) in review.HinhAnh" :key="idx" class="w-24 h-24 rounded-xl overflow-hidden border border-white/10 hover:border-primary transition-all cursor-zoom-in group/img relative">
                   <img :src="img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
                 </div>
               </div>
 
-              <div v-if="review.PhanHoiShop" class="ml-16 p-5 bg-gradient-to-r from-surface-container to-transparent rounded-2xl border-l-2 border-primary relative overflow-hidden">
+              <div v-if="review.PhanHoiShop" class="ml-0 md:ml-16 p-4 md:p-5 bg-gradient-to-r from-surface-container to-transparent rounded-2xl border-l-2 border-primary relative overflow-hidden">
                 <div class="flex items-center gap-2 mb-2 relative z-10">
                   <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
                   <span class="text-[10px] font-black text-primary tracking-widest uppercase">Phản hồi từ FigureCollect</span>
