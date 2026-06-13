@@ -1,6 +1,6 @@
 <template>
-  <footer class="bg-surface-container-low mt-auto py-8 border-t border-outline-variant/15">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+  <footer class="bg-surface-container-low mt-auto py-6 md:py-8 border-t border-outline-variant/15">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-2 md:gap-4 text-center">
       <router-link to="/" class="text-lg font-black text-primary font-headline tracking-tighter uppercase">
         {{ systemStore.settings.shop_name || 'FigureCollect' }}
       </router-link>
