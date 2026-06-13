@@ -19,7 +19,7 @@
         </header>
 
         <div v-if="isLoading" class="flex justify-center items-center py-20">
-            <span class="material-symbols-outlined animate-spin text-primary text-5xl">settings</span>
+          <span class="material-symbols-outlined animate-spin text-primary text-5xl">settings</span>
         </div>
 
         <TransitionGroup v-else name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">

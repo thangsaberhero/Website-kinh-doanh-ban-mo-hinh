@@ -258,7 +258,7 @@
     }, 0);
   });
 
-  const fetchCartData = async () => {
+  const fetchCartData = async (isBackgroundLoad = false) => {
     const token = localStorage.getItem('token');
     
     if (!token) {
@@ -276,10 +276,10 @@
         }
       });
       if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem('token');
-            router.push('/login');
-            return;
-        }
+        localStorage.removeItem('token');
+        router.push('/login');
+        return;
+      }
 
       const result = await response.json();
 
