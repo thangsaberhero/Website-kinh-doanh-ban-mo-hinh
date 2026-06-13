@@ -292,7 +292,7 @@
                       <p class="font-bold text-slate-500 text-xs font-mono">{{ product.basePrice }} đ</p>
                     </td>
                     
-                    <td class="px-6 py-4 align-middle text-right">
+                    <td class="px-8 py-4 align-middle text-right">
                       <div class="flex flex-col items-end justify-center gap-1">
                         
                         <div class="inline-flex items-center justify-end gap-1 group/edit relative">
@@ -318,31 +318,47 @@
                       </div>
                     </td>
                     
-                    <td class="px-6 py-4 align-middle text-center">
-                      
-                      <div v-if="product.variants && product.variants.length > 0" class="flex flex-col items-center justify-center gap-1.5">
-                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-bold border border-slate-200">
-                          Tổng: {{ product.stock }}
-                        </span>
+                    <td class="px-8 py-4 align-middle text-center">
+                      <div class="flex flex-col items-center justify-center gap-1">
                         
-                        <span v-if="product.variants.some(v => v.stock <= 0)" 
-                              class="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-0.5 animate-pulse" 
-                              title="Có phân loại đã hết hàng!">
-                          <span class="material-symbols-outlined text-[12px]">warning</span> Lệch kho
-                        </span>
-                      </div>
-                      
-                      <div v-else class="flex flex-col items-center justify-center gap-1">
-                        <div class="inline-flex items-center justify-center">
+                        <div v-if="product.variants && product.variants.length > 0" class="inline-flex items-center justify-center">
+                          <div class="w-16 text-center text-xs font-bold text-slate-500 bg-slate-100 rounded-full border border-slate-200 py-0.5 cursor-not-allowed" 
+                               title="Tổng tồn kho. Vui lòng mở rộng mũi tên bên trái để sửa chi tiết">
+                            {{ product.stock }}
+                          </div>
+                        </div>
+                        
+                        <div v-else class="inline-flex items-center justify-center">
                           <input type="number" 
                                  v-model="product.stock" 
                                  @click.stop
                                  @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
                                  class="w-16 text-center text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
-                                 :class="product.stock <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200 hover:border-rose-300 focus:border-rose-500' : 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:border-emerald-300 focus:border-emerald-500'">
+                                 :class="product.stock <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200 hover:border-rose-300 focus:border-rose-500' : 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:border-emerald-300 focus:border-emerald-500'"
+                                 title="Nhấn Enter để lưu">
                         </div>
+
+                        <span v-if="product.variants && product.variants.length > 0 && product.variants.some(v => v.stock <= 0)" 
+                              class="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-0.5 animate-pulse" 
+                              title="Cảnh báo: Có phân loại đã hết hàng!">
+                          <span class="material-symbols-outlined text-[12px]">warning</span> Lệch kho
+                        </span>
                         
-                        <span v-if="product.stock <= 0" class="text-[9px] font-black text-rose-500 tracking-wider">HẾT HÀNG</span>
+                        <span v-else-if="product.variants && product.variants.length > 0" 
+                              class="text-[9px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm">
+                          Tổng kho
+                        </span>
+                        
+                        <span v-else-if="product.stock <= 0" 
+                              class="text-[9px] font-black text-rose-500 tracking-wider">
+                          HẾT HÀNG
+                        </span>
+                        
+                        <span v-else 
+                              class="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded shadow-sm">
+                          Kho thực tế
+                        </span>
+
                       </div>
                     </td>
                     
