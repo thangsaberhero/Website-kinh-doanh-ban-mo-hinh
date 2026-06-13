@@ -261,14 +261,22 @@
                       </div>
                       <div class="flex flex-col">
                         <p class="font-bold text-slate-900 text-[15px] mb-1.5 truncate max-w-[250px]" :title="product.name">{{ product.name }}</p>
-                        <div class="flex items-center gap-2">
+                        
+                        <div class="flex flex-wrap items-center gap-1.5">
                           <span class="text-[9px] px-2 py-0.5 rounded-lg font-bold uppercase border shadow-sm inline-block"
                                 :class="getBrandColor(product.brand)">
                             {{ product.brand }}
                           </span>
-                          <!-- <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
-                            {{ product.category }}
-                          </span> -->
+                          
+                          <span v-if="product.characterName" class="text-[10px] bg-sky-50 text-sky-600 border border-sky-100/70 px-2 py-0.5 rounded font-bold flex items-center gap-0.5 shadow-sm">
+                            <span class="material-symbols-outlined text-[12px]">person</span>
+                            {{ product.characterName }}
+                          </span>
+
+                          <span v-if="product.series" class="text-[10px] bg-purple-50 text-purple-600 border border-purple-100/70 px-2 py-0.5 rounded font-bold flex items-center gap-0.5 shadow-sm">
+                            <span class="material-symbols-outlined text-[12px]">movie</span>
+                            {{ product.series }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1041,6 +1049,8 @@
             variant: item.TenPhanLoai || 'Mặc định',
             scale: item.KichThuoc || 'Trống',
             material: item.ChatLieu || 'Trống',
+            characterName: item.TenNhanVat || '',
+            series: item.Series || '',
             //Thông tin raw
             rawMinDeposit: parseInt(item.TienCocToiThieu) || 0,
             rawSellPrice: parseInt(item.DonGia) || 0,
