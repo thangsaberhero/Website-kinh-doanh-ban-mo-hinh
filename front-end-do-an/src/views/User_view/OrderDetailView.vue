@@ -56,10 +56,28 @@
         <div class="lg:col-span-8 space-y-8">
           
           <section class="glass-panel rounded-xl p-8 border border-outline-variant/10 shadow-xl">
-            <h3 class="font-headline text-lg font-bold mb-10 flex items-center gap-2 text-white">
-              <span class="material-symbols-outlined text-primary">local_shipping</span>
-              Lộ Trình Vận Chuyển
-            </h3>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 border-b border-outline-variant/10 pb-5">
+              <h3 class="font-headline text-lg font-bold flex items-center gap-2 text-white">
+                <span class="material-symbols-outlined text-primary">local_shipping</span>
+                Lộ Trình Vận Chuyển
+              </h3>
+
+              <div v-if="orderInfo.MaVanDon" class="bg-surface-container-highest border border-outline-variant/20 px-4 py-2 rounded-xl flex items-center gap-4 shadow-inner animate-[fadeIn_0.3s_ease-out]">
+                <div class="flex flex-col items-end sm:items-start">
+                  <p class="text-[10px] text-outline uppercase tracking-widest font-black mb-0.5 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[12px] text-primary">inventory_2</span> 
+                    {{ orderInfo.HangVanChuyen || 'Đơn vị vận chuyển' }}
+                  </p>
+                  <p class="text-sm font-bold text-white font-headline tracking-wider">{{ orderInfo.MaVanDon }}</p>
+                </div>
+                
+                <div class="w-px h-8 bg-outline-variant/20 hidden sm:block"></div>
+                
+                <button @click="copyTrackingCode(orderInfo.MaVanDon)" class="text-primary hover:text-white bg-primary/10 hover:bg-primary/30 p-2 rounded-lg transition-all flex items-center justify-center active:scale-95" title="Copy mã vận đơn">
+                  <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                </button>
+              </div>
+            </div>
             
             <div class="relative flex justify-between items-start">
               <div class="absolute top-5 left-0 w-full h-[2px] bg-surface-container-highest z-0">
@@ -600,6 +618,17 @@ const confirmCancelOrder = async () => {
     toastStore.showToast("Lỗi kết nối máy chủ!", "error");
   } finally {
     isCanceling.value = false;
+  }
+};
+
+const copyTrackingCode = async (code) => {
+  if (!code) return;
+  try {
+    await navigator.clipboard.writeText(code);
+    toastStore.showToast(`Đã copy mã vận đơn: ${code}`, "success");
+  } catch (err) {
+    console.error('Lỗi khi copy: ', err);
+    toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
   }
 };
 

@@ -1010,7 +1010,7 @@ const donhang_user = {
             const sql_donhang = `
                 SELECT 
                     DonHang.MaDH, MaDonHangHienThi, TenNguoiNhan, SDTNguoiNhan, 
-                    DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note, TrangThaiThanhToan,
+                    DiaChiGiao, TongTien, ThanhTien, NgayLapDon, Note, TrangThaiThanhToan, HangVanChuyen, MaVanDon,
                     COALESCE(SUM(tt.SoTienGiaoDich), 0) AS DaThanhToan, 
                     GROUP_CONCAT(DISTINCT pttt.TenPhuongThuc SEPARATOR ', ') AS TenPhuongThuc
                 FROM DonHang
