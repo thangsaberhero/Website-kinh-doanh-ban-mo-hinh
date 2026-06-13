@@ -1,8 +1,8 @@
 <template>
-  <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+  <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end">
     <div
       v-if="isOpen"
-      class="w-80 bg-gray-900 border border-gray-700 shadow-2xl rounded-2xl flex flex-col mb-4 overflow-hidden transition-all duration-300"
+      class="w-[calc(100vw-2rem)] sm:w-80 bg-gray-900 border border-gray-700 shadow-2xl rounded-2xl flex flex-col mb-4 overflow-hidden transition-all duration-300"
     >
       <div class="bg-gray-800 text-white p-4 flex justify-between items-center border-b border-gray-700">
         <div class="font-bold flex items-center gap-2">
@@ -108,10 +108,10 @@
 
     <button
       @click="isOpen = !isOpen"
-      class="bg-[#ff7a59] hover:bg-orange-600 text-white w-16 h-16 rounded-full shadow-lg shadow-orange-500/30 flex items-center justify-center transition-transform hover:scale-110 overflow-hidden relative group"
+      class="bg-[#ff7a59] hover:bg-orange-600 text-white w-12 h-12 md:w-16 md:h-16 rounded-full shadow-lg shadow-orange-500/30 flex items-center justify-center transition-transform hover:scale-110 overflow-hidden relative group"
     >
       <div v-if="!isOpen" class="animate-custom-wiggle flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-9 md:w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="5" y="6" width="14" height="12" rx="2" stroke-linecap="round" />
           <path d="M3 10V14" stroke-linecap="round" />
           <path d="M21 10V14" stroke-linecap="round" />

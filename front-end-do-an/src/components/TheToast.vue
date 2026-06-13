@@ -2,7 +2,7 @@
   <div 
     v-for="pos in positions" 
     :key="pos"
-    class="fixed z-[9999] flex flex-col gap-3 max-w-sm w-full p-6 pointer-events-none"
+    class="fixed z-[9999] flex flex-col gap-2 md:gap-3 max-w-sm w-full p-4 md:p-6 pointer-events-none"
     :class="positionClasses[pos]"
   >
     <TransitionGroup :name="getTransitionName(pos)">
@@ -12,7 +12,7 @@
         role="alert" 
         @mouseenter="toastStore.pauseToast(toast.id)"
         @mouseleave="toastStore.resumeToast(toast.id)"
-        class="relative overflow-hidden pointer-events-auto flex items-center gap-3 px-5 py-4 border rounded-xl shadow-2xl bg-surface-container-highest transition-all w-full"
+        class="relative overflow-hidden pointer-events-auto flex items-center gap-3 px-4 py-3 md:px-5 md:py-4 border rounded-xl shadow-2xl bg-surface-container-highest transition-all w-full"
         :class="themeConfig[toast.type]?.borderClass"
       >
         <span 
