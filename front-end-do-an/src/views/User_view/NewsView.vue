@@ -169,7 +169,7 @@
 
   const heroNews = ref({});         // Khu vực 1: Bài to nhất trên cùng
   const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
-  const mainArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
+  const allArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
   const popularNews = ref([]);      // Khu vực 4: Sidebar Đọc nhiều nhất (Cột phải)
 
   const categories = ref(['Tất cả']);
@@ -236,7 +236,7 @@
         }
 
         // KHU VỰC 3 (MAIN LIST): Lấy phần còn lại (từ vị trí số 1 trở đi) để đưa xuống danh sách bên dưới, tránh hiển thị trùng bài Banner
-        mainArticles.value = allLatest.slice(1);
+        allArticles.value = allLatest;
 
         // KHU VỰC 2 (TRENDING): Gắn thẳng vào biến trendingNews
         trendingNews.value = data.trendingList.map(item => ({
@@ -278,12 +278,15 @@
 
   // 3. LOGIC LỌC BÀI VIẾT BÊN TRONG MAIN LIST
   const filteredNews = computed(() => {
-    let result = mainArticles.value;
+    let result = allArticles.value;  
     if (activeCategory.value !== 'Tất cả') {
       result = result.filter(post => post.category === activeCategory.value);
     }
     if (activeTag.value) {
       result = result.filter(post => post.tags && post.tags.includes(activeTag.value));
+    }
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && result.length > 0) {
+      return result.slice(1);
     }
     return result;
   });
