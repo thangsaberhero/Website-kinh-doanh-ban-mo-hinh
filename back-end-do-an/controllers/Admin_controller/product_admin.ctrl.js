@@ -2,6 +2,7 @@ const db = require('../../config/db');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
 
 const product_admin = {
     them_danh_muc_moi: async(req, res) => {
@@ -738,7 +739,7 @@ const product_admin = {
 
             const {
                 TenMH, MaHSX, MaDM, MaChiTietDM, TenNhanVat, Series, ChatLieu, DonGia, TrangThai, ThongTinChiTiet, GiaNhap,
-                LoaiHinhBan, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DanhSachPhanLoai, HienThi, MaVach_Serial
+                LoaiHinhBan, KichThuoc, SoLuong, NgayPhatHanh, TienCocToiThieu, DanhSachPhanLoai, HienThi, MaVach_Serial, AnhCuCanXoa
             } = req.body;
             const [spHienTai] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMH]);
             if (spHienTai.length === 0) {
@@ -845,6 +846,31 @@ const product_admin = {
                 danhSachAnhMoi = req.files['BoSuuTapAnhMoi'].map(file => {
                     return file.path || file.secure_url || file.url || file.filename;
                 });
+            }
+
+            if (req.body.AnhCuCanXoa && req.body.AnhCuCanXoa !== 'undefined') {
+                const arrXoa = JSON.parse(req.body.AnhCuCanXoa);
+                if (Array.isArray(arrXoa) && arrXoa.length > 0) {
+                    for (const url of arrXoa) {
+                        try {
+                            // Thuật toán bóc tách public_id thông minh từ URL Cloudinary
+                            // VD URL: https://res.cloudinary.com/xyz/image/upload/v1234/folder_name/image_name.jpg
+                            const splitUrl = url.split('/upload/');
+                            if (splitUrl.length > 1) {
+                                let path = splitUrl[1]; // v1234/folder_name/image_name.jpg
+                                path = path.replace(/^v\d+\//, ''); // Xóa chữ v1234/ -> folder_name/image_name.jpg
+                                const publicId = path.substring(0, path.lastIndexOf('.')); // Bỏ đuôi .jpg -> folder_name/image_name
+                                
+                                // Gọi API của Cloudinary để xóa file vật lý
+                                await cloudinary.uploader.destroy(publicId);
+                                console.log(`[Cloudinary] Đã dọn dẹp rác: ${publicId}`);
+                            }
+                        } catch (err) {
+                            console.error("[Cloudinary Error] Không thể xóa ảnh: ", err);
+                            // Không throw error để tránh làm sập luồng lưu dữ liệu chính
+                        }
+                    }
+                }
             }
 
             // . XÓA TOÀN BỘ DATA ẢNH PHỤ HIỆN TẠI TRONG SQL

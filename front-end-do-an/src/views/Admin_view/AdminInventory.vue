@@ -1761,6 +1761,10 @@
       });
     }
 
+    if (editingProduct.value.deletedOldImages && editingProduct.value.deletedOldImages.length > 0) {
+      formData.append('AnhCuCanXoa', JSON.stringify(editingProduct.value.deletedOldImages));
+    }
+
     // Gửi cái mảng thứ tự cuối cùng này xuống Backend
     formData.append('ThuTuBoSuuTap', JSON.stringify(finalGalleryOrder));
 
