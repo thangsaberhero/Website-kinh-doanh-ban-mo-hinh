@@ -282,8 +282,12 @@
                             <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
                           </div>
                           <div class="flex flex-col">
-                            <p class="font-bold text-slate-900 text-[14px] truncate max-w-[220px]" :title="product.name">{{ product.name }}</p>
-                            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                            
+                            <p class="font-bold text-slate-900 text-[14px] whitespace-normal line-clamp-2 w-full max-w-[280px] xl:max-w-[360px] leading-snug" :title="product.name">
+                              {{ product.name }}
+                            </p>
+                            
+                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
                               <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border shadow-sm" :class="getBrandColor(product.brand)">
                                 {{ product.brand }}
                               </span>
@@ -297,12 +301,12 @@
                     </td>
                     
                     <td class="px-6 py-4 align-middle">
-                      <div class="flex flex-col items-start justify-center gap-1.5">
+                      <div class="flex flex-col items-start justify-center gap-2">
                         
                         <div class="relative" @click.stop>
                           <select v-model="product.selltype" 
                                   @change="quickUpdateSellType(product.id, product.selltype)"
-                                  class="text-xs font-bold pl-2 pr-6 py-1 rounded-md border appearance-none outline-none transition-colors shadow-sm cursor-pointer"
+                                  class="text-xs font-bold pl-3 pr-2 py-1.5 rounded-lg border outline-none transition-colors shadow-sm cursor-pointer"
                                   :class="{
                                     'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300 focus:ring-2 focus:ring-purple-100': product.selltype?.toLowerCase().includes('order'),
                                     'bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-100': product.selltype === 'Có sẵn'
@@ -311,19 +315,15 @@
                             <option value="Pre-order" class="text-slate-700 font-medium">Pre-order</option>
                             <option value="Order" class="text-slate-700 font-medium">Order</option>
                           </select>
-                          <span class="material-symbols-outlined absolute right-1.5 top-1/2 -translate-y-1/2 text-[14px] pointer-events-none"
-                                :class="product.selltype === 'Có sẵn' ? 'text-emerald-500' : 'text-purple-500'">
-                            arrow_drop_down
-                          </span>
-                        </div>
+                          </div>
 
-                        <div class="flex items-center gap-1 group/edit bg-slate-50 border border-slate-200 px-2 py-0.5 rounded transition-all" 
+                        <div class="flex items-center gap-1 group/edit bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg transition-all" 
                              @click.stop>
                           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cọc:</span>
                           <input type="text" 
                                  v-model="product.rawMinDeposit" 
                                  @keyup.enter="quickUpdateDeposit(product.id, product.rawMinDeposit)"
-                                 class="w-14 text-right text-xs font-bold text-slate-700 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-400 focus:outline-none transition-colors font-mono"
+                                 class="w-16 text-right text-xs font-bold text-slate-700 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-400 focus:outline-none transition-colors font-mono"
                                  title="Nhấn Enter để lưu giá cọc">
                           <span class="text-[9px] font-bold text-slate-500">đ</span>
                         </div>
