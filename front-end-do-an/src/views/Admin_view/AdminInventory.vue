@@ -897,26 +897,54 @@
               </div>
 
               <div class="pt-2">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 flex justify-between">
-                  <span>Bộ sưu tập ảnh</span>
-                  <span class="text-slate-400 bg-slate-100 px-1.5 rounded">{{ editingProduct.galleryUrls?.length || 0 }}</span>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2 flex justify-between items-center">
+                  <span class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-rose-400">burst_mode</span>
+                    Bộ sưu tập ảnh
+                  </span>
+                  <span class="text-slate-400 bg-slate-100 px-2 py-0.5 rounded font-mono text-[10px] shadow-inner">
+                    {{ editingProduct.galleryItems?.length || 0 }} / 10
+                  </span>
                 </label>
+                
                 <input type="file" ref="editGalleryInputRef" class="hidden" accept="image/*" multiple @change="handleEditGalleryUpload">
                 
-                <div class="grid grid-cols-4 gap-2 mb-3">
-                  <div v-for="(url, index) in editingProduct.galleryUrls" :key="index" class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group bg-white shadow-sm">
-                    <img :src="url" class="w-full h-full object-contain">
-                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button @click.stop="removeEditGalleryImage(index)" class="w-6 h-6 bg-rose-500 rounded text-white flex items-center justify-center hover:bg-rose-600 transition-all">
-                        <span class="material-symbols-outlined text-[14px]">delete</span>
-                      </button>
+                <div ref="galleryGridRef" class="grid grid-cols-4 md:grid-cols-5 gap-3 whitespace-normal">
+                  <div v-for="(item, index) in editingProduct.galleryItems" 
+                       :key="item.id" 
+                       class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group bg-white shadow-sm hover:shadow-lg transition-all cursor-grab active:cursor-grabbing hover:border-rose-300">
+                    
+                    <img :src="item.url" class="w-full h-full object-contain p-1">
+                    
+                    <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-between p-1.5">
+                      <div class="w-full flex justify-end">
+                        <button @click.stop="removeEditGalleryImage(index)" 
+                                class="w-6 h-6 bg-white border border-rose-100 text-rose-500 rounded-lg flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow"
+                                title="Xóa ảnh này">
+                          <span class="material-symbols-outlined text-[14px]">delete</span>
+                        </button>
+                      </div>
+                      
+                      <div class="w-full text-center">
+                        <span class="text-[10px] font-bold text-white bg-slate-900/50 px-2 py-0.5 rounded-full line-clamp-1 break-all">
+                          Ảnh {{ index + 1 }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   
-                  <button @click="triggerEditGalleryInput" class="aspect-square rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-400 hover:bg-sky-50 transition-all">
-                    <span class="material-symbols-outlined text-[20px]">add</span>
+                  <button v-if="(editingProduct.galleryItems?.length || 0) < 10"
+                          @click="triggerEditGalleryInput" 
+                          class="aspect-square rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-400 hover:bg-sky-50 transition-all gap-1 group">
+                    <span class="material-symbols-outlined text-[24px]">add</span>
+                    <span class="text-[9px] font-bold text-slate-500 group-hover:text-sky-600">Thêm ảnh</span>
                   </button>
                 </div>
+                
+                <p class="text-[10px] text-slate-400 font-medium italic mt-2.5 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[14px]">info</span>
+                  Kéo thả các hình ảnh để sắp xếp lại thứ tự.
+                </p>
               </div>
             </div>
 
@@ -1025,6 +1053,7 @@
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { useToastStore } from "../../stores/toast";
   import { useLayoutStore } from '../../stores/layout';
+  import Sortable from 'sortablejs';
   
   const route = useRoute();
   const router = useRouter();
@@ -1033,6 +1062,7 @@
   const fileInputRef = ref(null);
   const galleryInputRef = ref(null);
   const isFilterPanelOpen = ref(false);
+  const galleryGridRef = ref(null);
   
   const isSidebarCollapsed = ref(false);
   const isMobileMenuOpen = ref(false);
@@ -1490,10 +1520,10 @@
       basePrice: product.basePrice || 0,
       minDeposit: product.rawMinDeposit || 0,
       baseStock: product.stock || 0,
-      releaseDate: product.releaseDate || '', // Đã thêm ngày tháng
+      releaseDate: product.releaseDate || '',
       variants: [],
-      galleryUrls: [],
-      galleryFiles: [],
+      galleryItems: [],
+      deletedOldImages: [],
       deletedVariantIds: []
     };
 
@@ -1535,10 +1565,38 @@
 
         // Xử lý Ảnh phụ
         if (result.data.galleryUrls && result.data.galleryUrls.length > 0) {
-          editingProduct.value.galleryUrls = result.data.galleryUrls.map(img => 
-             img.includes('http') ? img : `${API_BASE_URL}/Images_product/${img}`
-          );
+          editingProduct.value.galleryItems = result.data.galleryUrls.map(img => ({
+            id: img, // ID duy nhất
+            type: 'old', // Phân biệt ảnh cũ
+            url: img.includes('http') ? img : `${API_BASE_URL}/Images_product/${img}`,
+            file: null
+          }));
         }
+
+        // Kích hoạt Kéo thả an toàn với Vue
+        nextTick(() => {
+          if (galleryGridRef.value) {
+            Sortable.create(galleryGridRef.value, {
+              animation: 250,
+              ghostClass: 'opacity-30',
+              handle: '.group',
+              onEnd: (evt) => {
+                const oldIndex = evt.oldIndex;
+                const newIndex = evt.newIndex;
+                
+                if (oldIndex !== newIndex) {
+                  // MẸO QUAN TRỌNG: Trả DOM về vị trí cũ để tránh Vue bị loạn nhịp
+                  const itemEl = evt.item;
+                  evt.from.insertBefore(itemEl, evt.from.children[oldIndex > newIndex ? oldIndex + 1 : oldIndex]);
+                  
+                  // Mới bắt đầu cập nhật mảng của Vue
+                  const movedItem = editingProduct.value.galleryItems.splice(oldIndex, 1)[0];
+                  editingProduct.value.galleryItems.splice(newIndex, 0, movedItem);
+                }
+              },
+            });
+          }
+        });
       }
     } catch (error) {
       console.error("❌ Lỗi lấy thông tin chi tiết:", error);
@@ -1621,32 +1679,25 @@
     if (files.length === 0) return;
 
     files.forEach(file => {
-      editingProduct.value.galleryFiles.push(file);
-      editingProduct.value.galleryUrls.push(URL.createObjectURL(file));
+      editingProduct.value.galleryItems.push({
+        id: URL.createObjectURL(file), // Tạo ID ảo
+        type: 'new', // Phân biệt ảnh mới upload
+        url: URL.createObjectURL(file),
+        file: file // Lưu giữ file gốc để gửi Backend
+      });
     });
 
     if (editGalleryInputRef.value) editGalleryInputRef.value.value = '';
   };
 
   const removeEditGalleryImage = (index) => {
-    const removedUrl = editingProduct.value.galleryUrls[index];
+    const removedItem = editingProduct.value.galleryItems.splice(index, 1)[0];
     
-    // 1. Xóa khỏi mảng hiển thị UI
-    editingProduct.value.galleryUrls.splice(index, 1);
-    
-    // 2. Nếu là ảnh cũ từ Database (link có chữ localhost)
-    if (removedUrl.includes('localhost:3000')) {
-      const filename = removedUrl.split('/').pop(); // Lấy tên file gốc
+    // Nếu xóa trúng ảnh cũ -> Đưa vào danh sách cần chém ở Backend
+    if (removedItem.type === 'old') {
+      const filename = removedItem.url.split('/').pop();
       if(!editingProduct.value.deletedOldImages) editingProduct.value.deletedOldImages = [];
-      // Đưa tên file vào danh sách "Sổ đen" chuẩn bị gửi xuống Backend
       editingProduct.value.deletedOldImages.push(filename);
-    } 
-    // 3. Nếu là ảnh mới vừa chọn từ máy tính (link có chữ blob:)
-    else if (removedUrl.startsWith('blob:')) {
-      // Tìm lại vị trí thực sự của file mới này trong mảng galleryFiles và xóa đi
-      const soLuongAnhCu = editingProduct.value.galleryUrls.filter(u => u.includes('localhost:3000')).length;
-      const fileIndex = index - soLuongAnhCu;
-      if(fileIndex >= 0) editingProduct.value.galleryFiles.splice(fileIndex, 1);
     }
   };
 
@@ -1693,9 +1744,10 @@
     }
     
     // Bộ sưu tập ảnh mới
-    if (editingProduct.value.galleryFiles && editingProduct.value.galleryFiles.length > 0) {
-      editingProduct.value.galleryFiles.forEach(file => {
-        formData.append('BoSuuTapAnhMoi', file);
+    if (editingProduct.value.galleryItems && editingProduct.value.galleryItems.length > 0) {
+      const newFiles = editingProduct.value.galleryItems.filter(item => item.type === 'new');
+      newFiles.forEach(item => {
+        formData.append('BoSuuTapAnhMoi', item.file);
       });
     }
 
