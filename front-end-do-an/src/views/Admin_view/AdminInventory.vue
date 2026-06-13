@@ -242,7 +242,7 @@
               
               <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200">
                 <tr>
-                  <th class="py-4 px-4 w-12 text-center"></th> <th class="px-4 py-4 font-semibold text-left">Tên sản phẩm</th>
+                  <th class="py-4 pl-6 pr-0 w-8 text-center"></th> <th class="px-2 py-4 font-semibold text-left">Tên sản phẩm</th>
                   <th class="px-8 py-4 font-semibold text-left">Loại hình bán</th>
                   <th class="px-8 py-4 font-semibold text-right">Giá nhập</th>
                   <th class="px-8 py-4 font-semibold text-right">Giá bán</th>
@@ -256,7 +256,7 @@
                   
                   <tr class="transition-colors group hover:bg-slate-50/80 cursor-pointer" @click="toggleRow(product.id)">
                     
-                    <td class="py-4 px-4 text-center">
+                    <td class="py-4 pl-6 pr-0 text-center">
                       <button v-if="product.variants && product.variants.length > 0" 
                               @click.stop="toggleRow(product.id)"
                               class="w-6 h-6 rounded bg-slate-100 text-slate-400 flex items-center justify-center hover:bg-[#ff8f73]/10 hover:text-[#ff8f73] transition-colors mx-auto">
@@ -267,7 +267,7 @@
                       </button>
                     </td>
 
-                    <td class="px-4 py-4">
+                    <td class="px-2 py-4">
                       <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-0.5">
                           <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
@@ -321,12 +321,12 @@
                     </td>
                     
                     <td class="px-8 py-4 text-center">
-                      <div class="flex justify-center gap-2">
-                        <button @click.stop="openEditModal(product)" class="p-2 text-slate-400 hover:text-sky-500 bg-white border border-slate-200 hover:border-sky-200 rounded-lg transition-all shadow-sm flex items-center justify-center" title="Sửa thông tin">
-                          <span class="material-symbols-outlined text-[16px]">edit</span>
+                      <div class="flex justify-center items-center gap-3">
+                        <button @click.stop="openEditModal(product)" class="text-slate-400 hover:text-sky-500 transition-colors p-1 flex items-center justify-center" title="Sửa thông tin">
+                          <span class="material-symbols-outlined text-[18px]">edit</span>
                         </button>
-                        <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="p-2 text-slate-400 hover:text-rose-500 bg-white border border-slate-200 hover:border-rose-200 rounded-lg transition-all shadow-sm flex items-center justify-center" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
-                          <span class="material-symbols-outlined text-[16px]">{{ product.isVisible === 1 ? 'visibility_off' : 'visibility' }}</span>
+                        <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="text-slate-400 hover:text-rose-500 transition-colors p-1 flex items-center justify-center" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
+                          <span class="material-symbols-outlined text-[18px]">{{ product.isVisible === 1 ? 'visibility_off' : 'visibility' }}</span>
                         </button>
                       </div>
                     </td>
@@ -340,7 +340,7 @@
                             <thead class="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400">
                               <tr>
                                 <th class="py-2.5 px-5 w-1/2">Tên phân loại sản phẩm</th>
-                                <th class="py-2.5 px-5 text-right">Giá bán trực tiếp</th>
+                                <th class="py-2.5 px-5 text-right">Gía bán trực tiếp</th>
                                 <th class="py-2.5 px-5 text-center">Tồn kho</th>
                               </tr>
                             </thead>
