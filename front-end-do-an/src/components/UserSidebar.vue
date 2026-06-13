@@ -1,20 +1,19 @@
 <template>
-  <aside class="w-full md:w-72 flex flex-col border-b md:border-b-0 md:border-r border-outline-variant/20 bg-surface-container-low pt-4 md:pt-8 shrink-0 z-20">   
-    <div class="px-4 md:px-6 flex flex-row md:flex-col items-center gap-4 md:gap-3 mb-4 md:mb-8">
+  <aside class="w-full md:w-72 flex flex-col border-b md:border-b-0 md:border-r border-outline-variant/20 bg-surface-container-low pt-0 md:pt-8 shrink-0 z-20">    
+    <div class="hidden md:flex flex-col items-center gap-3 mb-8 px-6">
       <div class="relative group cursor-pointer shrink-0">
-        <div class="w-12 h-12 md:w-24 md:h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
+        <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
           <img class="w-full h-full rounded-full object-cover" alt="User Profile" :src="userAvatar"/>
         </div>
-        <div class="absolute bottom-0 right-0 bg-primary w-4 h-4 md:w-7 md:h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
-          <span class="material-symbols-outlined text-[10px] md:text-[14px] text-on-primary font-bold">verified</span>
+        <div class="absolute bottom-0 right-0 bg-primary w-7 h-7 rounded-full flex items-center justify-center border-2 border-surface-container-low">
+          <span class="material-symbols-outlined text-[14px] text-on-primary font-bold">verified</span>
         </div>
       </div>
-      
-      <div class="text-left md:text-center flex-1">
-        <h3 class="font-headline font-bold text-base md:text-lg text-on-surface line-clamp-1">
+      <div class="text-center">
+        <h3 class="font-headline font-bold text-lg text-on-surface line-clamp-1">
           {{ authStore.user?.username || authStore.user?.TenKH || 'Collector' }}
         </h3>
-        <p :class="['text-[9px] md:text-[10px] uppercase tracking-widest font-bold mt-0.5', memberTier.color]">
+        <p :class="['text-[10px] uppercase tracking-widest font-bold mt-0.5', memberTier.color]">
           {{ memberTier.name }}
         </p>
       </div>
