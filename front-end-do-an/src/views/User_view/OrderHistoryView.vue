@@ -90,7 +90,7 @@
                 <!-- CỤM NÚT THAO TÁC -->
                 <div class="flex lg:flex-col gap-3 shrink-0 border-t lg:border-t-0 lg:border-l border-outline-variant/20 pt-4 lg:pt-0 lg:pl-6">
                   
-                  <div v-if="order.TrangThaiThanhToan === 'Chưa thanh toán' && order.TrangThaiDonHang !== 'Đã hủy'" class="flex flex-col gap-2 flex-1 lg:w-36">
+                  <div v-if="order.TrangThaiThanhToan === 'Chưa thanh toán' && order.TrangThaiDonHang !== 'Đã hủy' && !isCOD(order)" class="flex flex-col gap-2 flex-1 lg:w-36">
                     
                     <div v-if="!isExpired(order.NgayLapDon)" class="text-[10px] text-rose-500 font-bold text-center bg-rose-500/10 py-1.5 rounded-lg border border-rose-500/20 animate-pulse flex items-center justify-center gap-1">
                       <span class="material-symbols-outlined text-[12px]">timer</span>
@@ -108,6 +108,13 @@
                     >
                       Thanh toán
                     </button>
+                  </div>
+
+                  <div v-else-if="order.TrangThaiThanhToan === 'Chưa thanh toán' && order.TrangThaiDonHang !== 'Đã hủy' && isCOD(order)" class="flex flex-col gap-2 flex-1 lg:w-36">
+                    <div class="text-[10px] text-amber-500 font-bold text-center bg-amber-500/10 py-2 rounded-lg border border-amber-500/20 flex flex-col items-center justify-center gap-1 h-full">
+                      <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+                      <span>Thanh toán<br>khi nhận hàng</span>
+                    </div>
                   </div>
 
                   <button @click="router.push(`/orders/${order.MaDH}`)" class="flex-1 lg:w-36 px-4 py-2 bg-surface-container-high hover:bg-primary/10 border border-outline-variant/30 hover:border-primary/50 text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:text-primary transition-all text-center">
@@ -404,6 +411,13 @@
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${day}/${month}/${year} - ${hours}:${minutes}`;
+  };
+
+  const isCOD = (order) => {
+    if (!order.PhuongThucThanhToan) return false;
+    const pt = order.PhuongThucThanhToan.toLowerCase();
+    // Bắt các từ khóa thông dụng của COD
+    return pt.includes('cod') || pt.includes('thu hộ') || pt.includes('khi nhận hàng');
   };
 </script>
 

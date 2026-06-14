@@ -918,8 +918,14 @@ const donhang_user = {
                         FROM ChiTietTrangThai cttt 
                         JOIN TrangThai tt ON tt.MaTrangThai = cttt.MaTrangThai
                         WHERE cttt.MaDH = DonHang.MaDH 
-                        Order by cttt.MaTrangThai Desc
-                        LIMIT 1) as TrangThaiDonHang
+                        ORDER BY cttt.Thoigian DESC, cttt.MaTrangThai DESC
+                        LIMIT 1) as TrangThaiDonHang,
+                (SELECT pt.TenPhuongThuc 
+                        FROM ThanhToan t
+                        JOIN PhuongThucThanhToan pt ON pt.MaPT = t.MaPT
+                        WHERE t.MaDH = DonHang.MaDH
+                        ORDER BY t.NgayThanhToan ASC
+                        LIMIT 1) as PhuongThucThanhToan
                     
                 from DonHang left join ChiTietDonHang ct on DonHang.MaDH = ct.MaDH
                 ${where_clause}
@@ -1007,6 +1013,7 @@ const donhang_user = {
             mh.MaMoHinh,
             mh.TenMH,
             mh.AnhDaiDien, 
+            mh.TienCocToiThieu,
             pl.DonGia,
             pl.MaPhanLoai,
             pl.ChiTietPhanLoai,
@@ -1355,6 +1362,12 @@ const donhang_user = {
                 `;
                 const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH]);                  
                 soTienCanThanhToan = result_tien_coc[0].TienCoc;
+                if(soTienCanThanhToan === 0){
+                        return res.status(400).json({ 
+                            success: false, 
+                            message: "Lỗi thao tác: Đơn hàng này không có sản phẩm nào yêu cầu đặt cọc. Vui lòng thanh toán toàn bộ!" 
+                        });
+                    }
                 maHienThi = result_tien_coc[0].MaDonHangHienThi || MaDH.toString();
             }
 
@@ -1516,6 +1529,12 @@ const donhang_user = {
                 `;
                 const [result_tien_coc] = await db.query(sql_tinh_tien_coc,[MaDH]);                  
                 soTienCanThanhToan = result_tien_coc[0].TienCoc;
+                if(soTienCanThanhToan === 0){
+                        return res.status(400).json({ 
+                            success: false, 
+                            message: "Lỗi thao tác: Đơn hàng này không có sản phẩm nào yêu cầu đặt cọc. Vui lòng thanh toán toàn bộ!" 
+                        });
+                    }
                 maHienThi = result_tien_coc[0].MaDonHangHienThi || MaDH.toString();
             }
 
