@@ -543,7 +543,8 @@
         SDTNguoiNhan: shippingInfo.phone,
         DiaChiGiao: shippingInfo.address,
         Note: shippingInfo.note,
-        MaGG: selectedVoucher.value ? selectedVoucher.value.MaGG : null 
+        MaGG: selectedVoucher.value ? selectedVoucher.value.MaGG : null,
+        paymentMethod: paymentMethod.value
       };
 
       const response = await fetch(`${API_BASE_URL}/api/don_hang/xacnhan`, {

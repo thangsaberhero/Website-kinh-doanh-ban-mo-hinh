@@ -528,18 +528,15 @@ const donhang_user = {
             }
         const connection = await db.getConnection(); 
         try {
-            const {TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note, MaGG} = req.body;
+            const {TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note, MaGG, paymentMethod} = req.body;
             const MaTK = req.user.id;
+            
             if (!TenNguoiNhan || !SDTNguoiNhan || !DiaChiGiao) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Thông tin quan trọng không được trống!" });
             }
-            const sql_laymagiohang = `
-                Select gh.MaGH, kh.MaKH
-                from GioHang gh
-                inner join KhachHang kh on kh.MaKH = gh.MaKH 
-                where kh.MaTK = ?
-            `;
+            
+            const sql_laymagiohang = `SELECT gh.MaGH, kh.MaKH FROM GioHang gh INNER JOIN KhachHang kh ON kh.MaKH = gh.MaKH WHERE kh.MaTK = ?`;
             const [result_giohang] = await connection.query(sql_laymagiohang, [MaTK]);
 
             if(result_giohang.length === 0) {
@@ -551,12 +548,12 @@ const donhang_user = {
             const MaKH = result_giohang[0].MaKH;
 
             const sql_check_type = `
-                Select count(Distinct mh.LoaiHinhBan) As SoLoaihinh
-                from MoHinh mh
-                Inner join PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
-                Inner join ChiTietGioHang ctgh on ctgh.MaPhanLoai = pl.MaPhanLoai
-                Inner join GioHang gh on gh.MaGH = ctgh.MaGH
-                Where gh.MaGH = ?`;
+                SELECT count(Distinct mh.LoaiHinhBan) As SoLoaihinh
+                FROM MoHinh mh
+                INNER JOIN PhanLoai pl on pl.MaMoHinh = mh.MaMoHinh
+                INNER JOIN ChiTietGioHang ctgh on ctgh.MaPhanLoai = pl.MaPhanLoai
+                INNER JOIN GioHang gh on gh.MaGH = ctgh.MaGH
+                WHERE gh.MaGH = ?`;
             
             const [typeResult] = await connection.query(sql_check_type, [MaGH]);
 
@@ -568,13 +565,9 @@ const donhang_user = {
                 });
             }
 
-            
-            // 1. Kiểm tra giỏ hàng có đồ không? Giỏ trống thì không cho đặt!
-            
-
             // ================= BẮT ĐẦU TRANSACTION =================
             await connection.beginTransaction(); 
-            //Kiểm tra số lượng tồn kho trước khi đặt hàng:
+            
             const sql_get_cart_item = `
                 SELECT 
                     mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu, mh.GiaNhap,
@@ -587,8 +580,6 @@ const donhang_user = {
                 FROM MoHinh mh
                 INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
                 INNER JOIN ChiTietGioHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
-                
-                -- BẢNG ẢO LỌC KHUYẾN MÃI (ĐÃ FIX LỖI NHÂN BẢN)
                 LEFT JOIN (
                     SELECT * FROM (
                         SELECT 
@@ -600,8 +591,6 @@ const donhang_user = {
                                 WHEN ctkm.LoaiGiamGia = 'ChietKhau' THEN LEAST((pl_sub.DonGia * ctkm.ChietKhau / 100), COALESCE(ctkm.GiaTriGiamToiDa, pl_sub.DonGia))
                                 ELSE 0
                             END) AS MucGiam,
-                            
-                            -- TUYỆT CHIÊU: Xếp hạng Khuyến mãi. Nếu 1 sản phẩm có 2 KM, cái nào giảm tiền nhiều hơn (DESC) sẽ xếp thứ 1 (rn = 1)
                             ROW_NUMBER() OVER(PARTITION BY ctkm.MaPhanLoai ORDER BY (
                                 CASE
                                     WHEN ctkm.LoaiGiamGia = 'TienMat' THEN ctkm.ChietKhau
@@ -609,7 +598,6 @@ const donhang_user = {
                                     ELSE 0
                                 END
                             ) DESC) as rn
-                            
                         FROM ChiTietKhuyenMai ctkm
                         INNER JOIN KhuyenMai km ON ctkm.MaKM = km.MaKM
                         INNER JOIN PhanLoai pl_sub ON ctkm.MaPhanLoai = pl_sub.MaPhanLoai
@@ -618,19 +606,20 @@ const donhang_user = {
                           AND km.ThoiGianKT >= NOW()
                           AND (ctkm.SoLuongKM - ctkm.SoLuongDaDung) > 0
                     ) AS ranked_promo
-                    WHERE rn = 1 -- CHỐT CHẶN: Chỉ lấy duy nhất 1 chương trình giảm giá ngon nhất
+                    WHERE rn = 1 
                 ) AS km_info ON pl.MaPhanLoai = km_info.MaPhanLoai
-                
                 WHERE ct.MaGH = ?
             `;
             const [cart_item] = await connection.query(sql_get_cart_item, [MaGH]);
             if (cart_item.length === 0) {
                 await connection.rollback();
-                return res.status(400).json({ success: false,
-                    message: "Giỏ hàng đang trống, không thể đặt hàng!" });
+                return res.status(400).json({ success: false, message: "Giỏ hàng đang trống, không thể đặt hàng!" });
             }
+
             let TongTienHang = 0;
             let TongTienKhuyenMai = 0;
+            let TongCocBatBuoc = 0; // 🔴 ĐÃ SỬA: Biến lưu tổng cọc của cả đơn
+
             let arrChiTietDonHang = [];
             let arrUpdateKho = [];
             let arrUpdateKhuyenMai = [];
@@ -646,8 +635,11 @@ const donhang_user = {
                 }
                 const slSale = item.SoLuongKhuyenMaiConLai > 0? Math.min(item.SoLuong, item.SoLuongKhuyenMaiConLai) : 0;
                 const slMuaGiaGoc = item.SoLuong - slSale;
+                
                 TongTienHang += (item.DonGia * item.SoLuong);
                 TongTienKhuyenMai += (item.MucGiam * slSale);
+                TongCocBatBuoc += (item.TienCocToiThieu * item.SoLuong); // 🔴 ĐÃ SỬA: Tính dồn cọc
+
                 arrUpdateKho.push([item.SoLuong, item.MaPhanLoai]);
 
                 if(slSale > 0){
@@ -661,34 +653,36 @@ const donhang_user = {
                     arrChiTietDonHang.push([item.MaPhanLoai, 0, slMuaGiaGoc, item.GiaNhap, item.DonGia, item.DonGia]);
                 }
             }
+
+            // 🔴 ĐÃ SỬA: CHỐT CHẶN BẢO MẬT (Chống Hacker sửa payload)
+            if (paymentMethod === 'cod' && TongCocBatBuoc > 0) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Cảnh báo bảo mật: Đơn hàng chứa sản phẩm yêu cầu đặt cọc không được phép dùng phương thức Thu hộ (COD)!" 
+                });
+            }
             
             let tongTienThanhToan = TongTienHang - TongTienKhuyenMai;
            
-            //Xử lý voucher
             let soTienGiamVoucher = 0;
-
             if (MaGG) {
-                // Truy vấn thông tin Voucher cơ bản
                 const sql_check_voucher = `
                     SELECT * FROM MaGiamGia 
                     WHERE MaGG = ? 
                       AND ThoiGianBD <= NOW() 
                       AND ThoiGianKT >= NOW() 
                       AND TrangThaiHoatDong = 1
-                      AND (MaKH IS NULL OR MaKH = ?) -- 🔴 CHỐT CHẶN BẢO MẬT: Mã toàn sàn HOẶC mã của riêng khách này
+                      AND (MaKH IS NULL OR MaKH = ?) 
                 `;
                 const [voucherInfo] = await connection.query(sql_check_voucher, [MaGG, MaKH]);
                 
                 if (voucherInfo.length > 0) {
                     const v = voucherInfo[0];
-                    
-                    // CHỐT CHẶN 1: Kiểm tra lượt sử dụng chung
                     if (v.SoLuongDaDung >= v.SoLuongDungToiDa) {
                         await connection.rollback();
                         return res.status(400).json({ success: false, message: `Mã voucher này đã hết lượt sử dụng!` });
                     }
-
-                    // CHỐT CHẶN 2: Khách hàng đã dùng mã này chưa (Dùng MaKH chuẩn xác hơn đơn ngoài)
                     const sql_check_used = `SELECT MaLichSu FROM LogSuDungMaGiamGia WHERE MaGG = ? AND MaKH = ? LIMIT 1`;
                     const [check_used] = await connection.query(sql_check_used, [MaGG, MaKH]);
                     
@@ -696,22 +690,15 @@ const donhang_user = {
                         await connection.rollback();
                         return res.status(400).json({ success: false, message: `Bạn đã sử dụng mã voucher này trước đó rồi!` });
                     }
-
-                    // CHỐT CHẶN 3: Kiểm tra phân loại sản phẩm trong giỏ hàng
                     const sql_check_product = `SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?`;
                     const [apDungChoPhanLoai] = await connection.query(sql_check_product, [MaGG]);
                     
                     if (apDungChoPhanLoai.length > 0) {
-                        // Mảng các sản phẩm được phép dùng mã
                         const danhSachChoPhep = apDungChoPhanLoai.map(item => item.MaPhanLoai);
-                        // Lấy mảng MaPhanLoai từ giỏ hàng (nhờ tận dụng lại biến cart_item ở trên)
                         const danhSachTrongGio = cart_item.map(item => item.MaPhanLoai);
-                        
-                        // Kiểm tra xem giỏ hàng có MÓN NÀO khớp với danh sách cho phép không
                         const coMonHopLe = danhSachTrongGio.some(ma => danhSachChoPhep.includes(ma));
                         
                         if (!coMonHopLe) {
-                            // BẮT BUỘC PHẢI BÁO LỖI ĐỂ KHÁCH HÀNG BIẾT
                             await connection.rollback();
                             return res.status(400).json({ 
                                 success: false, 
@@ -719,8 +706,6 @@ const donhang_user = {
                             });
                         }
                     }
-
-                    // CHỐT CHẶN 4: Kiểm tra giá trị đơn hàng tối thiểu
                     const giaTriToiThieu = Number(v.GiaTriDonToiThieu || 0); 
                     if (tongTienThanhToan < giaTriToiThieu) {
                         await connection.rollback();
@@ -729,30 +714,21 @@ const donhang_user = {
                             message: `Đơn hàng chưa đạt giá trị tối thiểu (${giaTriToiThieu.toLocaleString('vi-VN')}đ) để sử dụng mã này!` 
                         });
                     }
-                    
-                    // ========================================================
-                    // VƯỢT QUA 4 CHỐT CHẶN -> TÍNH TOÁN TRỪ TIỀN
-                    // ========================================================
                     if (v.LoaiGiamGia === 'TienMat') {
                         soTienGiamVoucher = Number(v.ChietKhau);
                     } else if (v.LoaiGiamGia === 'ChietKhau') {
                         const tinhGiam = tongTienThanhToan * (Number(v.ChietKhau) / 100);
                         soTienGiamVoucher = Math.min(tinhGiam, Number(v.GiaTriGiamToiDa || tinhGiam));
                     }
-                    
                     tongTienThanhToan -= soTienGiamVoucher;
                     if (tongTienThanhToan < 0) tongTienThanhToan = 0;
                     
                 } else {
                     await connection.rollback();
-                    return res.status(400).json({ 
-                        success: false, 
-                        message: `Mã voucher không tồn tại hoặc đã hết hạn!` 
-                    });
+                    return res.status(400).json({ success: false, message: `Mã voucher không tồn tại hoặc đã hết hạn!` });
                 }
             }
             
-            //Tạo mã đơn hàng hiển thị
             const taoMaDonHangHienThi = () => {
                 const date = new Date();
                 const ddmmyy = date.getDate().toString().padStart(2, '0') +
@@ -765,15 +741,12 @@ const donhang_user = {
             
             const maHienThi = taoMaDonHangHienThi();
 
-            // 2. Tạo Đơn hàng mới 
             const sql_tao_don = `INSERT INTO DonHang (MaKH, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
             VALUES (?, ?, ?, ?, NOW(), 'Chưa thanh toán', ?, ? ,?, ?)`;
             const [tao_don] = await connection.query(sql_tao_don, [MaKH, maHienThi, TongTienHang, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note]);
             
-            // Lấy cái Mã Đơn Hàng vừa được MySQL sinh ra tự động
             const maDH_moi = tao_don.insertId; 
 
-            // Thêm trạng thái "chờ duyệt cho đơn hàng"
             await connection.query(`Insert into ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) Values (?, 1, NOW())`, [maDH_moi]);
 
             for (let detail of arrChiTietDonHang) {
@@ -791,10 +764,8 @@ const donhang_user = {
                 if (resultUpdateKho.affectedRows === 0) {
                     await connection.rollback();
                     connection.release();
-                    return res.status(400).json({ success: false,
-                        message: "Sản phẩm bạn chọn vừa có người mua hết hoặc vượt tồn kho! Vui lòng làm mới giỏ hàng." });
+                    return res.status(400).json({ success: false, message: "Sản phẩm bạn chọn vừa có người mua hết hoặc vượt tồn kho! Vui lòng làm mới giỏ hàng." });
                 }
-
                 const [checkStock] = await connection.query(`SELECT SoLuong, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [kho[1]]);
                 if (checkStock.length > 0 && checkStock[0].SoLuong <= 5) {
                     await connection.query(`
@@ -809,26 +780,22 @@ const donhang_user = {
                 }
             }
 
-            // Cập nhật số lượng đã dùng của Flash Sale
             for (let km of arrUpdateKhuyenMai) {
                 const [resultUpdateKM] = await connection.query(`
                     UPDATE ChiTietKhuyenMai 
                     SET SoLuongDaDung = SoLuongDaDung + ? 
                     WHERE MaKM = ? AND MaPhanLoai = ? 
-                    AND (SoLuongKM - SoLuongDaDung) >= ? -- ĐIỀU KIỆN SỐNG CÒN
-                `, [km[0], km[1], km[2], km[0]]); // Truyền biến số lượng 2 lần
+                    AND (SoLuongKM - SoLuongDaDung) >= ? 
+                `, [km[0], km[1], km[2], km[0]]); 
 
-                // Nếu có người khác nẫng tay trên làm số lượng không đủ -> Update thất bại
                 if (resultUpdateKM.affectedRows === 0) {
                     await connection.rollback();
                     connection.release();
-                    return res.status(400).json({ success: false,
-                        message: "Sản phẩm đang hot và vừa hết suất khuyến mãi! Vui lòng làm mới giỏ hàng." });
+                    return res.status(400).json({ success: false, message: "Sản phẩm đang hot và vừa hết suất khuyến mãi! Vui lòng làm mới giỏ hàng." });
                 }
             }
 
             for (let log of arrLogKhuyenMai) {
-                // log lúc này đang là: [MaKM, MaKH, soTienGiamCuaMonNay]
                 await connection.query(`
                     INSERT INTO LogSuDungKhuyenMai (MaKM, MaKH, MaDH, SoTienDaGiam, ThoiGianSuDung) 
                     VALUES (?, ?, ?, ?, NOW())
@@ -841,14 +808,12 @@ const donhang_user = {
                     VALUES (?, ?, ?, ?, NOW())
                 `, [MaGG, MaKH, maDH_moi, soTienGiamVoucher]);
                 
-                // Nâng cấp: Dùng Khóa Lạc Quan bảo vệ số lượng Voucher
                 const [updateVoucher] = await connection.query(`
                     UPDATE MaGiamGia 
                     SET SoLuongDaDung = SoLuongDaDung + 1 
                     WHERE MaGG = ? AND SoLuongDaDung < SoLuongDungToiDa
                 `, [MaGG]);
                 
-                // Nếu không cập nhật được (do có người khác vừa dùng slot cuối cùng) -> Rollback ngay
                 if (updateVoucher.affectedRows === 0) {
                     await connection.rollback();
                     return res.status(400).json({ 
@@ -869,6 +834,17 @@ const donhang_user = {
                 "DonHang", 
                 `/admin/orders?viewOrderId=${maDH_moi}`
             ]);
+
+            // =======================================================
+            // 🔴 ĐÃ SỬA: LƯU LỊCH SỬ GIAO DỊCH NẾU LÀ COD
+            // =======================================================
+            if (paymentMethod === 'cod') {
+                await connection.query(`
+                    INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
+                    VALUES (3, ?, NOW(), 0, 'Đăng ký giao hàng thu hộ (COD)', 'Chờ thanh toán')
+                `, [maDH_moi]);
+            }
+
             await connection.commit();
             res.status(200).json({ 
                 success: true,
