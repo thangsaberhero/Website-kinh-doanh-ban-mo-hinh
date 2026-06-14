@@ -392,8 +392,10 @@
     if (authStore.logout) {
       authStore.logout();
     } else {
-      localStorage.removeItem('token'); 
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
     }
     router.push('/login');
   };
