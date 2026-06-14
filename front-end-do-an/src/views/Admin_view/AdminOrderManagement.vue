@@ -1316,13 +1316,18 @@
           <div class="bg-purple-50 rounded-xl p-4 border border-purple-100 mt-2">
             <div class="flex justify-between items-end mb-2">
               <span class="font-bold text-purple-800 text-xs uppercase tracking-widest">Số tiền cần hoàn trả:</span>
-              <button @click="refundAmount = maxRefundAmount" class="text-[10px] font-bold text-purple-600 bg-purple-200 hover:bg-purple-300 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
+              <button @click="setRefundAmount(maxRefundAmount)" class="text-[10px] font-bold text-purple-600 bg-purple-200 hover:bg-purple-300 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
                 Hoàn toàn bộ ({{ formatPrice(maxRefundAmount) }})
               </button>
             </div>
             
             <div class="relative">
-              <input v-model="refundAmount" type="number" min="0" :max="maxRefundAmount" class="w-full border border-purple-200 rounded-lg p-2.5 text-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white font-black text-purple-600 text-right pr-8 shadow-inner">
+              <input 
+                v-model="displayRefundAmount" 
+                @input="onRefundInput"
+                type="text" 
+                class="w-full border border-purple-200 rounded-lg p-2.5 text-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white font-black text-purple-600 text-right pr-8 shadow-inner"
+              >
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 font-bold">₫</span>
             </div>
             
@@ -2378,11 +2383,38 @@ const exportExcelReport = async () => {
 
   const refundAmount = ref(0);
   const maxRefundAmount = ref(0);
+  const displayRefundAmount = ref('0');
+
+  const setRefundAmount = (amount) => {
+    refundAmount.value = amount;
+    displayRefundAmount.value = new Intl.NumberFormat('vi-VN').format(amount);
+  };
+
+  const onRefundInput = (e) => {
+    // 1. Xóa tất cả các ký tự người dùng gõ không phải là số (chữ cái, ký tự đặc biệt)
+    let val = e.target.value.replace(/\D/g, '');
+    if (!val) val = '0';
+    
+    // 2. Chuyển thành số thực
+    let num = parseInt(val, 10);
+    
+    // 3. CHỐT CHẶN: Nếu gõ lố số tiền khách nộp -> Ép giật ngược lại bằng mức Tối đa ngay lập tức!
+    if (num > maxRefundAmount.value) {
+      num = maxRefundAmount.value;
+      toastStore.showToast("Không thể hoàn số tiền lớn hơn tổng tiền khách đã nộp!", "warning");
+    }
+    
+    // 4. Lưu lại số chuẩn để gửi Backend
+    refundAmount.value = num;
+    
+    // 5. Thêm dấu chấm và hiển thị lại lên ô input
+    displayRefundAmount.value = new Intl.NumberFormat('vi-VN').format(num);
+  };
+
   const confirmRefund = (maDH, maHienThi) => {
     orderToRefund.value = maDH;
     orderCodeToRefund.value = maHienThi;
 
-    // Tính tổng số tiền khách ĐÃ NỘP (Cọc hoặc Full) để làm mức Hoàn trả Tối đa
     let tongDaNop = 0;
     if (selectedOrder.value && selectedOrder.value.MaDH === maDH) {
        tongDaNop = selectedOrder.value.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0;
@@ -2392,13 +2424,14 @@ const exportExcelReport = async () => {
     }
     
     maxRefundAmount.value = tongDaNop;
-    refundAmount.value = tongDaNop; // Mặc định hiển thị là Hoàn 100% tiền đã nộp
+    
+    // Gọi hàm set nhanh để vừa lưu số, vừa hiện chuỗi có dấu chấm
+    setRefundAmount(tongDaNop); 
     
     isRefundConfirmModalOpen.value = true;
   };
 
   const executeConfirmRefund = async () => {
-    // 🔴 CHỐT CHẶN BẢO VỆ: Chống nhập số âm hoặc số 0
     if (refundAmount.value <= 0) {
        toastStore.showToast("Vui lòng nhập số tiền hoàn trả lớn hơn 0!", "warning");
        return;
@@ -2414,7 +2447,7 @@ const exportExcelReport = async () => {
         },
         body: JSON.stringify({ 
           MaDH: orderToRefund.value,
-          SoTienHoanTra: refundAmount.value // 🔴 Gửi số tiền Kế toán quyết định xuống Backend
+          SoTienHoanTra: refundAmount.value // Gửi con số nguyên thủy xuống Backend
         })
       });
 

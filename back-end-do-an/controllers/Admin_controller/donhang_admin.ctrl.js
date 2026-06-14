@@ -2101,6 +2101,25 @@ const donhang_admin = {
 
             const dh = don_hang[0];
 
+            const [check_tien] = await connection.query(`
+                SELECT COALESCE(SUM(SoTienGiaoDich), 0) as SoTienCoTheHoanTra
+                FROM ThanhToan 
+                WHERE MaDH = ? AND TrangThaiGiaoDich = 'Thành công'
+            `, [MaDH]);
+
+            // 2. Trích xuất đúng số liệu từ dòng đầu tiên [0] của mảng và ép về kiểu Số (Number)
+            const tienDaNop = Number(check_tien[0].SoTienCoTheHoanTra);
+            const tienYeuCauHoan = Number(SoTienHoanTra);
+
+            // 3. So sánh an toàn
+            if (tienDaNop < tienYeuCauHoan) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Cảnh báo bảo mật: Số tiền yêu cầu hoàn (${tienYeuCauHoan.toLocaleString('vi-VN')} đ) vượt quá tổng tiền khách thực tế đã nộp (${tienDaNop.toLocaleString('vi-VN')} đ)!` 
+                });
+            }
+
             if (dh.TrangThaiThanhToan !== 'Chờ hoàn tiền') {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Đơn hàng này không ở trạng thái cần hoàn tiền!" });
