@@ -1832,7 +1832,9 @@ const exportExcelReport = async () => {
     if (tenTT.includes('GÓI')) return 2;
     if (tenTT.includes('VẬN CHUYỂN')) return 3;
     if (tenTT.includes('ĐÃ GIAO')) return 4;
-    return updateStatusValue.value; 
+    if (tenTT.includes('HỦY')) return 5;
+    if (tenTT.includes('ĐÃ HOÀN HÀNG')) return 6;
+    return updateStatusValue.value || 1; 
   };
 
   const openUpdateModalFromRow = async (order) => {
