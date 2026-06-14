@@ -68,9 +68,13 @@ cron.schedule('* * * * *', async () => {
         // 1. Tìm đơn hàng: Trạng thái 'Chưa Thanh Toán', quá 15 phút
         // Dùng lệnh SELECT bình thường, chưa cần Transaction ở đây
         const sql_tim_don = `
-            SELECT MaDH FROM DonHang 
-            WHERE TrangThaiThanhToan = 'Chưa Thanh Toán' 
-            AND TIMESTAMPDIFF(MINUTE, NgayLapDon, NOW()) >= 15
+            SELECT dh.MaDH 
+            FROM DonHang dh
+            WHERE dh.TrangThaiThanhToan = 'Chưa Thanh Toán' 
+            AND TIMESTAMPDIFF(MINUTE, dh.NgayLapDon, NOW()) >= 15
+            AND dh.MaDH NOT IN (
+                SELECT MaDH FROM ThanhToan WHERE MaPT = 3
+            )
         `;
         const [don_qua_han] = await connection.query(sql_tim_don);
 
