@@ -356,7 +356,7 @@
                                 v-model="product.sellPrice" 
                                 @click.stop
                                 @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                                class="w-28 text-right text-sm font-bold text-slate-900 bg-transparent border rounded-xl border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none focus:ring-0 transition-colors py-0.5 px-1 rounded-sm">
+                                class="w-28 text-right text-sm font-bold text-slate-900 bg-transparent border rounded-xl border-transparent hover:border-slate-300 focus:border-sky-500 !outline-none !ring-0 transition-colors py-0.5 px-1">
                           <span class="text-xs font-bold text-slate-600">đ</span>
                         </div>
 
@@ -381,7 +381,7 @@
                                  v-model="product.stock" 
                                  @click.stop
                                  @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                                 class="w-16 text-right text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
+                                 class="w-16 text-center text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
                                  :class="product.stock <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200 hover:border-rose-300 focus:border-rose-500' : 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:border-emerald-300 focus:border-emerald-500'">
                         </div>
 
