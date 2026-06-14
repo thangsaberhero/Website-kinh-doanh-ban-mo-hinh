@@ -1314,17 +1314,22 @@
           </p>
 
           <div class="bg-purple-50 rounded-xl p-4 border border-purple-100 mt-2">
-            <div class="flex justify-between items-end mb-2">
+            
+            <div class="flex flex-col gap-2.5 mb-3">
               <span class="font-bold text-purple-800 text-xs uppercase tracking-widest">Số tiền cần hoàn trả:</span>
-              <div class="flex gap-1.5">
+              
+              <div class="flex gap-2 w-full">
                 <button v-if="tongCocKhachDaDat > 0 && maxRefundAmount > tongCocKhachDaDat" 
                         @click="setRefundAmount(maxRefundAmount - tongCocKhachDaDat)" 
-                        class="text-[10px] font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
-                  Trừ cọc phạt ({{ formatPrice(maxRefundAmount - tongCocKhachDaDat) }})
+                        class="flex-1 flex flex-col items-center justify-center text-[10px] text-amber-700 bg-amber-100 hover:bg-amber-200 py-1.5 rounded-lg transition-colors shadow-sm active:scale-95 border border-amber-200/50">
+                  <span class="font-bold uppercase tracking-wider mb-0.5">Trừ cọc phạt</span>
+                  <span class="font-black text-[13px]">{{ formatPrice(maxRefundAmount - tongCocKhachDaDat) }}</span>
                 </button>
                 
-                <button @click="setRefundAmount(maxRefundAmount)" class="text-[10px] font-bold text-purple-600 bg-purple-200 hover:bg-purple-300 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
-                  Hoàn toàn bộ ({{ formatPrice(maxRefundAmount) }})
+                <button @click="setRefundAmount(maxRefundAmount)" 
+                        class="flex-1 flex flex-col items-center justify-center text-[10px] text-purple-700 bg-purple-200 hover:bg-purple-300 py-1.5 rounded-lg transition-colors shadow-sm active:scale-95 border border-purple-300/50">
+                  <span class="font-bold uppercase tracking-wider mb-0.5">Hoàn toàn bộ</span>
+                  <span class="font-black text-[13px]">{{ formatPrice(maxRefundAmount) }}</span>
                 </button>
               </div>
             </div>
@@ -1334,7 +1339,7 @@
                 v-model="displayRefundAmount" 
                 @input="onRefundInput"
                 type="text" 
-                class="w-full border border-purple-200 rounded-lg p-2.5 text-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white font-black text-purple-600 text-right pr-8 shadow-inner"
+                class="w-full border border-purple-200 rounded-lg p-2.5 text-xl outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white font-black text-purple-600 text-right pr-8 shadow-inner"
               >
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 font-bold">₫</span>
             </div>
