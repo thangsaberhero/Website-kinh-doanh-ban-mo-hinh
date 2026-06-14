@@ -1129,7 +1129,7 @@
         </select>
         </div>
 
-        <div v-if="updateStatusValue == 3" class="mb-6 space-y-3 bg-sky-50 p-4 rounded-xl border border-sky-100 animate-[fadeIn_0.2s_ease-out]">
+        <div v-if="updateStatusValue == 3 && getCurrentStatusCode() < 3" class="mb-6 space-y-3 bg-sky-50 p-4 rounded-xl border border-sky-100 animate-[fadeIn_0.2s_ease-out]">
             <p class="text-[11px] font-bold text-sky-700 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">local_shipping</span> Thông tin vận chuyển</p>
             
             <div class="grid grid-cols-2 gap-3">
@@ -1914,7 +1914,7 @@ const exportExcelReport = async () => {
       return;
     }
 
-    if (Number(updateStatusValue.value) === 3 && !updateTrackingCode.value.trim()) {
+    if (Number(updateStatusValue.value) === 3 && getCurrentStatusCode() < 3 && !updateTrackingCode.value.trim()) {
         toastStore.showToast("Vui lòng nhập Mã vận đơn trước khi giao cho Shipper!", "warning");
         return;
     }
