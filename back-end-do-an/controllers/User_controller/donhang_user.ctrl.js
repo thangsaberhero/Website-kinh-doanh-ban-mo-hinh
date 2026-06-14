@@ -804,7 +804,7 @@ const donhang_user = {
                         "Cảnh báo sắp hết hàng", 
                         `Phân loại "${checkStock[0].ChiTietPhanLoai}" chỉ còn lại ${checkStock[0].SoLuong} sản phẩm trong kho.`, 
                         "KhoHang", 
-                        "/admin/inventory"
+                        `/admin/inventory?productId=${checkStock[0].MaMoHinh}`
                     ]);
                 }
             }
@@ -867,7 +867,7 @@ const donhang_user = {
                 `Đơn hàng mới #${maDH_moi}`, 
                 `Khách hàng ${TenNguoiNhan} vừa đặt một đơn hàng trị giá ${formatTien}đ.`, 
                 "DonHang", 
-                `/admin/orders`
+                `/admin/orders?viewOrderId=${maDH_moi}`
             ]);
             await connection.commit();
             res.status(200).json({ 
@@ -1185,7 +1185,7 @@ const donhang_user = {
                 `Đơn hàng bị hủy #${MaDH}`, 
                 `Khách hàng vừa tự hủy đơn hàng mang mã ${maHienThi}.`, 
                 "DonHang", 
-                `/admin/orders`
+                `/admin/orders?viewOrderId=${MaDH}`
             ]);
 
             await connection.commit();
@@ -1278,7 +1278,7 @@ const donhang_user = {
                 `Khách thay đổi địa chỉ đơn #${MaDH}`, 
                 `Khách hàng vừa cập nhật lại SĐT/Địa chỉ giao hàng cho đơn mã ${maHienThi}. Hãy kiểm tra lại phiếu gửi!`, 
                 "DonHang", 
-                `/admin/orders`
+                `/admin/orders?viewOrderId=${MaDH}`
             ]);
 
             await connection.commit();
