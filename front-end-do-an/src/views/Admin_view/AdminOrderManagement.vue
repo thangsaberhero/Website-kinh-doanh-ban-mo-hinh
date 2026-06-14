@@ -1106,11 +1106,19 @@
         <div class="mb-6">
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Chọn trạng thái mới</label>
           <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-[#ff8f73] font-semibold text-slate-700 focus:ring-1 focus:ring-[#ff8f73] outline-none cursor-pointer">
-            <option value="1" :disabled="getCurrentStatusCode() >= 1">CHỜ DUYỆT (Hệ thống tiếp nhận)</option>
-            <option value="2" :disabled="getCurrentStatusCode() >= 2">ĐANG ĐÓNG GÓI (Chuẩn bị hàng trong kho)</option>
-            <option value="3" :disabled="getCurrentStatusCode() >= 3">ĐANG VẬN CHUYỂN (Giao cho shipper)</option>
-            <option value="4" :disabled="getCurrentStatusCode() >= 4">ĐÃ GIAO (Khách ký nhận thành công)</option>
-          </select>
+          <option :value="1" :disabled="getCurrentStatusCode() > 1">
+            CHỜ DUYỆT {{ getCurrentStatusCode() == 1 ? '(Trạng thái hiện tại)' : '' }}
+          </option>
+          <option :value="2" :disabled="getCurrentStatusCode() > 2">
+            ĐANG ĐÓNG GÓI {{ getCurrentStatusCode() == 2 ? '(Trạng thái hiện tại)' : '' }}
+          </option>
+          <option :value="3" :disabled="getCurrentStatusCode() > 3">
+            ĐANG VẬN CHUYỂN {{ getCurrentStatusCode() == 3 ? '(Trạng thái hiện tại)' : '' }}
+          </option>
+          <option :value="4" :disabled="getCurrentStatusCode() > 4">
+            ĐÃ GIAO {{ getCurrentStatusCode() == 4 ? '(Trạng thái hiện tại)' : '' }}
+          </option>
+        </select>
         </div>
 
         <div v-if="updateStatusValue == 3" class="mb-6 space-y-3 bg-sky-50 p-4 rounded-xl border border-sky-100 animate-[fadeIn_0.2s_ease-out]">
@@ -1893,12 +1901,18 @@ const exportExcelReport = async () => {
   };
 
   const submitUpdateStatus = async () => {
-    if (updateStatusValue.value == 3 && !updateTrackingCode.value.trim()) {
+    if (Number(updateStatusValue.value) === getCurrentStatusCode()) {
+      toastStore.showToast("Bạn chưa thay đổi sang tiến trình mới nào!", "warning");
+      return;
+    }
+
+    if (Number(updateStatusValue.value) === 3 && !updateTrackingCode.value.trim()) {
         toastStore.showToast("Vui lòng nhập Mã vận đơn trước khi giao cho Shipper!", "warning");
         return;
     }
+
     try {
-      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
         method: 'POST',
         headers: {
@@ -1916,15 +1930,22 @@ const exportExcelReport = async () => {
       if (response.ok && result.success) {
         toastStore.showToast('Cập nhật trạng thái đơn hàng thành công!', 'success');
         isUpdateModalOpen.value = false;
-        isDetailModalOpen.value = false; 
-        fetchOrders(); 
+        
+        if (typeof isDetailModalOpen !== 'undefined') {
+            isDetailModalOpen.value = false; 
+        }
+        
+        // Load lại danh sách tùy file (Có thể là fetchOrders hoặc fetchRecentOrders)
+        if (typeof fetchOrders === 'function') fetchOrders();
+        if (typeof fetchRecentOrders === 'function') fetchRecentOrders();
+        if (typeof fetchDashboardData === 'function') fetchDashboardData();
       } 
       else {
         toastStore.showToast(result.message || 'Không thể cập nhật trạng thái.', 'error');
       }
     } 
     catch (error) {
-      console.error("Lỗi cập nhật tiến trình đơn hàng:", error);
+      console.error(error);
       toastStore.showToast("Lỗi kết nối mạng máy chủ!", "error");
     }
   };
