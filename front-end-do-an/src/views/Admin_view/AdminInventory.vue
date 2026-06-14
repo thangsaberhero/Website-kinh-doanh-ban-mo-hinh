@@ -36,7 +36,7 @@
                       </label>
                       <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-rose-400 has-[:checked]:bg-rose-50">
                           <input type="radio" name="stock" v-model="stockFilter" value="low" class="w-4 h-4 text-rose-500 border-slate-300 focus:ring-rose-500">
-                          <span class="text-xs font-bold text-slate-700 group-hover:text-slate-900">Sắp hết (&lt; 3)</span>
+                          <span class="text-xs font-bold text-slate-700 group-hover:text-slate-900">Sắp hết (&lt; 5)</span>
                       </label>
                       <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-slate-400 has-[:checked]:bg-slate-100">
                           <input type="radio" name="stock" v-model="stockFilter" value="out" class="w-4 h-4 text-slate-600 border-slate-300 focus:ring-slate-600">
@@ -159,18 +159,18 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+          <div @click="applyQuickStockFilter('all')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div>
               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tổng mẫu sản phẩm</p>
               <h3 class="text-2xl font-brand font-bold text-slate-900">{{ summary.TongSanPham || 0 }}</h3>
-              <p class="text-[11px] text-slate-400 font-medium mt-1">Mẫu mô hình trong danh mục</p>
+              <p class="text-[11px] text-slate-400 font-medium mt-1">Tất cả mô hình</p>
             </div>
-            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100 text-blue-500 shadow-inner shrink-0">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center border border-blue-100 bg-blue-50 text-blue-500 shadow-inner shrink-0 transition-colors group-hover:bg-blue-100">
               <span class="material-symbols-outlined text-[24px]">inventory_2</span>
             </div>
           </div>
 
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+          <!-- <div @click="applyQuickStockFilter('high')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
             <div>
               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Đang dồi dào kho</p>
               <h3 class="text-2xl font-brand font-bold text-emerald-600">{{ summary.DangCoSan || 0 }}</h3>
@@ -179,26 +179,26 @@
             <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 text-emerald-500 shadow-inner shrink-0">
               <span class="material-symbols-outlined text-[24px]">check_circle</span>
             </div>
-          </div>
+          </div> -->
 
-          <!-- <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+          <div @click="applyQuickStockFilter('low')" class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between group hover:shadow-md transition-all cursor-pointer" :class="stockFilter === 'low' ? 'border-amber-400 ring-2 ring-amber-50' : 'border-slate-200'">
             <div>
               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Cảnh báo sắp hết</p>
               <h3 class="text-2xl font-brand font-bold text-amber-600">{{ summary.SapHetHang || 0 }}</h3>
-              <p class="text-[11px] text-amber-500 font-bold mt-1">Số lượng chỉ còn từ 1 - 3</p>
+              <p class="text-[11px] text-amber-500 font-bold mt-1">Số lượng chỉ còn từ 1 - 4</p>
             </div>
-            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100 text-amber-500 shadow-inner shrink-0">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0 transition-colors" :class="stockFilter === 'low' ? 'bg-amber-500 text-white border-amber-600' : 'bg-amber-50 text-amber-500 border-amber-100'">
               <span class="material-symbols-outlined text-[24px]">warning</span>
             </div>
-          </div> -->
+          </div>
 
-          <!-- <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+          <!-- <div @click="applyQuickStockFilter('out')" class="bg-white p-5 rounded-2xl border shadow-sm flex items-center justify-between group hover:shadow-md transition-all cursor-pointer" :class="stockFilter === 'out' ? 'border-rose-400 ring-2 ring-rose-50' : 'border-slate-200'">
             <div>
               <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Đã cháy hàng</p>
               <h3 class="text-2xl font-brand font-bold text-rose-600">{{ summary.HetHang || 0 }}</h3>
-              <p class="text-[11px] text-rose-500 font-bold mt-1">Tồn kho bằng 0 (Cần nhập thêm)</p>
+              <p class="text-[11px] text-rose-500 font-bold mt-1">Tồn kho bằng 0</p>
             </div>
-            <div class="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center border border-rose-100 text-rose-500 shadow-inner shrink-0">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0 transition-colors" :class="stockFilter === 'out' ? 'bg-rose-500 text-white border-rose-600' : 'bg-rose-50 text-rose-500 border-rose-100'">
               <span class="material-symbols-outlined text-[24px]">block</span>
             </div>
           </div> -->
@@ -381,7 +381,7 @@
                                  v-model="product.stock" 
                                  @click.stop
                                  @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                                 class="w-16 text-center text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
+                                 class="w-16 text-right text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
                                  :class="product.stock <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200 hover:border-rose-300 focus:border-rose-500' : 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:border-emerald-300 focus:border-emerald-500'">
                         </div>
 
@@ -2035,6 +2035,25 @@
       delete query.productId;
       router.replace({ query });
     }
+  });
+
+  const applyQuickStockFilter = (status) => {
+  // Nếu click lại vào thẻ đang được chọn (và thẻ đó không phải thẻ 'all')
+  // thì hủy bỏ lọc, đưa trạng thái về lại 'all'
+  if (stockFilter.value === status && status !== 'all') {
+    stockFilter.value = 'all';
+  } else {
+    // Nếu click vào thẻ khác, thì gán trạng thái mới
+    stockFilter.value = status;
+  }
+  
+  currentPage.value = 1; // Reset về trang 1
+  fetchProducts();       // Tự động tải lại bảng dữ liệu
+};
+
+  watch(stockFilter, () => {
+    currentPage.value = 1;
+    fetchProducts();
   });
 
   onMounted(async () => {
