@@ -615,6 +615,88 @@
       </div>
     </div>
   </div>
+
+  <div v-if="isUpdateModalOpen && selectedOrder" class="print:hidden fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-[#ff8f73] animate-[fadeIn_0.2s_ease-out]">
+      <h3 class="text-lg font-bold text-slate-900 mb-2">Cập nhật tiến trình đơn hàng</h3>
+      <p class="text-xs text-slate-400 mb-4 font-medium">Thay đổi trạng thái cho mã đơn: {{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi || `#FC-${selectedOrder.MaDH}` }}</p>
+      
+      <div class="mb-6">
+        <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Chọn trạng thái mới</label>
+        <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-[#ff8f73] font-semibold text-slate-700 focus:ring-1 focus:ring-[#ff8f73] outline-none cursor-pointer">
+          <option value="1" :disabled="getCurrentStatusCode() >= 1">CHỜ DUYỆT (Hệ thống tiếp nhận)</option>
+          <option value="2" :disabled="getCurrentStatusCode() >= 2">ĐANG ĐÓNG GÓI (Chuẩn bị hàng trong kho)</option>
+          <option value="3" :disabled="getCurrentStatusCode() >= 3">ĐANG VẬN CHUYỂN (Giao cho shipper)</option>
+          <option value="4" :disabled="getCurrentStatusCode() >= 4">ĐÃ GIAO (Khách ký nhận thành công)</option>
+        </select>
+      </div>
+
+      <div v-if="updateStatusValue == 3" class="mb-6 space-y-3 bg-sky-50 p-4 rounded-xl border border-sky-100 animate-[fadeIn_0.2s_ease-out]">
+          <p class="text-[11px] font-bold text-sky-700 uppercase tracking-widest flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">local_shipping</span> Thông tin vận chuyển</p>
+          <div class="grid grid-cols-2 gap-3">
+              <div>
+                  <label class="block text-[10px] font-bold text-slate-500 mb-1">Đơn vị vận chuyển <span class="text-rose-500">*</span></label>
+                  <select v-model="updateCarrier" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-sky-500 outline-none bg-white font-medium text-slate-700">
+                      <option value="Giao Hàng Nhanh">Giao Hàng Nhanh (GHN)</option>
+                      <option value="SPX">SPX</option>
+                      <option value="Giao Hàng Tiết Kiệm">Giao Hàng Tiết Kiệm (GHTK)</option>
+                      <option value="Viettel Post">Viettel Post</option>
+                      <option value="J&T Express">J&T Express</option>
+                      <option value="Ninja Van">Ninja Van</option>
+                      <option value="Grab / AhaMove">Giao hỏa tốc (Grab/Aha)</option>
+                  </select>
+              </div>
+              <div>
+                  <label class="block text-[10px] font-bold text-slate-500 mb-1">Mã vận đơn <span class="text-rose-500">*</span></label>
+                  <input v-model="updateTrackingCode" type="text" placeholder="Nhập mã bill..." class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-sky-500 outline-none bg-white font-bold text-slate-800 uppercase">
+              </div>
+          </div>
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
+        <button @click="isUpdateModalOpen = false" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Quay lại</button>
+        <button @click="submitUpdateStatus" class="px-5 py-2 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff7352] rounded-lg shadow-sm">Xác nhận đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="isCancelModalOpen && selectedOrder" class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="px-6 py-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <span class="material-symbols-outlined text-rose-500">delete_forever</span>
+          Xác nhận hủy đơn hàng
+        </h3>
+        <button @click="isCancelModalOpen = false" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-full hover:bg-slate-200 transition-all flex items-center justify-center">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <p class="text-sm text-slate-600 font-medium">
+          Bạn có chắc chắn muốn hủy đơn hàng <span class="font-bold text-slate-900">{{ orderCodeToCancel }}</span> không?<br>
+          <span class="text-rose-500 font-bold text-xs">* Tồn kho và khuyến mãi sẽ được hoàn lại tự động.</span>
+        </p>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Lý do hủy đơn <span class="text-rose-500">*</span></label>
+          <textarea 
+            v-model="cancelReasonValue" 
+            rows="3" 
+            placeholder="VD: Khách yêu cầu hủy, Boom hàng, v.v..." 
+            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white resize-none"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+        <button @click="isCancelModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
+        <button @click="submitCancelOrder" class="px-5 py-2.5 text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/20 rounded-xl transition-all flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">delete_forever</span> Xác nhận hủy
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -657,6 +739,11 @@
   const updateStatusValue = ref(''); 
   const cancelReasonValue = ref(''); 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+  const updateTrackingCode = ref('');
+  const updateCarrier = ref('Giao Hàng Nhanh');
+  const orderToCancel = ref(null);
+  const orderCodeToCancel = ref('');
 
   const formatPrice = (value) => {
     if (!value) return '0 đ';
@@ -739,6 +826,10 @@
   };
 
   const submitUpdateStatus = async () => {
+    if (updateStatusValue.value == 3 && !updateTrackingCode.value.trim()) {
+        toastStore.showToast("Vui lòng nhập Mã vận đơn trước khi giao cho Shipper!", "warning");
+        return;
+    }
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
@@ -749,14 +840,19 @@
         },
         body: JSON.stringify({
           MaDH: selectedOrder.value.MaDH,
-          TrangThai: updateStatusValue.value
+          TrangThai: updateStatusValue.value,
+          MaVanDon: updateTrackingCode.value.trim().toUpperCase(),
+          HangVanChuyen: updateCarrier.value 
         })
       });
       const result = await response.json();
       if (response.ok && result.success) {
         toastStore.showToast('Cập nhật trạng thái đơn hàng thành công!', 'success');
         isUpdateModalOpen.value = false;
-        isDetailModalOpen.value = false; 
+        
+        // Cập nhật ngầm lại Modal Chi tiết đơn hàng đang mở
+        await fetchOrderDetail(selectedOrder.value.MaDH);
+        
         fetchRecentOrders(); 
         fetchDashboardData(); 
       } 
@@ -767,6 +863,13 @@
     catch (error) {
       console.error(error);
     }
+  };
+
+  const cancelOrder = (order) => {
+    orderToCancel.value = order.MaDH || order.id;
+    orderCodeToCancel.value = order.ThongTinGiaoHang?.MaDonHangHienThi || `#FC-${order.MaDH}`;
+    cancelReasonValue.value = '';
+    isCancelModalOpen.value = true;
   };
 
   const submitCancelOrder = async () => {
@@ -783,7 +886,7 @@
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          MaDH: selectedOrder.value.MaDH,
+          MaDH: orderToCancel.value || selectedOrder.value.MaDH,
           LyDoHuy: cancelReasonValue.value 
         })
       });
@@ -791,7 +894,10 @@
       if (response.ok && result.success) {
         toastStore.showToast('Đã thực hiện hủy đơn hàng thành công!', 'success');
         isCancelModalOpen.value = false;
-        isDetailModalOpen.value = false;
+        
+        // Cập nhật ngầm lại Modal Chi tiết đơn hàng đang mở
+        await fetchOrderDetail(selectedOrder.value.MaDH);
+
         fetchRecentOrders();
         fetchDashboardData();
       } 
@@ -1220,7 +1326,9 @@
     if (tenTT.includes('GÓI')) return 2;
     if (tenTT.includes('VẬN CHUYỂN')) return 3;
     if (tenTT.includes('ĐÃ GIAO')) return 4;
-    return updateStatusValue.value; 
+    if (tenTT.includes('HỦY')) return 5;
+    if (tenTT.includes('HOÀN HÀNG')) return 6;
+    return updateStatusValue.value || 0; 
   };
 
   const animateNumber = (targetRef, endValue, duration = 2000, decimals = 0) => {
@@ -1256,6 +1364,7 @@
       toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
     }
   };
+  
 </script>
 
 <style scoped>
