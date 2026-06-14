@@ -11,6 +11,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js"></script>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '1298195855672960',
+          cookie     : true,  
+          xfbml      : true,  
+          version    : 'v19.0' 
+        });
+      };
+    </script>
   </head>
   <body>
     <div id="app"></div>
