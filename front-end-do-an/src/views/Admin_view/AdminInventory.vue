@@ -206,15 +206,18 @@
           <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-start gap-5 relative overflow-hidden">
             
             <div class="flex flex-col sm:flex-row gap-3 relative z-10">
-              
-              <div class="flex flex-1 items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 w-full focus-within:border-sky-400 focus-within:ring-4 focus-within:ring-sky-400/20 transition-all shadow-inner">
-                <span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
-                <input v-model="searchQuery" type="text" placeholder="Tìm tên SP, nhân vật, anime, quét mã vạch..." class="w-full bg-transparent text-sm font-bold text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400">
+              <div class="flex flex-1 items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 w-full focus-within:bg-white focus-within:border-sky-400 focus-within:shadow-sm transition-all">
+                <span class="material-symbols-outlined text-slate-400 text-[18px]">search</span>
+                <input 
+                  v-model="searchQuery" 
+                  type="text" 
+                  placeholder="Tìm tên SP, nhân vật, anime, quét mã vạch..." 
+                  class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
+                >
               </div>
-
               <button 
                 @click="isFilterPanelOpen = true"
-                class="flex items-center justify-center gap-2 bg-[#ff8f73]/10 text-[#ff8f73] px-5 py-3 rounded-xl font-bold hover:bg-[#ff8f73]/20 transition-colors shrink-0 whitespace-nowrap"
+                class="flex items-center justify-center gap-2 bg-rose-50 border border-rose-100 text-[#ff8f73] px-4 py-2 rounded-lg font-semibold hover:bg-rose-100 transition-colors shrink-0 whitespace-nowrap shadow-sm"
               >
                 <span class="material-symbols-outlined text-[18px]">tune</span>
                 Bộ lọc nâng cao
@@ -225,7 +228,7 @@
               <button 
                 v-for="brand in Brands" :key="brand.MaHSX"
                 @click="activeFilter = brand.MaHSX"
-                class="px-4 py-2 rounded-xl text-xs font-bold transition-all border shadow-sm"
+                class="px-4 py-2 rounded-full text-xs font-bold transition-all border shadow-sm"
                 :class="activeFilter === brand.MaHSX 
                   ? 'bg-[#ff8f73] text-white border-[#ff8f73] shadow-[#ff8f73]/20' 
                   : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300 hover:text-slate-700'"
@@ -288,11 +291,11 @@
                             </p>
                             
                             <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
-                              <span class="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border shadow-sm" :class="getBrandColor(product.brand)">
+                              <span class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase border shadow-sm tracking-wide" :class="getBrandColor(product.brand)">
                                 {{ product.brand }}
                               </span>
-                              <span v-if="product.characterName" class="text-[9px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold border border-sky-100 shadow-sm">{{ product.characterName }}</span>
-                              <span v-if="product.series" class="text-[9px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold border border-purple-100 shadow-sm">{{ product.series }}</span>
+                              <span v-if="product.characterName" class="text-[10px] bg-sky-50 text-sky-600 px-2 py-0.5 rounded-md font-bold border border-sky-100 shadow-sm">{{ product.characterName }}</span>
+                              <span v-if="product.series" class="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-md font-bold border border-purple-100 shadow-sm">{{ product.series }}</span>
                             </div>
                           </div>
                         </div>
@@ -306,7 +309,7 @@
                         <div class="relative" @click.stop>
                           <select v-model="product.selltype" 
                                   @change="quickUpdateSellType(product.id, product.selltype)"
-                                  class="text-xs font-bold pl-3 pr-8 py-1.5 min-w-[105px] rounded-lg border outline-none transition-colors shadow-sm cursor-pointer"
+                                  class="text-xs font-medium px-2 py-1 min-w-[105px] rounded-lg border outline-none transition-colors shadow-sm cursor-pointer"
                                   :class="{
                                     'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300 focus:ring-2 focus:ring-purple-100': product.selltype?.toLowerCase().includes('order'),
                                     'bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-300 focus:ring-2 focus:ring-emerald-100': product.selltype === 'Có sẵn'
@@ -317,16 +320,15 @@
                           </select>
                         </div>
 
-                        <div class="flex items-center gap-1 group/edit bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg transition-all" 
-                             @click.stop>
+                        <div class="flex items-center gap-1 group/edit bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg transition-all focus-within:border-sky-400 focus-within:bg-white focus-within:shadow-sm" @click.stop>
                           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cọc:</span>
                           
                           <input type="text" 
-                                 :value="formatCurrency(product.rawMinDeposit)" 
-                                 @input="handleCurrencyInput($event, product, 'rawMinDeposit')"
-                                 @keyup.enter="quickUpdateDeposit(product.id, product.rawMinDeposit)"
-                                 class="w-20 text-right text-xs font-bold text-slate-700 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-400 focus:outline-none transition-colors font-mono"
-                                 title="Nhấn Enter để lưu giá cọc">
+                                  :value="formatCurrency(product.rawMinDeposit)" 
+                                  @input="handleCurrencyInput($event, product, 'rawMinDeposit')"
+                                  @keyup.enter="quickUpdateDeposit(product.id, product.rawMinDeposit)"
+                                  class="w-24 text-right text-xs font-semibold text-slate-700 bg-transparent border-none focus:outline-none focus:ring-0 p-0 transition-colors"
+                                  title="Nhấn Enter để lưu giá cọc">
                                  
                           <span class="text-[9px] font-bold text-slate-500">đ</span>
                         </div>
@@ -336,8 +338,8 @@
 
                     <td class="px-6 py-4 align-middle text-right">
                       <div class="flex items-center justify-end gap-1">
-                        <span class="text-sm font-bold text-slate-500 font-mono">{{ product.basePrice }}</span>
-                        <span class="text-xs font-bold text-slate-600">đ</span>
+                        <span class="text-sm font-semibold text-slate-500">{{ product.basePrice }}</span>
+                        <span class="text-xs font-semibold text-slate-500">đ</span>
                       </div>
                     </td>
                     
@@ -345,20 +347,20 @@
                       <div class="flex flex-col items-end justify-center gap-1">
                         
                         <div v-if="product.variants && product.variants.length > 1" class="flex items-center justify-end gap-1">
-                          <span class="text-sm font-bold text-slate-900 font-mono">{{ product.sellPrice }}</span>
+                          <span class="text-sm font-bold text-slate-900">{{ product.sellPrice }}</span>
                           <span class="text-xs font-bold text-slate-600">đ</span>
                         </div>
 
                         <div v-else class="inline-flex items-center justify-end gap-1 group/edit relative">
                           <input type="text" 
-                                 v-model="product.sellPrice" 
-                                 @click.stop
-                                 @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                                 class="w-20 text-right text-sm font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none transition-colors py-0.5 font-mono">
+                                v-model="product.sellPrice" 
+                                @click.stop
+                                @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
+                                class="w-28 text-right text-sm font-bold text-slate-900 bg-transparent border rounded-xl border-transparent hover:border-slate-300 focus:border-sky-500 focus:outline-none focus:ring-0 transition-colors py-0.5 px-1 rounded-sm">
                           <span class="text-xs font-bold text-slate-600">đ</span>
                         </div>
 
-                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm"
+                        <span class="text-[9px] font-semibold px-2 py-0.5 rounded-md shadow-sm mt-1"
                               :class="product.variants && product.variants.length > 1 ? 'text-purple-600 bg-purple-50 border border-purple-100' : 'text-slate-400 bg-slate-50 border border-slate-200'">
                           {{ product.variants && product.variants.length > 1 ? 'Nhiều phân loại' : 'Một mức giá' }}
                         </span>
@@ -379,16 +381,16 @@
                                  v-model="product.stock" 
                                  @click.stop
                                  @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                                 class="w-16 text-center text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
+                                 class="w-16 text-right text-xs font-bold focus:outline-none transition-all py-0.5 rounded-full border"
                                  :class="product.stock <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200 hover:border-rose-300 focus:border-rose-500' : 'text-emerald-600 bg-emerald-50 border-emerald-100 hover:border-emerald-300 focus:border-emerald-500'">
                         </div>
 
-                        <span v-if="product.variants && product.variants.length > 1 && product.variants.some(v => v.stock <= 0)" class="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-0.5 animate-pulse">
+                        <span v-if="product.variants && product.variants.length > 1 && product.variants.some(v => v.stock <= 0)" class="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded-md shadow-sm px-2 py-0.5 mt-1 flex items-center gap-0.5 animate-pulse">
                           <span class="material-symbols-outlined text-[12px]">warning</span> Lệch kho
                         </span>
                         <span v-else-if="product.variants && product.variants.length > 1" class="text-[9px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm">Tổng kho</span>
                         <span v-else-if="product.stock <= 0" class="text-[9px] font-black text-rose-500 tracking-wider">HẾT HÀNG</span>
-                        <span v-else class="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded shadow-sm">Kho thực tế</span>
+                        <span v-else class="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-md shadow-sm px-2 py-0.5 mt-1">Kho thực tế</span>
                       </div>
                     </td>
                     
@@ -431,7 +433,7 @@
                                     <input type="text" 
                                            v-model="variant.sellPrice" 
                                            @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
-                                           class="w-28 text-right text-xs font-bold text-sky-600 bg-slate-50/80 border border-slate-200/80 focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-50 focus:outline-none transition-all px-3 py-1.5 rounded-lg font-mono shadow-inner">
+                                           class="w-32 text-right text-xs font-bold text-sky-600 bg-slate-50/80 border border-slate-200/80 focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-50 focus:outline-none transition-all px-3 py-1.5 rounded-lg font-mono shadow-inner">
                                     <span class="text-xs font-bold text-sky-600">đ</span>
                                   </div>
                                 </td>
@@ -620,11 +622,10 @@
             </div>
           </div>
 
-          <div class="w-full xl:w-[380px] shrink-0 space-y-6">
-            
+          <div class="w-full xl:w-[380px] shrink-0 space-y-6">          
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
               <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
-                <span class="material-symbols-outlined text-rose-400 text-[18px]">photo_library</span> Media Sản phẩm
+                <span class="material-symbols-outlined text-rose-400 text-[18px]">photo_library</span> Ảnh sản phẩm
               </h4>
               
               <div>
@@ -890,11 +891,10 @@
             </div>
           </div>
 
-          <div class="w-full xl:w-[380px] shrink-0 space-y-6">
-            
+          <div class="w-full xl:w-[380px] shrink-0 space-y-6">            
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
               <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
-                <span class="material-symbols-outlined text-rose-400 text-[18px]">photo_library</span> Media Sản phẩm
+                <span class="material-symbols-outlined text-rose-400 text-[18px]">photo_library</span> Ảnh sản phẩm
               </h4>
               
               <div>
