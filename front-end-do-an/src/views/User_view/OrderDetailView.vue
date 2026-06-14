@@ -18,19 +18,26 @@
           </h1>
         </div>
         <div class="flex flex-col sm:flex-row flex-wrap gap-3 w-full md:w-auto mt-6 md:mt-0">      
-          <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && !isExpired(orderInfo.NgayLapDon)"
+          
+          <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && !isExpired(orderInfo.NgayLapDon) && !isCOD(orderInfo)"
                   @click="showPaymentModal = true" 
                   class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
             <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
             Thanh toán ngay ({{ formatCountdown(orderInfo.NgayLapDon) }})
           </button>
           
-          <button v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && isExpired(orderInfo.NgayLapDon)"
+          <button v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && isExpired(orderInfo.NgayLapDon) && !isCOD(orderInfo)"
                   disabled
                   class="px-6 py-3 bg-surface-container-high text-outline text-sm font-bold rounded-lg flex items-center gap-2 border border-outline-variant/20 cursor-not-allowed">
             <span class="material-symbols-outlined text-lg">hourglass_empty</span>
             Đang xử lý hủy
           </button>
+
+          <div v-else-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && isCOD(orderInfo)"
+               class="w-full sm:w-auto px-6 py-3 bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all cursor-default">
+              <span class="material-symbols-outlined text-lg">local_shipping</span>
+              Thanh toán khi nhận hàng (COD)
+          </div>
 
           <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa thanh toán'"
                   @click="showCancelModal = true"
@@ -659,6 +666,12 @@
   });
 
   onUnmounted(() => { clearInterval(timerInterval); });
+  const isCOD = (info) => {
+    if (!info || !info.TenPhuongThuc) return false;
+    const pt = info.TenPhuongThuc.toLowerCase();
+    // Bắt đúng các từ khóa COD do Backend trả về
+    return pt.includes('cod') || pt.includes('thu hộ') || pt.includes('khi nhận hàng');
+  };
 </script>
 
 <style scoped>

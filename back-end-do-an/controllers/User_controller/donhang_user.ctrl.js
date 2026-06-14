@@ -1030,14 +1030,14 @@ const donhang_user = {
             ORDER BY mh.MaMoHinh DESC`;
             const [products] = await db.query(sql,[MaDH]);
             
-            const sql_trangthai =  `Select
-            tt.TenTrangThai,
-            cttt.ThoiGian
-            from TrangThai tt
-            inner join ChiTietTrangThai cttt on tt.MaTrangThai = cttt.MaTrangThai
-            where cttt.MaDH = ?`;
-
-            const [trangthai] = await db.query(sql_trangthai,[MaDH]);
+            const sql_trangthai =  `
+                SELECT tt.TenTrangThai, cttt.ThoiGian
+                FROM TrangThai tt
+                INNER JOIN ChiTietTrangThai cttt ON tt.MaTrangThai = cttt.MaTrangThai
+                WHERE cttt.MaDH = ?
+                ORDER BY cttt.ThoiGian ASC, cttt.MaTrangThai ASC
+            `;
+            const [trangthai] = await db.query(sql_trangthai, [MaDH]);
 
             res.status(200).json({
                 success: true,
