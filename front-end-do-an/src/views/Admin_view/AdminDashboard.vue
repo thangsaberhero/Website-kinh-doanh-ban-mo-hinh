@@ -552,17 +552,27 @@
                 </h4>
                 
                 <div class="grid grid-cols-1 gap-3">
-                  <button @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white font-bold text-sm py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
-                    <span class="material-symbols-outlined text-[18px]">edit_document</span> Đổi trạng thái
+                  <button v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6" 
+                          @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
+                          class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
                   </button>
 
-                  <button @click="handlePrintInvoice(selectedOrder.MaDH)" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 active:scale-95">
+                  <button @click="handlePrintInvoice(selectedOrder.MaDH)" 
+                          class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 active:scale-95">
                     <span class="material-symbols-outlined text-[18px] text-sky-400">print</span> In hóa đơn
                   </button>
 
-                  <button v-if="getCurrentStatusCode() != 4 && getCurrentStatusCode() != 5 && getCurrentStatusCode() != 6"
-                          @click="cancelOrder(selectedOrder)" class="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/30 font-bold text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                  <button v-if="getCurrentStatusCode() === 1 || getCurrentStatusCode() === 2"
+                          @click="cancelOrder(selectedOrder)" 
+                          class="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn hàng
+                  </button>
+
+                  <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4"
+                          @click="returnOrder(selectedOrder)" 
+                          class="w-full bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white border border-purple-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">assignment_return</span> Hoàn hàng
                   </button>
                 </div>
               </div>
@@ -693,6 +703,83 @@
         <button @click="isCancelModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
         <button @click="submitCancelOrder" class="px-5 py-2.5 text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-500/20 rounded-xl transition-all flex items-center gap-2">
           <span class="material-symbols-outlined text-[18px]">delete_forever</span> Xác nhận hủy
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="isReturnModalOpen" class="print:hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="px-6 py-4 border-b border-purple-100 flex justify-between items-center bg-purple-50 shrink-0">
+        <h3 class="text-lg font-bold text-purple-600 flex items-center gap-2">
+          <span class="material-symbols-outlined">assignment_return</span> Xác nhận Hoàn trả đơn
+        </h3>
+        <button @click="isReturnModalOpen = false" class="text-slate-400 hover:text-purple-600 transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-sm text-slate-600 font-medium">
+          Xác nhận hàng đã về kho và hoàn tiền cho đơn <span class="font-bold text-slate-900">{{ orderCodeToReturn }}</span>?<br>
+          <span class="text-purple-500 font-bold text-xs">* Tồn kho sẽ được cộng lại hệ thống ngay lập tức.</span>
+        </p>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Lý do hoàn hàng <span class="text-purple-500">*</span></label>
+          <textarea v-model="returnReason" rows="3" placeholder="VD: Khách boom hàng, Lỗi NSX..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white resize-none"></textarea>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+        <button @click="isReturnModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
+        <button @click="executeReturnOrder" class="px-5 py-2.5 text-sm font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 rounded-xl transition-all flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">inventory_2</span> Nhập lại kho
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="isRefundConfirmModalOpen" class="print:hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="px-6 py-4 border-b border-purple-100 flex justify-between items-center bg-purple-50 shrink-0">
+        <h3 class="text-lg font-bold text-purple-600 flex items-center gap-2">
+          <span class="material-symbols-outlined">currency_exchange</span> Xác nhận hoàn tiền
+        </h3>
+        <button @click="isRefundConfirmModalOpen = false" class="text-slate-400 hover:text-purple-600 transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-sm text-slate-600 font-medium leading-relaxed">
+          Bạn xác nhận Kế toán đã chuyển khoản trả lại tiền cho đơn hàng <span class="font-bold text-slate-900">{{ orderCodeToRefund }}</span>?<br>
+          <span class="text-purple-500 font-bold text-xs">* Trạng thái sẽ cập nhật thành "Đã hoàn tiền" và ghi nhận giao dịch âm.</span>
+        </p>
+
+        <div class="bg-purple-50 rounded-xl p-4 border border-purple-100 mt-2">
+          <div class="flex flex-col gap-2.5 mb-3">
+            <span class="font-bold text-purple-800 text-xs uppercase tracking-widest">Số tiền cần hoàn trả:</span>
+            <div class="flex gap-2 w-full">
+              <button v-if="tongCocKhachDaDat > 0 && maxRefundAmount > tongCocKhachDaDat" @click="setRefundAmount(maxRefundAmount - tongCocKhachDaDat)" class="flex-1 flex flex-col items-center justify-center text-[10px] text-amber-700 bg-amber-100 hover:bg-amber-200 py-1.5 rounded-lg transition-colors shadow-sm active:scale-95 border border-amber-200/50">
+                <span class="font-bold uppercase tracking-wider mb-0.5">Trừ cọc phạt</span>
+                <span class="font-black text-[13px]">{{ formatPrice(maxRefundAmount - tongCocKhachDaDat) }}</span>
+              </button>
+              <button @click="setRefundAmount(maxRefundAmount)" class="flex-1 flex flex-col items-center justify-center text-[10px] text-purple-700 bg-purple-200 hover:bg-purple-300 py-1.5 rounded-lg transition-colors shadow-sm active:scale-95 border border-purple-300/50">
+                <span class="font-bold uppercase tracking-wider mb-0.5">Hoàn toàn bộ</span>
+                <span class="font-black text-[13px]">{{ formatPrice(maxRefundAmount) }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="relative">
+            <input v-model="displayRefundAmount" @input="onRefundInput" type="text" class="w-full border border-purple-200 rounded-lg p-2.5 text-xl outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white font-black text-purple-600 text-right pr-8 shadow-inner">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 font-bold">₫</span>
+          </div>
+          <p v-if="refundAmount < maxRefundAmount && refundAmount > 0" class="text-[11px] text-amber-600 font-bold mt-2 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
+            <span class="material-symbols-outlined text-[14px]">info</span> Đã trừ khoản cọc phạt. Hoàn trả thực tế nhỏ hơn tổng tiền khách đã nộp.
+          </p>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+        <button @click="isRefundConfirmModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
+        <button @click="executeConfirmRefund" class="px-5 py-2.5 text-sm font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 rounded-xl transition-all flex items-center gap-2 active:scale-95">
+          <span class="material-symbols-outlined text-[18px]">check_circle</span> Xác nhận đã CK
         </button>
       </div>
     </div>
@@ -1362,6 +1449,129 @@
     } catch (err) {
       console.error('Lỗi khi copy: ', err);
       toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
+    }
+  };
+
+  // --- QUẢN LÝ MODAL HOÀN HÀNG ---
+  const isReturnModalOpen = ref(false);
+  const returnReason = ref('');
+  const orderToReturn = ref(null);
+  const orderCodeToReturn = ref('');
+
+  const returnOrder = (order) => {
+    orderToReturn.value = order.id || order.MaDH;
+    orderCodeToReturn.value = order.code || order.ThongTinGiaoHang?.MaDonHangHienThi || `#FC-${orderToReturn.value}`;
+    returnReason.value = ''; 
+    isReturnModalOpen.value = true;
+  };
+
+  const executeReturnOrder = async () => {
+    if (!returnReason.value.trim()) {
+      toastStore.showToast("Vui lòng nhập lý do hoàn hàng!", "warning");
+      return;
+    }
+    try {
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/hoan_hang`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ MaDH: orderToReturn.value, LyDoHoan: returnReason.value.trim() })
+      });
+      const result = await res.json();
+      if(result.success) {
+        toastStore.showToast("Xác nhận hoàn hàng thành công!", "success");
+        isReturnModalOpen.value = false; 
+        
+        await fetchOrderDetail(orderToReturn.value);
+        fetchRecentOrders(); 
+        fetchDashboardData();
+      } else {
+        toastStore.showToast(result.message, "error");
+      }
+    } catch(e) { 
+      toastStore.showToast("Lỗi kết nối máy chủ", "error");
+    }
+  };
+
+  // --- QUẢN LÝ MODAL XÁC NHẬN HOÀN TIỀN CÓ TRỪ CỌC PHẠT ---
+  const isRefundConfirmModalOpen = ref(false);
+  const orderToRefund = ref(null);
+  const orderCodeToRefund = ref('');
+  
+  const refundAmount = ref(0); 
+  const maxRefundAmount = ref(0);
+  const displayRefundAmount = ref('0'); 
+  const tongCocKhachDaDat = ref(0);
+
+  const setRefundAmount = (amount) => {
+    refundAmount.value = amount;
+    displayRefundAmount.value = new Intl.NumberFormat('vi-VN').format(amount);
+  };
+
+  const onRefundInput = (e) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (!val) val = '0';
+    let num = parseInt(val, 10);
+    
+    if (num > maxRefundAmount.value) {
+      num = maxRefundAmount.value;
+      toastStore.showToast("Không thể hoàn số tiền lớn hơn tổng tiền khách đã nộp!", "warning");
+    }
+    
+    refundAmount.value = num;
+    displayRefundAmount.value = new Intl.NumberFormat('vi-VN').format(num);
+  };
+
+  const confirmRefund = (maDH, maHienThi) => {
+    orderToRefund.value = maDH;
+    orderCodeToRefund.value = maHienThi;
+
+    let tongDaNop = 0;
+    let tongCocGoiY = 0;
+
+    if (selectedOrder.value && selectedOrder.value.MaDH === maDH) {
+       tongDaNop = selectedOrder.value.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0;
+       if (selectedOrder.value.DanhSachHang) {
+         tongCocGoiY = selectedOrder.value.DanhSachHang.reduce((sum, item) => sum + ((item.TienCocToiThieu || 0) * item.SoLuong), 0);
+       }
+    } else {
+       const listOrder = recentOrders.value.find(o => o.id === maDH);
+       tongDaNop = listOrder ? listOrder.transactionAmount : 0;
+    }
+    
+    maxRefundAmount.value = tongDaNop;
+    tongCocKhachDaDat.value = tongCocGoiY;
+    
+    setRefundAmount(tongDaNop); 
+    isRefundConfirmModalOpen.value = true;
+  };
+
+  const executeConfirmRefund = async () => {
+    if (refundAmount.value <= 0) {
+       toastStore.showToast("Vui lòng nhập số tiền hoàn trả lớn hơn 0!", "warning");
+       return;
+    }
+    try {
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/refund-status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ MaDH: orderToRefund.value, SoTienHoanTra: refundAmount.value })
+      });
+
+      const result = await response.json();
+      if (response.ok && result.success) {
+        toastStore.showToast("Xác nhận hoàn tiền thành công!", "success");
+        isRefundConfirmModalOpen.value = false;
+        
+        await fetchOrderDetail(orderToRefund.value);
+        fetchRecentOrders(); 
+        fetchDashboardData();
+      } else {
+        toastStore.showToast(result.message || "Không thể xác nhận hoàn tiền.", "error");
+      }
+    } catch (error) {
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
     }
   };
   
