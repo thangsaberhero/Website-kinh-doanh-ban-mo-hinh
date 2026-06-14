@@ -215,8 +215,11 @@
               </thead>
               <tbody class="divide-y divide-slate-50">
                 <tr v-for="(order, index) in orders" :key="order.id" 
-                    class="transition-colors group"
-                    :class="selectedOrders.includes(order.id) ? 'bg-[#ff8f73]/5 hover:bg-[#ff8f73]/10' : 'hover:bg-slate-50/80'">
+                    class="transition-colors group cursor-default"
+                    :class="[
+                      selectedOrders.includes(order.id) ? 'bg-[#ff8f73]/5 hover:bg-[#ff8f73]/10' : 'hover:bg-slate-50/80',
+                      order.paymentStatus === 'Chờ hoàn tiền' ? 'bg-rose-50/40' : '' /* ĐỀ XUẤT 1: Đổi màu nền nguyên dòng nếu Chờ hoàn tiền */
+                    ]">
                   
                   <td class="px-6 py-4 text-center">
                     <input v-model="selectedOrders" :value="order.id" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer"/>
@@ -236,12 +239,8 @@
                                 :class="order.statusId < 3 ? 'text-rose-500 animate-pulse' : 'text-slate-400'">
                             edit_note
                           </span>
-                          
                           <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-lg opacity-0 group-hover/note:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-slate-700 whitespace-normal">
-                            <p class="font-bold uppercase tracking-widest mb-1 text-[9px]"
-                               :class="order.statusId < 3 ? 'text-rose-400' : 'text-slate-400'">
-                               Ghi chú của khách:
-                            </p> 
+                            <p class="font-bold uppercase tracking-widest mb-1 text-[9px]" :class="order.statusId < 3 ? 'text-rose-400' : 'text-slate-400'">Ghi chú của khách:</p> 
                             {{ order.note }}
                           </div>
                         </div>
@@ -267,7 +266,7 @@
                           <span class="material-symbols-outlined text-amber-500 text-[16px] drop-shadow-sm">warning</span>
                           <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-lg opacity-0 group-hover/sla:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-slate-700 whitespace-normal">
                             <span class="font-bold text-amber-400 block mb-1">Cảnh báo SLA:</span> 
-                            Đơn hàng này đã chờ duyệt quá <strong class="text-rose-400">24 tiếng</strong>. Cần liên hệ khách hoặc đóng gói ngay!
+                            Đơn hàng chờ duyệt quá <strong class="text-rose-400">24 tiếng</strong>. Cần xử lý ngay!
                           </div>
                         </div>
                       </div>
@@ -277,14 +276,17 @@
                   </td>
                   
                   <td class="px-6 py-4">
-                    <div v-if="order.trackingCode" class="flex flex-col gap-0.5 bg-sky-50/80 border border-sky-100/70 px-2 py-1.5 rounded-lg w-full max-w-[140px] shadow-sm">
+                    <div v-if="order.trackingCode" 
+                         @click.stop="copyTrackingCode(order.trackingCode)"
+                         class="flex flex-col gap-0.5 bg-sky-50/80 border border-sky-100/70 px-2 py-1.5 rounded-lg w-full max-w-[140px] shadow-sm relative group/tracking cursor-pointer transition-all hover:bg-sky-100 hover:border-sky-300" title="Nhấn để Copy mã vận đơn">
                       <p class="text-[9px] font-bold text-sky-600 flex items-center gap-1">
                         <span class="material-symbols-outlined text-[12px]">local_shipping</span>
                         {{ order.carrier }}
                       </p>
-                      <p class="text-[10px] font-black text-slate-700 tracking-wider font-mono uppercase truncate" :title="order.trackingCode">
+                      <p class="text-[10px] font-black text-slate-700 tracking-wider font-mono uppercase truncate group-hover/tracking:text-sky-700 transition-colors">
                         {{ order.trackingCode }}
                       </p>
+                      <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-sky-500 opacity-0 group-hover/tracking:opacity-100 transition-opacity text-[16px]">content_copy</span>
                     </div>
                     <div v-else class="flex items-center gap-1 text-[10px] font-medium text-slate-300 italic">
                       <span class="material-symbols-outlined text-[14px]">hourglass_empty</span>
@@ -294,33 +296,40 @@
                   
                   <td class="px-6 py-4">
                     <div class="flex flex-col items-start">
-                      <span class="text-sm font-bold text-[#ff3d00]">{{ order.total?.toLocaleString('vi-VN') }} ₫</span>
-                      <span class="text-[10px] font-semibold mt-1 px-1.5 py-0.5 rounded" 
-                            :class="order.paymentStatus?.includes('Đã thanh toán') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'">
+                      <span class="text-sm font-bold text-slate-800" :class="{ 'line-through text-slate-400 opacity-60': order.statusId === 5 || order.statusId === 6 }">
+                        {{ order.total?.toLocaleString('vi-VN') }} ₫
+                      </span>
+                      
+                      <span class="text-[10px] font-bold mt-1.5 px-2 py-0.5 rounded-md flex items-center gap-1 border shadow-sm transition-all" 
+                            :class="order.paymentStatus === 'Chờ hoàn tiền' ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse ring-2 ring-rose-500/20' : 
+                                   (order.paymentStatus?.includes('Đã thanh toán') ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200')">
+                        <span v-if="order.paymentStatus === 'Chờ hoàn tiền'" class="material-symbols-outlined text-[12px]">notification_important</span>
                         {{ order.paymentStatus }}
                       </span>
                     </div>
                   </td>
                   
                   <td class="px-6 py-4">
-                    <div class="flex flex-col gap-1 w-40">
-                      
+                    <div v-if="order.statusId !== 5 && order.statusId !== 6" class="flex flex-col gap-1 w-40">
                       <div class="flex justify-between items-center text-[11px] font-bold">
                         <span class="text-slate-500">Đã thu:</span>
                         <span class="text-emerald-600">+{{ order.transactionAmount?.toLocaleString('vi-VN') }} ₫</span>
                       </div>
-                      
                       <div class="flex justify-between items-center text-[11px] font-bold">
                         <span class="text-slate-500">Còn nợ:</span>
                         <span class="text-rose-500">{{ Math.max(0, order.total - order.transactionAmount).toLocaleString('vi-VN') }} ₫</span>
                       </div>
-                      
                       <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden" title="Tiến độ thanh toán">
                         <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-500"
                              :style="{ width: `${Math.min(100, (order.transactionAmount / (order.total || 1)) * 100)}%` }">
                         </div>
                       </div>
-
+                    </div>
+                    
+                    <div v-else class="flex items-center justify-center w-40 h-full">
+                        <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 border-dashed">
+                          Không áp dụng
+                        </span>
                     </div>
                   </td>
                   
