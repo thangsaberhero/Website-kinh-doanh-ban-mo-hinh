@@ -1308,7 +1308,9 @@ const product_admin = {
             
             let havingcondition = [];
             if(TinhTrangTonKho === 'low'){
-                havingcondition.push('SoLuong <= 3 and SoLuong > 0');
+                havingcondition.push('SoLuong < 5 and SoLuong > 0');
+            } else if(TinhTrangTonKho === 'high'){
+                havingcondition.push('SoLuong >= 5');
             } else if(TinhTrangTonKho === 'out'){
                 havingcondition.push('SoLuong = 0');
             }
@@ -1391,19 +1393,16 @@ const product_admin = {
                 });
             }
 
-            const sql_summary = `
-                SELECT 
-                    COUNT(MaMoHinh) AS TongSanPham,
-                    SUM(CASE WHEN SoLuongTon <= 3 AND SoLuongTon > 0 THEN 1 ELSE 0 END) AS SapHetHang,
-                    SUM(CASE WHEN SoLuongTon = 0 THEN 1 ELSE 0 END) AS HetHang,
-                    SUM(CASE WHEN SoLuongTon > 3 THEN 1 ELSE 0 END) AS DangCoSan
-                FROM (
-                    SELECT mh.MaMoHinh, COALESCE(SUM(pl.SoLuong), 0) AS SoLuongTon
-                    FROM MoHinh mh
-                    LEFT JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
-                    GROUP BY mh.MaMoHinh
-                ) AS TmpKho
-            `;
+            const sql_summary = `SELECT COUNT(MaMoHinh) AS TongSanPham,
+                                SUM(CASE WHEN SoLuongTon < 5 AND SoLuongTon > 0 THEN 1 ELSE 0 END) AS SapHetHang,
+                                SUM(CASE WHEN SoLuongTon = 0 THEN 1 ELSE 0 END) AS HetHang,
+                                SUM(CASE WHEN SoLuongTon >= 5 THEN 1 ELSE 0 END) AS DangCoSan
+                                FROM (
+                                    SELECT mh.MaMoHinh, COALESCE(SUM(pl.SoLuong), 0) AS SoLuongTon
+                                    FROM MoHinh mh
+                                    LEFT JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
+                                    GROUP BY mh.MaMoHinh
+                                ) AS TmpKho`;
             
             const [summaryResult] = await db.query(sql_summary);
             const summaryData = summaryResult[0];
