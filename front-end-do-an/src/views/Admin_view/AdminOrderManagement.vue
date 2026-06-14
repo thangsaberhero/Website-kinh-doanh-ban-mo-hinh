@@ -1316,9 +1316,17 @@
           <div class="bg-purple-50 rounded-xl p-4 border border-purple-100 mt-2">
             <div class="flex justify-between items-end mb-2">
               <span class="font-bold text-purple-800 text-xs uppercase tracking-widest">Số tiền cần hoàn trả:</span>
-              <button @click="setRefundAmount(maxRefundAmount)" class="text-[10px] font-bold text-purple-600 bg-purple-200 hover:bg-purple-300 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
-                Hoàn toàn bộ ({{ formatPrice(maxRefundAmount) }})
-              </button>
+              <div class="flex gap-1.5">
+                <button v-if="tongCocKhachDaDat > 0 && maxRefundAmount > tongCocKhachDaDat" 
+                        @click="setRefundAmount(maxRefundAmount - tongCocKhachDaDat)" 
+                        class="text-[10px] font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
+                  Trừ cọc phạt ({{ formatPrice(maxRefundAmount - tongCocKhachDaDat) }})
+                </button>
+                
+                <button @click="setRefundAmount(maxRefundAmount)" class="text-[10px] font-bold text-purple-600 bg-purple-200 hover:bg-purple-300 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
+                  Hoàn toàn bộ ({{ formatPrice(maxRefundAmount) }})
+                </button>
+              </div>
             </div>
             
             <div class="relative">
@@ -2384,6 +2392,7 @@ const exportExcelReport = async () => {
   const refundAmount = ref(0);
   const maxRefundAmount = ref(0);
   const displayRefundAmount = ref('0');
+  const tongCocKhachDaDat = ref(0);
 
   const setRefundAmount = (amount) => {
     refundAmount.value = amount;
@@ -2391,23 +2400,16 @@ const exportExcelReport = async () => {
   };
 
   const onRefundInput = (e) => {
-    // 1. Xóa tất cả các ký tự người dùng gõ không phải là số (chữ cái, ký tự đặc biệt)
     let val = e.target.value.replace(/\D/g, '');
     if (!val) val = '0';
-    
-    // 2. Chuyển thành số thực
     let num = parseInt(val, 10);
     
-    // 3. CHỐT CHẶN: Nếu gõ lố số tiền khách nộp -> Ép giật ngược lại bằng mức Tối đa ngay lập tức!
     if (num > maxRefundAmount.value) {
       num = maxRefundAmount.value;
       toastStore.showToast("Không thể hoàn số tiền lớn hơn tổng tiền khách đã nộp!", "warning");
     }
     
-    // 4. Lưu lại số chuẩn để gửi Backend
     refundAmount.value = num;
-    
-    // 5. Thêm dấu chấm và hiển thị lại lên ô input
     displayRefundAmount.value = new Intl.NumberFormat('vi-VN').format(num);
   };
 
@@ -2416,16 +2418,25 @@ const exportExcelReport = async () => {
     orderCodeToRefund.value = maHienThi;
 
     let tongDaNop = 0;
+    let tongCocGoiY = 0;
+
     if (selectedOrder.value && selectedOrder.value.MaDH === maDH) {
+       // 1. Tính tổng tiền khách ĐÃ NỘP VÀO HỆ THỐNG
        tongDaNop = selectedOrder.value.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0;
+       
+       // 2. Tính TỔNG TIỀN CỌC QUY ĐỊNH (Bằng cách lặp qua giỏ hàng)
+       if (selectedOrder.value.DanhSachHang) {
+         tongCocGoiY = selectedOrder.value.DanhSachHang.reduce((sum, item) => sum + ((item.TienCocToiThieu || 0) * item.SoLuong), 0);
+       }
     } else {
        const listOrder = orders.value.find(o => o.id === maDH);
        tongDaNop = listOrder ? listOrder.transactionAmount : 0;
     }
     
     maxRefundAmount.value = tongDaNop;
+    tongCocKhachDaDat.value = tongCocGoiY;
     
-    // Gọi hàm set nhanh để vừa lưu số, vừa hiện chuỗi có dấu chấm
+    // Mặc định hiển thị là Hoàn 100% tiền đã nộp
     setRefundAmount(tongDaNop); 
     
     isRefundConfirmModalOpen.value = true;
