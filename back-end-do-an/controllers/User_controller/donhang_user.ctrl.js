@@ -1699,7 +1699,7 @@ const donhang_user = {
                     // =========================================================
                     // Hãy tra cứu lại trong bảng PhuongThucThanhToan của bồ, xem ZaloPay là ID số mấy. 
                     // Ví dụ: ZaloPay là số 4 thì thay thành số 4!
-                    const MA_PT_ZALOPAY = 4; // <--- SỬA SỐ NÀY CHO KHỚP VỚI DATABASE CỦA BỒ!
+                    const MA_PT_ZALOPAY = 2; // <--- SỬA SỐ NÀY CHO KHỚP VỚI DATABASE CỦA BỒ!
                     
                     console.log(`⏳ 5. Đang Insert lịch sử vào bảng ThanhToan với MaPT = ${MA_PT_ZALOPAY}...`);
                     await connection.query(`
