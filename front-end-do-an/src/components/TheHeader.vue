@@ -307,8 +307,8 @@
   });
 
   const fetchCartData = async () => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
     if (!token || !userString) {
       cartItems.value = [];
@@ -352,7 +352,7 @@
   };
 
   const removeFromCart = async (maPhanLoai) => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!authStore.user || !token) return;
     try {
       const response = await fetch(`${API_BASE_URL}/api/don_hang/delete`, {
@@ -393,8 +393,9 @@
       authStore.logout();
     } else {
       localStorage.removeItem('token'); 
+      sessionStorage.removeItem('token');
     }
-    router.push(redirectPath);
+    router.push('/login');
   };
 
   // ---- LOGIC TÌM KIẾM ----

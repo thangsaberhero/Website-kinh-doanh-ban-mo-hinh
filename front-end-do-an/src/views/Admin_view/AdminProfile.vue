@@ -150,7 +150,7 @@
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   // Lấy thông tin từ Storage
-  const userString = localStorage.getItem('user');
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const currentUser = userString ? JSON.parse(userString) : null;
   
   // Quản lý ảnh
@@ -181,7 +181,7 @@
   const fetchUserData = async () => {
     if (!currentUser) return;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/admin_info/laythongtin`, {
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -233,7 +233,7 @@
   
   onMounted(() => {
     scrollToTopCustom();
-    if (!currentUser && !localStorage.getItem('token')) {
+    if (!currentUser && !(localStorage.getItem('token') || sessionStorage.getItem('token'))) {
       router.push('/login');
     } 
     else {
@@ -267,7 +267,7 @@
   };
 
   const saveProfile = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!token || !currentUser) return toastStore.showToast("Vui lòng đăng nhập lại!", "error");
 
     isSaving.value = true;
@@ -283,7 +283,6 @@
       if (selectedFile.value) {
         formData.append('avatar', selectedFile.value); 
       }
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/admin_info/change_info`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },

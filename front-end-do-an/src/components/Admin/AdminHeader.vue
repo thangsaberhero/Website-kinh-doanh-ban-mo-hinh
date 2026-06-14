@@ -122,7 +122,7 @@
   const user = computed(() => {
     if (authStore.user) return authStore.user;
     
-    const localUser = localStorage.getItem('user');
+    const localUser = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     return localUser ? JSON.parse(localUser) : null;
   });
   // Chuyển đổi mã quyền thành văn bản hiển thị
@@ -135,7 +135,7 @@
 
   const adminAvatar = computed(() => {
     // Ưu tiên lấy thông tin từ authStore, nếu chưa có thì fallback sang localStorage
-    const user = authStore.user || JSON.parse(localStorage.getItem('user') || '{}');
+    const user = authStore.user || JSON.parse((localStorage.getItem('user') || sessionStorage.getItem('user')) || '{}');
     
     // 1. Trường hợp có ảnh đại diện
     if (user && user.AnhDaiDien) {
@@ -162,7 +162,7 @@
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       if (!token) {
           if (pollingInterval) clearInterval(pollingInterval);
           return;
@@ -192,7 +192,7 @@
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
       } 
     });
     fetchNotifications(); 
@@ -204,7 +204,7 @@
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
         } 
       });
       fetchNotifications();

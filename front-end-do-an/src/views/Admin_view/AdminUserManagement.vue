@@ -651,7 +651,7 @@
   const isAllLogsModalOpen = ref(false);
   const allLogsList = ref([]);
   const allLogsPagination = ref({ currentPage: 1, totalPage: 1 });
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentUser = JSON.parse((localStorage.getItem('user') || sessionStorage.getItem('user')) || '{}');
   const currentAdminId = currentUser.id;
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -737,7 +737,7 @@
 
   const fetchUserStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/account_admin/stats`, {
         method: 'GET',
         headers: {
@@ -757,7 +757,7 @@
   const fetchUsers = async () => {
     isLoading.value = true;
     try {
-      const token = localStorage.getItem('token'); 
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); 
       const response = await fetch(`${API_BASE_URL}/api/account_admin?page=${currentPage.value}&limit=10&quyen_admin=${filterRoles.value.Admin}&quyen_nhanvien=${filterRoles.value.Staff}&quyen_khach=${filterRoles.value.Collector}&keyword_hoten=${encodeURIComponent(searchQuery.value)}&keyword_sdt=${encodeURIComponent(searchPhone.value)}&keyword_diachi=${encodeURIComponent(searchAddress.value)}&trang_thai=${filterStatus.value}&tu_ngay=${fromDate.value}&den_ngay=${toDate.value}`, {
         method: 'GET',
         headers: {
@@ -806,7 +806,7 @@
 
   const fetchSecurityLogs = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/account_admin/logs/recent`, {
         method: 'GET',
         headers: {
@@ -825,7 +825,7 @@
 
   const fetchAllLogs = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/account_admin/logs/all?page=${allLogsPagination.value.currentPage}`, {
         method: 'GET',
         headers: {
@@ -901,7 +901,7 @@
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` 
         },
         body: JSON.stringify({
           TenDN: newUser.value.username,
@@ -935,7 +935,7 @@
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` 
         },
         body: JSON.stringify({ MaTK: id })
       });
@@ -975,7 +975,7 @@
     viewingUser.value = { name: "Đang tải dữ liệu...", email: "", phone: "", address: "" };
 
     try {
-      const token = localStorage.getItem('token'); 
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); 
       const res = await fetch(`${API_BASE_URL}/api/account_admin/${id}`, {
         method: 'GET',
         headers: {
@@ -1056,7 +1056,7 @@
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` 
         },
         body: JSON.stringify({
           Hovaten: viewingUser.value.name, 
@@ -1103,7 +1103,7 @@
     toastStore.showToast("Đang tạo báo cáo, vui lòng đợi...", "info");
     
     try {
-      const token = localStorage.getItem('token'); 
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); 
       const queryParams = new URLSearchParams({
         quyen_admin: filterRoles.value.Admin,
         quyen_nhanvien: filterRoles.value.Staff,
@@ -1159,7 +1159,7 @@
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` 
         }
       });
       const result = await res.json();

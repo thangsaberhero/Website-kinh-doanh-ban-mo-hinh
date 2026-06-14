@@ -138,8 +138,8 @@
   };
 
   const fetchOrderdata = async () => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     
     if (!token || !userString) {
       router.push('/login');

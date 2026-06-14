@@ -271,7 +271,7 @@
 // Hàm gọi API Thống kê
   const fetchStats = async () => {
     try {
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await fetch(`${API_BASE_URL}/api/news/admin/stats`,{
           headers: {'Authorization': `Bearer ${token}`}
         });
@@ -309,7 +309,7 @@
         
         if (searchQuery.value) url += `&search=${encodeURIComponent(searchQuery.value)}`;
         if (activeTab.value) url += `&status=${encodeURIComponent(activeTab.value)}`;
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await fetch(url, {
           headers: {'Authorization': `Bearer ${token}`}
         });
@@ -448,7 +448,7 @@
 
     try {
         isLoading.value = true;
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await fetch(`${API_BASE_URL}/api/news/${postToDelete.value.id}`, {
             method: 'DELETE',
             headers: {'Authorization': `Bearer ${token}`}

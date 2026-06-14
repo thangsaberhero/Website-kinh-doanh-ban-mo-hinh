@@ -679,7 +679,7 @@
       else if (activeStatusFilter.value === 'scheduled') trangthaiParam = 'SapToi';
       else if (activeStatusFilter.value === 'expired') trangthaiParam = 'HetHan';
 
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin?page=${currentPage.value}&limit=10&trangthai=${trangthaiParam}&keyword=${searchQuery.value}`, {
         headers: { 
           'Authorization': `Bearer ${token}` 
@@ -736,7 +736,7 @@
       else if (activeStatusFilter.value === 'scheduled') trangthaiParam = 'SapToi';
       else if (activeStatusFilter.value === 'expired') trangthaiParam = 'HetHan';
 
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/vouchers/list?page=${currentPage.value}&limit=10&trangthai=${trangthaiParam}&keyword=${searchQuery.value}`, {
         headers: { 
           'Authorization': `Bearer ${token}` 
@@ -790,7 +790,7 @@
 
   const fetchDashboardStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/dashboard/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -836,7 +836,7 @@
   const fetchSecurityLogs = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/logs/recent`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` }
       });
       const result = await res.json();
       if (result.success) securityLogs.value = result.data;
@@ -849,7 +849,7 @@
   const fetchAllLogs = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/logs/all?page=${allLogsPagination.value.currentPage}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` }
       });
       const result = await res.json();
       if (result.success) {
@@ -930,7 +930,7 @@
   });
 
   const submitCreateForm = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!token) {
         toastStore.showToast("Bạn chưa đăng nhập hoặc mất phiên làm việc", "error");
         return;
@@ -1063,7 +1063,7 @@
   };
 
   const submitEditPromo = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     try {
         let url = '';
@@ -1144,7 +1144,7 @@
 
   const executeDelete = async () => {
     if (!itemToDelete.value) return;
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const url = currentTypeTab.value === 'promotion' 
                 ? `${API_BASE_URL}/api/khuyen_mai_admin/${itemToDelete.value.id}` 
                 : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/delete/${itemToDelete.value.id}`;

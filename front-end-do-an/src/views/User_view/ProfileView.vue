@@ -139,7 +139,7 @@
   const isAvatarRemoved = ref(false); 
   const ngayTaoFromDB = ref(null);   
 
-  const userString = localStorage.getItem('user');
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const currentUser = userString ? JSON.parse(userString) : null;
   const isSocialAccount = ref(currentUser?.isSocialAuth === true);
 
@@ -179,7 +179,7 @@
     isLoading.value = true;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`, {headers: {'Authorization': `Bearer ${token}`}});
       const dataJSON = await res.json();
       
@@ -236,7 +236,7 @@
 
   onMounted(() => {
     scrollToTopCustom();
-    if (!currentUser && !localStorage.getItem('token')) {
+    if (!currentUser && !(localStorage.getItem('token') || sessionStorage.getItem('token'))) {
       router.push('/login');
     } 
     else {
@@ -269,7 +269,7 @@
   };
 
   const saveProfile = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!token || !currentUser) {
       toastStore.showToast("Vui lòng đăng nhập lại!", "error");
       return;

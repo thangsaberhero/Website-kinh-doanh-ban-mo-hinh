@@ -203,118 +203,92 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '../../stores/auth.js';
-import { useToastStore } from '../../stores/toast.js';
-import { useSystemStore } from '../../stores/system.js'; 
-import { googleTokenLogin } from 'vue3-google-login';
+  import { ref, reactive, onMounted, onUnmounted } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth.js';
+  import { useToastStore } from '../../stores/toast.js';
+  import { useSystemStore } from '../../stores/system.js'; 
+  import { googleTokenLogin } from 'vue3-google-login';
 
-const router = useRouter();
-const route = useRoute();
-const authStore = useAuthStore();
-const toastStore = useToastStore();
-const systemStore = useSystemStore(); 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const router = useRouter();
+  const route = useRoute();
+  const authStore = useAuthStore();
+  const toastStore = useToastStore();
+  const systemStore = useSystemStore(); 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const form = reactive({
-  identity: '',
-  password: '', 
-  remember: false
-});
+  const form = reactive({
+    identity: '',
+    password: '', 
+    remember: false
+  });
 
-const showPassword = ref(false); 
-const isLoading = ref(false);    
+  const showPassword = ref(false); 
+  const isLoading = ref(false);    
 
-// Khai báo biến đếm và Timer để chuyển đổi ảnh Slider
-const currentBgIndex = ref(0);
-let bgTimer = null;
+  // Khai báo biến đếm và Timer để chuyển đổi ảnh Slider
+  const currentBgIndex = ref(0);
+  let bgTimer = null;
 
-onMounted(async () => {
-  // 1. KÍCH HOẠT GỌI API NGAY KHI MỞ TRANG ĐĂNG NHẬP
-  await systemStore.fetchSettings();
+  onMounted(async () => {
+    // 1. KÍCH HOẠT GỌI API NGAY KHI MỞ TRANG ĐĂNG NHẬP
+    await systemStore.fetchSettings();
 
-  // 2. Cài đặt đồng hồ chuyển ảnh mỗi 4 giây
-  bgTimer = setInterval(() => {
-    const bgArray = systemStore.settings?.login_bg;
-    
-    // ĐÃ SỬA: Chỉ kích hoạt hiệu ứng trượt nếu có từ 2 ảnh trở lên
-    if (bgArray && bgArray.length > 1) {
-      currentBgIndex.value = (currentBgIndex.value + 1) % bgArray.length;
-    }
-  }, 4000); 
-});
-
-onUnmounted(() => {
-  // Xóa timer khi chuyển trang để không làm nặng trình duyệt
-  if (bgTimer) clearInterval(bgTimer);
-});
-
-const handleLogin = async () => {
-  isLoading.value = true;  
-  try {
-    const isSuccess = await authStore.login(form.identity, form.password);
-
-    if (isSuccess) {
-      toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
-      const userRole = authStore.user?.role || authStore.user?.MaQuyen;
+    // 2. Cài đặt đồng hồ chuyển ảnh mỗi 4 giây
+    bgTimer = setInterval(() => {
+      const bgArray = systemStore.settings?.login_bg;
       
-      setTimeout(() => {
-        if (Number(userRole) === 1 || Number(userRole) === 2) {
-          router.push('/admin');
-        } else {
-          const redirectPath = route.query.redirect || '/';
-          router.push(redirectPath);
-        }
-      }, 500);
-    } 
-  } 
-  catch (error) {
-    console.error("Lỗi khi kết nối API login:", error);
-    toastStore.showToast(error.message || "Sai tên đăng nhập hoặc mật khẩu!", 'error', 4000, 'top-right');
-  } 
-  finally {
-    isLoading.value = false; 
-  }
-};
+      // ĐÃ SỬA: Chỉ kích hoạt hiệu ứng trượt nếu có từ 2 ảnh trở lên
+      if (bgArray && bgArray.length > 1) {
+        currentBgIndex.value = (currentBgIndex.value + 1) % bgArray.length;
+      }
+    }, 4000); 
+  });
 
-const handleGoogleLogin = () => {
-  googleTokenLogin().then(async (response) => {
-    isLoading.value = true;
+  onUnmounted(() => {
+    // Xóa timer khi chuyển trang để không làm nặng trình duyệt
+    if (bgTimer) clearInterval(bgTimer);
+  });
+
+  const handleLogin = async () => {
+    isLoading.value = true;  
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ token: response.access_token })
-      });
-      const data = await res.json();
-      if (res.ok) handleSuccessfulLogin(data);
-      else toastStore.showToast(data.message, 'error', 4000, 'top-right');
+      const isSuccess = await authStore.login(form.identity, form.password, form.remember);
+
+      if (isSuccess) {
+        toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
+        const userRole = authStore.user?.role || authStore.user?.MaQuyen;
+        
+        setTimeout(() => {
+          if (Number(userRole) === 1 || Number(userRole) === 2) {
+            router.push('/admin');
+          } else {
+            const redirectPath = route.query.redirect || '/';
+            router.push(redirectPath);
+          }
+        }, 500);
+      } 
     } 
     catch (error) {
-      toastStore.showToast("Lỗi máy chủ!", 'error', 4000, 'top-right');
+      console.error("Lỗi khi kết nối API login:", error);
+      toastStore.showToast(error.message || "Sai tên đăng nhập hoặc mật khẩu!", 'error', 4000, 'top-right');
     } 
     finally {
-      isLoading.value = false;
+      isLoading.value = false; 
     }
-  }).catch((err) => console.log("Google Login Failed", err));
-};
+  };
 
-const handleFacebookLogin = () => {
-  window.FB.login(async (response) => {
-    if (response.authResponse) {
+  const handleGoogleLogin = () => {
+    googleTokenLogin().then(async (response) => {
       isLoading.value = true;
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/facebook`, {
+        const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
           },
-          body: JSON.stringify({ accessToken: response.authResponse.accessToken })
+          body: JSON.stringify({ token: response.access_token })
         });
         const data = await res.json();
         if (res.ok) handleSuccessfulLogin(data);
@@ -326,22 +300,49 @@ const handleFacebookLogin = () => {
       finally {
         isLoading.value = false;
       }
-    } 
-  }, { scope: 'public_profile,email' });
-};
+    }).catch((err) => console.log("Google Login Failed", err));
+  };
 
-const handleSuccessfulLogin = (data) => {
-  localStorage.setItem('token', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user));
-  authStore.user = data.user;
-  toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
-  
-  setTimeout(() => {
-    const userRole = Number(data.user.MaQuyen); 
-    const redirectPath = (userRole === 1 || userRole === 2) ? '/admin' : (route.query.redirect || '/');
-    router.push(redirectPath);
-  }, 500);
-};
+  const handleFacebookLogin = () => {
+    window.FB.login(async (response) => {
+      if (response.authResponse) {
+        isLoading.value = true;
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/auth/facebook`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
+            },
+            body: JSON.stringify({ accessToken: response.authResponse.accessToken })
+          });
+          const data = await res.json();
+          if (res.ok) handleSuccessfulLogin(data);
+          else toastStore.showToast(data.message, 'error', 4000, 'top-right');
+        } 
+        catch (error) {
+          toastStore.showToast("Lỗi máy chủ!", 'error', 4000, 'top-right');
+        } 
+        finally {
+          isLoading.value = false;
+        }
+      } 
+    }, { scope: 'public_profile,email' });
+  };
+
+  const handleSuccessfulLogin = (data) => {
+    authStore.user = data.user;
+    authStore.token = data.token;
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
+    
+    setTimeout(() => {
+      const userRole = Number(data.user.MaQuyen); 
+      const redirectPath = (userRole === 1 || userRole === 2) ? '/admin' : (route.query.redirect || '/');
+      router.push(redirectPath);
+    }, 500);
+  };
 </script>
 
 <style scoped>

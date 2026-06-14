@@ -275,7 +275,7 @@
   // HÀM GỌI API THỐNG KÊ
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/thong_ke_hsx`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -298,7 +298,7 @@
       if (searchQuery.value) {
         url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
       }
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(url,{
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -424,7 +424,7 @@
         method = 'PUT';
       }
 
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(url, {
         method: method,
         headers: {'Authorization': `Bearer ${token}`},
@@ -458,7 +458,7 @@
     if (!itemToDelete.value) return;
     
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       // 👉 Sửa URL Xóa ở đây
       const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_brand/${itemToDelete.value.id}`, {
         method: 'DELETE',

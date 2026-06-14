@@ -482,7 +482,7 @@
   });
 
   const fetchOrderdata = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!token) {
       router.push('/login');
       return;
@@ -533,7 +533,7 @@
 
     isUpdatingAddress.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/don_hang/fix`, {
         method: 'PUT',
         headers: {
@@ -566,7 +566,7 @@
   };
 
   const handleRepay = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     isProcessingPayment.value = true;
     try {
       const endpoint = paymentGateway.value === 'momo' ? '/api/don_hang/payment/momo/create' : '/api/don_hang/payment/zalopay/create';
@@ -588,7 +588,7 @@
   const confirmCancelOrder = async () => {
     isCanceling.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/don_hang/cancel`, {
         method: 'PUT',
         headers: {
@@ -651,7 +651,7 @@
     scrollToTopCustom();
     fetchOrderdata();
     if (!authStore.user) {
-      const userString = localStorage.getItem('user');
+      const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
       if (userString) authStore.user = JSON.parse(userString);
     }
     window.scrollTo(0, 0); 

@@ -1401,7 +1401,7 @@
 const exportExcelReport = async () => {
     isExporting.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       let url = `${API_BASE_URL}/api/invoice_admin/export-excel`;
       const params = new URLSearchParams();
       if (filterDate.value.from) params.append('NgayBatDau', filterDate.value.from);
@@ -1473,7 +1473,7 @@ const exportExcelReport = async () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/hoan_hang`, {
         method: 'PUT',
         headers: { 
@@ -1516,7 +1516,7 @@ const exportExcelReport = async () => {
 
   const submitBulkUpdateStatus = async () => {
     isBulkUpdating.value = true;
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     let successCount = 0;
     let failCount = 0;
 
@@ -1706,7 +1706,7 @@ const exportExcelReport = async () => {
         url += `&maxPrice=${advancedFilter.value.maxPrice}`;
       }
 
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(url, {
         method: 'GET',
         headers: {'Authorization': `Bearer ${token}`}
@@ -1802,7 +1802,7 @@ const exportExcelReport = async () => {
 
   const viewOrderDetails = async (order) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/${order.id}`,{
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -1852,7 +1852,7 @@ const exportExcelReport = async () => {
         return;
     }
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
         method: 'POST',
         headers: {
@@ -1902,7 +1902,7 @@ const exportExcelReport = async () => {
 
   const executeCancelOrder = async (id) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
         method: 'POST',
         headers: { 
@@ -1952,7 +1952,7 @@ const exportExcelReport = async () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       // LƯU Ý: Sửa lại đường dẫn API này cho khớp với file router.js ở Backend của bạn
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update-info`, { 
         method: 'PUT',
@@ -1984,7 +1984,7 @@ const exportExcelReport = async () => {
   };
     
   const handlePrintInvoice = async (maDH) => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     if (!token) {
         toastStore.showToast("⚠️ Vui lòng đăng nhập lại!", "error");
@@ -2048,7 +2048,7 @@ const exportExcelReport = async () => {
 
   const fetchVouchersForPOS = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/get_magg`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2082,7 +2082,7 @@ const exportExcelReport = async () => {
     
     isSearchingProducts.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/search-products?keyword=${encodeURIComponent(searchProductQuery.value)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2232,7 +2232,7 @@ const exportExcelReport = async () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const payload = {
         DanhSachSanPham: externalOrderForm.value.DanhSachSanPham,
         Ten: externalOrderForm.value.TenNguoiNhan,
@@ -2314,7 +2314,7 @@ const exportExcelReport = async () => {
 
   const executeConfirmPayment = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const orderId = orderToPay.value.id || orderToPay.value.MaDH; // Lấy đúng ID dù bấm từ ngoài hay trong Modal
 
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/payment-status`, {
@@ -2365,7 +2365,7 @@ const exportExcelReport = async () => {
 
   const executeConfirmRefund = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/refund-status`, {
         method: 'PUT',
         headers: {
@@ -2426,7 +2426,7 @@ const exportExcelReport = async () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update-shipping`, { 
         method: 'PUT',
         headers: {
@@ -2460,7 +2460,7 @@ const exportExcelReport = async () => {
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!token) {
         toastStore.showToast("⚠️ Vui lòng đăng nhập lại!", "error");
         return;
@@ -2527,7 +2527,7 @@ const exportExcelReport = async () => {
       if (advancedFilter.value.minPrice) url += `&minPrice=${advancedFilter.value.minPrice}`;
       if (advancedFilter.value.maxPrice) url += `&maxPrice=${advancedFilter.value.maxPrice}`;
 
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(url, { headers: {'Authorization': `Bearer ${token}`} });
       const result = await response.json();
 

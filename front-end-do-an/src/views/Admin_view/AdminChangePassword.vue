@@ -144,7 +144,7 @@
     confirmPassword: ''
   });
   
-  const userString = localStorage.getItem('user');
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const currentUser = userString ? JSON.parse(userString) : null;
   
   const scrollToTopCustom = (duration = 1000) => {
@@ -170,7 +170,7 @@
   
   onMounted(() => {
     scrollToTopCustom();
-    if (!currentUser && !localStorage.getItem('token')) {
+    if (!currentUser && !(localStorage.getItem('token') || sessionStorage.getItem('token'))) {
       router.push('/login');
     }
   });
@@ -198,7 +198,7 @@
     isSaving.value = true;
     
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/admin_info/change_password`, {
         method: 'POST',
         headers: {

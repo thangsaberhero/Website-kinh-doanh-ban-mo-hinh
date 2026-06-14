@@ -201,7 +201,7 @@
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const activeTab = ref('Tất cả');
-  const userString = localStorage.getItem('user');
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const orders = ref([]);
 
   const showPaymentModal = ref(false);
@@ -280,7 +280,7 @@
   };
 
   const handleRepay = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!selectedOrder.value) return;
 
     isProcessingPayment.value = true;
@@ -343,8 +343,8 @@
   });
 
   const fetchOrderdata = async () => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     if (!token || !userString) {
       router.push('/login');
       return;

@@ -3,12 +3,12 @@ import { ref } from 'vue';
 
 export const useAuthStore = defineStore('auth', () => {
   // Biến lưu trữ thông tin người dùng
-  const user = ref(JSON.parse(localStorage.getItem('user')) || null);
-  const token = ref(localStorage.getItem('token') || null);
+  const user = ref(JSON.parse((localStorage.getItem('user') || sessionStorage.getItem('user'))) || null);
+  const token = ref((localStorage.getItem('token') || sessionStorage.getItem('token')) || null);
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   // Hàm Đăng Nhập thực sự gọi xuống Backend
-  const login = async (username, password) => {
+  const login = async (username, password, remember) => {
     try {
       // 1. Gõ cửa nhà Backend (Đường link chuẩn của bạn)
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -16,7 +16,8 @@ export const useAuthStore = defineStore('auth', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           TenDN: username, 
-          MatKhau: password
+          MatKhau: password, 
+          remember: remember
         })
       });
 
@@ -31,8 +32,16 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = data.token;
 
         // Lưu thông tin vào Bộ nhớ Trình duyệt để f5 không bị mất
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('token', data.token);
+        if (remember) {
+          // Có ghi nhớ: Lưu dài hạn
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        } 
+        else {
+          // Không ghi nhớ: Lưu ngắn hạn (Tắt trình duyệt là đăng xuất)
+          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('user', JSON.stringify(data.user));
+        }
 
         return true; // Báo hiệu Login thành công
       } else {
@@ -45,6 +54,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const initializeAuth = () => {
+    const tokenStr = (localStorage.getItem('token') || sessionStorage.getItem('token')) || sessionStorage.getItem('token');
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+    
+    if (tokenStr && userStr) {
+        user.value = JSON.parse(userStr); 
+        token.value = tokenStr;
+    }
+  };
+
   // Hàm Đăng Xuất (Tặng kèm luôn cho xịn)
   const logout = () => {
     user.value = null;
@@ -53,5 +72,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token');
   };
 
-  return { user, token, login, logout };
+  return { user, token, login, logout, initializeAuth };
 });

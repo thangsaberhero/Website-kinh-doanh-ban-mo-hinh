@@ -141,7 +141,7 @@
 
   const wishlistItems = ref([]); 
   const isLoading = ref(true);
-  const userString = localStorage.getItem('user');
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
   const currentPage = ref(1);
   const totalPages = ref(1);
@@ -159,8 +159,8 @@
 
   // Lấy danh sách yêu thích từ Backend
   const fetchWishlist = async (isBackgroundLoad = false) => {
-      const token = localStorage.getItem('token');
-      const userString = localStorage.getItem('user');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
       if (!token || !userString) {
           router.push('/login');
@@ -209,8 +209,8 @@
 
   // Hàm gỡ bỏ sản phẩm gọi API Toggle
   const removeFromWishlist = async (maMoHinh) => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     const userObj = JSON.parse(userString);
 
     try {

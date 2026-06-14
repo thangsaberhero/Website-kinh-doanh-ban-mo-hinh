@@ -139,7 +139,7 @@ const authController = {
     // 2. ĐĂNG NHẬP
     login: async (req, res) => {
         try {
-            const { TenDN, MatKhau } = req.body;
+            const { TenDN, MatKhau, remember } = req.body;
             const sql_login = `
                 SELECT tk.*, 
                     kh.MaKH, kh.TenKH,
@@ -158,13 +158,12 @@ const authController = {
                     message: "Tài khoản không tồn tại!" });
             }
 
-            if (users.Bi_khoa === 1) {
+            const user = users[0];
+            if (user.Bi_khoa === 1) {
             return res.status(403).json({ 
                 success: false,
                 message: "Tài khoản của bạn đã bị khóa! Vui lòng liên hệ hỗ trợ." });
-        }
-
-            const user = users[0];
+            }           
 
             // So sánh mật khẩu khách nhập với mật khẩu đã mã hóa trong DB
             const validPass = await bcrypt.compare(MatKhau, user.MatKhau);
@@ -178,6 +177,7 @@ const authController = {
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
             await db.query(`UPDATE TaiKhoan SET DangNhapCuoi = NOW(), IPDangNhap = ? WHERE MaTK = ?`, [userIp, user.MaTK]);
 
+            const tokenExpireTime = remember ? '30d' : '1d';
             // Tạo vé thông hành (Token) có hạn 1 ngày
             const token = jwt.sign(
                 { 
@@ -186,12 +186,10 @@ const authController = {
                     avatar: user.AnhDaiDien 
                 }, 
                 process.env.JWT_SECRET, 
-                { expiresIn: '1d' }
+                { expiresIn: tokenExpireTime }
             );
 
             delete user.MatKhau;
-            delete user.ResetOTP;
-            delete user.OTPExpires;
 
             // Gửi token và thông tin cơ bản về cho Frontend
             res.status(200).json({ 
@@ -447,8 +445,6 @@ const authController = {
             );
 
             delete fullUser.MatKhau;
-            delete fullUser.ResetOTP;
-            delete fullUser.OTPExpires;
 
             fullUser.isSocialAuth = true;
 
@@ -529,8 +525,6 @@ const authController = {
             const appToken = jwt.sign({ id: fullUser.MaTK, role: fullUser.MaQuyen, avatar: fullUser.AnhDaiDien }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
             delete fullUser.MatKhau;
-            delete fullUser.ResetOTP;
-            delete fullUser.OTPExpires;
 
             fullUser.isSocialAuth = true;
 

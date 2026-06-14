@@ -163,7 +163,7 @@
     newPassword: '',
     confirmPassword: ''
   });
-  const userString = localStorage.getItem('user');
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const currentUser = userString ? JSON.parse(userString) : null;
 
   // Logic bắt lỗi Real-time cho Mật khẩu mới
@@ -203,7 +203,7 @@
 
   onMounted(() => {
     scrollToTopCustom();
-    if (!authStore.user && !localStorage.getItem('token')) {
+    if (!authStore.user && !(localStorage.getItem('token') || sessionStorage.getItem('token'))) {
       router.push('/login');
     }
     else if (currentUser?.isSocialAuth === true) {
@@ -224,7 +224,7 @@
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     if (!token) {
       toastStore.showToast("Vui lòng đăng nhập lại!", "error");
       router.push('/login');

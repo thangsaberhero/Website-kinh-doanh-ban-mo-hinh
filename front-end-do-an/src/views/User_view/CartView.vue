@@ -259,7 +259,7 @@
   });
 
   const fetchCartData = async (isBackgroundLoad = false) => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     if (!token) {
       router.push('/login');
@@ -311,7 +311,7 @@
       const response = await fetch(`${API_BASE_URL}/api/products/cart-suggestions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
          },
         body: JSON.stringify({ cartItemIds: itemIds })
       });
@@ -374,8 +374,8 @@
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
   const addToCart = async (productInfo) => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     let maKH = null;
     
     if (userString) {
@@ -431,8 +431,8 @@
 
   const executeClearCart = async () => {
     isClearCartModalOpen.value = false;
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     
     if (!token || !userString) {
       toastStore.showToast("Vui lòng đăng nhập lại!", "error");
@@ -481,8 +481,8 @@
 
   // 2. Hàm gom API lại (Chỉ chạy khi khách đã ngừng bấm)
   const syncItemQtyToServer = async (item, oldQty) => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     
     if (!token || !userString) {
       toastStore.showToast("Vui lòng đăng nhập lại!", "error");
@@ -567,8 +567,8 @@
   };
 
   const removeItem = async (maPL) => { 
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     
     if (!token || !userString) {
       toastStore.showToast("Vui lòng đăng nhập lại!", "error");

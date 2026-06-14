@@ -417,7 +417,7 @@
 
     isSendingEmail.value = true;
     try {
-      const token = localStorage.getItem('token'); 
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); 
       const res = await fetch(`${API_BASE_URL}/api/contact/admin/reply/${contactToReply.value.MaLH}`, {
         method: 'PUT',
         headers: { 
@@ -454,7 +454,7 @@
       url.searchParams.append('star', filterStar.value);
       url.searchParams.append('unreplied', filterUnreplied.value);
 
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -513,7 +513,7 @@
 
   const fetchAdminContacts = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const url = new URL(`${API_BASE_URL}/api/contact/admin/list`);
       url.searchParams.append('page', currentContactPage.value);
       url.searchParams.append('limit', itemsPerPage);
@@ -639,7 +639,7 @@
       }
 
       try {
-          const token = localStorage.getItem('token'); 
+          const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); 
           const res = await fetch(`${API_BASE_URL}/api/reviews/admin/${reviewToReply.value.id}`, {
               method: 'PUT',
               headers: { 
@@ -666,7 +666,7 @@
   const toggleReviewStatus = async (review) => {
       const newStatus = review.status === 1 ? 0 : 1;
       try {
-          const token = localStorage.getItem('token'); 
+          const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); 
           const res = await fetch(`${API_BASE_URL}/api/reviews/admin/${review.id}`, {
               method: 'PUT',
               headers: { 

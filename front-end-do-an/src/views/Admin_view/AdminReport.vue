@@ -635,7 +635,7 @@
   const loadReportsData = async () => {
     isLoading.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       let query = '';
       if (startDate.value && endDate.value) {
         query = `?NgayBatDau=${startDate.value}&NgayKetThuc=${endDate.value}`;
@@ -730,7 +730,7 @@
 
     try {
       toastStore.showToast("Đang tạo file Excel, vui lòng đợi...", "info"); // Có thể thêm trạng thái loading
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       
       // Gắn thời gian
       let query = '';

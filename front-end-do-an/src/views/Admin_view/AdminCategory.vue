@@ -302,7 +302,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const fetchCategories = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     let url = `${API_BASE_URL}/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
     if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
     const response = await fetch(url,
@@ -458,7 +458,7 @@ const saveCategory = async () => {
       method = 'PUT';
     }
 
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const response = await fetch(url, {
       method: method,
       headers: { 
@@ -494,7 +494,7 @@ const confirmDelete = (cat) => {
 const executeDelete = async () => {
   if (!itemToDelete.value) return;
   try {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_cate/${itemToDelete.value.id}`, {
       method: 'DELETE',
       headers: {'Authorization': `Bearer ${token}`}
@@ -533,7 +533,7 @@ const removeDetail = async (index) => {
   }
   if (confirm(`Bạn có chắc chắn muốn xóa phân loại "${detailItem.name}" không?`)) {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_cate_detail/${detailItem.id}`, {
         method: 'DELETE',
         headers: {'Authorization': `Bearer ${token}`}

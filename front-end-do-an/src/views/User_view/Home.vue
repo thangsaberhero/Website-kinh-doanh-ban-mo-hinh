@@ -409,8 +409,8 @@
   };
 
   const addToCart = async (product) => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     let maKH = null;
     
     if (userString) {

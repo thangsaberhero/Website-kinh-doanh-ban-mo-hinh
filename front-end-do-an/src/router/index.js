@@ -97,8 +97,8 @@ router.beforeEach((to, from, next) => {
   const isAdminRoute = to.path.startsWith('/admin');
   
   // 2. Lấy thông tin xác thực
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
+  const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const user = userString ? JSON.parse(userString) : null;
   const userRole = user ? parseInt(user.MaQuyen) : null;
 

@@ -21,6 +21,7 @@
 <script setup>
   import { RouterView, useRoute } from 'vue-router';
   import { ref, onMounted, onUnmounted } from 'vue'; // Thêm import ref, lifecycle
+  import { useAuthStore } from '@/stores/auth';
   import { useSystemStore } from '@/stores/system';
 
   import TheToast from '@/components/TheToast.vue';
@@ -31,6 +32,7 @@
   import ProvenanceTracking from './views/User_view/ProvenanceTracking.vue';
 
   const route = useRoute();
+  const authStore = useAuthStore();
   const systemStore = useSystemStore();
 
   // --- LOGIC CON TRỎ CHUỘT ---
@@ -73,6 +75,7 @@
   };
 
   onMounted(() => {
+    authStore.initializeAuth();
     systemStore.fetchSettings();
     const hasMouse = window.matchMedia("(pointer: fine)").matches;
     

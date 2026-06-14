@@ -468,7 +468,7 @@
   // --- 2. CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
   const saveTextSettings = async () => {
     isSavingText.value = true;
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     try {
       // Vì API cap_nhat_van_ban nhận từng Key một, ta dùng Promise.all để gọi đồng thời
@@ -508,7 +508,7 @@
   const saveSingleImage = async (fieldKey, endpoint) => {
     if (!files.value[fieldKey]) return;
     
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const formData = new FormData();
     formData.append('keyCaiDat', fieldKey);
     formData.append(fieldKey, files.value[fieldKey]); // Tên trường file trùng với tên khai báo ở Backend Route
@@ -574,7 +574,7 @@
   };
 
   const saveLoginBanners = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const formData = new FormData();
     
     formData.append('keyCaiDat', 'login_bg');
@@ -611,7 +611,7 @@
   };
 
   const saveHomeBanners = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     const formData = new FormData();
     
     formData.append('keyCaiDat', 'home_banner');
@@ -653,7 +653,7 @@
   // Hàm tải dữ liệu
   const fetchPaymentMethods = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/setting/admin/payment-methods`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -669,7 +669,7 @@
   // Hàm gạt công tắc Bật/Tắt
   const togglePaymentMethod = async (method) => {
     const newStatus = method.TrangThaiHoatDong === 1 ? 0 : 1;
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     // Tạm cập nhật UI cho mượt
     method.TrangThaiHoatDong = newStatus;

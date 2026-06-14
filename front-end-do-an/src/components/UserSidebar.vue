@@ -60,14 +60,14 @@
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   
   const totalFigures = ref(0); 
-  const userString = localStorage.getItem('user');
+  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const currentUser = userString ? JSON.parse(userString) : null;
   const isSocialAccount = computed(() => currentUser?.isSocialAuth === true);
   
   const fetchUserStats = async () => {
     if (!currentUser) return;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/info_user/laythongtin`,{
         headers: {
           'Authorization': `Bearer ${token}`

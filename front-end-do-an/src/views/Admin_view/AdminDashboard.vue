@@ -752,7 +752,7 @@
 
   const fetchOrderDetail = async (id) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -791,7 +791,7 @@
   };
 
   const handlePrintInvoice = async (maDH) => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     if (!token) {
         toastStore.showToast("⚠️ Vui lòng đăng nhập lại!", "error");
@@ -831,7 +831,7 @@
         return;
     }
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
         method: 'POST',
         headers: {
@@ -878,7 +878,7 @@
       return;
     }
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/huy`, {
         method: 'POST',
         headers: {
@@ -993,7 +993,7 @@
 
   const fetchDashboardData = async (startDate = null, endDate = null) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       let query = '';
       if (startDate && endDate) {
         const startFmt = startDate.replace(/\//g, '-');
@@ -1109,7 +1109,7 @@
   const recentOrders = ref([]);
   const fetchRecentOrders = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/?page=1&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1204,7 +1204,7 @@
   const exportExcelReport = async () => {
     isExporting.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       
       let query = '';
       if (currentFilterValue.value && currentFilterValue.value.includes('_')) {

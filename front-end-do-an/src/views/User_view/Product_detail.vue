@@ -711,7 +711,7 @@
   };
 
   const checkFavoriteStatus = async (id) => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     isFavorite.value = false;
 
     if (token) {
@@ -799,8 +799,8 @@
   };
 
   const checkEligibility = async (maMH) => {
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     if (!token || !userString) return;
 
     const userObj = JSON.parse(userString);
@@ -849,7 +849,7 @@
     }
 
     isSubmittingReview.value = true;
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     // Mảng chứa tên các file ảnh sau khi upload thành công
     let uploadedImageNames = [];
@@ -974,8 +974,8 @@
   // ================= HÀM MỚI XỬ LÝ KHI BẤM NÚT THẢ TIM ❤️ =================
   const toggleFavorite = async () => {
       // 1. Bóc tách thông tin đăng nhập
-      const token = localStorage.getItem('token');
-      const userString = localStorage.getItem('user');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
       // 2. Kiểm tra nếu chưa đăng nhập -> đá sang trang Login
       if (!token || !userString) {
@@ -1025,7 +1025,7 @@
   };
 
   const addToCart = async () => {
-    const token = localStorage.getItem('token');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
 
     if (!token) {
       toastStore.showToast("🛒 Bạn cần đăng nhập để mua mô hình nhé!", "error");

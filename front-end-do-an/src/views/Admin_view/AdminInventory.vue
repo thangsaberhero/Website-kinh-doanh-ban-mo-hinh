@@ -1119,7 +1119,7 @@
 
   const fetchBrands = async () => {
     try {
-      const token = localStorage.getItem('token'); // Lấy thẻ
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); // Lấy thẻ
       const response = await fetch(`${API_BASE_URL}/api/product_admin/get_brand`,{
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1174,7 +1174,7 @@
   // 1. Hàm lấy danh sách Danh mục lớn
   const fetchCategories = async () => {
     try {
-      const token = localStorage.getItem('token'); // Lấy thẻ
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); // Lấy thẻ
       const response = await fetch(`${API_BASE_URL}/api/product_admin/getvariant`,
         {
           headers: {'Authorization': `Bearer ${token}`}
@@ -1193,7 +1193,7 @@
       return;
     }
     try {
-      const token = localStorage.getItem('token'); // Lấy thẻ
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); // Lấy thẻ
       const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${MaDM}`,
         {
           headers: {'Authorization': `Bearer ${token}`}
@@ -1223,7 +1223,7 @@
   const fetchProducts = async () => {
     isLoading.value = true;
     try {
-      const token = localStorage.getItem('token'); // Lấy thẻ
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); // Lấy thẻ
       let url = `${API_BASE_URL}/api/product_admin?page=${currentPage.value}&limit=${limit}`;
       if (searchQuery.value.trim() !== '') {
         url += `&keyword=${encodeURIComponent(searchQuery.value.trim())}`;
@@ -1400,7 +1400,7 @@
     
     // 3. Gọi API lấy danh mục con dựa vào MaDM (Dùng chuẩn Params /:MaDM đã sửa trước đó)
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${newMaDM}`,{
         method: 'GET',
         headers: {
@@ -1481,7 +1481,7 @@
 
       // 3. Gửi xuống Backend
       try {
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await fetch(`${API_BASE_URL}/api/product_admin/add_product`, {
           method: 'POST',
           headers: {
@@ -1555,7 +1555,7 @@
     };
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/watch/${product.id}`,
         {
           method: 'GET',
@@ -1672,7 +1672,7 @@
       return;
     }
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${newMaDM}`,{
         method: 'GET',
         headers: {
@@ -1799,7 +1799,7 @@
     formData.append('ThuTuBoSuuTap', JSON.stringify(finalGalleryOrder));
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/fix_info/${editingProduct.value.id}`, {
         method: 'PUT',
         headers: {'Authorization': `Bearer ${token}`},
@@ -1826,7 +1826,7 @@
   const toggleVisibility = async (productId, currentStatus) => {
     try {
       const newStatus = currentStatus === 1 ? 0 : 1;
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
 
       // Gửi API cập nhật trạng thái
       const response = await fetch(`${API_BASE_URL}/api/product_admin/toggle_visibility/${productId}`, {
@@ -1883,7 +1883,7 @@
   const exportExcelReport = async () => {
     isExporting.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       
       // Chú ý: Đảm bảo đường dẫn này khớp với route Backend của bạn
       const url = `${API_BASE_URL}/api/product_admin/export-excel`;
@@ -1939,7 +1939,7 @@
     try {
       // 1. Loại bỏ các dấu chấm, phẩy (nếu có) trong chuỗi giá tiền (VD: "6.700.000" -> 6700000)
       const numericPrice = Number(String(newPrice).replace(/\D/g, ''));
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
 
       // 2. Bắn dữ liệu xuống API
       const response = await fetch(`${API_BASE_URL}/api/product_admin/quick_update/${variantId}`, {
@@ -1966,7 +1966,7 @@
 
   const quickUpdateSellType = async (productId, newSellType) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/quick_update_selltype/${productId}`, {
         method: 'PUT',
         headers: {
@@ -1992,7 +1992,7 @@
     try {
       // Ép kiểu: Lọc bỏ hết dấu chấm, chữ cái, chỉ lấy số (VD: "500.000" -> 500000)
       const numericDeposit = Number(String(rawDeposit).replace(/\D/g, ''));
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       
       const response = await fetch(`${API_BASE_URL}/api/product_admin/quick_update_deposit/${productId}`, {
         method: 'PUT',

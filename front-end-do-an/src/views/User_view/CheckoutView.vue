@@ -325,7 +325,7 @@
   const fetchVouchers = async () => {
     isFetchingVouchers.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const res = await fetch(`${API_BASE_URL}/api/don_hang/get_magg`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -456,8 +456,8 @@
     scrollToTopCustom();
     window.scroll(0,0);
     await fetchActivePayments();
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
     if (!token || !userString) {
       toastStore.showToast("Vui lòng đăng nhập để đặt hàng!", "error");
@@ -527,8 +527,8 @@
 
     isProcessing.value = true;
     
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
+    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+    const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
     
     if (!token || !userString) {
       toastStore.showToast("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!", "error");

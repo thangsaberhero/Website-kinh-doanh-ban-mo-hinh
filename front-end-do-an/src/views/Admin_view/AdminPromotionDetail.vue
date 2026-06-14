@@ -480,7 +480,7 @@
   const brands = ref([]);
   const fetchFiltersData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       
       const [resCate, resBrand] = await Promise.all([
         fetch(`${API_BASE_URL}/api/product_admin/get_all_cate?getAll=true`, {
@@ -517,7 +517,7 @@
       }
 
       const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/search/products?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` }
       });
       const result = await res.json();
       if (result.success) searchedProducts.value = result.data;
@@ -587,7 +587,7 @@
         ? `${API_BASE_URL}/api/khuyen_mai_admin/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`
         : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`;
       const res = await fetch(endpoint, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` }
       });
       const result = await res.json();
       if (result.success) {
@@ -641,7 +641,7 @@
         : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/${promoId}/products/${product.MaPhanLoai}`;
       const res = await fetch(endpoint, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` }
       });
       if (res.ok) {
         toastStore.showToast('Xóa sản phẩm thành công!', 'success');
@@ -712,7 +712,7 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
         },
         body: JSON.stringify(payload)
       });
@@ -782,7 +782,7 @@
       const res = await fetch(endpoint, {
         method: 'GET',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+          'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` 
         }
       });
 

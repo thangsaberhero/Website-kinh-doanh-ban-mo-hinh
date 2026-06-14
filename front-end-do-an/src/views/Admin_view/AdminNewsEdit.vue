@@ -191,7 +191,7 @@
     images_upload_handler: async (blobInfo, progress) => {
       return new Promise(async(resolve, reject) => {
         try{
-            const token = localStorage.getItem('token');
+            const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
             const formData = new FormData();
             formData.append('image', blobInfo.blob(), blobInfo.filename());
     
@@ -217,7 +217,7 @@
   
   const fetchCategories = async () => {
     try {
-      const token = localStorage.getItem('token'); 
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); 
       const response = await fetch('${API_BASE_URL}/api/news',{
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -234,7 +234,7 @@
   const fetchPostDetail = async () =>{
     isLoading.value = true;
     try{
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await fetch(`${API_BASE_URL}/api/news/${postId}`,{
           headers: {'Authorization': `Bearer ${token}`}
         });
@@ -333,7 +333,7 @@
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await 
         fetch(`${API_BASE_URL}/api/news/${postId}`, {
             method: 'PUT',

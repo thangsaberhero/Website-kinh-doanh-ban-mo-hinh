@@ -178,7 +178,7 @@
 
   const executeConfirmAction = async () => {
     try {
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         
         // Nếu là xóa 1 cái
         if (confirmType.value === 'delete_single') {
@@ -217,7 +217,7 @@
   const fetchNotificationsFull = async () => {
     isLoading.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const params = new URLSearchParams({
         page: pagination.value.currentPage,
         limit: 10,
@@ -244,7 +244,7 @@
   
   const handleNotificationClick = async (notif) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       if (notif.DaDoc === 0) {
         await fetch(`${API_BASE_URL}/api/thong_bao_admin/read/${notif.MaTB}`, {
           method: 'PUT',
@@ -262,7 +262,7 @@
   
   const markAllAsRead = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       await fetch(`${API_BASE_URL}/api/thong_bao_admin/read-all`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }

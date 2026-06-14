@@ -189,7 +189,7 @@
         try{
             const formData = new FormData();
             formData.append('image', blobInfo.blob(), blobInfo.filename());
-            const token = localStorage.getItem('token');
+            const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
             const response = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 headers: {'Authorization': `Bearer ${token}`},
@@ -212,7 +212,7 @@
   
   const fetchCategories = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/news`, {
         headers: {'Authorization': `Bearer ${token}`}
       });
@@ -300,7 +300,7 @@
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
         const response = await fetch(`${API_BASE_URL}/api/news`, {
             method: 'POST',
             headers: {'Authorization': `Bearer ${token}`},

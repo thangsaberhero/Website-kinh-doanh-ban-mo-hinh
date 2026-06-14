@@ -332,7 +332,7 @@
   const fetchTransactions = async () => {
     isLoading.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const query = new URLSearchParams({
         page: currentPage.value,
         limit: itemsPerPage.value,
@@ -394,7 +394,7 @@
   const exportFinanceExcel = async () => {
     isExporting.value = true;
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const query = new URLSearchParams({
         ngaybatdau: filterParams.value.ngaybatdau,
         ngayketthuc: filterParams.value.ngayketthuc,
