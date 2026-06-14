@@ -41,12 +41,6 @@
         <span class="material-symbols-outlined text-[18px] md:text-[24px]">inventory_2</span> <span>Lịch sử đơn hàng</span>
       </router-link>
     </div>
-
-    <div class="p-4 md:p-6 border-t border-outline-variant/10 hidden md:block">
-      <button @click="handleLogout" class="flex items-center gap-3 text-sm font-bold transition-all text-outline hover:text-error w-full">
-        <span class="material-symbols-outlined">logout</span> <span>Đăng xuất</span>
-      </button>
-    </div>
   </aside>
 </template>
   
@@ -120,13 +114,4 @@
     const displayName = authStore.user?.TenKH || authStore.user?.username || 'Collector';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff8f73&color=fff&bold=true&size=128`;
   });
-  
-  const handleLogout = () => {
-    if (authStore.logout) authStore.logout();
-    else {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
-    router.push('/login');
-  };
 </script>

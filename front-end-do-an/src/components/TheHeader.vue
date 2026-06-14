@@ -391,13 +391,19 @@
     showUserMenu.value = false; 
     if (authStore.logout) {
       authStore.logout();
-    } else {
+    } 
+    else {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('user');
     }
-    router.push('/login');
+    if (route.meta.requiresAuth) {
+      router.push('/login'); 
+    } 
+    else {
+      router.go(0); 
+    }
   };
 
   // ---- LOGIC TÌM KIẾM ----
