@@ -348,14 +348,22 @@
                           </button>
 
                           <div v-show="activeMenuId === order.id" @click.stop class="absolute right-8 top-10 w-40 bg-white rounded-lg shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-1 z-50 text-left overflow-hidden">
+                              
                               <button @click="handlePrintInvoice(order.id)" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">print</span> In hóa đơn
                               </button>
-                              <div class="border-t border-slate-100 my-1"></div>
-                              <button @click="cancelOrder(order)" class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2">
+                              
+                              <div v-if="order.statusId !== 5 && order.statusId !== 6" class="border-t border-slate-100 my-1"></div>
+                              
+                              <button v-if="order.statusId !== 4 && order.statusId !== 5 && order.statusId !== 6" 
+                                      @click="cancelOrder(order)" 
+                                      class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">cancel</span> Hủy đơn
                               </button>
-                              <button @click="returnOrder(order)" class="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 font-medium flex items-center gap-2">
+
+                              <button v-if="order.statusId === 3 || order.statusId === 4" 
+                                      @click="returnOrder(order)" 
+                                      class="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 font-medium flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">assignment_return</span> Hoàn hàng
                               </button>
                           </div>
@@ -1139,7 +1147,7 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 mb-1">Mã vận đơn <span class="text-rose-500">*</span></label>
-                    <input v-model="updateTrackingCode" type="text" placeholder="Nhập mã bill..." class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-sky-500 outline-none bg-white font-bold text-slate-800 uppercase">
+                    <input v-model="updateTrackingCode" type="text" placeholder="Nhập mã vận..." class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-sky-500 outline-none bg-white font-bold text-slate-800">
                 </div>
             </div>
         </div>
