@@ -406,255 +406,285 @@
             </button>
           </div>
 
-          <div class="p-6 md:p-8 overflow-y-auto flex-1 custom-scrollbar bg-slate-50/50">
-        <div class="space-y-6">
-          
-          <div class="bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden shadow-sm">
-            <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px]">timeline</span> Hành trình đơn hàng
-            </h4>
+          <div class="p-8 space-y-6 flex-1">
             
-            <div v-if="getCurrentStatusCode() == 5 || getCurrentStatusCode() == 6" class="flex items-center gap-3 bg-rose-50 border border-rose-100 p-4 rounded-xl">
-              <span class="material-symbols-outlined text-rose-500 text-2xl animate-bounce">cancel_presentation</span>
-              <div>
-                <p class="text-sm font-bold text-rose-900">
-                  {{ getCurrentStatusCode() == 5 ? 'ĐƠN HÀNG ĐÃ BỊ HỦY BỎ' : 'ĐƠN HÀNG ĐÃ HOÀN TRẢ VỀ KHO' }}
-                </p>
-                <p class="text-xs text-rose-600 mt-0.5 font-medium">
-                  Ghi nhận vào lúc: {{ selectedOrder.LichSuTrangThai?.find(line => line.MaTrangThai == getCurrentStatusCode()) ? new Date(selectedOrder.LichSuTrangThai.find(line => line.MaTrangThai == getCurrentStatusCode()).Thoigian).toLocaleString('vi-VN') : '--:--' }}
-                </p>
-              </div>
-            </div>
-
-            <div v-else class="relative w-full py-2">
-              <div class="absolute top-7 left-[12%] right-[12%] h-0.5 bg-slate-100 hidden md:block z-0"></div>
-
-              <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 w-full">
-                
-                <div class="flex flex-col items-center text-center gap-2 flex-1">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white z-10"
-                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 1) ? '!bg-amber-500 !border-amber-500 !text-white shadow-amber-500/20' : 'border-slate-200 text-slate-400'">
-                    <span class="material-symbols-outlined text-[18px]">order_approve</span>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-slate-800">Chờ duyệt</p>
-                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
-                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 1) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 1).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="flex flex-col items-center text-center gap-2 flex-1">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white z-10"
-                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 2) ? '!bg-indigo-600 !border-indigo-600 !text-white shadow-indigo-600/20' : 'border-slate-200 text-slate-400'">
-                    <span class="material-symbols-outlined text-[18px]">package_2</span>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-slate-800">Đóng gói</p>
-                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
-                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 2) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 2).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="flex flex-col items-center text-center gap-2 flex-1">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white z-10"
-                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 3) ? '!bg-sky-500 !border-sky-500 !text-white shadow-sky-500/20' : 'border-slate-200 text-slate-400'">
-                    <span class="material-symbols-outlined text-[18px]">local_shipping</span>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-slate-800">Đang giao</p>
-                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
-                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 3) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 3).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="flex flex-col items-center text-center gap-2 flex-1">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white z-10"
-                       :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 4) ? '!bg-emerald-500 !border-emerald-500 !text-white shadow-emerald-500/20' : 'border-slate-200 text-slate-400'">
-                    <span class="material-symbols-outlined text-[18px]">task_alt</span>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-slate-800">Đã giao</p>
-                    <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
-                      {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 4) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 4).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-col xl:flex-row gap-6 items-start">
-            
-            <div class="flex-1 space-y-6 w-full">
+            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
               
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative group">
-                  <button @click="copyShippingInfo(selectedOrder)" class="absolute top-4 right-4 text-slate-400 hover:text-primary transition-colors opacity-0 group-hover:opacity-100" title="Copy nhanh địa chỉ">
-                    <span class="material-symbols-outlined text-[18px]">content_copy</span>
+              <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
+                <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">contact_mail</span> Thông tin nhận hàng
+                </h4>
+                
+                <div class="flex items-center gap-3">
+                  <button @click="copyCustomerInfo" class="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-emerald-600 transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">content_copy</span> Copy thông tin
                   </button>
-                  <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px] text-slate-400">person</span> Người nhận hàng
-                  </h5>
-                  <p class="text-sm font-black text-slate-800">{{ selectedOrder.TenNguoiNhan }}</p>
-                  <p class="text-xs text-slate-500 font-mono mt-1 font-medium">{{ selectedOrder.SDTNguoiNhan }}</p>
-                  <p class="text-xs text-slate-600 mt-2 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-medium">{{ selectedOrder.DiaChiGiao }}</p>
+                  
+                  <div v-if="getCurrentStatusCode() < 3" class="w-px h-3 bg-slate-300"></div>
+                  
+                  <button v-if="getCurrentStatusCode() < 3" @click="openEditInfoModal" class="flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-sky-600 transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">edit</span> Sửa thông tin
+                  </button>
                 </div>
+              </div>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px] text-slate-400">credit_card</span> Thanh toán
-                  </h5>
-                  <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs text-slate-500 font-medium">Phương thức:</span>
-                      <span class="text-xs font-bold text-slate-800">{{ selectedOrder.TenPT }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs text-slate-500 font-medium">Hình thức mua:</span>
-                      <span class="text-xs font-bold text-slate-800">{{ selectedOrder.HinhThucMua }}</span>
-                    </div>
-                    <div class="flex justify-between items-center pt-2 border-t border-slate-100">
-                      <span class="text-xs text-slate-500 font-medium">Trạng thái tiền:</span>
-                      <span class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full uppercase tracking-wider"
-                            :class="selectedOrder.TrangThaiThanhToan === 'Đã thanh toán' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : selectedOrder.TrangThaiThanhToan === 'Đã cọc' ? 'bg-sky-50 text-sky-600 border border-sky-200' : 'bg-amber-50 text-amber-600 border border-amber-200'">
-                        {{ selectedOrder.TrangThaiThanhToan }}
-                      </span>
-                    </div>
+              <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm bg-white">
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ngày đặt</p>
+                  <p class="font-semibold text-slate-800">{{ new Date(selectedOrder.ThongTinGiaoHang?.NgayLapDon).toLocaleString('vi-VN') }}</p>
+                </div>
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Trạng thái đơn</p>
+                  <span :class="`text-xs font-bold px-2.5 py-1 rounded-full border ${getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).class}`">
+                    {{ getOrderStatusBadge(selectedOrder.TrangThaiHienTai?.TenTrangThai).text }}
+                  </span>
+                </div>
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Khách hàng</p>
+                  <p class="font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.TenNguoiNhan || 'Khách vãng lai' }}</p>
+                </div>
+                <div class="p-4">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Số điện thoại</p>
+                  <p class="font-semibold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.SDTNguoiNhan || 'N/A' }}</p>
+                </div>
+                <div class="p-4 md:col-span-2 border-t border-slate-200">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Địa chỉ giao hàng</p>
+                  <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
+                </div>
+                <div class="p-4 md:col-span-2 border-t border-slate-200">
+                  <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú</p>
+                  <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có ghi chú.' }}</p>
+                </div>
+              </div>
+              
+            </div>
+
+            <div v-if="selectedOrder.ThongTinGiaoHang?.MaVanDon" class="relative group flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl p-4 animate-[fadeIn_0.3s_ease-out]">
+              <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4" 
+                      @click="openEditShippingModal" 
+                      class="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:text-sky-500 hover:border-sky-300 rounded-full shadow-md transition-all z-10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100" 
+                      title="Sửa mã vận đơn">
+                  <span class="material-symbols-outlined text-[16px]">edit</span>
+              </button>
+
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-sky-200 shadow-sm shrink-0">
+                  <span class="material-symbols-outlined text-sky-500 text-2xl">local_shipping</span>
+                </div>
+                <div>
+                  <p class="text-[10px] font-bold text-sky-600 uppercase tracking-widest mb-0.5">Thông tin vận chuyển</p>
+                  <p class="text-sm font-bold text-slate-800">{{ selectedOrder.ThongTinGiaoHang?.HangVanChuyen }}</p>
+                </div>
+              </div>
+              
+              <div class="text-right">
+                <p class="text-[10px] text-slate-500 mb-1 font-medium uppercase tracking-widest">Mã tra cứu vận đơn</p>
+                <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-sky-200 shadow-sm">
+                  <span class="font-black text-sky-700 tracking-wider text-sm">{{ selectedOrder.ThongTinGiaoHang?.MaVanDon }}</span>
+                  <button @click="copyTrackingCode(selectedOrder.ThongTinGiaoHang?.MaVanDon)" class="text-slate-400 hover:text-sky-600 transition-colors flex items-center justify-center" title="Copy mã vận đơn">
+                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50/60 border border-slate-200/60 rounded-xl p-6 relative overflow-hidden">
+                <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">timeline</span> Hành trình đơn hàng
+                </h4>
+                
+                <div v-if="getCurrentStatusCode() == 5 || getCurrentStatusCode() == 6" class="flex items-center gap-3 bg-rose-50 border border-rose-100 p-4 rounded-xl relative z-10">
+                  <span class="material-symbols-outlined text-rose-500 text-2xl animate-bounce">cancel_presentation</span>
+                  <div>
+                    <p class="text-sm font-bold text-rose-900">
+                      {{ getCurrentStatusCode() == 5 ? 'ĐƠN HÀNG ĐÃ BỊ HỦY BỎ' : 'ĐƠN HÀNG ĐÃ HOÀN TRẢ VỀ KHO' }}
+                    </p>
+                    <p class="text-xs text-rose-600 mt-0.5 font-medium">
+                      Ghi nhận vào lúc: {{ selectedOrder.LichSuTrangThai?.find(line => line.MaTrangThai == getCurrentStatusCode()) ? new Date(selectedOrder.LichSuTrangThai.find(line => line.MaTrangThai == getCurrentStatusCode()).Thoigian).toLocaleString('vi-VN') : '--:--' }}
+                    </p>
                   </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                  <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px] text-slate-400">calendar_month</span> Bản tin đơn hàng
-                  </h5>
-                  <div class="space-y-2">
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs text-slate-500 font-medium">Ngày đặt đơn:</span>
-                      <span class="text-xs font-bold text-slate-700 font-mono">{{ new Date(selectedOrder.NgayLapDH).toLocaleDateString('vi-VN') }}</span>
+                <div v-else class="relative w-full">
+                  <div class="absolute top-5 left-8 right-8 h-0.5 bg-slate-200 hidden md:block z-0"></div>
+
+                  <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-4 w-full">
+                    
+                    <div class="flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white"
+                           :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 1) ? '!bg-amber-500 !border-amber-500 !text-white shadow-amber-500/20' : 'border-slate-200 text-slate-400'">
+                        <span class="material-symbols-outlined text-[18px]">order_approve</span>
+                      </div>
+                      <div class="flex flex-col md:items-center">
+                        <p class="text-xs font-bold text-slate-800">Chờ duyệt</p>
+                        <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 1) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 1).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                        </p>
+                      </div>
                     </div>
-                    <div class="pt-2 border-t border-slate-100">
-                      <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Ghi chú của khách:</span>
-                      <p class="text-xs text-slate-600 italic font-medium leading-relaxed">
-                        {{ selectedOrder.Note && selectedOrder.Note.trim() !== '' ? `"${selectedOrder.Note}"` : 'Không có ghi chú nào.' }}
-                      </p>
+
+                    <div class="flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white"
+                           :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 2) ? '!bg-indigo-600 !border-indigo-600 !text-white shadow-indigo-600/20' : 'border-slate-200 text-slate-400'">
+                        <span class="material-symbols-outlined text-[18px]">package_2</span>
+                      </div>
+                      <div class="flex flex-col md:items-center">
+                        <p class="text-xs font-bold text-slate-800">Đóng gói</p>
+                        <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 2) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 2).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                        </p>
+                      </div>
                     </div>
+
+                    <div class="flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white"
+                           :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 3) ? '!bg-sky-500 !border-sky-500 !text-white shadow-sky-500/20' : 'border-slate-200 text-slate-400'">
+                        <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                      </div>
+                      <div class="flex flex-col md:items-center">
+                        <p class="text-xs font-bold text-slate-800">Đang giao</p>
+                        <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 3) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 3).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex md:flex-col items-center gap-3 md:gap-2 text-left md:text-center flex-1 w-full">
+                      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs border-2 shadow-sm transition-all bg-white"
+                           :class="selectedOrder.LichSuTrangThai?.some(l => l.MaTrangThai == 4) ? '!bg-emerald-500 !border-emerald-500 !text-white shadow-emerald-500/20' : 'border-slate-200 text-slate-400'">
+                        <span class="material-symbols-outlined text-[18px]">task_alt</span>
+                      </div>
+                      <div class="flex flex-col md:items-center">
+                        <p class="text-xs font-bold text-slate-800">Đã giao</p>
+                        <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5">
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 4) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 4).Thoigian).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '--:--' }}
+                        </p>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               </div>
 
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                  <h4 class="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[18px]">smart_toy</span> Giỏ hàng chi tiết
-                  </h4>
-                  <span class="text-[11px] font-bold text-slate-400 bg-white border px-2.5 py-1 rounded-lg font-mono">
-                    Tổng: {{ selectedOrder.ChiTietDonHang?.length || 0 }} mục
+            <div>
+              <div class="flex justify-between items-end mb-2">
+                <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400">Lịch sử giao dịch</h4>
+                <div class="flex gap-2">
+                  <button v-if="!selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan?.includes('Đã thanh toán') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HỦY') && !selectedOrder.TrangThaiHienTai?.TenTrangThai?.toUpperCase().includes('HOÀN')"
+                          @click="confirmPayment(selectedOrder)"
+                          class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">price_check</span> Thu thêm tiền
+                  </button>
+                  <button v-if="selectedOrder.ThongTinGiaoHang?.TrangThaiThanhToan === 'Chờ hoàn tiền'"
+                          @click="confirmRefund(selectedOrder.MaDH, selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi)"
+                          class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">currency_exchange</span> Xác nhận hoàn tiền
+                  </button>
+                </div>
+              </div>
+
+              <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                    <tr>
+                      <th class="p-3 text-center">Thời gian</th>
+                      <th class="p-3">Phương thức</th>
+                      <th class="p-3">Loại giao dịch</th>
+                      <th class="p-3 text-right">Số tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr v-if="!selectedOrder.ThanhToan || selectedOrder.ThanhToan.length === 0">
+                      <td colspan="4" class="p-6 text-center text-slate-400 italic">Chưa có giao dịch thu/chi nào được ghi nhận.</td>
+                    </tr>
+                    <tr v-for="(tx, idx) in selectedOrder.ThanhToan" :key="idx" class="text-slate-700 font-medium hover:bg-slate-50 transition-colors">
+                      <td class="p-3 text-center text-xs text-slate-500">{{ new Date(tx.NgayThanhToan).toLocaleString('vi-VN') }}</td>
+                      <td class="p-3 font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-blue-600'">{{ tx.TenPhuongThuc || 'Thu hộ COD' }}</td>
+                      <td class="p-3 text-xs">{{ tx.LoaiGiaoDich }}</td>
+                      <td class="p-3 text-right font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-emerald-600'">
+                        {{ tx.SoTienGiaoDich > 0 ? '+' : '' }}{{ formatPrice(tx.SoTienGiaoDich) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Danh sách sản phẩm mô hình</h4>
+              <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                    <tr>
+                      <th class="p-4 text-center">Sản phẩm</th>
+                      <th class="p-4">Phân loại</th>
+                      <th class="p-4 text-right">Đơn giá</th>
+                      <th class="p-4 text-center">SL</th>
+                      <th class="p-4 text-right">Thành tiền</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr v-for="(item, index) in selectedOrder.DanhSachHang" :key="item.MaPhanLoai || index" class="text-slate-700 font-medium">
+                      <td class="p-4">
+                        <div class="flex items-center gap-4">
+                          <img v-if="item.AnhDaiDien" 
+                              :src="item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" 
+                              class="w-12 h-12 object-cover rounded-xl border border-slate-200 shadow-sm shrink-0 bg-slate-50" 
+                              alt="Thumbnail" />
+                          <div v-else class="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200 shadow-sm shrink-0 flex items-center justify-center text-slate-400">
+                            <span class="material-symbols-outlined text-xl">image_not_supported</span>
+                          </div>
+                          <div class="flex flex-col">
+                            <p class="font-bold text-slate-900 leading-snug">{{ item.TenMH }}</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Mã MH: #{{ item.MaMoHinh }}</p>
+                            <span v-if="item.LaHangKhuyenMai === 1" class="text-[9px] font-bold bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded border border-rose-100 mt-1 w-fit">FLASH SALE</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">{{ item.ChiTietPhanLoai || 'Mặc định' }}</span></td>
+                      <td class="p-4 text-right">
+                        <p :class="item.LaHangKhuyenMai === 1 ? 'line-through text-slate-400 text-xs' : ''">{{ formatPrice(item.DonGiaGoc) }}</p>
+                        <p v-if="item.LaHangKhuyenMai === 1" class="text-rose-500">{{ formatPrice(item.DonGiaBan) }}</p>
+                      </td>
+                      <td class="p-4 text-center font-bold">{{ item.SoLuong }}</td>
+                      <td class="p-4 text-right text-rose-500 font-bold">{{ formatPrice(item.DonGiaBan * item.SoLuong) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <div class="w-80 bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 text-sm">
+                <div class="flex justify-between text-slate-500">
+                  <span>Tổng tiền hàng hóa:</span>
+                  <span class="font-semibold text-slate-800">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.TongTien) }}</span>
+                </div>
+                <div class="flex justify-between text-slate-500">
+                  <span>Giảm giá/Voucher:</span>
+                  <span class="font-semibold text-emerald-600">-{{ formatPrice((selectedOrder.ThongTinGiaoHang?.TongTien || 0) - (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0)) }}</span>
+                </div>
+                
+                <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline">
+                  <span class="font-bold text-slate-700">Tổng giá trị đơn:</span>
+                  <span class="font-bold text-slate-900">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                  <span class="font-bold text-slate-700">Đã thanh toán:</span>
+                  <span class="font-bold text-emerald-600">
+                    {{ formatPrice(selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0) }}
                   </span>
                 </div>
                 
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left border-collapse">
-                    <thead>
-                      <tr class="bg-slate-50/50 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        <th class="py-3 px-6 w-20 text-center">Hình ảnh</th>
-                        <th class="py-3 px-6">Tên mô hình & Phân loại</th>
-                        <th class="py-3 px-6 text-right w-32">Đơn giá</th>
-                        <th class="py-3 px-6 text-center w-24">Số lượng</th>
-                        <th class="py-3 px-6 text-right w-36">Thành tiền</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-sm">
-                      <tr v-for="item in selectedOrder.ChiTietDonHang" :key="item.MaPhanLoai" class="hover:bg-slate-50/50 transition-colors">
-                        <td class="py-4 px-6 text-center">
-                          <div class="w-14 h-14 rounded-xl border border-slate-200/60 bg-slate-50 p-1 overflow-hidden flex items-center justify-center mx-auto shadow-inner">
-                            <img :src="item.AnhDaiDien && item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" class="max-w-full max-h-full object-contain rounded-lg">
-                          </div>
-                        </td>
-                        <td class="py-4 px-6">
-                          <p class="font-bold text-slate-800 text-xs hover:text-primary cursor-pointer leading-tight mb-1" @click="viewProductDetail(item.MaMoHinh)">
-                            {{ item.TenMH }}
-                          </p>
-                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-50 text-purple-600 font-bold text-[10px] border border-purple-100 uppercase tracking-wide">
-                            <span class="material-symbols-outlined text-[12px]">style</span> {{ item.ChiTietPhanLoai }}
-                          </span>
-                        </td>
-                        <td class="py-4 px-6 text-right font-mono font-bold text-slate-700 text-xs">
-                          {{ formatCurrency(item.DonGiaGiaoDich) }}
-                        </td>
-                        <td class="py-4 px-6 text-center font-bold text-slate-800 text-xs font-mono">
-                          x{{ item.SoLuong }}
-                        </td>
-                        <td class="py-4 px-6 text-right font-mono font-black text-primary text-xs">
-                          {{ formatCurrency(item.DonGiaGiaoDich * item.SoLuong) }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div class="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-end">
-                  <div class="w-72 space-y-2.5">
-                    <div class="flex justify-between items-center text-xs text-slate-500 font-medium">
-                      <span>Tạm tính giỏ hàng:</span>
-                      <span class="font-mono font-bold text-slate-700">{{ formatCurrency(selectedOrder.ThanhTien) }}</span>
-                    </div>
-                    <div class="flex justify-between items-center text-xs text-slate-500 font-medium">
-                      <span>Phí vận chuyển:</span>
-                      <span class="font-mono font-bold text-slate-700">Miễn phí</span>
-                    </div>
-                    <div class="flex justify-between items-center pt-2.5 border-t border-slate-200">
-                      <span class="text-xs font-black text-slate-800 uppercase">Tổng thanh toán:</span>
-                      <span class="text-base font-black text-primary font-mono">{{ formatCurrency(selectedOrder.ThanhTien) }}</span>
-                    </div>
-                  </div>
+                <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline bg-rose-50 -mx-5 px-5 pb-5 -mb-5 rounded-b-xl">
+                  <span class="font-bold text-rose-900 text-base mt-2">CÒN PHẢI THU:</span>
+                  <span class="font-headline font-black text-rose-600 text-xl">
+                    {{ formatPrice(Math.max(0, (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0) - (selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0))) }}
+                  </span>
                 </div>
               </div>
             </div>
-
-            <div class="w-full xl:w-96 shrink-0 xl:sticky xl:top-4 space-y-4">
-              <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white space-y-5">
-                <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[16px] text-[#ff8f73]">tune</span> Bảng điều khiển lệnh
-                </h4>
-                
-                <div class="space-y-2.5">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cập nhật bước xử lý</label>
-                  <div class="flex gap-2">
-                    <select v-model="statusForm.MaTrangThai" :disabled="getCurrentStatusCode() == 4 || getCurrentStatusCode() == 5 || getCurrentStatusCode() == 6" 
-                            class="flex-1 bg-slate-700 border border-slate-600 rounded-xl px-3 py-2.5 text-xs font-bold text-white focus:border-[#ff8f73] outline-none disabled:bg-slate-800 disabled:opacity-50 disabled:text-slate-400 transition-all">
-                      <option v-for="st in availableStatuses" :key="st.id" :value="st.id">{{ st.name }}</option>
-                    </select>
-                    
-                    <button @click="updateOrderStatus" :disabled="getCurrentStatusCode() == 4 || getCurrentStatusCode() == 5 || getCurrentStatusCode() == 6"
-                            class="bg-[#ff8f73] hover:bg-[#ff3d00] disabled:bg-slate-700 disabled:text-slate-500 font-bold text-xs text-white px-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1">
-                      <span class="material-symbols-outlined text-[16px]">save</span> Lưu
-                    </button>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-3 pt-3 border-t border-slate-700">
-                  <button @click="printInvoice(selectedOrder)" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-500 active:scale-95 shadow-sm">
-                    <span class="material-symbols-outlined text-[18px] text-sky-400">print</span>
-                    In hóa đơn bán hàng
-                  </button>
-
-                  <button v-if="getCurrentStatusCode() != 4 && getCurrentStatusCode() != 5 && getCurrentStatusCode() != 6"
-                          @click="cancelOrder(selectedOrder.MaDH)" 
-                          class="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
-                    <span class="material-symbols-outlined text-[18px]">cancel</span>
-                    Yêu cầu hủy đơn hàng này
-                  </button>
-                </div>
-              </div>
-            </div>
-
           </div>
-        </div>
-      </div>
 
           <div class="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
             <button @click="cancelOrder(selectedOrder)" class="px-4 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm font-bold rounded-lg transition-all flex items-center gap-1">
