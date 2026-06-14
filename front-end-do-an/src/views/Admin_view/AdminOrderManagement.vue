@@ -440,7 +440,7 @@
                       <div>
                         <p class="text-xs font-bold text-slate-800">Chờ duyệt</p>
                         <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5 whitespace-nowrap">
-                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 1) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 1).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit'}) : '--:--' }}
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 1) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 1).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '--:--' }}
                         </p>
                       </div>
                     </div>
@@ -453,7 +453,7 @@
                       <div>
                         <p class="text-xs font-bold text-slate-800">Đóng gói</p>
                         <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5 whitespace-nowrap">
-                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 2) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 2).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit'}) : '--:--' }}
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 2) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 2).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '--:--' }}
                         </p>
                       </div>
                     </div>
@@ -466,7 +466,7 @@
                       <div>
                         <p class="text-xs font-bold text-slate-800">Đang giao</p>
                         <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5 whitespace-nowrap">
-                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 3) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 3).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit'}) : '--:--' }}
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 3) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 3).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '--:--' }}
                         </p>
                       </div>
                     </div>
@@ -479,7 +479,7 @@
                       <div>
                         <p class="text-xs font-bold text-slate-800">Đã giao</p>
                         <p class="text-[10px] text-slate-400 font-medium font-mono mt-0.5 whitespace-nowrap">
-                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 4) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 4).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit'}) : '--:--' }}
+                          {{ selectedOrder.LichSuTrangThai?.find(l => l.MaTrangThai == 4) ? new Date(selectedOrder.LichSuTrangThai.find(l => l.MaTrangThai == 4).Thoigian).toLocaleString('vi-VN', {hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric'}) : '--:--' }}
                         </p>
                       </div>
                     </div>
