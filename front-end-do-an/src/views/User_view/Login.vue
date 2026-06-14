@@ -304,28 +304,32 @@
   };
 
   const handleFacebookLogin = () => {
-    window.FB.login(async (response) => {
+    window.FB.login((response) => { 
       if (response.authResponse) {
         isLoading.value = true;
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/auth/facebook`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
-            },
-            body: JSON.stringify({ accessToken: response.authResponse.accessToken })
-          });
-          const data = await res.json();
-          if (res.ok) handleSuccessfulLogin(data);
-          else toastStore.showToast(data.message, 'error', 4000, 'top-right');
-        } 
-        catch (error) {
-          toastStore.showToast("Lỗi máy chủ!", 'error', 4000, 'top-right');
-        } 
-        finally {
-          isLoading.value = false;
-        }
+        
+        const processLogin = async () => {
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/facebook`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}`
+              },
+              body: JSON.stringify({ accessToken: response.authResponse.accessToken })
+            });
+            const data = await res.json();
+            if (res.ok) handleSuccessfulLogin(data);
+            else toastStore.showToast(data.message, 'error', 4000, 'top-right');
+          } 
+          catch (error) {
+            toastStore.showToast("Lỗi máy chủ!", 'error', 4000, 'top-right');
+          } 
+          finally {
+            isLoading.value = false;
+          }
+        };
+        processLogin(); 
       } 
     }, { scope: 'public_profile,email' });
   };
