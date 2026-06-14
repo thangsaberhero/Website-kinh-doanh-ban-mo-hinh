@@ -1496,7 +1496,7 @@ const donhang_user = {
                     VALUES (1, ?, NOW(), ?, ?, 'Thành công', ?)
                 `, [MaDH, amount, hinhThuc, transId]);
 
-                await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
+                // await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
             }
 
             await connection.commit();
@@ -1707,7 +1707,7 @@ const donhang_user = {
                         VALUES (?, ?, NOW(), ?, ?, 'Thành công', ?)
                     `, [MA_PT_ZALOPAY, MaDH, amount, hinhThuc, transId]);
 
-                    await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
+                    // await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
                 } else {
                     console.log("⚠️ Đơn hàng đã được thanh toán từ trước, bỏ qua ghi nhận trùng lặp.");
                 }
