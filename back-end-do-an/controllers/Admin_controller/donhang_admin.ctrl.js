@@ -1065,21 +1065,18 @@ const donhang_admin = {
             const { MaDH, LyDoHoan } = req.body;
             const MaTK = req.user.id;
 
-            // Bắt buộc nhập lý do hoàn hàng để kế toán đối soát
             if (!LyDoHoan || LyDoHoan.trim() === '') {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Vui lòng nhập lý do hoàn trả hàng!" });
             }
 
-            // 1. Lấy trạng thái mới nhất của đơn hàng
             const sql_kiemtra_tt = `
                 SELECT cttt.MaTrangThai, dh.MaDonHangHienThi, dh.TrangThaiThanhToan
                 FROM ChiTietTrangThai cttt
                 INNER JOIN DonHang dh ON cttt.MaDH = dh.MaDH
                 WHERE dh.MaDH = ?
                 ORDER BY cttt.Thoigian DESC
-                LIMIT 1
-                FOR UPDATE
+                LIMIT 1 FOR UPDATE
             `;
             const [trang_thai] = await connection.query(sql_kiemtra_tt, [MaDH]);
 
@@ -1091,8 +1088,6 @@ const donhang_admin = {
             const currentStatus = trang_thai[0].MaTrangThai;
             const maHienThi = trang_thai[0].MaDonHangHienThi; 
 
-            // 2. ĐIỀU KIỆN SỐNG CÒN CỦA HOÀN HÀNG
-            // Chỉ cho phép hoàn hàng nếu đơn đang đi trên đường (3) hoặc đã tới tay khách (4)
             if (currentStatus !== 3 && currentStatus !== 4) {
                 await connection.rollback();
                 return res.status(400).json({
@@ -1101,26 +1096,15 @@ const donhang_admin = {
                 });
             }
 
-            // 3. Cập nhật trạng thái thành 6 (Hoàn hàng/Trả hàng)
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 6, NOW())`, [MaDH]);
 
-            // 4. Nhập lại hàng vào kho
-            const sql_lay_chi_tiet = `
-                SELECT MaPhanLoai, SUM(SoLuong) AS TongSoLuong 
-                FROM ChiTietDonHang 
-                WHERE MaDH = ? 
-                GROUP BY MaPhanLoai
-            `;
+            const sql_lay_chi_tiet = `SELECT MaPhanLoai, SUM(SoLuong) AS TongSoLuong FROM ChiTietDonHang WHERE MaDH = ? GROUP BY MaPhanLoai`;
             const [chi_tiet_don] = await connection.query(sql_lay_chi_tiet, [MaDH]);
 
-            // 5. HOÀN TRẢ TỒN KHO 
             for (let item of chi_tiet_don) {
-                await connection.query(`
-                    UPDATE PhanLoai SET SoLuong = SoLuong + ? WHERE MaPhanLoai = ?
-                `, [item.TongSoLuong, item.MaPhanLoai]);
+                await connection.query(`UPDATE PhanLoai SET SoLuong = SoLuong + ? WHERE MaPhanLoai = ?`, [item.TongSoLuong, item.MaPhanLoai]);
             }
 
-            // 6. HOÀN TRẢ KHUYẾN MÃI FLASH SALE (🌟 ĐÃ TỐI ƯU SIÊU TỐC)
             const sql_hoan_flash_sale = `
                 UPDATE ChiTietKhuyenMai ctkm
                 INNER JOIN ChiTietDonHang ct ON ctkm.MaPhanLoai = ct.MaPhanLoai
@@ -1130,56 +1114,43 @@ const donhang_admin = {
             await connection.query(sql_hoan_flash_sale, [MaDH]);
             await connection.query(`DELETE FROM LogSuDungKhuyenMai WHERE MaDH = ?`, [MaDH]);
 
-            // 7. HOÀN TRẢ MÃ GIẢM GIÁ (VOUCHER)
             const sql_lay_voucher = `SELECT MaGG FROM LogSuDungMaGiamGia WHERE MaDH = ?`;
             const [log_voucher] = await connection.query(sql_lay_voucher, [MaDH]);
             
             if (log_voucher.length > 0) {
-                await connection.query(`
-                    UPDATE MaGiamGia SET SoLuongDaDung = GREATEST(0, SoLuongDaDung - 1) 
-                    WHERE MaGG = ?
-                `, [log_voucher[0].MaGG]);
+                await connection.query(`UPDATE MaGiamGia SET SoLuongDaDung = GREATEST(0, SoLuongDaDung - 1) WHERE MaGG = ?`, [log_voucher[0].MaGG]);
                 await connection.query(`DELETE FROM LogSuDungMaGiamGia WHERE MaDH = ?`, [MaDH]);
             }
 
-            // 8. GHI LOG HOẠT ĐỘNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            // Lưu kèm lý do hoàn hàng để kế toán tiện tra cứu
             const noiDungLog = `Xác nhận Hoàn hàng cho đơn #${MaDH} (${maHienThi}). Lý do: ${LyDoHoan}`;
-            await connection.query(`
-                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
-                VALUES (?, 'ORDER_UPDATE', ?, ?, NOW())
-            `, [MaTK, noiDungLog, userIp]);
+            await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'ORDER_UPDATE', ?, ?, NOW())`, [MaTK, noiDungLog, userIp]);
 
-            await connection.query(`
-                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
-                VALUES (?, ?, ?, ?)
-            `, [
+            await connection.query(`INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) VALUES (?, ?, ?, ?)`, [
                 `Hoàn trả đơn hàng #${MaDH}`, 
                 `Đơn hàng mã ${maHienThi} vừa được xác nhận hoàn trả và nhập lại kho. Lý do: ${LyDoHoan}`, 
                 "DonHang", 
                 `/admin/orders?viewOrderId=${MaDH}`
             ]);
 
-            // XỬ LÝ TRẠNG THÁI THANH TOÁN KHI HOÀN HÀNG
-            if (trang_thai[0].TrangThaiThanhToan && trang_thai[0].TrangThaiThanhToan.includes('Đã thanh toán')) {
+            // =========================================================
+            // 🔴 ĐÃ SỬA: KIỂM TRA XEM KHÁCH ĐÃ NỘP ĐỒNG NÀO VÀO HỆ THỐNG CHƯA
+            // =========================================================
+            const sql_kiem_tra_tien = `SELECT SUM(SoTienGiaoDich) as TongTienDaNop FROM ThanhToan WHERE MaDH = ? AND TrangThaiGiaoDich = 'Thành công'`;
+            const [tien_da_nop] = await connection.query(sql_kiem_tra_tien, [MaDH]);
+            
+            // Nếu khách đã từng nộp tiền (Cọc hoặc Full), đẩy sang hàng chờ Kế toán quyết định
+            if (tien_da_nop[0].TongTienDaNop > 0) {
                 await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = 'Chờ hoàn tiền' WHERE MaDH = ?`, [MaDH]);
             }
 
-            const sql_update_note_hoan = `
-                UPDATE DonHang 
-                SET Note = CONCAT(COALESCE(Note, ''), '\n[HOÀN HÀNG] Lý do: ', ?) 
-                WHERE MaDH = ?
-            `;
+            const sql_update_note_hoan = `UPDATE DonHang SET Note = CONCAT(COALESCE(Note, ''), '\n[HOÀN HÀNG] Lý do: ', ?) WHERE MaDH = ?`;
             await connection.query(sql_update_note_hoan, [LyDoHoan.trim(), MaDH]);
 
             await connection.commit();
-            res.status(200).json({
-                success: true,
-                message: "Xác nhận hoàn hàng và nhập lại kho thành công!"
-            });
+            res.status(200).json({ success: true, message: "Xác nhận hoàn hàng và nhập lại kho thành công!" });
         }
         catch (error) {
             await connection.rollback();
@@ -2111,8 +2082,14 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
-            const { MaDH } = req.body;
+            // 🔴 ĐÃ SỬA: Nhận thêm SoTienHoanTra từ Giao diện (Admin tự nhập)
+            const { MaDH, SoTienHoanTra } = req.body;
             const MaTK = req.user.id;
+
+            if (!SoTienHoanTra || SoTienHoanTra <= 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Vui lòng nhập số tiền hợp lệ cần hoàn trả!" });
+            }
 
             const sql_check = `SELECT MaDonHangHienThi, ThanhTien, TrangThaiThanhToan FROM DonHang WHERE MaDH = ? FOR UPDATE`;
             const [don_hang] = await connection.query(sql_check, [MaDH]);
@@ -2129,21 +2106,19 @@ const donhang_admin = {
                 return res.status(400).json({ success: false, message: "Đơn hàng này không ở trạng thái cần hoàn tiền!" });
             }
 
-            // 1. Cập nhật bảng DonHang
             const trangThaiMoi = 'Đã hoàn tiền';
             await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
 
-            // 2. Ghi một giao dịch ÂM (Hoàn tiền) vào bảng ThanhToan để đối soát
+            // 🔴 ĐÃ SỬA: Trừ đúng số tiền Kế toán/Admin yêu cầu, không trừ ThanhTien
             await connection.query(`
                 INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
                 VALUES (4, ?, NOW(), ?, 'Hoàn tiền cho khách', 'Thành công')
-            `, [MaDH, -dh.ThanhTien]);
+            `, [MaDH, -SoTienHoanTra]);
 
-            // 3. Ghi Log
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            const noiDungLog = `Xác nhận Đã hoàn tiền cho đơn hàng #${MaDH} (${dh.MaDonHangHienThi}). Số tiền hoàn: ${dh.ThanhTien.toLocaleString('vi-VN')} đ`;
+            const noiDungLog = `Xác nhận Đã hoàn tiền cho đơn hàng #${MaDH} (${dh.MaDonHangHienThi}). Số tiền hoàn: ${Number(SoTienHoanTra).toLocaleString('vi-VN')} đ`;
             await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'PAYMENT_REFUND', ?, ?, NOW())`, [MaTK, noiDungLog, userIp]);
 
             await connection.commit();

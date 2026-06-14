@@ -1312,11 +1312,30 @@
             Bạn xác nhận Kế toán đã chuyển khoản trả lại tiền cho đơn hàng <span class="font-bold text-slate-900">{{ orderCodeToRefund }}</span>?<br>
             <span class="text-purple-500 font-bold text-xs">* Trạng thái sẽ cập nhật thành "Đã hoàn tiền" và ghi nhận giao dịch âm.</span>
           </p>
+
+          <div class="bg-purple-50 rounded-xl p-4 border border-purple-100 mt-2">
+            <div class="flex justify-between items-end mb-2">
+              <span class="font-bold text-purple-800 text-xs uppercase tracking-widest">Số tiền cần hoàn trả:</span>
+              <button @click="refundAmount = maxRefundAmount" class="text-[10px] font-bold text-purple-600 bg-purple-200 hover:bg-purple-300 px-2 py-1 rounded transition-colors shadow-sm active:scale-95">
+                Hoàn toàn bộ ({{ formatPrice(maxRefundAmount) }})
+              </button>
+            </div>
+            
+            <div class="relative">
+              <input v-model="refundAmount" type="number" min="0" :max="maxRefundAmount" class="w-full border border-purple-200 rounded-lg p-2.5 text-lg outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bg-white font-black text-purple-600 text-right pr-8 shadow-inner">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-purple-600 font-bold">₫</span>
+            </div>
+            
+            <p v-if="refundAmount < maxRefundAmount && refundAmount > 0" class="text-[11px] text-amber-600 font-bold mt-2 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
+              <span class="material-symbols-outlined text-[14px]">info</span> Đã trừ khoản cọc phạt. Hoàn trả thực tế nhỏ hơn tổng tiền khách đã nộp.
+            </p>
+          </div>
+
         </div>
 
         <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
           <button @click="isRefundConfirmModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Đóng</button>
-          <button @click="executeConfirmRefund" class="px-5 py-2.5 text-sm font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 rounded-xl transition-all flex items-center gap-2">
+          <button @click="executeConfirmRefund" class="px-5 py-2.5 text-sm font-bold text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/20 rounded-xl transition-all flex items-center gap-2 active:scale-95">
             <span class="material-symbols-outlined text-[18px]">check_circle</span> Xác nhận đã CK
           </button>
         </div>
@@ -2355,24 +2374,48 @@ const exportExcelReport = async () => {
   // --- QUẢN LÝ MODAL XÁC NHẬN HOÀN TIỀN ---
   const isRefundConfirmModalOpen = ref(false);
   const orderToRefund = ref(null);
-
   const orderCodeToRefund = ref('');
+
+  const refundAmount = ref(0);
+  const maxRefundAmount = ref(0);
   const confirmRefund = (maDH, maHienThi) => {
     orderToRefund.value = maDH;
     orderCodeToRefund.value = maHienThi;
+
+    // Tính tổng số tiền khách ĐÃ NỘP (Cọc hoặc Full) để làm mức Hoàn trả Tối đa
+    let tongDaNop = 0;
+    if (selectedOrder.value && selectedOrder.value.MaDH === maDH) {
+       tongDaNop = selectedOrder.value.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0;
+    } else {
+       const listOrder = orders.value.find(o => o.id === maDH);
+       tongDaNop = listOrder ? listOrder.transactionAmount : 0;
+    }
+    
+    maxRefundAmount.value = tongDaNop;
+    refundAmount.value = tongDaNop; // Mặc định hiển thị là Hoàn 100% tiền đã nộp
+    
     isRefundConfirmModalOpen.value = true;
   };
 
   const executeConfirmRefund = async () => {
+    // 🔴 CHỐT CHẶN BẢO VỆ: Chống nhập số âm hoặc số 0
+    if (refundAmount.value <= 0) {
+       toastStore.showToast("Vui lòng nhập số tiền hoàn trả lớn hơn 0!", "warning");
+       return;
+    }
+
     try {
-      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/refund-status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ MaDH: orderToRefund.value })
+        body: JSON.stringify({ 
+          MaDH: orderToRefund.value,
+          SoTienHoanTra: refundAmount.value // 🔴 Gửi số tiền Kế toán quyết định xuống Backend
+        })
       });
 
       const result = await response.json();
@@ -2381,9 +2424,7 @@ const exportExcelReport = async () => {
         toastStore.showToast("Xác nhận hoàn tiền thành công!", "success");
         isRefundConfirmModalOpen.value = false;
         
-        // 🔴 ĐÃ SỬA: Tự động cập nhật Lịch sử giao dịch (dòng hoàn tiền âm)
         await viewOrderDetails({ id: orderToRefund.value });
-        
         fetchOrders(); 
       } else {
         toastStore.showToast(result.message || "Không thể xác nhận hoàn tiền.", "error");
