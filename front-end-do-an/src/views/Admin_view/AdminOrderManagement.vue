@@ -685,25 +685,37 @@
 
                 </div>
 
-                <div class="w-full lg:w-80 shrink-0 lg:sticky lg:top-0 space-y-4">
+                <div class="w-full xl:w-96 shrink-0 xl:sticky xl:top-0 space-y-4">
                   <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white space-y-5">
                     <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5">
                       <span class="material-symbols-outlined text-[16px] text-[#ff8f73]">tune</span> Điều khiển lệnh
                     </h4>
                     
                     <div class="grid grid-cols-1 gap-3">
-                      <button @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                      
+                      <button v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6" 
+                              @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
+                              class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
                         <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
                       </button>
-
-                      <button @click="handlePrintInvoice(selectedOrder.MaDH)" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 active:scale-95">
+    
+                      <button @click="handlePrintInvoice(selectedOrder.MaDH)" 
+                              class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 active:scale-95">
                         <span class="material-symbols-outlined text-[18px] text-sky-400">print</span> In hóa đơn
                       </button>
-
-                      <button v-if="getCurrentStatusCode() != 4 && getCurrentStatusCode() != 5 && getCurrentStatusCode() != 6"
-                              @click="cancelOrder(selectedOrder)" class="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+    
+                      <button v-if="getCurrentStatusCode() === 1 || getCurrentStatusCode() === 2"
+                              @click="cancelOrder(selectedOrder)" 
+                              class="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
                         <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn hàng
                       </button>
+    
+                      <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4"
+                              @click="returnOrder(selectedOrder)" 
+                              class="w-full bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white border border-purple-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                        <span class="material-symbols-outlined text-[18px]">assignment_return</span> Hoàn hàng
+                      </button>
+    
                     </div>
                   </div>
                 </div>
