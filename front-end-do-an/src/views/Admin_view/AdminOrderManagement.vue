@@ -346,9 +346,21 @@
                               <span class="material-symbols-outlined text-[18px]">visibility</span>
                           </button>
                           
-                          <button @click="openUpdateModalFromRow(order)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all" title="Cập nhật trạng thái">
-                              <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                          </button>
+                          <template v-if="order.statusId !== 4 && order.statusId !== 5 && order.statusId !== 6">
+                            
+                            <button v-if="order.saleType !== 'Có sẵn' && order.fulfillmentStatus !== 'Đủ hàng' && order.statusId === 1"
+                                    @click.stop="toastStore.showToast(`Đơn hàng đang ${order.fulfillmentStatus}. Vui lòng chờ đủ hàng!`, 'warning')"
+                                    class="w-8 h-8 flex items-center justify-center text-slate-300 bg-slate-50 cursor-not-allowed rounded-xl transition-all" title="Bị khóa: Chờ hàng về">
+                                <span class="material-symbols-outlined text-[18px]">lock</span>
+                            </button>
+                            
+                            <button v-else
+                                    @click="openUpdateModalFromRow(order)" 
+                                    class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all" title="Cập nhật trạng thái">
+                                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                            </button>
+                            
+                          </template>
                           
                           <button @click.stop="toggleOrderMenu(order.id)" class="w-8 h-8 flex items-center justify-center rounded-xl transition-all" :class="activeMenuId === order.id ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'">
                               <span class="material-symbols-outlined text-[18px]">more_vert</span>
@@ -707,8 +719,8 @@
 
                       <template v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6">
                         
-                        <button v-if="selectedOrder.saleType !== 'Có sẵn' && selectedOrder.fulfillmentStatus !== 'Đủ hàng' && getCurrentStatusCode() === 1" 
-                                @click="toastStore.showToast(`Đơn hàng đang ${selectedOrder.fulfillmentStatus}. Vui lòng chờ đủ hàng hoặc Tách đơn gửi trước!`, 'warning')" 
+                        <button v-if="getSaleType() !== 'Có sẵn' && getFulfillmentStatus() !== 'Đủ hàng' && getCurrentStatusCode() === 1" 
+                                @click="toastStore.showToast(`Đơn hàng đang ${getFulfillmentStatus()}. Vui lòng chờ đủ hàng hoặc Tách đơn gửi trước!`, 'warning')" 
                                 class="w-full bg-slate-100 text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 cursor-not-allowed transition-all">
                           <span class="material-symbols-outlined text-[18px]">lock</span> Khóa: Chờ gom hàng
                         </button>
@@ -1997,13 +2009,12 @@ const exportExcelReport = async () => {
         return;
     }
 
-    const foundOrder = orders.value.find(o => o.id === selectedOrder.value.MaDH);
-    const currentSaleType = foundOrder ? (foundOrder.saleType || 'Có sẵn') : 'Có sẵn';
-    const currentFulfillment = foundOrder ? (foundOrder.fulfillmentStatus || 'Đủ hàng') : 'Đủ hàng';
+    const currentSaleType = getSaleType();
+    const currentFulfillment = getFulfillmentStatus();
 
     if (currentSaleType !== 'Có sẵn' && currentFulfillment !== 'Đủ hàng') {
         if (updateStatusValue.value >= 2 && getCurrentStatusCode() < 2) {
-            toastStore.showToast(`Lỗi: Không thể đóng gói khi hàng đang ${currentFulfillment}! Vui lòng chờ đủ hàng hoặc Tách đơn.`, "error");
+            toastStore.showToast(`Lỗi: Không thể đóng gói khi hàng đang ${currentFulfillment}! Vui lòng chờ đủ hàng hoặc Tách đơn.`, "warning");
             return;
         }
     }
@@ -2783,10 +2794,21 @@ const exportExcelReport = async () => {
   const selectedItemsToSplit = ref([]);
 
   // Hàm mồi để lấy tình trạng gom hàng cho Modal Chi tiết
+  const getSaleType = () => {
+    if (!selectedOrder.value) return 'Có sẵn';
+    const o = orders.value.find(x => x.id === selectedOrder.value.MaDH);
+    // Quét thêm trong Note dự phòng nếu không lấy được từ danh sách
+    if (!o && selectedOrder.value.ThongTinGiaoHang?.Note) {
+      if (selectedOrder.value.ThongTinGiaoHang.Note.includes('[PRE-ORDER]')) return 'Pre-order';
+      if (selectedOrder.value.ThongTinGiaoHang.Note.includes('[ORDER]')) return 'Order';
+    }
+    return o ? (o.saleType || 'Có sẵn') : 'Có sẵn';
+  };
+
   const getFulfillmentStatus = () => {
     if (!selectedOrder.value) return 'Đủ hàng';
     const o = orders.value.find(x => x.id === selectedOrder.value.MaDH);
-    return o ? o.fulfillmentStatus : 'Đủ hàng';
+    return o ? (o.fulfillmentStatus || 'Đủ hàng') : 'Đủ hàng';
   };
 
   const openSplitOrderModal = () => {
