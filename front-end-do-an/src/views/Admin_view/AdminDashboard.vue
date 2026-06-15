@@ -553,11 +553,21 @@
                 
                 <div class="grid grid-cols-1 gap-3">
                   
-                  <button v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6" 
-                          @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
-                          class="w-full bg-primary hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
-                    <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
-                  </button>
+                  <template v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6">
+                    
+                    <button v-if="getSaleType() !== 'Có sẵn' && getFulfillmentStatus() !== 'Đủ hàng' && getCurrentStatusCode() === 1" 
+                            @click="toastStore.showToast(`Đơn hàng đang ${getFulfillmentStatus()}. Vui lòng chờ đủ hàng hoặc Tách đơn gửi trước!`, 'warning')" 
+                            class="w-full bg-slate-100 text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 cursor-not-allowed transition-all">
+                      <span class="material-symbols-outlined text-[18px]">lock</span> Khóa: Chờ gom hàng
+                    </button>
+                    
+                    <button v-else 
+                            @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
+                            class="w-full bg-primary hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                      <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
+                    </button>
+                    
+                  </template>
 
                   <button @click="handlePrintInvoice(selectedOrder.MaDH)" 
                           class="w-full bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-600 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 hover:border-sky-200 active:scale-95 shadow-sm">
@@ -918,6 +928,12 @@
         toastStore.showToast("Vui lòng nhập Mã vận đơn trước khi giao cho Shipper!", "warning");
         return;
     }
+    if (getSaleType() !== 'Có sẵn' && getFulfillmentStatus() !== 'Đủ hàng') {
+        if (updateStatusValue.value >= 2 && getCurrentStatusCode() < 2) {
+            toastStore.showToast(`Lỗi: Không thể đóng gói khi hàng đang ${getFulfillmentStatus()}!`, "error");
+            return;
+        }
+    }
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
@@ -1210,10 +1226,8 @@
       const result = await response.json();
       
       if (result.success && result.data) {
-        if (result.success && result.data) {
           recentOrders.value = result.data.map(order => {
             const customerName = order.TenKH || order.TenNguoiNhan || 'Khách vãng lai';
-            
             return {
               id: order.MaDH, 
               code: order.MaDonHangHienThi,
@@ -1223,11 +1237,14 @@
               status: order.TrangThai, 
               total: formatPrice(order.ThanhTien),
               staffName: order.TenNV || 'Chưa phân công',
-              saleType: order.LoaiHinhBan || 'Có sẵn'
+              saleType: order.LoaiHinhBan || 'Có sẵn',
+              
+              // 🔴 BỔ SUNG 2 DỮ LIỆU RADAR TỪ BACKEND
+              fulfillmentStatus: order.TinhTrangGomHang || 'Đủ hàng',
+              note: order.Note || ''
             };
           });
         }
-      }
     } catch (error) {
       console.error("Lỗi lấy đơn hàng gần đây:", error);
     }
@@ -1574,6 +1591,24 @@
     } catch (error) {
       toastStore.showToast("Lỗi kết nối máy chủ!", "error");
     }
+  };
+
+  // --- HÀM BỔ TRỢ ĐỌC TRẠNG THÁI CHO MODAL ---
+  const getFulfillmentStatus = () => {
+    if (!selectedOrder.value) return 'Đủ hàng';
+    const o = recentOrders.value.find(x => x.id === selectedOrder.value.MaDH);
+    return o ? (o.fulfillmentStatus || 'Đủ hàng') : 'Đủ hàng';
+  };
+
+  const getSaleType = () => {
+    if (!selectedOrder.value) return 'Có sẵn';
+    const o = recentOrders.value.find(x => x.id === selectedOrder.value.MaDH);
+    // Quét thêm trong Note dự phòng nếu không lấy được từ danh sách
+    if (!o && selectedOrder.value.ThongTinGiaoHang?.Note) {
+      if (selectedOrder.value.ThongTinGiaoHang.Note.includes('[PRE-ORDER]')) return 'Pre-order';
+      if (selectedOrder.value.ThongTinGiaoHang.Note.includes('[ORDER]')) return 'Order';
+    }
+    return o ? (o.saleType || 'Có sẵn') : 'Có sẵn';
   };
   
 </script>

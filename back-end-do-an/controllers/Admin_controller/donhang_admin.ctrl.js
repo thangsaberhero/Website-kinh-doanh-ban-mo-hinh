@@ -1106,8 +1106,24 @@ const donhang_admin = {
             const { MaDH, TrangThai, MaVanDon, HangVanChuyen } = req.body;
             const MaTK = req.user.id;
 
+            // 1. LẤY TRẠNG THÁI + BÓC TAG TỪ NOTE + CHẠY RADAR GOM HÀNG
             const sql_lay_trang_thai = `
-                SELECT cttt.MaTrangThai, dh.MaDonHangHienThi
+                SELECT 
+                    cttt.MaTrangThai, 
+                    dh.MaDonHangHienThi, 
+                    dh.Note,
+                    (
+                        SELECT 
+                            CASE 
+                                WHEN COUNT(mh.MaMoHinh) = SUM(CASE WHEN mh.LoaiHinhBan NOT LIKE '%order%' THEN 1 ELSE 0 END) THEN 'Đủ hàng'
+                                WHEN SUM(CASE WHEN mh.LoaiHinhBan NOT LIKE '%order%' THEN 1 ELSE 0 END) > 0 THEN 'Về một phần'
+                                ELSE 'Chờ hàng về'
+                            END
+                        FROM ChiTietDonHang ctdh
+                        JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai
+                        JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                        WHERE ctdh.MaDH = dh.MaDH
+                    ) AS TinhTrangGomHang
                 FROM ChiTietTrangThai cttt
                 INNER JOIN DonHang dh ON cttt.MaDH = dh.MaDH
                 WHERE dh.MaDH = ?
@@ -1123,6 +1139,8 @@ const donhang_admin = {
             
             const matrangthai = trangthai[0].MaTrangThai;
             const maHienThi = trangthai[0].MaDonHangHienThi; 
+            const noteDonHang = trangthai[0].Note || '';
+            const tinhTrangGomHang = trangthai[0].TinhTrangGomHang;
 
             if(matrangthai >= 4){
                 await connection.rollback();
@@ -1133,6 +1151,40 @@ const donhang_admin = {
             }
 
             const trangThaiMoi = TrangThai ? parseInt(TrangThai) : (matrangthai + 1);
+
+            // =======================================================
+            // 🔴 CHỐT CHẶN 1: Chống đi lùi trạng thái
+            // =======================================================
+            if (trangThaiMoi <= matrangthai) {
+                await connection.rollback();
+                return res.status(400).json({
+                    success: false,
+                    message: "Lỗi logic: Không thể lùi ngược quy trình trạng thái của đơn hàng!"
+                });
+            }
+
+            // =======================================================
+            // 🔴 CHỐT CHẶN 2: Logic bảo vệ hàng Order/Pre-order
+            // =======================================================
+            const isOrderOrPreOrder = noteDonHang.startsWith('[PRE-ORDER]') || noteDonHang.startsWith('[ORDER]');
+            
+            if (isOrderOrPreOrder) {
+                // Nếu đang cố gắng chuyển sang trạng thái 2 (Đóng gói) hoặc 3 (Vận chuyển)
+                if (trangThaiMoi >= 2) {
+                    // Nếu hàng thực tế chưa về kho đủ -> ĐÁ VĂNG
+                    if (tinhTrangGomHang !== 'Đủ hàng') {
+                        await connection.rollback();
+                        return res.status(400).json({
+                            success: false,
+                            message: `Đơn hàng này thuộc loại Pre-order/Order và hiện đang "${tinhTrangGomHang}". Bạn không thể Đóng gói hay Vận chuyển khi chưa có đủ hàng! Vui lòng chờ hàng về hoặc Tách đơn.`
+                        });
+                    }
+                }
+            }
+
+            // =======================================================
+            // 🔴 CHỐT CHẶN 3: Kiểm tra vận đơn khi chuyển sang Giao hàng
+            // =======================================================
             if (trangThaiMoi === 3) {
                 if (!MaVanDon || !HangVanChuyen || MaVanDon.trim() === '') {
                     await connection.rollback();

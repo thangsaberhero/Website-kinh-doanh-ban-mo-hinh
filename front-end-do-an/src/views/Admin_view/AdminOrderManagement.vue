@@ -705,11 +705,21 @@
                         <span class="material-symbols-outlined text-[18px]">call_split</span> Tách đơn gửi trước
                       </button>
 
-                      <button v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6" 
-                              @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
-                              class="w-full bg-primary hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
-                        <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
-                      </button>
+                      <template v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6">
+                        
+                        <button v-if="selectedOrder.saleType !== 'Có sẵn' && selectedOrder.fulfillmentStatus !== 'Đủ hàng' && getCurrentStatusCode() === 1" 
+                                @click="toastStore.showToast(`Đơn hàng đang ${selectedOrder.fulfillmentStatus}. Vui lòng chờ đủ hàng hoặc Tách đơn gửi trước!`, 'warning')" 
+                                class="w-full bg-slate-100 text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 cursor-not-allowed transition-all">
+                          <span class="material-symbols-outlined text-[18px]">lock</span> Khóa: Chờ gom hàng
+                        </button>
+                        
+                        <button v-else 
+                                @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
+                                class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                          <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
+                        </button>
+                        
+                      </template>
     
                       <button @click="handlePrintInvoice(selectedOrder.MaDH)" 
                               class="w-full bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-600 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 hover:border-sky-200 active:scale-95 shadow-sm">
@@ -1987,6 +1997,17 @@ const exportExcelReport = async () => {
         return;
     }
 
+    const foundOrder = orders.value.find(o => o.id === selectedOrder.value.MaDH);
+    const currentSaleType = foundOrder ? (foundOrder.saleType || 'Có sẵn') : 'Có sẵn';
+    const currentFulfillment = foundOrder ? (foundOrder.fulfillmentStatus || 'Đủ hàng') : 'Đủ hàng';
+
+    if (currentSaleType !== 'Có sẵn' && currentFulfillment !== 'Đủ hàng') {
+        if (updateStatusValue.value >= 2 && getCurrentStatusCode() < 2) {
+            toastStore.showToast(`Lỗi: Không thể đóng gói khi hàng đang ${currentFulfillment}! Vui lòng chờ đủ hàng hoặc Tách đơn.`, "error");
+            return;
+        }
+    }
+
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update`, {
@@ -2011,10 +2032,7 @@ const exportExcelReport = async () => {
             isDetailModalOpen.value = false; 
         }
         
-        // Load lại danh sách tùy file (Có thể là fetchOrders hoặc fetchRecentOrders)
-        if (typeof fetchOrders === 'function') fetchOrders();
-        if (typeof fetchRecentOrders === 'function') fetchRecentOrders();
-        if (typeof fetchDashboardData === 'function') fetchDashboardData();
+        fetchOrders();
       } 
       else {
         toastStore.showToast(result.message || 'Không thể cập nhật trạng thái.', 'error');
