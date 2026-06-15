@@ -2504,7 +2504,7 @@ const exportExcelReport = async () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/refund-status`, {
         method: 'PUT',
         headers: {

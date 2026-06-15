@@ -4,7 +4,7 @@
     <div class="flex flex-1 overflow-hidden w-full max-w-7xl mx-auto">     
       <aside 
         :class="[
-          'fixed inset-y-0 left-0 z-50 w-72 bg-surface-container-low border-r border-outline-variant/30 overflow-y-auto custom-scrollbar transform transition-transform duration-300 lg:relative lg:translate-x-0 lg:flex lg:flex-col shadow-2xl lg:shadow-none',
+          'fixed inset-y-0 left-0 z-[70] lg:z-auto w-72 bg-surface-container-low border-r border-outline-variant/30 overflow-y-auto custom-scrollbar transform transition-transform duration-300 lg:relative lg:translate-x-0 lg:flex lg:flex-col shadow-2xl lg:shadow-none',
           showMobileFilter ? 'translate-x-0' : '-translate-x-full'
         ]"
       >
@@ -86,7 +86,7 @@
         </div>    
       </aside>
 
-      <div v-if="showMobileFilter" @click="showMobileFilter = false" class="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"></div>
+      <div v-if="showMobileFilter" @click="showMobileFilter = false" class="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-sm"></div>
 
       <main class="flex-1 overflow-y-auto bg-surface p-6 lg:p-12 custom-scrollbar">
         <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
