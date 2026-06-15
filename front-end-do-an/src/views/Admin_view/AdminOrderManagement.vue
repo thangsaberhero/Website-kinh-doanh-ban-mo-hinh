@@ -1495,7 +1495,13 @@
                 <p class="font-bold text-slate-900 text-sm line-clamp-1">{{ item.TenMH }}</p>
                 <p class="text-[10px] text-slate-500 font-medium mt-0.5">Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }} | SL: {{ item.SoLuong }}</p>
               </div>
-              <p class="font-bold text-rose-500 text-sm">{{ formatPrice(item.ThanhTienSP) }}</p>
+              
+              <div class="shrink-0">
+                  <span class="text-[9px] px-2 py-1 rounded-md border font-black tracking-widest whitespace-nowrap"
+                        :class="(item.LoaiHinhBan || '').toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
+                      {{ (item.LoaiHinhBan || '').toLowerCase().includes('order') ? 'ORDER' : 'SẴN' }}
+                  </span>
+              </div>
             </div>
           </div>
           
@@ -2826,6 +2832,21 @@ const exportExcelReport = async () => {
       return;
     }
 
+    const selectedItems = selectedOrder.value.DanhSachHang.filter(item => 
+      selectedItemsToSplit.value.includes(item.MaPhanLoai)
+    );
+
+    const hasInStock = selectedItems.some(item => !(item.LoaiHinhBan || '').toLowerCase().includes('order'));
+    const hasOrder = selectedItems.some(item => (item.LoaiHinhBan || '').toLowerCase().includes('order'));
+
+    if (hasInStock && hasOrder) {
+      toastStore.showToast("Cảnh báo: Không thể gộp chung sản phẩm Có sẵn và Order vào 1 gói tách. Vui lòng chỉ tick chọn các sản phẩm cùng loại!", "error");
+      return;
+    }
+
+    // =========================================================
+    // Gọi API Tách đơn nếu mọi thứ hợp lệ
+    // =========================================================
     try {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/tach_don`, {
@@ -2833,7 +2854,7 @@ const exportExcelReport = async () => {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           MaDH: selectedOrder.value.MaDH,
-          DanhSachTach: selectedItemsToSplit.value // Mảng chứa các MaPhanLoai cần bốc đi
+          DanhSachTach: selectedItemsToSplit.value 
         })
       });
       
@@ -2842,8 +2863,15 @@ const exportExcelReport = async () => {
       if (response.ok && result.success) {
         toastStore.showToast(`Tách thành công! Đơn gốc: ${result.DonGoc} | Đơn mới: ${result.DonMoi}`, "success");
         isSplitOrderModalOpen.value = false;
-        isDetailModalOpen.value = false; // Đóng luôn modal chi tiết để làm mới dữ liệu
-        fetchOrders();
+        
+        if (typeof isDetailModalOpen !== 'undefined') {
+            isDetailModalOpen.value = false; 
+        }
+        
+        // Load lại danh sách tùy file
+        if (typeof fetchOrders === 'function') fetchOrders();
+        if (typeof fetchRecentOrders === 'function') fetchRecentOrders();
+        if (typeof fetchDashboardData === 'function') fetchDashboardData();
       } else {
         toastStore.showToast(result.message || "Tách đơn thất bại.", "error");
       }
