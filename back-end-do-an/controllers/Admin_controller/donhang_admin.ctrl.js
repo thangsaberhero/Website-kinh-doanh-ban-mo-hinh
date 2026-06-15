@@ -712,6 +712,10 @@ const donhang_admin = {
                 const searchPattern = `%${tensanpham.trim()}%`;
                 whereValues.push(searchPattern, searchPattern, searchPattern);
             }
+
+            // ... (Các điều kiện lọc ngày tháng, tiền tệ, trạng thái thanh toán bồ giữ nguyên nhé) ...
+
+            // 🔴 LỌC BẰNG CỘT NOTE: Lọc trực tiếp Tag ở mệnh đề WHERE
             if (loaihinhban && loaihinhban !== 'all') {
                 if (loaihinhban === 'order') {
                     conditions.push("(dh.Note LIKE '[PRE-ORDER]%' OR dh.Note LIKE '[ORDER]%')");
@@ -737,11 +741,15 @@ const donhang_admin = {
                 SELECT dh.MaDH, dh.MaDonHangHienThi, dh.MaKH, dh.MaNV, kh.TenKH, nv.TenNV,
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.HangVanChuyen, dh.MaVanDon,
                 dh.ThanhTien, dh.TrangThaiThanhToan,
+                
+                -- 🔴 ẢO THUẬT 1: Sinh ra cột LoaiHinhBan từ Tag trong Note
                 CASE
                     WHEN dh.Note LIKE '[PRE-ORDER]%' THEN 'Pre-order'
                     WHEN dh.Note LIKE '[ORDER]%' THEN 'Order'
                     ELSE 'Có sẵn'
                 END AS LoaiHinhBan,
+
+                -- 🔴 ẢO THUẬT 2: Trả lại cột Note sạch sẽ
                 CASE
                     WHEN dh.Note LIKE '[PRE-ORDER] %' THEN TRIM(SUBSTRING(dh.Note, 13))
                     WHEN dh.Note LIKE '[PRE-ORDER]' THEN ''
@@ -751,6 +759,8 @@ const donhang_admin = {
                     WHEN dh.Note LIKE '[SẴN]' THEN ''
                     ELSE dh.Note
                 END AS Note,
+
+                -- 🔴 ẢO THUẬT 3: RADAR DÒ TÌM TÌNH TRẠNG GOM HÀNG THỰC TẾ
                 (
                     SELECT 
                         CASE 
@@ -810,16 +820,40 @@ const donhang_admin = {
                 ${filter}
                 LIMIT ? OFFSET ?
             `;
+            
             const sql_params = [...combinedValues, limit, offset];
             const [invoices] = await db.query(sql_ds, sql_params);
 
-            // ... (Đoạn đếm Summary giữ nguyên) ...
-            
+            const sql_summary = `
+                SELECT 
+                    Latest.MaTrangThai, 
+                    tt.TenTrangThai, 
+                    COUNT(*) AS SoLuongDon
+                FROM (
+                    SELECT 
+                        (SELECT MaTrangThai FROM ChiTietTrangThai cttt WHERE cttt.MaDH = dh.MaDH ORDER BY Thoigian DESC LIMIT 1) AS MaTrangThai
+                    FROM DonHang dh
+                ) AS Latest
+                INNER JOIN TrangThai tt ON tt.MaTrangThai = Latest.MaTrangThai
+                GROUP BY Latest.MaTrangThai, tt.TenTrangThai
+            `;
+            const [summaryData] = await db.query(sql_summary);
+            const summaryCounters = summaryData.reduce((acc, item) => {
+                acc[item.MaTrangThai] = item.SoLuongDon;
+                return acc;
+            }, {});
+
             res.status(200).json({
                 success: true,
                 message: "Lấy thông tin danh sách đơn hàng thành công!",
                 data: invoices,
-                // ...
+                summary: summaryCounters,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: totalItems,
+                    totalPage: totalPage
+                }
             });                    
         }
         catch (error) {
