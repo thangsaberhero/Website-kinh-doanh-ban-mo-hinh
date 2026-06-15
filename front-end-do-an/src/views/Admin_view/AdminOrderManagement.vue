@@ -262,15 +262,22 @@
                           {{ getOrderStatusBadge(order.orderStatus).text }}
                         </span>
                         
-                        <div v-if="isSLA_Breached(order)" class="relative group/sla cursor-help flex items-center justify-center">
-                          <span class="material-symbols-outlined text-amber-500 text-[16px] drop-shadow-sm">warning</span>
-                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-lg opacity-0 group-hover/sla:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-slate-700 whitespace-normal">
-                            <span class="font-bold text-amber-400 block mb-1">Cảnh báo SLA:</span> 
-                            Đơn hàng chờ duyệt quá <strong class="text-rose-400">24 tiếng</strong>. Cần xử lý ngay!
-                          </div>
-                        </div>
+                        <div v-if="isSLA_Breached(order)" class="relative group/sla...">...</div>
                       </div>
                       
+                      <span v-if="order.saleType !== 'Có sẵn' && order.statusId < 3"
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border"
+                            :class="{
+                              'bg-emerald-50 text-emerald-600 border-emerald-200': order.fulfillmentStatus === 'Đủ hàng',
+                              'bg-amber-50 text-amber-600 border-amber-200': order.fulfillmentStatus === 'Về một phần',
+                              'bg-slate-100 text-slate-500 border-slate-200': order.fulfillmentStatus === 'Chờ hàng về'
+                            }">
+                         <span class="material-symbols-outlined text-[12px]">
+                           {{ order.fulfillmentStatus === 'Đủ hàng' ? 'inventory_2' : (order.fulfillmentStatus === 'Về một phần' ? 'call_split' : 'hourglass_bottom') }}
+                         </span>
+                         {{ order.fulfillmentStatus }}
+                      </span>
+
                       <span class="text-[11px] font-medium text-slate-400">{{ order.time }} - {{ order.date }}</span>
                     </div>
                   </td>
@@ -692,7 +699,12 @@
                     </h4>
                     
                     <div class="grid grid-cols-1 gap-3">
-                      
+                      <button v-if="getFulfillmentStatus() === 'Về một phần' && getCurrentStatusCode() === 1" 
+                              @click="openSplitOrderModal" 
+                              class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                        <span class="material-symbols-outlined text-[18px]">call_split</span> Tách đơn gửi trước
+                      </button>
+
                       <button v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6" 
                               @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
                               class="w-full bg-primary hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
@@ -1435,6 +1447,50 @@
         </div>
       </div>
     </div>
+
+    <div v-if="isSplitOrderModalOpen && selectedOrder" class="fixed inset-0 z-[300] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-amber-100 flex justify-between items-center bg-amber-50 shrink-0">
+          <h3 class="text-lg font-bold text-amber-700 flex items-center gap-2">
+            <span class="material-symbols-outlined">call_split</span> Tách đơn hàng gửi trước
+          </h3>
+          <button @click="isSplitOrderModalOpen = false" class="text-slate-400 hover:text-amber-700 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-slate-600 font-medium">
+            Chọn các sản phẩm <strong class="text-rose-500">CHƯA VỀ KHO (Pre-order)</strong> để tách sang một mã đơn hàng mới. Các sản phẩm không được chọn sẽ giữ lại ở đơn gốc để đóng gói gửi đi.
+          </p>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+            <div v-for="item in selectedOrder.DanhSachHang" :key="item.MaPhanLoai" 
+                 class="flex items-center gap-3 p-4 bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer">
+              <input type="checkbox" :value="item.MaPhanLoai" v-model="selectedItemsToSplit" class="w-5 h-5 text-amber-500 rounded focus:ring-amber-500 cursor-pointer">
+              <img :src="item.AnhDaiDien ? (item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`) : ''" class="w-12 h-12 object-cover rounded-lg border border-slate-200">
+              <div class="flex-1">
+                <p class="font-bold text-slate-900 text-sm line-clamp-1">{{ item.TenMH }}</p>
+                <p class="text-[10px] text-slate-500 font-medium mt-0.5">Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }} | SL: {{ item.SoLuong }}</p>
+              </div>
+              <p class="font-bold text-rose-500 text-sm">{{ formatPrice(item.ThanhTienSP) }}</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 text-blue-700 p-3 rounded-xl border border-blue-100 flex items-start gap-2">
+            <span class="material-symbols-outlined text-[16px] mt-0.5">info</span>
+            <p class="text-[11px] font-medium leading-relaxed">Hệ thống sẽ tự động tính toán lại Tổng tiền hàng, Giảm giá và chia đều Tiền Cọc theo đúng tỷ lệ giá trị cho cả Đơn gốc và Đơn mới.</p>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="isSplitOrderModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Hủy</button>
+          <button @click="submitSplitOrder" class="px-5 py-2.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20 rounded-xl transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">call_split</span> Xác nhận Tách
+          </button>
+        </div>
+      </div>
+    </div>
 </template>
   
 <script setup>
@@ -1797,7 +1853,6 @@ const exportExcelReport = async () => {
           return {
             id: item.MaDH,
             code: item.MaDonHangHienThi || `#FC-${item.MaDH}`,
-            carrier: 'Giao Hàng Nhanh',
             customer: item.TenNguoiNhan || `Khách hàng (Mã KH: ${item.MaKH})`,
             staffName: item.TenNV || 'Chưa phân công',
             orderStatus: item.TrangThai || 'Chờ duyệt',
@@ -1810,11 +1865,12 @@ const exportExcelReport = async () => {
             paymentType: item.LoaiGiaoDich || 'Thanh toán toàn bộ',
             transactionAmount: Number(item.SoTienGiaoDich) || 0,
             transactionDate: item.NgayThanhToan ? new Date(item.NgayThanhToan).toLocaleString('vi-VN') : 'Chưa thu tiền',
-            saleType: item.LoaiHinhBan || 'Có sẵn',
             carrier: item.HangVanChuyen || 'Chưa gán hãng', 
             trackingCode: item.MaVanDon || null,
+            rawDate: item.NgayLapDon,
+            saleType: item.LoaiHinhBan || 'Có sẵn',
             note: item.Note || '',
-            rawDate: item.NgayLapDon
+            fulfillmentStatus: item.TinhTrangGomHang || 'Đủ hàng'
           };
         });
       }
@@ -2701,6 +2757,59 @@ const exportExcelReport = async () => {
     } catch (err) {
       console.error('Lỗi khi copy: ', err);
       toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
+    }
+  };
+
+  // --- QUẢN LÝ TÁCH ĐƠN HÀNG (SPLIT ORDER) ---
+  const isSplitOrderModalOpen = ref(false);
+  const selectedItemsToSplit = ref([]);
+
+  // Hàm mồi để lấy tình trạng gom hàng cho Modal Chi tiết
+  const getFulfillmentStatus = () => {
+    if (!selectedOrder.value) return 'Đủ hàng';
+    const o = orders.value.find(x => x.id === selectedOrder.value.MaDH);
+    return o ? o.fulfillmentStatus : 'Đủ hàng';
+  };
+
+  const openSplitOrderModal = () => {
+    selectedItemsToSplit.value = []; // Reset mảng chọn
+    isSplitOrderModalOpen.value = true;
+  };
+
+  const submitSplitOrder = async () => {
+    if (selectedItemsToSplit.value.length === 0) {
+      toastStore.showToast("Vui lòng chọn ít nhất 1 sản phẩm chưa về để tách!", "warning");
+      return;
+    }
+    if (selectedItemsToSplit.value.length === selectedOrder.value.DanhSachHang.length) {
+      toastStore.showToast("Không thể tách toàn bộ! Vui lòng giữ lại ít nhất 1 món ở đơn gốc.", "warning");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/tach_don`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          MaDH: selectedOrder.value.MaDH,
+          DanhSachTach: selectedItemsToSplit.value // Mảng chứa các MaPhanLoai cần bốc đi
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        toastStore.showToast(`Tách thành công! Đơn gốc: ${result.DonGoc} | Đơn mới: ${result.DonMoi}`, "success");
+        isSplitOrderModalOpen.value = false;
+        isDetailModalOpen.value = false; // Đóng luôn modal chi tiết để làm mới dữ liệu
+        fetchOrders();
+      } else {
+        toastStore.showToast(result.message || "Tách đơn thất bại.", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API tách đơn:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
     }
   };
 
