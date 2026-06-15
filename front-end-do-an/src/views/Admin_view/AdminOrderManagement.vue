@@ -686,8 +686,8 @@
                 </div>
 
                 <div class="w-full xl:w-96 shrink-0 xl:sticky xl:top-0 space-y-4">
-                  <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white space-y-5">
-                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5">
+                  <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-3 flex items-center gap-1.5">
                       <span class="material-symbols-outlined text-[16px] text-[#ff8f73]">tune</span> Điều khiển lệnh
                     </h4>
                     
@@ -700,19 +700,19 @@
                       </button>
     
                       <button @click="handlePrintInvoice(selectedOrder.MaDH)" 
-                              class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 active:scale-95">
-                        <span class="material-symbols-outlined text-[18px] text-sky-400">print</span> In hóa đơn
+                              class="w-full bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-600 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 hover:border-sky-200 active:scale-95 shadow-sm">
+                        <span class="material-symbols-outlined text-[18px] text-sky-500">print</span> In hóa đơn
                       </button>
     
                       <button v-if="getCurrentStatusCode() === 1 || getCurrentStatusCode() === 2"
                               @click="cancelOrder(selectedOrder)" 
-                              class="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                              class="w-full bg-rose-50 hover:bg-rose-500 text-rose-600 hover:text-white border border-rose-200 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm">
                         <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn hàng
                       </button>
     
                       <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4"
                               @click="returnOrder(selectedOrder)" 
-                              class="w-full bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white border border-purple-500/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                              class="w-full bg-purple-50 hover:bg-purple-500 text-purple-600 hover:text-white border border-purple-200 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm">
                         <span class="material-symbols-outlined text-[18px]">assignment_return</span> Hoàn hàng
                       </button>
     
