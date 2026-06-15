@@ -232,7 +232,7 @@
                 </span>
               </div>
 
-              <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus.includes('Đóng gói') || currentOrderStatus.includes('Vận chuyển'))">
+              <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus === 'Đang đóng gói') || currentOrderStatus.includes('Vận chuyển'))">
                 <div class="pt-6 flex flex-col gap-3">
                   <p class="text-[10px] text-outline font-bold uppercase tracking-widest text-center mb-1">Hãy chọn cách thanh toán phần còn lại</p>
                   
