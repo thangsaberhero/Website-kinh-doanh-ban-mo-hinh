@@ -35,8 +35,7 @@
             </button>
           </template>
 
-          <template v-if="orderInfo.TrangThaiThanhToan === 'Đã đặt cọc' && (currentOrderStatus.includes('Đóng gói') || currentOrderStatus.includes('Vận chuyển'))">
-            
+          <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus.includes('Đóng gói'))">
             <button @click="openRepayRemaining"
                     class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 active:scale-95">
               <span class="material-symbols-outlined text-lg">credit_card</span>
@@ -282,7 +281,7 @@
             </div>
           </template>
 
-          <template v-else-if="orderInfo.TrangThaiThanhToan === 'Đã đặt cọc'">
+          <template v-else-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc')">
             <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl mb-6 flex flex-col items-center justify-center">
               <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">Thanh toán phần còn lại</p>
               <p class="text-3xl font-black text-white tracking-tight">{{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}</p>
@@ -604,9 +603,9 @@
     try {
       const endpoint = paymentGateway.value === 'momo' ? '/api/don_hang/payment/momo/create' : '/api/don_hang/payment/zalopay/create';
       
-      // 🔴 ĐÃ SỬA: Đổi cờ báo hiệu cho Backend biết đây là đợt thanh toán nốt
+      //Đổi cờ báo hiệu cho Backend biết đây là đợt thanh toán nốt
       let hinhThucGuiLen = repayMethod.value;
-      if (orderInfo.value.TrangThaiThanhToan === 'Đã đặt cọc') {
+      if (orderInfo.value.TrangThaiThanhToan?.toLowerCase().includes('cọc')) {
           hinhThucGuiLen = 'Thanh toán phần còn lại';
       }
 
