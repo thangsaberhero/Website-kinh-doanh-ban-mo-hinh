@@ -901,9 +901,9 @@ const donhang_admin = {
             // 2. LẤY DANH SÁCH SẢN PHẨM
             const sql_products = `
                 SELECT 
-                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu,
+                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu, mh.LoaiHinhBan,
                     ct.LaHangKhuyenMai, ct.GiaNhapThucTe, ct.DonGiaGoc, ct.DonGiaBan,
-                    pl.MaPhanLoai, pl.ChiTietPhanLoai, ct.SoLuong,
+                    pl.MaPhanLoai, pl.ChiTietPhanLoai, ct.SoLuong, 
                     ((ct.DonGiaGoc - ct.DonGiaBan) * ct.SoLuong) AS SoTienKhuyenMai
                 FROM MoHinh mh
                 INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
