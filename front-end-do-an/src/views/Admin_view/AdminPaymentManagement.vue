@@ -73,7 +73,7 @@
           
           <div class="p-6 flex flex-col xl:flex-row justify-between gap-6 items-start xl:items-center border-b border-slate-100 bg-slate-50/30">
             <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-              <select v-model="filterParams.phuongthuc" class="border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 bg-white shadow-sm outline-none cursor-pointer focus:border-[#ff8f73]">
+              <select v-model="filterParams.phuongthuc" class="border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 bg-white shadow-sm outline-none cursor-pointer focus:border-primary">
                 <option value="all">Tất cả phương thức</option>
                 <option value="1">Ví điện tử MoMo</option>
                 <option value="2">Thu hộ COD</option>
@@ -81,7 +81,7 @@
                 <option value="5">Tiền mặt tại quầy</option>
               </select>
 
-              <select v-model="filterParams.loai" class="border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 bg-white shadow-sm outline-none cursor-pointer focus:border-[#ff8f73]">
+              <select v-model="filterParams.loai" class="border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 bg-white shadow-sm outline-none cursor-pointer focus:border-primary">
                 <option value="all">Tất cả loại luồng</option>
                 <option value="thu">Luồng tiền vào (+)</option>
                 <option value="chi">Luồng tiền ra (-)</option>
@@ -102,7 +102,7 @@
 
               <div class="relative w-full md:w-64">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
-                <input type="text" v-model="filterParams.timkiem" placeholder="Tìm mã đơn #FC, mã MoMo/Bank..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:border-[#ff8f73] focus:ring-4 focus:ring-[#ff8f73]/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
+                <input type="text" v-model="filterParams.timkiem" placeholder="Tìm mã đơn #FC, mã MoMo/Bank..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@
                           v-model="inputRefCode" 
                           type="text" 
                           placeholder="Nhập mã..." 
-                          class="border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/10 w-28 font-mono font-bold"
+                          class="border border-slate-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 w-28 font-mono font-bold"
                         />
                         <button @click="saveRefCode(item.MaTT)" class="bg-emerald-500 text-white p-1 rounded-md hover:bg-emerald-600 flex items-center transition-colors shadow-sm">
                           <span class="material-symbols-outlined text-[14px]">check</span>
@@ -255,7 +255,7 @@
               <button 
                 @click="changePage(currentPage - 1)" 
                 :disabled="currentPage === 1"
-                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50"
+                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50"
               >
                 <span class="material-symbols-outlined text-sm">chevron_left</span>
               </button>
@@ -265,8 +265,8 @@
                 :key="p" 
                 @click="changePage(p)"
                 :class="currentPage === p 
-                  ? 'bg-[#ff8f73] text-white shadow-lg border-transparent' 
-                  : 'bg-white border-slate-200 text-slate-500 hover:text-[#ff8f73]'"
+                  ? 'bg-primary text-white shadow-lg border-transparent' 
+                  : 'bg-white border-slate-200 text-slate-500 hover:text-primary'"
                 class="w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold border transition-all"
               >
                 {{ p }}
@@ -275,7 +275,7 @@
               <button 
                 @click="changePage(currentPage + 1)" 
                 :disabled="currentPage === totalPages"
-                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73]"
+                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary"
               >
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
               </button>

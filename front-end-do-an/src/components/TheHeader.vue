@@ -12,7 +12,7 @@
           <router-link to="/category" active-class="text-primary font-bold" class="text-sm font-medium hover:text-primary transition-colors">Cửa hàng</router-link>
           <router-link to="/news" active-class="text-primary font-bold" class="text-sm font-medium hover:text-primary transition-colors">Tin tức</router-link>
           <router-link to="/contact" active-class="text-primary font-bold" class="text-sm font-medium hover:text-primary transition-colors">Liên hệ</router-link>
-          <router-link to="/truy-xuat/" active-class="text-primary font-bold" class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff] hover:text-primary transition-colors">Truy xuất Blockchain</router-link>
+          <router-link to="/truy-xuat/" active-class="text-primary font-bold" class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary hover:text-primary transition-colors">Truy xuất Blockchain</router-link>
         </div>
       </div>
 
@@ -212,7 +212,7 @@
           <router-link to="/news" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Tin tức</router-link>
           <router-link to="/contact" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Liên hệ</router-link>
           <router-link to="/wishlist" @click="showMobileMenu = false" class="py-3 text-sm font-medium">Mô hình yêu thích</router-link>
-          <router-link to="/truy-xuat/" @click="showMobileMenu = false" class="py-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#ff8f73] to-[#e9aaff]">Truy xuất Blockchain</router-link>
+          <router-link to="/truy-xuat/" @click="showMobileMenu = false" class="py-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary">Truy xuất Blockchain</router-link>
         </div>
       </div>
     </transition>

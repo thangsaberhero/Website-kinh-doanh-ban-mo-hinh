@@ -29,7 +29,7 @@
           </label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">dialpad</span>
-            <input v-model="searchPhone" @input="searchPhone = searchPhone.replace(/[^0-9]/g, '')" type="text" placeholder="Nhập SĐT cần tìm..." @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all font-medium text-slate-700">
+            <input v-model="searchPhone" @input="searchPhone = searchPhone.replace(/[^0-9]/g, '')" type="text" placeholder="Nhập SĐT cần tìm..." @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-medium text-slate-700">
           </div>
         </div>
 
@@ -39,7 +39,7 @@
           </label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">map</span>
-            <input v-model="searchAddress" type="text" placeholder="VD: Hà Nội, Hồ Chí Minh..." @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all font-medium text-slate-700">
+            <input v-model="searchAddress" type="text" placeholder="VD: Hà Nội, Hồ Chí Minh..." @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-medium text-slate-700">
           </div>
         </div>
 
@@ -48,7 +48,7 @@
           <label class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
             <span class="material-symbols-outlined text-[16px]">toggle_on</span> Trạng thái tài khoản
           </label>
-          <select v-model="filterStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all font-medium text-slate-700 cursor-pointer">
+          <select v-model="filterStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-medium text-slate-700 cursor-pointer">
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang hoạt động</option>
             <option value="locked">Đã bị khóa</option>
@@ -63,11 +63,11 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <p class="text-[10px] text-slate-500 mb-1 font-bold">Từ ngày</p>
-              <input v-model="fromDate" :max="toDate" type="date" @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none text-slate-700 cursor-pointer">
+              <input v-model="fromDate" :max="toDate" type="date" @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-slate-700 cursor-pointer">
             </div>
             <div>
               <p class="text-[10px] text-slate-500 mb-1 font-bold">Đến ngày</p>
-              <input v-model="toDate" :min="fromDate" type="date" @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none text-slate-700 cursor-pointer">
+              <input v-model="toDate" :min="fromDate" type="date" @keyup.enter="applyFilters" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-slate-700 cursor-pointer">
             </div>
           </div>
         </div>
@@ -79,8 +79,8 @@
           </label>
           <div class="flex flex-col gap-3">
             <label class="flex items-center gap-3 cursor-pointer group">
-              <input v-model="filterRoles.Collector" type="checkbox" class="w-4 h-4 text-[#ff8f73] border-slate-300 rounded focus:ring-[#ff8f73] transition-all">
-              <span class="text-sm font-medium text-slate-700 group-hover:text-[#ff8f73] transition-colors">Collector (Khách hàng)</span>
+              <input v-model="filterRoles.Collector" type="checkbox" class="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary transition-all">
+              <span class="text-sm font-medium text-slate-700 group-hover:text-primary transition-colors">Collector (Khách hàng)</span>
             </label>
             <label class="flex items-center gap-3 cursor-pointer group">
               <input v-model="filterRoles.Staff" type="checkbox" class="w-4 h-4 text-slate-600 border-slate-300 rounded focus:ring-slate-600 transition-all">
@@ -96,7 +96,7 @@
 
       <div class="p-6 border-t border-slate-100 flex gap-3 bg-white shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <button @click="resetFilters" class="flex-1 py-3 px-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">Đặt lại</button>
-        <button @click="applyFilters" class="flex-[2] py-3 px-4 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all text-sm">Áp dụng</button>
+        <button @click="applyFilters" class="flex-[2] py-3 px-4 rounded-xl font-bold text-white bg-primary hover:bg-[#ff3d00] shadow-lg shadow-primary/20 transition-all text-sm">Áp dụng</button>
       </div>
     </div>
     <div 
@@ -137,7 +137,7 @@
               
               <select v-model="viewingUser.status" :disabled="viewingUser.id === currentAdminId"
                     :title="viewingUser.id === currentAdminId ? 'Bạn không thể thay đổi trạng thái của chính mình' : ''"
-                    class="border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none bg-white shadow-sm cursor-pointer disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                    class="border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white shadow-sm cursor-pointer disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
                 <option value="Hoạt động">Hoạt động</option>
                 <option value="Bị khóa">Bị khóa</option>
               </select>
@@ -158,7 +158,7 @@
             <div>
               <p class="text-[11px] text-slate-500 mb-1 font-bold">Email liên hệ</p>
               <p v-if="!isDrawerEditMode" class="text-sm font-semibold text-slate-900 truncate" :title="viewingUser.email">{{ viewingUser.email }}</p>
-              <input v-else v-model="viewingUser.email" type="email" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all text-slate-900">
+              <input v-else v-model="viewingUser.email" type="email" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-slate-900">
             </div>
           </div>
         </div>
@@ -172,18 +172,18 @@
               <div>
                 <p class="text-[11px] text-slate-500 mb-1 font-bold">Họ và tên thực</p>
                 <p v-if="!isDrawerEditMode" class="text-sm font-semibold text-slate-900">{{ viewingUser.name }}</p>
-                <input v-else v-model="viewingUser.name" type="text" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all text-slate-900">
+                <input v-else v-model="viewingUser.name" type="text" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-slate-900">
               </div>
               <div>
                 <p class="text-[11px] text-slate-500 mb-1 font-bold">Số điện thoại</p>
                 <p v-if="!isDrawerEditMode" class="text-sm font-semibold text-slate-900">{{ viewingUser.phone }}</p>
-                <input v-else v-model="viewingUser.phone" type="text" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all text-slate-900">
+                <input v-else v-model="viewingUser.phone" type="text" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-slate-900">
               </div>
             </div>
             <div>
               <p class="text-[11px] text-slate-500 mb-1 font-bold">Địa chỉ cư trú</p>
               <p v-if="!isDrawerEditMode" class="text-sm font-semibold text-slate-900">{{ viewingUser.address }}</p>
-              <input v-else v-model="viewingUser.address" type="text" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all text-slate-900">
+              <input v-else v-model="viewingUser.address" type="text" class="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-slate-900">
             </div>
             <div v-if="viewingUser.role === 'Collector'" class="space-y-4">
               <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
@@ -196,7 +196,7 @@
                 </div>
                 <div>
                   <p class="text-[11px] text-slate-500 mb-1 font-bold">Tổng chi tiêu</p>
-                  <p class="text-lg font-brand font-bold text-[#ff8f73]">{{ new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(viewingUser.totalSpent || 0) }}</p>
+                  <p class="text-lg font-brand font-bold text-primary">{{ new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(viewingUser.totalSpent || 0) }}</p>
                 </div>
               </div>
             </div>
@@ -237,7 +237,7 @@
       </div>
       
       <div class="p-6 border-t border-slate-100 bg-slate-50 shrink-0 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <button v-if="!isDrawerEditMode" @click="toggleDrawerEditMode" class="flex-1 py-3 rounded-xl font-bold text-[#ff8f73] bg-[#ff8f73]/10 hover:bg-[#ff8f73]/20 transition-colors text-sm flex items-center justify-center gap-2">
+        <button v-if="!isDrawerEditMode" @click="toggleDrawerEditMode" class="flex-1 py-3 rounded-xl font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors text-sm flex items-center justify-center gap-2">
           <span class="material-symbols-outlined text-[18px]">edit</span> Chỉnh sửa tài khoản
         </button>
 
@@ -245,7 +245,7 @@
           <button @click="cancelDrawerEdits" class="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 transition-colors text-sm">
             Hủy bỏ
           </button>
-          <button @click="saveDrawerEdits" class="flex-[2] py-3 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] transition-colors text-sm shadow-lg shadow-[#ff8f73]/20">
+          <button @click="saveDrawerEdits" class="flex-[2] py-3 rounded-xl font-bold text-white bg-primary hover:bg-[#ff3d00] transition-colors text-sm shadow-lg shadow-primary/20">
             Lưu thông tin
           </button>
         </template>
@@ -259,7 +259,7 @@
             <h1 class="text-3xl font-brand font-bold text-slate-900 mb-1 tracking-tight">Quản lý người dùng</h1>
             <p class="text-slate-500 text-sm font-medium">Hệ thống kiểm soát và phân quyền người dùng trong hệ sinh thái.</p>
           </div>
-          <button @click="openAddUserModal" class="bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
+          <button @click="openAddUserModal" class="bg-primary hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95 text-sm">
             <span class="material-symbols-outlined text-[20px]">person_add</span>
             Thêm người dùng mới
           </button>
@@ -299,7 +299,7 @@
             <div class="relative z-10">
               <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Đăng ký mới</p>
               <p class="text-3xl font-brand font-bold text-slate-900">{{ userStats.NewThisMonth }}</p>
-              <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-[#ff8f73]">
+              <div class="mt-2 flex items-center gap-1 text-[10px] font-bold text-primary">
                 <span class="material-symbols-outlined text-sm">calendar_month</span> Trong tháng {{ new Date().getMonth() + 1 }}
               </div>
             </div>
@@ -322,7 +322,7 @@
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">      
           <div class="px-8 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <div class="flex items-center gap-3">
-              <button @click="isFilterPanelOpen = true" class="relative flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all shadow-sm">
+              <button @click="isFilterPanelOpen = true" class="relative flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-primary hover:border-primary transition-all shadow-sm">
                 <span class="material-symbols-outlined text-[16px]">tune</span> Bộ lọc nâng cao
                 <span v-if="activeFilterCount > 0" class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-md border-2 border-white animate-bounce">
                   {{ activeFilterCount }}
@@ -332,7 +332,7 @@
               <div class="relative w-full md:w-64 hidden sm:block">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
                 <input v-model="searchQuery" @input="debounceSearch" type="text" placeholder="Tìm theo họ tên..." 
-                        class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs font-bold text-slate-600 focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none transition-all shadow-sm">
+                        class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs font-bold text-slate-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm">
               </div>
             </div>
             <p class="text-xs font-medium text-slate-500">Hiển thị <span class="font-bold text-slate-900">{{ users.length }}</span> trong số <span class="font-bold text-slate-900">{{ totalUsersCount }}</span> người dùng</p>
@@ -367,7 +367,7 @@
                         <img :src="user.avatar" class="w-full h-full object-cover"/>
                       </div>
                       <div class="flex flex-col">
-                        <p class="font-bold text-slate-900 text-sm group-hover:text-[#ff8f73] transition-colors">{{ user.name }}</p>
+                        <p class="font-bold text-slate-900 text-sm group-hover:text-primary transition-colors">{{ user.name }}</p>
                         <p class="text-xs text-slate-500">{{ user.email }}</p>
                       </div>
                     </div>
@@ -411,7 +411,7 @@
                           class="absolute right-12 top-10 w-44 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-2 z-50 text-left overflow-hidden"
                           :class="index >= users.length - 2 ? 'bottom-8 top-auto' : 'top-10 bottom-auto'"
                       >
-                          <button @click="resetPassword(user.id)" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-2 font-medium transition-colors">
+                          <button @click="resetPassword(user.id)" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary flex items-center gap-2 font-medium transition-colors">
                               <span class="material-symbols-outlined text-[18px]">key</span> Đặt lại mật khẩu
                           </button>
                           
@@ -430,16 +430,16 @@
           
           <div class="px-8 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
             <div class="flex items-center gap-2">
-              <button @click="if(currentPage > 1) { currentPage--; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all text-xs font-bold shadow-sm">Trước</button>
+              <button @click="if(currentPage > 1) { currentPage--; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all text-xs font-bold shadow-sm">Trước</button>
               
               <div class="flex items-center gap-1">
-                <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-[#ff8f73] text-white text-xs font-bold shadow-lg shadow-[#ff8f73]/20">
+                <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20">
                   {{ currentPage }}
                 </button>
                 <span class="text-xs font-bold text-slate-400 px-2">/ {{ totalPages }}</span>
               </div>
               
-              <button @click="if(currentPage < totalPages) { currentPage++; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all text-xs font-bold shadow-sm">Tiếp</button>
+              <button @click="if(currentPage < totalPages) { currentPage++; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all text-xs font-bold shadow-sm">Tiếp</button>
             </div>
           </div>
         </div>
@@ -450,7 +450,7 @@
               <h4 class="font-headline text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span class="material-symbols-outlined text-rose-500">security</span> Nhật ký bảo mật gần đây
               </h4>
-              <button @click="openAllLogsModal" class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest hover:underline hover:text-[#ff3d00] transition-colors">
+              <button @click="openAllLogsModal" class="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline hover:text-[#ff3d00] transition-colors">
                 Xem tất cả
               </button>
             </div>
@@ -484,7 +484,7 @@
                   <span class="text-slate-900 font-bold">{{ new Intl.NumberFormat('en-US').format(userStats.CollectorCount) }} ({{ rolePercentages.collector }}%)</span>
                 </div>
                 <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                  <div class="h-full bg-[#ff8f73] rounded-full transition-all duration-1000" :style="{ width: rolePercentages.collector + '%' }"></div>
+                  <div class="h-full bg-primary rounded-full transition-all duration-1000" :style="{ width: rolePercentages.collector + '%' }"></div>
                 </div>
               </div>
               
@@ -511,7 +511,7 @@
               <button 
                 @click="downloadReport" 
                 :disabled="isDownloading"
-                class="w-full mt-8 py-3 bg-white text-slate-600 text-xs font-bold uppercase tracking-widest border-2 border-slate-100 hover:border-[#ff8f73] hover:text-[#ff8f73] rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="w-full mt-8 py-3 bg-white text-slate-600 text-xs font-bold uppercase tracking-widest border-2 border-slate-100 hover:border-primary hover:text-primary rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span v-if="!isDownloading" class="material-symbols-outlined text-[18px]">download</span>
                 <span v-else class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
                 {{ isDownloading ? 'Đang tạo báo cáo...' : 'Tải báo cáo chi tiết' }}
@@ -540,7 +540,7 @@
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên đăng nhập (*)</label>
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">badge</span>
-              <input v-model="newUser.username" type="text" placeholder="VD: nguyenvan_a" class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+              <input v-model="newUser.username" type="text" placeholder="VD: nguyenvan_a" class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
             </div>
           </div>
 
@@ -548,8 +548,8 @@
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mật khẩu khởi tạo (*)</label>
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">key</span>
-              <input v-model="newUser.password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••" class="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
-              <button @click="showPassword = !showPassword" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#ff8f73]">
+              <input v-model="newUser.password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••" class="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
+              <button @click="showPassword = !showPassword" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary">
                 <span class="material-symbols-outlined text-[18px]">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
               </button>
             </div>
@@ -558,18 +558,18 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Họ và Tên (*)</label>
-          <input v-model="newUser.name" type="text" placeholder="VD: Nguyễn Văn A" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+          <input v-model="newUser.name" type="text" placeholder="VD: Nguyễn Văn A" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Email (*)</label>
-          <input v-model="newUser.email" type="email" placeholder="VD: email@figurecollect.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+          <input v-model="newUser.email" type="email" placeholder="VD: email@figurecollect.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
         </div>
 
         <div class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Vai trò (Phân quyền)</label>
-            <select v-model="newUser.role" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-[#ff8f73] bg-[#ff8f73]/5">
+            <select v-model="newUser.role" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold text-primary bg-primary/5">
               <option value="Staff">Staff (Nhân viên)</option>
               <option value="Admin">Admin </option>
               <option value="Collector">Collector</option>
@@ -578,7 +578,7 @@
 
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Trạng thái tài khoản</label>
-            <select v-model="newUser.status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+            <select v-model="newUser.status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
               <option value="Hoạt động">Cho phép Hoạt động</option>
               <option value="Bị khóa">Tạm khóa</option>
             </select>
@@ -588,7 +588,7 @@
 
       <div class="px-8 py-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
         <button @click="isAddUserModalOpen = false" class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
-        <button @click="submitNewUser" class="px-6 py-2.5 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 rounded-xl transition-all">Tạo tài khoản</button>
+        <button @click="submitNewUser" class="px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-[#ff3d00] shadow-lg shadow-primary/20 rounded-xl transition-all">Tạo tài khoản</button>
       </div>
     </div>
   </div>

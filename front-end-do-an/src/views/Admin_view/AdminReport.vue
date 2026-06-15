@@ -27,25 +27,25 @@
 
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">             
           <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-full md:w-fit border border-slate-200">
-            <button @click="setFilterMode('month')" :class="{'bg-white text-[#ff8f73] shadow-sm': filterMode === 'month', 'text-slate-500 hover:bg-white/50': filterMode !== 'month'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Tháng</button>
-            <button @click="setFilterMode('quarter')" :class="{'bg-white text-[#ff8f73] shadow-sm': filterMode === 'quarter', 'text-slate-500 hover:bg-white/50': filterMode !== 'quarter'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Quý</button>
-            <button @click="setFilterMode('year')" :class="{'bg-white text-[#ff8f73] shadow-sm': filterMode === 'year', 'text-slate-500 hover:bg-white/50': filterMode !== 'year'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Năm</button>
-            <button @click="setFilterMode('custom')" :class="{'bg-white text-[#ff8f73] shadow-sm': filterMode === 'custom', 'text-slate-500 hover:bg-white/50': filterMode !== 'custom'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Tùy chỉnh</button>
+            <button @click="setFilterMode('month')" :class="{'bg-white text-primary shadow-sm': filterMode === 'month', 'text-slate-500 hover:bg-white/50': filterMode !== 'month'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Tháng</button>
+            <button @click="setFilterMode('quarter')" :class="{'bg-white text-primary shadow-sm': filterMode === 'quarter', 'text-slate-500 hover:bg-white/50': filterMode !== 'quarter'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Quý</button>
+            <button @click="setFilterMode('year')" :class="{'bg-white text-primary shadow-sm': filterMode === 'year', 'text-slate-500 hover:bg-white/50': filterMode !== 'year'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Năm</button>
+            <button @click="setFilterMode('custom')" :class="{'bg-white text-primary shadow-sm': filterMode === 'custom', 'text-slate-500 hover:bg-white/50': filterMode !== 'custom'}" class="flex-1 md:flex-none px-6 py-2 rounded-lg text-xs font-bold transition-all">Tùy chỉnh</button>
           </div>
 
           <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <select v-if="filterMode !== 'custom'" v-model="selectedYear" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#ff8f73] cursor-pointer">
+            <select v-if="filterMode !== 'custom'" v-model="selectedYear" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
               <option v-for="y in availableYears" :key="y" :value="y">Năm {{ y }}</option>
             </select>
 
-            <select v-if="filterMode === 'quarter'" v-model="selectedQuarter" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#ff8f73] cursor-pointer">
+            <select v-if="filterMode === 'quarter'" v-model="selectedQuarter" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
               <option :value="1">Quý 1 (Tháng 1-3)</option>
               <option :value="2">Quý 2 (Tháng 4-6)</option>
               <option :value="3">Quý 3 (Tháng 7-9)</option>
               <option :value="4">Quý 4 (Tháng 10-12)</option>
             </select>
 
-            <select v-if="filterMode === 'month'" v-model="selectedMonth" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#ff8f73] cursor-pointer">
+            <select v-if="filterMode === 'month'" v-model="selectedMonth" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
               <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
             </select>
 
@@ -121,7 +121,7 @@
           <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
             <div>
               <h4 class="text-lg font-brand font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#ff8f73]">monitoring</span> Phân Tích Xu Hướng Tài Chính
+                <span class="material-symbols-outlined text-primary">monitoring</span> Phân Tích Xu Hướng Tài Chính
               </h4>
               <p class="text-xs text-slate-500 mt-1 font-medium">Tương quan biến động giữa dòng tiền Doanh thu và Biên độ Lợi nhuận gộp.</p>
             </div>
@@ -315,7 +315,7 @@
                         <td class="py-3.5 pl-2 flex items-center gap-3">
                           <img :src="product.image" class="w-11 h-11 rounded-xl object-cover border border-slate-100 shadow-sm" />
                           <div>
-                            <p class="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-[#ff8f73] transition-colors">{{ product.name }}</p>
+                            <p class="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-primary transition-colors">{{ product.name }}</p>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600 mt-0.5">{{ product.categoryName }}</span>
                           </div>
                         </td>
@@ -335,7 +335,7 @@
                 
                 <div class="relative flex justify-center items-center min-h-[260px]">
                   <div v-if="isStatusLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
-                    <div class="w-8 h-8 border-4 border-[#ff8f73] border-t-transparent rounded-full animate-spin"></div>
+                    <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                   </div>
                   
                   <VueApexCharts 

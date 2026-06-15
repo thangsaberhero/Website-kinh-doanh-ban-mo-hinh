@@ -13,7 +13,7 @@
       
       <main class="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar pb-24">
         <div class="flex items-start gap-4">
-          <RouterLink to="/admin/profile" class="mt-1 w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all shadow-sm shrink-0">
+          <RouterLink to="/admin/profile" class="mt-1 w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all shadow-sm shrink-0">
             <span class="material-symbols-outlined">arrow_back</span>
           </RouterLink>
           <div class="flex flex-col justify-between items-start gap-2">
@@ -31,9 +31,9 @@
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Mật khẩu hiện tại <span class="text-rose-500">*</span></label>
                 <div class="relative">
                   <input :type="showOld ? 'text' : 'password'" v-model="form.oldPassword" required
-                          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white pr-10" 
+                          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white pr-10" 
                           placeholder="Nhập mật khẩu bạn đang sử dụng"/>
-                  <button type="button" @click="showOld = !showOld" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#ff8f73] transition-colors">
+                  <button type="button" @click="showOld = !showOld" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined text-[20px]">{{ showOld ? 'visibility' : 'visibility_off' }}</span>
                   </button>
                 </div>
@@ -43,9 +43,9 @@
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Mật khẩu mới <span class="text-rose-500">*</span></label>
                 <div class="relative">
                   <input :type="showNew ? 'text' : 'password'" v-model="form.newPassword" required minlength="6"
-                          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white pr-10" 
+                          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white pr-10" 
                           placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)"/>
-                  <button type="button" @click="showNew = !showNew" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#ff8f73] transition-colors">
+                  <button type="button" @click="showNew = !showNew" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined text-[20px]">{{ showNew ? 'visibility' : 'visibility_off' }}</span>
                   </button>
                 </div>
@@ -55,9 +55,9 @@
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Xác nhận mật khẩu mới <span class="text-rose-500">*</span></label>
                 <div class="relative">
                   <input :type="showConfirm ? 'text' : 'password'" v-model="form.confirmPassword" required minlength="6"
-                          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white pr-10" 
+                          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white pr-10" 
                           placeholder="Nhập lại mật khẩu mới để xác nhận"/>
-                  <button type="button" @click="showConfirm = !showConfirm" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#ff8f73] transition-colors">
+                  <button type="button" @click="showConfirm = !showConfirm" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                     <span class="material-symbols-outlined text-[20px]">{{ showConfirm ? 'visibility' : 'visibility_off' }}</span>
                   </button>
                 </div>
@@ -70,7 +70,7 @@
                 <RouterLink to="/admin/profile" class="px-6 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all">
                   Hủy bỏ
                 </RouterLink>
-                <button type="submit" :disabled="isSaving" class="bg-[#ff8f73] hover:bg-[#ff7a59] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm px-8 py-2.5 rounded-xl shadow-lg shadow-[#ff8f73]/30 transition-all flex items-center gap-2 active:scale-95">
+                <button type="submit" :disabled="isSaving" class="bg-primary hover:bg-[#ff7a59] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold text-sm px-8 py-2.5 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center gap-2 active:scale-95">
                   <span v-if="isSaving" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                   {{ isSaving ? 'ĐANG LƯU...' : 'CẬP NHẬT MẬT KHẨU' }}
                 </button>

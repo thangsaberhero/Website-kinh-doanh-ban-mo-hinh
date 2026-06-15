@@ -20,14 +20,14 @@
           <div class="flex gap-1 bg-slate-200/50 p-1 rounded-xl w-fit border border-slate-200">
             <button 
               @click="currentTypeTab = 'promotion'"
-              :class="currentTypeTab === 'promotion' ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500 hover:bg-white/50'"
+              :class="currentTypeTab === 'promotion' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:bg-white/50'"
               class="px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">percent</span> Khuyến mãi tự động
             </button>
             
             <button 
               @click="currentTypeTab = 'voucher'"
-              :class="currentTypeTab === 'voucher' ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500 hover:bg-white/50'"
+              :class="currentTypeTab === 'voucher' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:bg-white/50'"
               class="px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">confirmation_number</span> Mã Voucher
             </button>
@@ -46,9 +46,9 @@
           <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto">
             <div class="relative w-full sm:w-64">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-              <input v-model="searchQuery" type="text" placeholder="Tìm tên, mã voucher..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+              <input v-model="searchQuery" type="text" placeholder="Tìm tên, mã voucher..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
             </div>
-            <button @click="openCreateModal" class="bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all whitespace-nowrap text-sm">
+            <button @click="openCreateModal" class="bg-primary hover:bg-[#ff3d00] text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all whitespace-nowrap text-sm">
               <span class="material-symbols-outlined text-[20px]">add_circle</span>
               {{ currentTypeTab === 'promotion' ? 'Tạo Khuyến mãi' : 'Tạo Voucher' }}
             </button>
@@ -71,8 +71,8 @@
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-2xl border-l-4 border-l-[#ff8f73] border-y border-r border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-            <div class="absolute -right-4 -bottom-4 text-[#ff8f73]/10 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 ease-out z-0 pointer-events-none">
+          <div class="bg-white p-6 rounded-2xl border-l-4 border-l-primary border-y border-r border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+            <div class="absolute -right-4 -bottom-4 text-primary/10 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 ease-out z-0 pointer-events-none">
                 <span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">local_activity</span>
             </div>
             <div class="relative z-10">
@@ -123,7 +123,7 @@
               <div class="relative">
                 <button @click.stop="isFilterMenuOpen = !isFilterMenuOpen" 
                       class="flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-xl border transition-all shadow-sm"
-                      :class="isFilterMenuOpen || activeFiltersCount > 0 ? 'bg-[#ff8f73]/10 border-[#ff8f73] text-[#ff3d00]' : 'bg-white text-slate-600 border-slate-200 hover:border-[#ff8f73] hover:text-[#ff8f73]'">
+                      :class="isFilterMenuOpen || activeFiltersCount > 0 ? 'bg-primary/10 border-primary text-[#ff3d00]' : 'bg-white text-slate-600 border-slate-200 hover:border-primary hover:text-primary'">
                   <span class="material-symbols-outlined text-sm">filter_list</span> 
                       Bộ lọc
                   <span v-if="activeFiltersCount > 0" class="flex w-4 h-4 items-center justify-center bg-[#ff3d00] text-white rounded-full text-[9px] ml-1">{{ activeFiltersCount }}</span>
@@ -272,21 +272,21 @@
               </p>
               <div class="flex items-center gap-1.5 ml-auto">
                 <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50 disabled:pointer-events-none">
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:pointer-events-none">
                   <span class="material-symbols-outlined text-sm">chevron_left</span>
                 </button>
                 
                 <template v-for="item in visiblePages" :key="item">
                   <span v-if="item === '...'" class="w-8 h-8 flex items-center justify-center text-slate-400 font-bold tracking-widest">...</span>
                   <button v-else @click="changePage(item)"
-                          :class="currentPage === item ? 'bg-[#ff8f73] text-white shadow-md shadow-[#ff8f73]/20 border-transparent' : 'bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] hover:border-[#ff8f73]'"
+                          :class="currentPage === item ? 'bg-primary text-white shadow-md shadow-primary/20 border-transparent' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary'"
                           class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">
                     {{ item }}
                   </button>
                 </template>
 
                 <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50 disabled:pointer-events-none">
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:pointer-events-none">
                   <span class="material-symbols-outlined text-sm">chevron_right</span>
                 </button>
               </div>
@@ -299,7 +299,7 @@
             <h4 class="font-headline text-lg font-bold text-slate-900 flex items-center gap-2">
               <span class="material-symbols-outlined text-sky-500">history_edu</span> Nhật ký thao tác Khuyến mãi
             </h4>
-            <button @click="openAllLogsModal" class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest hover:underline hover:text-[#ff3d00] transition-colors">
+            <button @click="openAllLogsModal" class="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline hover:text-[#ff3d00] transition-colors">
               Xem tất cả
             </button>
           </div>
@@ -326,7 +326,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-white p-6 rounded-2xl border border-slate-200 flex items-start gap-5 shadow-sm hover:shadow-md transition-shadow group">
-            <div class="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#ff8f73] group-hover:scale-110 transition-transform shrink-0">
+            <div class="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shrink-0">
               <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">tips_and_updates</span>
             </div>
             <div>
@@ -344,7 +344,7 @@
             <div>
               <h4 class="font-bold text-slate-900 mb-1">Tự động hóa</h4>
               <p class="text-xs text-slate-500 leading-relaxed font-medium">
-                Thiết lập hệ thống tự động gửi mã <span class="font-bold text-[#ff8f73] px-1 bg-orange-50 rounded">WELCOME</span> cho khách hàng đăng ký mới để tăng tỷ lệ giữ chân lên 15%.
+                Thiết lập hệ thống tự động gửi mã <span class="font-bold text-primary px-1 bg-orange-50 rounded">WELCOME</span> cho khách hàng đăng ký mới để tăng tỷ lệ giữ chân lên 15%.
               </p>
             </div>
           </div>
@@ -430,7 +430,7 @@
         <button @click="isModalOpen = false" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-colors">Hủy</button>
         <button @click="submitCreateForm"
           :class="isSubmitting ? 'opacity-50 cursor-wait' : 'hover:bg-[#ff3d00]'"
-          class="px-6 py-2.5 bg-[#ff8f73] text-white font-bold rounded-xl shadow-lg transition-colors">
+          class="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg transition-colors">
           {{ isSubmitting ? 'Đang tạo...' : 'Xác nhận Tạo' }}
         </button>
       </div>
@@ -1272,7 +1272,7 @@
   const getProgressBarColor = (item) => {
     if (item.status === 'Đã hết hạn' || (item.SoLuong && item.DaDung >= item.SoLuong)) return 'bg-rose-500 shadow-[0_0_5px_#f43f5e]';
     if (!item.SoLuong || item.SoLuong === 0) return 'bg-purple-500 shadow-[0_0_5px_#a855f7]'; // Voucher vô hạn màu Tím
-    return 'bg-[#ff8f73] shadow-[0_0_5px_#ff8f73]'; // Voucher bình thường màu Cam
+    return 'bg-primary shadow-[0_0_5px_#ff8f73]'; // Voucher bình thường màu Cam
   };
   
   // 3. Hệ thống Màu Trạng thái (Dots & Text)

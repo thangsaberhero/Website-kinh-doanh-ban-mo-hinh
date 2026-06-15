@@ -134,7 +134,7 @@
                 {{ cat.MoTa && cat.MoTa !== 'Chưa có mô tả' ? cat.MoTa : 'Khám phá bộ sưu tập mô hình độc quyền, cập nhật những phiên bản giới hạn mới nhất.' }}
               </p>
               <div>
-                <span class="px-7 py-3 bg-[#ff8f73] text-white text-sm font-bold rounded-xl group-hover:bg-[#ff3d00] transition-colors shadow-lg shadow-[#ff8f73]/30 inline-flex items-center gap-2">
+                <span class="px-7 py-3 bg-primary text-white text-sm font-bold rounded-xl group-hover:bg-[#ff3d00] transition-colors shadow-lg shadow-primary/30 inline-flex items-center gap-2">
                   Xem ngay
                   <span class="material-symbols-outlined text-[18px]">arrow_right_alt</span>
                 </span>
@@ -143,7 +143,7 @@
             
             <!-- Style riêng cho Ô số 2 (Ngang) -->
             <template v-else-if="index === 1">
-              <span class="text-sm font-bold text-[#ff8f73] group-hover:text-white transition-colors flex items-center gap-1 drop-shadow-md w-fit">
+              <span class="text-sm font-bold text-primary group-hover:text-white transition-colors flex items-center gap-1 drop-shadow-md w-fit">
                 Khám phá ngay <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
               </span>
             </template>

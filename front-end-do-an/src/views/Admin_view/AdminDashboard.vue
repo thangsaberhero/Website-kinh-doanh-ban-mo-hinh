@@ -18,18 +18,18 @@
           
           <div class="flex gap-3">
             <div class="relative">
-              <button @click.stop="isDropdownOpen = !isDropdownOpen" class="flex items-center gap-2 bg-white text-slate-900 text-xs font-bold px-4 py-2.5 border border-slate-200 border-b-2 border-b-[#ff8f73] rounded shadow-sm hover:bg-slate-50 transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[16px] text-[#ff8f73]">calendar_today</span>
+              <button @click.stop="isDropdownOpen = !isDropdownOpen" class="flex items-center gap-2 bg-white text-slate-900 text-xs font-bold px-4 py-2.5 border border-slate-200 border-b-2 border-b-primary rounded shadow-sm hover:bg-slate-50 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[16px] text-primary">calendar_today</span>
                 {{ currentFilterLabel }}
                 <span class="material-symbols-outlined text-[18px] text-slate-400 transition-transform" :class="isDropdownOpen ? 'rotate-180' : ''">expand_more</span>
               </button>
 
               <div v-show="isDropdownOpen" class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-100 transition-all duration-200 overflow-hidden z-50">
                 <ul class="py-1 text-sm text-slate-700">
-                  <li><a href="#" @click.prevent="applyQuickFilter('today')" class="block px-4 py-2 hover:bg-slate-50 hover:text-[#ff8f73]">Hôm nay</a></li>
-                  <li><a href="#" @click.prevent="applyQuickFilter('7d')" class="block px-4 py-2 hover:bg-slate-50 hover:text-[#ff8f73]">7 ngày qua</a></li>
-                  <li><a href="#" @click.prevent="applyQuickFilter('30d')" class="block px-4 py-2 hover:bg-slate-50 hover:text-[#ff8f73]">30 ngày qua</a></li>
-                  <li><a href="#" @click.prevent="applyQuickFilter('month')" class="block px-4 py-2 hover:bg-slate-50 hover:text-[#ff8f73]">Tháng này</a></li>
+                  <li><a href="#" @click.prevent="applyQuickFilter('today')" class="block px-4 py-2 hover:bg-slate-50 hover:text-primary">Hôm nay</a></li>
+                  <li><a href="#" @click.prevent="applyQuickFilter('7d')" class="block px-4 py-2 hover:bg-slate-50 hover:text-primary">7 ngày qua</a></li>
+                  <li><a href="#" @click.prevent="applyQuickFilter('30d')" class="block px-4 py-2 hover:bg-slate-50 hover:text-primary">30 ngày qua</a></li>
+                  <li><a href="#" @click.prevent="applyQuickFilter('month')" class="block px-4 py-2 hover:bg-slate-50 hover:text-primary">Tháng này</a></li>
                   <li class="border-t border-slate-100 mt-1">
                     <a href="#" @click.prevent="openCustomDatePicker" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-slate-500 font-medium">
                       Tùy chỉnh...
@@ -56,7 +56,7 @@
               <p class="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-2">Tổng doanh thu</p>
               <h3 class="text-2xl font-headline font-bold text-slate-900">{{ totalRevenue }} <span class="text-lg">{{ revenueUnit }}</span></h3>
             </div>
-            <div class="absolute bottom-0 left-0 h-1.5 w-full bg-slate-50"><div class="h-full bg-[#ff8f73] w-2/3 rounded-r-full"></div></div>
+            <div class="absolute bottom-0 left-0 h-1.5 w-full bg-slate-50"><div class="h-full bg-primary w-2/3 rounded-r-full"></div></div>
           </div>
 
           <div class="bg-white p-5 rounded-xl shadow-md border border-slate-100 flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow">
@@ -113,7 +113,7 @@
               </div>
               <div class="flex items-center gap-4 text-xs font-bold text-slate-600">
                 <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 bg-[#ff8f73] rounded-full shadow-[0_0_8px_#ff8f73]"></span>
+                  <span class="w-2.5 h-2.5 bg-primary rounded-full shadow-[0_0_8px_#ff8f73]"></span>
                   <span>THÁNG NÀY</span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -200,7 +200,7 @@
               <h4 class="text-lg font-headline font-bold text-slate-900">Các đơn hàng gần đây</h4>
               <p class="text-[11px] text-slate-400 uppercase tracking-widest mt-1 font-medium">10 giao dịch mới nhất trong hệ thống</p>
             </div>
-            <RouterLink to="/admin/orders" class="text-[#ff8f73] hover:text-white bg-white hover:bg-[#ff8f73] text-xs font-bold border border-[#ff8f73]/30 px-5 py-2 rounded transition-all inline-block">
+            <RouterLink to="/admin/orders" class="text-primary hover:text-white bg-white hover:bg-primary text-xs font-bold border border-primary/30 px-5 py-2 rounded transition-all inline-block">
               XEM TẤT CẢ
             </RouterLink>
           </div>
@@ -276,17 +276,17 @@
       <div class="space-y-4 mb-6">
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Từ ngày</label>
-          <input type="date" v-model="customStartDate" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none">
+          <input type="date" v-model="customStartDate" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Đến ngày</label>
-          <input type="date" v-model="customEndDate" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-[#ff8f73] focus:ring-1 focus:ring-[#ff8f73] outline-none">
+          <input type="date" v-model="customEndDate" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
         </div>
       </div>
 
       <div class="flex justify-end gap-2">
         <button @click="isCustomModalOpen = false" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Hủy</button>
-        <button @click="applyCustomDate" class="px-4 py-2 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] rounded-lg">Áp dụng</button>
+        <button @click="applyCustomDate" class="px-4 py-2 text-sm font-bold text-white bg-primary hover:bg-[#ff3d00] rounded-lg">Áp dụng</button>
       </div>
     </div>
   </div>
@@ -295,7 +295,7 @@
       
       <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
         <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-          Chi tiết đơn hàng <span class="text-[#ff8f73]">{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi || `#FC-${selectedOrder.MaDH}` }}</span>
+          Chi tiết đơn hàng <span class="text-primary">{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi || `#FC-${selectedOrder.MaDH}` }}</span>
         </h3>
         <button @click="isDetailModalOpen = false" class="text-slate-400 hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 transition-colors">
           <span class="material-symbols-outlined">close</span>
@@ -546,16 +546,16 @@
                 </RouterLink>
               </div>
 
-              <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
-                <h4 class="text-xs font-black uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-3 flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[16px] text-[#ff8f73]">bolt</span> Thao tác nhanh
+              <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white space-y-5">
+                <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">bolt</span> Thao tác nhanh
                 </h4>
                 
                 <div class="grid grid-cols-1 gap-3">
                   
                   <button v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6" 
                           @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
-                          class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                          class="w-full bg-primary hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
                   </button>
 
@@ -592,7 +592,7 @@
       
       <div class="mb-6">
         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Chọn trạng thái mới</label>
-        <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-[#ff8f73] font-semibold text-slate-700 focus:ring-1 focus:ring-[#ff8f73] outline-none cursor-pointer">
+        <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-primary font-semibold text-slate-700 focus:ring-1 focus:ring-primary outline-none cursor-pointer">
           <option value="1" :disabled="getCurrentStatusCode() >= 1">CHỜ DUYỆT (Hệ thống tiếp nhận)</option>
           <option value="2" :disabled="getCurrentStatusCode() >= 2">ĐANG ĐÓNG GÓI (Chuẩn bị hàng trong kho)</option>
           <option value="3" :disabled="getCurrentStatusCode() >= 3">ĐANG VẬN CHUYỂN (Giao cho shipper)</option>
@@ -602,7 +602,7 @@
 
       <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
         <button @click="isUpdateModalOpen = false" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Quay lại</button>
-        <button @click="submitUpdateStatus" class="px-5 py-2 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff7352] rounded-lg shadow-sm">Xác nhận đổi</button>
+        <button @click="submitUpdateStatus" class="px-5 py-2 text-sm font-bold text-white bg-primary hover:bg-[#ff7352] rounded-lg shadow-sm">Xác nhận đổi</button>
       </div>
     </div>
   </div>
@@ -628,13 +628,13 @@
   </div>
 
   <div v-if="isUpdateModalOpen && selectedOrder" class="print:hidden fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-[#ff8f73] animate-[fadeIn_0.2s_ease-out]">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-primary animate-[fadeIn_0.2s_ease-out]">
       <h3 class="text-lg font-bold text-slate-900 mb-2">Cập nhật tiến trình đơn hàng</h3>
       <p class="text-xs text-slate-400 mb-4 font-medium">Thay đổi trạng thái cho mã đơn: {{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi || `#FC-${selectedOrder.MaDH}` }}</p>
       
       <div class="mb-6">
         <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Chọn trạng thái mới</label>
-        <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-[#ff8f73] font-semibold text-slate-700 focus:ring-1 focus:ring-[#ff8f73] outline-none cursor-pointer">
+        <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-primary font-semibold text-slate-700 focus:ring-1 focus:ring-primary outline-none cursor-pointer">
           <option value="1" :disabled="getCurrentStatusCode() >= 1">CHỜ DUYỆT (Hệ thống tiếp nhận)</option>
           <option value="2" :disabled="getCurrentStatusCode() >= 2">ĐANG ĐÓNG GÓI (Chuẩn bị hàng trong kho)</option>
           <option value="3" :disabled="getCurrentStatusCode() >= 3">ĐANG VẬN CHUYỂN (Giao cho shipper)</option>
@@ -666,7 +666,7 @@
 
       <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
         <button @click="isUpdateModalOpen = false" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Quay lại</button>
-        <button @click="submitUpdateStatus" class="px-5 py-2 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff7352] rounded-lg shadow-sm">Xác nhận đổi</button>
+        <button @click="submitUpdateStatus" class="px-5 py-2 text-sm font-bold text-white bg-primary hover:bg-[#ff7352] rounded-lg shadow-sm">Xác nhận đổi</button>
       </div>
     </div>
   </div>
