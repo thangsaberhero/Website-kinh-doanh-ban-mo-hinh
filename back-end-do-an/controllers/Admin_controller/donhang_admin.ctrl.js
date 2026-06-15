@@ -970,7 +970,6 @@ const donhang_admin = {
     },
 
     tach_don_hang: async (req, res) => {
-        // Chốt chặn bảo mật Admin
         if (req.user && req.user.role == 0) {
             return res.status(403).json({ success: false, message: "Khách hàng không được dùng chức năng này!" });
         }
@@ -978,8 +977,6 @@ const donhang_admin = {
         const connection = await db.getConnection();
 
         try {
-            // req.body.MaDH: Mã đơn hàng gốc cần tách
-            // req.body.DanhSachTach: Mảng chứa MaPhanLoai của các món cần bốc sang đơn mới (Ví dụ: [12, 15])
             const { MaDH, DanhSachTach } = req.body;
 
             if (!DanhSachTach || DanhSachTach.length === 0) {
@@ -988,38 +985,81 @@ const donhang_admin = {
 
             await connection.beginTransaction();
 
-            // 1. LẤY THÔNG TIN ĐƠN HÀNG GỐC
+            // 1. LẤY THÔNG TIN ĐƠN GỐC
             const [donGoc] = await connection.query(`SELECT * FROM DonHang WHERE MaDH = ?`, [MaDH]);
             if (donGoc.length === 0) throw new Error("Không tìm thấy đơn hàng gốc!");
-            
             const orderInfo = donGoc[0];
 
-            // 2. LẤY CHI TIẾT SẢN PHẨM TRONG ĐƠN
-            const [chiTietDon] = await connection.query(`SELECT * FROM ChiTietDonHang WHERE MaDH = ?`, [MaDH]);
+            // 2. LẤY CHI TIẾT KÈM LOẠI HÌNH & TIỀN CỌC TỪ BẢNG MÔ HÌNH
+            const sql_chitiet = `
+                SELECT ctdh.*, mh.LoaiHinhBan, mh.TienCocToiThieu 
+                FROM ChiTietDonHang ctdh
+                JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai
+                JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                WHERE ctdh.MaDH = ?
+            `;
+            const [chiTietDon] = await connection.query(sql_chitiet, [MaDH]);
             
             if (chiTietDon.length === DanhSachTach.length) {
                 throw new Error("Không thể tách toàn bộ sản phẩm! Phải giữ lại ít nhất 1 món ở đơn gốc.");
             }
 
-            // Phân loại: Món nào GIỮ LẠI (Có sẵn), Món nào TÁCH ĐI (Pre-order)
+            // Phân loại mảng giữ lại và mảng tách đi
             const hangGiuLai = chiTietDon.filter(item => !DanhSachTach.includes(item.MaPhanLoai));
             const hangTachDi = chiTietDon.filter(item => DanhSachTach.includes(item.MaPhanLoai));
 
-            // 3. TÍNH TOÁN LẠI TỔNG TIỀN (TongTien = Tổng DonGiaBan * SoLuong)
+            // ==========================================
+            // 🔴 CHỐT CHẶN BẢO MẬT: CHỐNG TRỘN LẪN HÀNG HÓA KHI TÁCH
+            // ==========================================
+            const checkMixHang = (arr) => {
+                const coHangSan = arr.some(i => !i.LoaiHinhBan || i.LoaiHinhBan.toLowerCase().includes('sẵn'));
+                const coHangOrder = arr.some(i => i.LoaiHinhBan && i.LoaiHinhBan.toLowerCase().includes('order'));
+                return (coHangSan && coHangOrder);
+            };
+
+            if (checkMixHang(hangTachDi)) {
+                throw new Error("Không thể gộp chung sản phẩm Có sẵn và Order vào cùng 1 đơn tách. Vui lòng chỉ tick chọn các sản phẩm cùng loại hình!");
+            }
+
+            // ==========================================
+            // 🔴 HÀM RADAR: DÒ TÌM TAG CHUẨN XÁC DỰA TRÊN SẢN PHẨM BÊN TRONG
+            // ==========================================
+            const getTagByItems = (arr) => {
+                let tag = '[SẴN]';
+                for (let item of arr) {
+                    const loai = (item.LoaiHinhBan || '').toLowerCase();
+                    if (loai.includes('pre-order') || loai.includes('pre order')) {
+                        tag = '[PRE-ORDER]'; break; // Mức ưu tiên cao nhất
+                    } else if (loai.includes('order')) {
+                        tag = '[ORDER]';
+                    }
+                }
+                return tag;
+            };
+
+            const tagTachDi = getTagByItems(hangTachDi);
+            const tagGiuLai = getTagByItems(hangGiuLai);
+
+            // 3. TÍNH TOÁN LẠI TỔNG TIỀN VÀ TỔNG CỌC YÊU CẦU
             const tongTienGiuLai = hangGiuLai.reduce((sum, item) => sum + (item.DonGiaBan * item.SoLuong), 0);
             const tongTienTachDi = hangTachDi.reduce((sum, item) => sum + (item.DonGiaBan * item.SoLuong), 0);
+            
+            // Lấy chính xác số tiền cọc yêu cầu của từng bên để lát nữa bửa đôi Lịch sử giao dịch
+            const tongCocGiuLai = hangGiuLai.reduce((sum, item) => sum + (item.TienCocToiThieu * item.SoLuong), 0);
+            const tongCocTachDi = hangTachDi.reduce((sum, item) => sum + (item.TienCocToiThieu * item.SoLuong), 0);
 
             // Tính Tỷ lệ phần trăm giá trị để bổ tiền ThanhTien (sau voucher)
             const tongTienGocBanDau = tongTienGiuLai + tongTienTachDi; 
-            const tyLeTach = tongTienTachDi / tongTienGocBanDau;
-            const tyLeGiu = 1 - tyLeTach;
+            const tyLeTach = tongTienGocBanDau > 0 ? (tongTienTachDi / tongTienGocBanDau) : 0;
+            
+            // Tính Tỷ lệ phân bổ TIỀN CỌC
+            const tongCocGocBanDau = tongCocGiuLai + tongCocTachDi;
+            const tyLeCocTach = tongCocGocBanDau > 0 ? (tongCocTachDi / tongCocGocBanDau) : tyLeTach; // Fallback nếu không cài cọc
 
             const thanhTienTachDi = Math.round(orderInfo.ThanhTien * tyLeTach);
-            const thanhTienGiuLai = orderInfo.ThanhTien - thanhTienTachDi; // Phép trừ để đảm bảo không lệch 1 đồng do làm tròn
+            const thanhTienGiuLai = orderInfo.ThanhTien - thanhTienTachDi;
 
-            // ==========================================
-            // 4. TẠO ĐƠN HÀNG MỚI (CHO CÁC MÓN PRE-ORDER)
-            // ==========================================
+            // 4. TẠO ĐƠN HÀNG MỚI (DÁN TAG ĐỘNG)
             const taoMaDonHangHienThi = () => {
                 const date = new Date();
                 const ddmmyy = date.getDate().toString().padStart(2, '0') + (date.getMonth() + 1).toString().padStart(2, '0') + date.getFullYear().toString().slice(-2);
@@ -1027,9 +1067,9 @@ const donhang_admin = {
             };
             const maHienThiMoi = taoMaDonHangHienThi();
 
-            // Ký sinh Tag [PRE-ORDER] vào Note của đơn mới
-            const rawNoteMoi = orderInfo.Note ? orderInfo.Note.replace(/\[.*?\]\s*/g, '') : ''; // Xóa tag cũ đi
-            const noteDonMoi = `[PRE-ORDER] (Đơn tách từ ${orderInfo.MaDonHangHienThi}) ${rawNoteMoi}`;
+            // Ký sinh Tag Động vào Note
+            const rawNoteGoc = orderInfo.Note ? orderInfo.Note.replace(/\[.*?\]\s*/g, '') : '';
+            const noteDonMoi = `${tagTachDi} (Đơn tách từ ${orderInfo.MaDonHangHienThi}) ${rawNoteGoc}`;
 
             const [taoDonMoi] = await connection.query(`
                 INSERT INTO DonHang (MaKH, MaNV, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note)
@@ -1048,10 +1088,8 @@ const donhang_admin = {
             // Set Trạng thái "Chờ duyệt" cho Đơn Mới
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 1, NOW())`, [maDHMoi]);
 
-            // ==========================================
-            // 5. CẬP NHẬT LẠI ĐƠN HÀNG GỐC (CHO CÁC MÓN CÓ SẴN)
-            // ==========================================
-            const noteDonGoc = `[SẴN] (Đã tách hàng Pre-order sang ${maHienThiMoi}) ${rawNoteMoi}`;
+            // 5. CẬP NHẬT LẠI ĐƠN HÀNG GỐC (DÁN TAG ĐỘNG)
+            const noteDonGoc = `${tagGiuLai} (Đã tách hàng sang ${maHienThiMoi}) ${rawNoteGoc}`;
             
             await connection.query(`
                 UPDATE DonHang 
@@ -1060,13 +1098,23 @@ const donhang_admin = {
             `, [tongTienGiuLai, thanhTienGiuLai, noteDonGoc, MaDH]);
 
             // ==========================================
-            // 6. THUẬT TOÁN "BỔ CỦI" LỊCH SỬ THANH TOÁN (CỘNG DỒN / CHIA TIỀN CỌC)
+            // 🔴 6. KẾ TOÁN VÀO VIỆC: BỔ CỦI DÒNG TIỀN THEO BẢN CHẤT
             // ==========================================
             const [lichSuThanhToan] = await connection.query(`SELECT * FROM ThanhToan WHERE MaDH = ? AND TrangThaiGiaoDich = 'Thành công'`, [MaDH]);
 
             if (lichSuThanhToan.length > 0) {
                 for (let tx of lichSuThanhToan) {
-                    const tienTachDi = Math.round(tx.SoTienGiaoDich * tyLeTach);
+                    let tienTachDi = 0;
+                    
+                    // Nếu là giao dịch "Cọc", chia theo tỷ lệ Cọc yêu cầu của các món hàng
+                    if (tx.LoaiGiaoDich && tx.LoaiGiaoDich.toLowerCase().includes('cọc')) {
+                        tienTachDi = Math.round(tx.SoTienGiaoDich * tyLeCocTach);
+                    } 
+                    // Nếu là giao dịch Full / Khác, chia theo tỷ lệ Giá trị đơn hàng
+                    else {
+                        tienTachDi = Math.round(tx.SoTienGiaoDich * tyLeTach);
+                    }
+                    
                     const tienGiuLai = tx.SoTienGiaoDich - tienTachDi;
 
                     // Update lại dòng thanh toán của đơn gốc
