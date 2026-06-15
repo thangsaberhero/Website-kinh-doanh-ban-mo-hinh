@@ -1070,7 +1070,7 @@ const donhang_admin = {
                     const tienGiuLai = tx.SoTienGiaoDich - tienTachDi;
 
                     // Update lại dòng thanh toán của đơn gốc
-                    await connection.query(`UPDATE ThanhToan SET SoTienGiaoDich = ? WHERE MaLichSu = ?`, [tienGiuLai, tx.MaLichSu]);
+                    await connection.query(`UPDATE ThanhToan SET SoTienGiaoDich = ? WHERE MaTT = ?`, [tienGiuLai, tx.MaTT]);
 
                     // Insert dòng thanh toán tương đương cho đơn mới
                     if (tienTachDi > 0) {
