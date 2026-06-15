@@ -213,12 +213,28 @@ const donhang_admin = {
                 }
             }
 
+            let snapshotTag = '[SẴN]'; 
+            
+            // Dùng db_items (chứa thông tin lấy từ DB) để check loại hình
+            for (let item of db_items) {
+                let loaiHang = (item.LoaiHinhBan || '').toLowerCase();
+                if (loaiHang.includes('pre-order') || loaiHang.includes('pre order')) {
+                    snapshotTag = '[PRE-ORDER]';
+                    break; // Mức ưu tiên cao nhất -> Thấy là chốt luôn
+                } else if (loaiHang.includes('order')) {
+                    snapshotTag = '[ORDER]';
+                }
+            }
+
+            // Ép Tag vào trước nội dung Ghi chú gốc do Nhân viên nhập
+            const finalNote = (Note && Note.trim() !== '') ? `${snapshotTag} ${Note}` : snapshotTag;
+
             // 5. Insert Bảng DonHang
             const sql_tao_don = `
                 INSERT INTO DonHang (MaNV, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
                 VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
             `;
-            const [tao_don] = await connection.query(sql_tao_don, [MaNV, maHienThi, TongTienHang, tongTienThanhToan, trangThaiThanhToan, Ten, SDT, DiaChi, Note]);
+            const [tao_don] = await connection.query(sql_tao_don, [MaNV, maHienThi, TongTienHang, tongTienThanhToan, trangThaiThanhToan, Ten, SDT, DiaChi, finalNote]);
             const maDH_moi = tao_don.insertId;
 
             // Ghi nhận bảng thanh toán nếu có đưa tiền (Cọc hoặc Full)

@@ -570,7 +570,7 @@ const donhang_user = {
             
             const sql_get_cart_item = `
                 SELECT 
-                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu, mh.GiaNhap,
+                    mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.TienCocToiThieu, mh.GiaNhap, mh.LoaiHinhBan,
                     pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho,
                     ct.SoLuong,
                     km_info.MaKM,
@@ -741,9 +741,24 @@ const donhang_user = {
             
             const maHienThi = taoMaDonHangHienThi();
 
+            let snapshotTag = '[SẴN]'; 
+            
+            for (let item of cart_item) {
+                let loaiHang = (item.LoaiHinhBan || '').toLowerCase();
+                if (loaiHang.includes('pre-order') || loaiHang.includes('pre order')) {
+                    snapshotTag = '[PRE-ORDER]';
+                    break; // Mức ưu tiên cao nhất -> Thấy là chốt luôn
+                } else if (loaiHang.includes('order')) {
+                    snapshotTag = '[ORDER]';
+                }
+            }
+
+            // Ép Tag vào trước nội dung Ghi chú gốc của khách
+            const finalNote = (Note && Note.trim() !== '') ? `${snapshotTag} ${Note}` : snapshotTag;
+
             const sql_tao_don = `INSERT INTO DonHang (MaKH, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
             VALUES (?, ?, ?, ?, NOW(), 'Chưa thanh toán', ?, ? ,?, ?)`;
-            const [tao_don] = await connection.query(sql_tao_don, [MaKH, maHienThi, TongTienHang, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note]);
+            const [tao_don] = await connection.query(sql_tao_don, [MaKH, maHienThi, TongTienHang, tongTienThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, finalNote]);
             
             const maDH_moi = tao_don.insertId; 
 
