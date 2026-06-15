@@ -35,6 +35,22 @@
             </button>
           </template>
 
+          <template v-if="orderInfo.TrangThaiThanhToan === 'Đã đặt cọc' && (currentOrderStatus.includes('Đóng gói') || currentOrderStatus.includes('Vận chuyển'))">
+            
+            <button @click="openRepayRemaining"
+                    class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 active:scale-95">
+              <span class="material-symbols-outlined text-lg">credit_card</span>
+              Thanh toán nốt Online
+            </button>
+
+            <button @click="confirmCOD"
+                    class="w-full sm:w-auto px-6 py-3 bg-surface-container-highest border border-outline-variant/30 text-white hover:bg-surface-bright text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all active:scale-95">
+              <span class="material-symbols-outlined text-lg">local_shipping</span>
+              Nhận hàng thu COD
+            </button>
+            
+          </template>
+
           <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa thanh toán'"
                   @click="showCancelModal = true"
                   class="w-full sm:w-auto px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all active:scale-95">
@@ -251,17 +267,27 @@
         <p class="text-sm text-on-surface-variant mb-6">Mã đơn: <span class="font-bold text-primary">{{ orderInfo.MaDonHangHienThi || route.params.id }}</span></p>
         
         <div class="space-y-4 mb-6">
-          <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">1. Chọn hình thức cọc</label>
-          <div class="grid grid-cols-2 gap-3 mb-6">
-            <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Thanh toán toàn bộ' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
-              <input type="radio" v-model="repayMethod" value="Thanh toán toàn bộ" class="hidden" />
-              <span class="text-xs font-bold">Thanh toán<br>Toàn bộ (100%)</span>
-            </label>
-            <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Cọc một phần' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
-              <input type="radio" v-model="repayMethod" value="Cọc một phần" class="hidden" />
-              <span class="text-xs font-bold">Chỉ đặt cọc<br>tối thiểu</span>
-            </label>
-          </div>
+          
+          <template v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán'">
+            <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">1. Chọn hình thức cọc</label>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+              <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Thanh toán toàn bộ' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
+                <input type="radio" v-model="repayMethod" value="Thanh toán toàn bộ" class="hidden" />
+                <span class="text-xs font-bold">Thanh toán<br>Toàn bộ (100%)</span>
+              </label>
+              <label :class="['flex items-center justify-center text-center p-3 rounded-xl border cursor-pointer transition-all', repayMethod === 'Cọc một phần' ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-container border-outline-variant/20 text-outline hover:border-outline-variant']">
+                <input type="radio" v-model="repayMethod" value="Cọc một phần" class="hidden" />
+                <span class="text-xs font-bold">Chỉ đặt cọc<br>tối thiểu</span>
+              </label>
+            </div>
+          </template>
+
+          <template v-else-if="orderInfo.TrangThaiThanhToan === 'Đã đặt cọc'">
+            <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl mb-6 flex flex-col items-center justify-center">
+              <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">Thanh toán phần còn lại</p>
+              <p class="text-3xl font-black text-white tracking-tight">{{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}</p>
+            </div>
+          </template>
 
           <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">2. Chọn cổng thanh toán</label>
           <div class="space-y-3 mb-8">
@@ -568,15 +594,26 @@
     }
   };
 
+  const openRepayRemaining = () => {
+    showPaymentModal.value = true;
+  };
+
   const handleRepay = async () => {
     const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     isProcessingPayment.value = true;
     try {
       const endpoint = paymentGateway.value === 'momo' ? '/api/don_hang/payment/momo/create' : '/api/don_hang/payment/zalopay/create';
+      
+      // 🔴 ĐÃ SỬA: Đổi cờ báo hiệu cho Backend biết đây là đợt thanh toán nốt
+      let hinhThucGuiLen = repayMethod.value;
+      if (orderInfo.value.TrangThaiThanhToan === 'Đã đặt cọc') {
+          hinhThucGuiLen = 'Thanh toán phần còn lại';
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ MaDH: route.params.id, HinhThuc: repayMethod.value })
+        body: JSON.stringify({ MaDH: route.params.id, HinhThuc: hinhThucGuiLen })
       });
       const data = await response.json();
       if (response.ok) window.location.href = data.checkoutUrl;
@@ -585,6 +622,29 @@
       toastStore.showToast("Lỗi kết nối máy chủ", "error");
     } finally {
       isProcessingPayment.value = false;
+    }
+  };
+
+  const confirmCOD = async () => {
+    if(confirm("Xác nhận: Bạn muốn thanh toán phần tiền còn lại bằng Tiền mặt cho Shipper khi nhận hàng (COD)?")) {
+      try {
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+        const response = await fetch(`${API_BASE_URL}/api/don_hang/confirm-cod`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ MaDH: route.params.id })
+        });
+        
+        const data = await response.json();
+        if (response.ok) {
+          toastStore.showToast("Đã báo cho Shop gửi hàng thu COD thành công!", "success");
+          fetchOrderdata(); // Load lại giao diện
+        } else {
+          toastStore.showToast(data.message || "Lỗi khi xác nhận COD", "error");
+        }
+      } catch (error) {
+        toastStore.showToast("Lỗi kết nối máy chủ", "error");
+      }
     }
   };
 

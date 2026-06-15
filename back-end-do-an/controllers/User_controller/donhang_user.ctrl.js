@@ -1351,6 +1351,40 @@ const donhang_user = {
         }
     },
 
+    xac_nhan_chon_cod: async (req, res) => {
+        try {
+            const MaTK = req.user.id;
+            const { MaDH } = req.body;
+
+            // 1. Kiểm tra đơn hàng có đúng của khách này không, và đang ở trạng thái Cọc không
+            const [order] = await db.query(`
+                SELECT dh.MaDH, dh.MaDonHangHienThi 
+                FROM DonHang dh 
+                JOIN KhachHang kh ON dh.MaKH = kh.MaKH 
+                WHERE dh.MaDH = ? AND kh.MaTK = ? AND dh.TrangThaiThanhToan = 'Đã đặt cọc'
+            `, [MaDH, MaTK]);
+
+            if (order.length === 0) {
+                return res.status(400).json({ success: false, message: "Đơn hàng không hợp lệ hoặc đã thanh toán!" });
+            }
+
+            // 2. Cập nhật trạng thái thanh toán để làm tín hiệu cho Admin
+            await db.query(`UPDATE DonHang SET TrangThaiThanhToan = 'Xác nhận thu COD' WHERE MaDH = ?`, [MaDH]);
+
+            // 3. Ghi Log để Kế toán biết khách vừa bấm
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, ThoiGian) 
+                VALUES (?, 'ORDER_COD_CONFIRM', ?, NOW())
+            `, [MaTK, `Khách hàng xác nhận trả phần còn lại bằng tiền mặt (COD) cho đơn ${order[0].MaDonHangHienThi}`]);
+
+            res.status(200).json({ success: true, message: "Đã báo cho Shop chuẩn bị Ship COD cho bạn!" });
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ success: false, message: "Lỗi máy chủ!" });
+        }
+    },
+
     // ==============================================
     // THANH TOÁN MOMO
     // ==============================================
@@ -1360,13 +1394,35 @@ const donhang_user = {
             let soTienCanThanhToan = 0;
             let maHienThi = "";
 
-            // 1. Tính toán số tiền
+            // =======================================================
+            // 1. TÍNH TOÁN SỐ TIỀN (THÊM NHÁNH THANH TOÁN CÒN LẠI)
+            // =======================================================
             if (HinhThuc === 'Thanh toán toàn bộ') {
                 const sql_tong_tien = `SELECT ThanhTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
                 const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
                 soTienCanThanhToan = result_tong[0].ThanhTien;
                 maHienThi = result_tong[0].MaDonHangHienThi || MaDH.toString();
-            } else {
+
+            } else if (HinhThuc === 'Thanh toán phần còn lại') {
+                // 🔴 MỚI: Truy vấn Tổng tiền và Trừ đi Số tiền đã trả
+                const sql_tinh_tien = `
+                    SELECT dh.ThanhTien, dh.MaDonHangHienThi, COALESCE(SUM(tt.SoTienGiaoDich), 0) AS TongDaThu
+                    FROM DonHang dh
+                    LEFT JOIN ThanhToan tt ON dh.MaDH = tt.MaDH AND tt.TrangThaiGiaoDich = 'Thành công'
+                    WHERE dh.MaDH = ?
+                    GROUP BY dh.MaDH
+                `;
+                const [result] = await db.query(sql_tinh_tien, [MaDH]);
+                if(result.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
+                
+                soTienCanThanhToan = result[0].ThanhTien - result[0].TongDaThu;
+                
+                if (soTienCanThanhToan <= 0) {
+                    return res.status(400).json({ success: false, message: "Đơn hàng này đã được thanh toán đầy đủ!" });
+                }
+                maHienThi = result[0].MaDonHangHienThi || MaDH.toString();
+
+            } else { // Cọc một phần
                 const sql_tinh_tien_coc = `
                     SELECT SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc, dh.MaDonHangHienThi
                     FROM MoHinh mh
@@ -1401,7 +1457,12 @@ const donhang_user = {
             const ipnUrl = `${DOMAIN_BACKEND}/api/don_hang/payment/momo/ipn`; 
             
             const amountNum = Math.max(1000, Number(soTienCanThanhToan)); 
-            const safeHinhThuc = HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit';
+            
+            // 🔴 ĐÃ SỬA: Phân loại 3 cờ (full, remaining, deposit) truyền qua extraData
+            let safeHinhThuc = 'deposit';
+            if (HinhThuc === 'Thanh toán toàn bộ') safeHinhThuc = 'full';
+            if (HinhThuc === 'Thanh toán phần còn lại') safeHinhThuc = 'remaining';
+            
             const extraData = Buffer.from(safeHinhThuc).toString('base64');
             const requestType = "payWithMethod";
 
@@ -1463,7 +1524,6 @@ const donhang_user = {
 
             if (signature !== expectedSignature) return res.status(400).json({ message: "Chữ ký không hợp lệ!" });
 
-            // 🔥 ĐÃ FIX LỖI 1: TÌM MaDH BẰNG MÃ HIỂN THỊ
             const maHienThiGoc = orderId.split('_')[0];
             const sql_tim_don = `SELECT MaDH, TrangThaiThanhToan, Note FROM DonHang WHERE MaDonHangHienThi = ? LIMIT 1`;
             const [don_hang] = await connection.query(sql_tim_don, [maHienThiGoc]);
@@ -1474,20 +1534,32 @@ const donhang_user = {
 
             await connection.beginTransaction();
 
-            // 🔥 ĐÃ FIX LỖI 2: CHỐNG TRÙNG LẶP (IDEMPOTENCY)
             if (resultCode === 0) {
                 const trangThaiHienTai = don_hang[0].TrangThaiThanhToan;
 
-                if (trangThaiHienTai === 'Đã thanh toán' || trangThaiHienTai === 'Đã cọc') {
+                // 🔴 ĐÃ SỬA: Đọc 3 loại cờ truyền về
+                const decodedExtraData = Buffer.from(extraData, 'base64').toString('utf8');
+                let hinhThuc = 'Cọc một phần';
+                if (decodedExtraData === 'full') hinhThuc = 'Thanh toán toàn bộ';
+                else if (decodedExtraData === 'remaining') hinhThuc = 'Thanh toán phần còn lại';
+
+                let trangThaiMoi = 'Đã cọc';
+                if (hinhThuc === 'Thanh toán toàn bộ' || hinhThuc === 'Thanh toán phần còn lại') {
+                    trangThaiMoi = 'Đã thanh toán';
+                }
+
+                // 🔴 VÁ LỖI IDEMPOTENCY: Chống trùng lặp THÔNG MINH
+                // Đã thanh toán full thì ko nhận thêm hook gì nữa
+                if (trangThaiHienTai === 'Đã thanh toán') {
+                    await connection.rollback();
+                    return res.status(204).send(); 
+                }
+                // Nếu đang là Đã cọc, mà hook lại gửi về loại "Cọc" hoặc "Full" -> Hook cũ gọi trễ, skip.
+                if (trangThaiHienTai === 'Đã cọc' && hinhThuc !== 'Thanh toán phần còn lại') {
                     await connection.rollback();
                     return res.status(204).send(); 
                 }
 
-                const decodedExtraData = Buffer.from(extraData, 'base64').toString('utf8');
-                const hinhThuc = decodedExtraData === 'full' ? 'Thanh toán toàn bộ' : 'Cọc một phần';
-                const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
-
-                // 🔥 CHỐT CHẶN: XỬ LÝ KHÁCH THANH TOÁN TRỄ SAU KHI CRON ĐÃ HỦY
                 if (trangThaiHienTai === 'Đã hủy') {
                     const noteMoi = (don_hang[0].Note || "") + "\n🚨 CẢNH BÁO: KHÁCH THANH TOÁN TRỄ QUA MOMO KHI ĐƠN ĐÃ BỊ HỦY. ADMIN KIỂM TRA LẠI TỒN KHO HOẶC HOÀN TIỀN!";
                     await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ?, Note = ? WHERE MaDH = ?`, [trangThaiMoi, noteMoi, MaDH]);
@@ -1499,8 +1571,6 @@ const donhang_user = {
                     INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
                     VALUES (1, ?, NOW(), ?, ?, 'Thành công', ?)
                 `, [MaDH, amount, hinhThuc, transId]);
-
-                // await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
             }
 
             await connection.commit();
@@ -1527,13 +1597,34 @@ const donhang_user = {
             let soTienCanThanhToan = 0;
             let maHienThi = "";
 
-            // 1. Giữ nguyên logic tính tiền MySQL của bạn
+            // =======================================================
+            // 1. TÍNH TOÁN SỐ TIỀN (THÊM NHÁNH THANH TOÁN CÒN LẠI)
+            // =======================================================
             if (HinhThuc === 'Thanh toán toàn bộ') {
                 const sql_tong_tien = `SELECT ThanhTien, MaDonHangHienThi FROM DonHang WHERE MaDH = ?`;
                 const [result_tong] = await db.query(sql_tong_tien, [MaDH]);
                 soTienCanThanhToan = result_tong[0].ThanhTien;
                 maHienThi = result_tong[0].MaDonHangHienThi || MaDH.toString(); 
-            } else {
+
+            } else if (HinhThuc === 'Thanh toán phần còn lại') {
+                const sql_tinh_tien = `
+                    SELECT dh.ThanhTien, dh.MaDonHangHienThi, COALESCE(SUM(tt.SoTienGiaoDich), 0) AS TongDaThu
+                    FROM DonHang dh
+                    LEFT JOIN ThanhToan tt ON dh.MaDH = tt.MaDH AND tt.TrangThaiGiaoDich = 'Thành công'
+                    WHERE dh.MaDH = ?
+                    GROUP BY dh.MaDH
+                `;
+                const [result] = await db.query(sql_tinh_tien, [MaDH]);
+                if(result.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng!" });
+                
+                soTienCanThanhToan = result[0].ThanhTien - result[0].TongDaThu;
+                
+                if (soTienCanThanhToan <= 0) {
+                    return res.status(400).json({ success: false, message: "Đơn hàng này đã được thanh toán đầy đủ!" });
+                }
+                maHienThi = result[0].MaDonHangHienThi || MaDH.toString();
+
+            } else { // Cọc một phần
                 const sql_tinh_tien_coc = `
                     SELECT SUM(mh.TienCocToiThieu * ct.SoLuong) as TienCoc, dh.MaDonHangHienThi
                     FROM MoHinh mh
@@ -1556,7 +1647,6 @@ const donhang_user = {
             const amount = Math.max(1000, Math.round(Number(soTienCanThanhToan)));
             console.log("Số tiền thanh toán:", amount);
 
-            // 2. Lấy Env và cấu hình (Giống bạn kia)
             const DOMAIN_BACKEND = process.env.DOMAIN_BACKEND; 
             const DOMAIN_FRONTEND = process.env.DOMAIN_FRONTEND;
             const config = {
@@ -1565,7 +1655,6 @@ const donhang_user = {
                 apiUrl: "https://sb-openapi.zalopay.vn/v2/create"
             };
 
-            // 3. Tạo app_trans_id ngẫu nhiên giống bạn kia
             const date = new Date();
             const yy = date.getFullYear().toString().slice(-2);
             const mm = ('0' + (date.getMonth() + 1)).slice(-2);
@@ -1574,18 +1663,21 @@ const donhang_user = {
             
             const transID = Math.floor(Math.random() * 1000000);
             const app_trans_id = `${prefixDate}_${MaDH}_${transID}`; 
-            console.log("app_trans_id:", app_trans_id);
             
+            // 🔴 ĐÃ SỬA: Đóng gói cờ hinhThuc vào embed_data
+            let safeHinhThuc = 'deposit';
+            if (HinhThuc === 'Thanh toán toàn bộ') safeHinhThuc = 'full';
+            if (HinhThuc === 'Thanh toán phần còn lại') safeHinhThuc = 'remaining';
+
             const embed_data = JSON.stringify({ 
                 redirecturl: `${DOMAIN_FRONTEND}/ordersuccess?maDH=${MaDH}`,
-                hinhThuc: HinhThuc === 'Thanh toán toàn bộ' ? 'full' : 'deposit',
+                hinhThuc: safeHinhThuc,
                 maDonHangHienThi: maHienThi,
                 maDH_Goc: MaDH
             });
 
-            const item = JSON.stringify([{}]); // Bắt chước mảng rỗng của bạn kia
+            const item = JSON.stringify([{}]); 
 
-            // 4. Tạo Body chuẩn
             const order = {
                 app_id: config.app_id,
                 app_trans_id: app_trans_id,
@@ -1596,7 +1688,7 @@ const donhang_user = {
                 embed_data: embed_data,
                 amount: amount, 
                 description: `Thanh toan don hang ${maHienThi}`,
-                bank_code: "", // ĐỂ TRỐNG ĐỂ HIỆN QR CODE LÊN WEB
+                bank_code: "", 
                 callback_url: `${DOMAIN_BACKEND}/api/don_hang/payment/zalopay/ipn`
             };
 
@@ -1612,26 +1704,16 @@ const donhang_user = {
 
             order.mac = crypto.createHmac('sha256', config.key1).update(dataToMac).digest('hex');
 
-            // ... (Phần trên giữ nguyên đến đoạn tạo xong biến order)
-
-            console.log("Request gửi ZaloPay:", order);
-
-            // 5. Gửi request bằng FETCH thuần và URLSearchParams (Không cần cài thêm thư viện)
             const response = await fetch(config.apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                // URLSearchParams tự động ép object order thành chuỗi định dạng x-www-form-urlencoded chuẩn
                 body: new URLSearchParams(order).toString() 
             });
 
-            // Parse kết quả trả về thành JSON
             const dataResult = await response.json();
 
-            console.log("Response từ ZaloPay:", dataResult);
-
-            // 6. Xử lý phản hồi
             if (dataResult.return_code === 1) {
                 console.log("===== [ZALOPAY CREATE SUCCESS] =====");
                 res.status(200).json({ message: "Tạo link ZaloPay thành công!", checkoutUrl: dataResult.order_url });
@@ -1652,7 +1734,6 @@ const donhang_user = {
         let result = {};
         
         try {
-            console.log("👉 Dữ liệu thô nhận được từ ZaloPay:", req.body);
             const config = { key2: process.env.ZALO_KEY2 };
 
             if (!config.key2) {
@@ -1670,16 +1751,17 @@ const donhang_user = {
                 return res.status(400).json(result);
             }
 
-            console.log("✅ 1. Chữ ký hợp lệ!");
-
             const dataJson = JSON.parse(dataStr);
             const embed_data = JSON.parse(dataJson.embed_data); 
             const maDH_Goc = embed_data.maDH_Goc;
-            const hinhThuc = embed_data.hinhThuc === 'full' ? 'Thanh toán toàn bộ' : 'Cọc một phần';            
+            
+            // 🔴 ĐÃ SỬA: Đọc 3 loại cờ
+            let hinhThuc = 'Cọc một phần';
+            if (embed_data.hinhThuc === 'full') hinhThuc = 'Thanh toán toàn bộ';
+            else if (embed_data.hinhThuc === 'remaining') hinhThuc = 'Thanh toán phần còn lại';
+            
             const amount = dataJson.amount;
             const transId = dataJson.zp_trans_id;
-
-            console.log(`📦 2. Bóc tách đơn: MaDH_Goc = ${maDH_Goc} | Số tiền = ${amount} | Mã GD = ${transId}`);
 
             await connection.beginTransaction();
 
@@ -1687,47 +1769,39 @@ const donhang_user = {
             const [don_hang] = await connection.query(sql_tim_don, [maDH_Goc])
 
             if (don_hang.length > 0) {
-                console.log("✅ 3. Đã tìm thấy đơn hàng trong Database. Bắt đầu Update...");
                 const MaDH = don_hang[0].MaDH;
                 const trangThaiHienTai = don_hang[0].TrangThaiThanhToan;
+                
+                let trangThaiMoi = 'Đã cọc';
+                if (hinhThuc === 'Thanh toán toàn bộ' || hinhThuc === 'Thanh toán phần còn lại') {
+                    trangThaiMoi = 'Đã thanh toán';
+                }
 
-                if (trangThaiHienTai !== 'Đã thanh toán' && trangThaiHienTai !== 'Đã cọc') {
-                    
-                    const trangThaiMoi = hinhThuc === 'Thanh toán toàn bộ' ? 'Đã thanh toán' : 'Đã cọc';
+                // 🔴 VÁ LỖI IDEMPOTENCY ZALOPAY
+                let isIdempotentOK = true;
+                if (trangThaiHienTai === 'Đã thanh toán') {
+                    isIdempotentOK = false;
+                } else if (trangThaiHienTai === 'Đã cọc' && hinhThuc !== 'Thanh toán phần còn lại') {
+                    isIdempotentOK = false;
+                }
 
-                    // Cập nhật trạng thái
+                if (isIdempotentOK) {
                     if (trangThaiHienTai === 'Đã hủy') {
                         const noteMoi = (don_hang[0].Note || "") + "\n🚨 CẢNH BÁO: KHÁCH THANH TOÁN TRỄ QUA ZALOPAY KHI ĐƠN ĐÃ BỊ HỦY. ADMIN KIỂM TRA LẠI TỒN KHO!";
                         await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ?, Note = ? WHERE MaDH = ?`, [trangThaiMoi, noteMoi, MaDH]);
                     } else {
                         await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
                     }
-                    console.log(`✅ 4. Đã Update trạng thái thành: ${trangThaiMoi}`);
 
-                    // =========================================================
-                    // 🔴 THAY ĐỔI CỰC KỲ QUAN TRỌNG Ở ĐÂY
-                    // =========================================================
-                    // Hãy tra cứu lại trong bảng PhuongThucThanhToan của bồ, xem ZaloPay là ID số mấy. 
-                    // Ví dụ: ZaloPay là số 4 thì thay thành số 4!
-                    const MA_PT_ZALOPAY = 2; // <--- SỬA SỐ NÀY CHO KHỚP VỚI DATABASE CỦA BỒ!
-                    
-                    console.log(`⏳ 5. Đang Insert lịch sử vào bảng ThanhToan với MaPT = ${MA_PT_ZALOPAY}...`);
+                    const MA_PT_ZALOPAY = 2; // ZaloPay ID
                     await connection.query(`
                         INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
                         VALUES (?, ?, NOW(), ?, ?, 'Thành công', ?)
                     `, [MA_PT_ZALOPAY, MaDH, amount, hinhThuc, transId]);
-
-                    // await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 2, NOW())`, [MaDH]);
-                } else {
-                    console.log("⚠️ Đơn hàng đã được thanh toán từ trước, bỏ qua ghi nhận trùng lặp.");
                 }
-            } else {
-                console.error(`❌ LỖI: KHÔNG TÌM THẤY ĐƠN HÀNG CÓ MÃ: ${maDH_Goc} TRONG DATABASE!`);
             }
 
             await connection.commit();
-            console.log("🎉 ===== [ZALOPAY IPN] LƯU DATABASE THÀNH CÔNG! =====");
-            
             result.return_code = 1;
             result.return_message = "success";
             return res.json(result);

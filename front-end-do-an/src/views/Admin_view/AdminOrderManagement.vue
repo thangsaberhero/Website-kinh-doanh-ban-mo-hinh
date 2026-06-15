@@ -2005,16 +2005,6 @@ const exportExcelReport = async () => {
   };
 
   const submitUpdateStatus = async () => {
-    if (Number(updateStatusValue.value) === getCurrentStatusCode()) {
-      toastStore.showToast("Bạn chưa thay đổi sang tiến trình mới nào!", "warning");
-      return;
-    }
-
-    if (Number(updateStatusValue.value) === 3 && getCurrentStatusCode() < 3 && !updateTrackingCode.value.trim()) {
-        toastStore.showToast("Vui lòng nhập Mã vận đơn trước khi giao cho Shipper!", "warning");
-        return;
-    }
-
     const currentSaleType = getSaleType();
     const currentFulfillment = getFulfillmentStatus();
 
@@ -2022,6 +2012,25 @@ const exportExcelReport = async () => {
         if (updateStatusValue.value >= 2 && getCurrentStatusCode() < 2) {
             toastStore.showToast(`Lỗi: Không thể đóng gói khi hàng đang ${currentFulfillment}! Vui lòng chờ đủ hàng hoặc Tách đơn.`, "warning");
             return;
+        }
+    }
+
+    if (Number(updateStatusValue.value) === getCurrentStatusCode()) {
+      toastStore.showToast("Bạn chưa thay đổi sang tiến trình mới nào!", "warning");
+      return;
+    }
+
+    if (Number(updateStatusValue.value) === 3) {
+      const paymentStt = selectedOrder.value?.ThongTinGiaoHang?.TrangThaiThanhToan || '';
+        
+        // Nếu là hàng Order mà tiền vẫn lấp lửng ở chữ "Đã đặt cọc"
+        if (currentSaleType !== 'Có sẵn' && paymentStt === 'Đã đặt cọc') {
+            toastStore.showToast("Khoan đã! Khách chưa xác nhận là sẽ Thanh toán Online hay Ship COD. Hãy liên hệ khách trước khi gửi hàng!", "error");
+            return;
+        }
+        if (getCurrentStatusCode() < 3 && !updateTrackingCode.value.trim()){
+          toastStore.showToast("Vui lòng nhập Mã vận đơn trước khi giao cho Shipper!", "warning");
+          return;
         }
     }
 

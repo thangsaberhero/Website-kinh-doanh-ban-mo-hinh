@@ -2180,7 +2180,6 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
-            // 🔴 ĐÃ SỬA: Nhận đủ các biến thanh toán động từ Frontend gửi lên
             const { MaDH, SoTienThu, PhuongThuc } = req.body;
             const MaTK = req.user.id;
 
@@ -2192,10 +2191,23 @@ const donhang_admin = {
             const tienThuLanNay = Number(SoTienThu);
             const maPhuongThuc = Number(PhuongThuc);
 
-            // 1. Kiểm tra đơn hàng có tồn tại không và lấy trạng thái hiện tại
+            // ==========================================================
+            // 1. TÍCH HỢP RADAR GOM HÀNG VÀ BÓC TAG VÀO CÂU QUERY
+            // ==========================================================
             const sql_check = `
-                SELECT dh.MaDH, dh.MaDonHangHienThi, dh.ThanhTien, dh.TrangThaiThanhToan,
-                       (SELECT MaTrangThai FROM ChiTietTrangThai cttt WHERE cttt.MaDH = dh.MaDH ORDER BY Thoigian DESC LIMIT 1) AS TrangThaiHienTai
+                SELECT dh.MaDH, dh.MaDonHangHienThi, dh.ThanhTien, dh.TrangThaiThanhToan, dh.Note,
+                       (SELECT MaTrangThai FROM ChiTietTrangThai cttt WHERE cttt.MaDH = dh.MaDH ORDER BY Thoigian DESC LIMIT 1) AS TrangThaiHienTai,
+                       (
+                            SELECT CASE 
+                                WHEN COUNT(mh.MaMoHinh) = SUM(CASE WHEN mh.LoaiHinhBan NOT LIKE '%order%' THEN 1 ELSE 0 END) THEN 'Đủ hàng'
+                                WHEN SUM(CASE WHEN mh.LoaiHinhBan NOT LIKE '%order%' THEN 1 ELSE 0 END) > 0 THEN 'Về một phần'
+                                ELSE 'Chờ hàng về'
+                            END
+                            FROM ChiTietDonHang ctdh
+                            JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai
+                            JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh
+                            WHERE ctdh.MaDH = dh.MaDH
+                       ) AS TinhTrangGomHang
                 FROM DonHang dh
                 WHERE dh.MaDH = ? FOR UPDATE
             `;
@@ -2226,14 +2238,38 @@ const donhang_admin = {
             const daTraTruocDo = Number(paid_res[0].DaTra) || 0;
 
             // ==========================================================
-            // 🔴 CHỐT CHẶN BẢO MẬT: KIỂM TRA LỊCH SỬ CỌC KHI CHỌN COD
+            // 🔴 CHỐT CHẶN BẢO MẬT TẦNG BACKEND (SECURITY GATES)
             // ==========================================================
+            const isOrderOrPreOrder = dh.Note && (dh.Note.startsWith('[PRE-ORDER]') || dh.Note.startsWith('[ORDER]'));
+            
+            // 🛡️ Bẫy 1: Chống thu COD khi chưa cọc (Logic gốc của bồ)
             if (maPhuongThuc === 3 && daTraTruocDo === 0) {
                 await connection.rollback();
                 return res.status(400).json({ 
                     success: false, 
                     message: "Vi phạm nghiệp vụ: Không thể áp dụng hình thức thu hộ COD cho đơn hàng chưa từng thực hiện đặt cọc / tạm ứng!" 
                 });
+            }
+
+            // 🛡️ Bẫy 2: Chống thu COD "Ảo" (Hàng chưa đi mà dám thu COD)
+            if (maPhuongThuc === 3 && dh.TrangThaiHienTai < 3) {
+                await connection.rollback();
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Lỗi logic: Đơn hàng chưa được giao cho Shipper (Đang chờ duyệt/đóng gói), không thể thu tiền COD từ hãng vận chuyển lúc này!" 
+                });
+            }
+
+            // 🛡️ Bẫy 3: Chống thu "Khống" (Hàng chưa về mà dám nhận Tiền mặt/COD)
+            if (isOrderOrPreOrder && dh.TinhTrangGomHang !== 'Đủ hàng') {
+                // Nếu là thu Tiền mặt (5) hoặc COD (3) -> Chặn đứng
+                if (maPhuongThuc === 5 || maPhuongThuc === 3) {
+                    await connection.rollback();
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Hàng Order hiện đang "${dh.TinhTrangGomHang}". Không thể thu Tiền mặt hoặc COD lúc này! Hãy chờ hàng về hoặc yêu cầu khách Chuyển khoản/ZaloPay nếu muốn đóng cọc thêm.` 
+                    });
+                }
             }
 
             // Kiểm tra tránh thu vượt quá số tiền còn nợ của đơn hàng
@@ -2263,7 +2299,7 @@ const donhang_admin = {
 
             await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiThanhToanMoi, MaDH]);
 
-            // 4. ĐÃ SỬA CHUẨN: Dùng INSERT thay vì UPDATE để lưu vết tất cả các đợt đóng tiền
+            // 4. Lưu vết tất cả các đợt đóng tiền
             await connection.query(`
                 INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
                 VALUES (?, ?, NOW(), ?, ?, 'Thành công')
@@ -2297,6 +2333,7 @@ const donhang_admin = {
             if (connection) connection.release();
         }
     },
+    
     xac_nhan_hoan_tien: async(req, res) => {
         const connection = await db.getConnection();
         try {
