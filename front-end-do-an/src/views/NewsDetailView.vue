@@ -104,7 +104,7 @@
     </div>
     <button 
         @click="router.push('/news')" 
-        class="fixed top-[80px] left-8 bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:shadow-lg hover:-translate-y-1 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-md z-40"
+        class="fixed top-[80px] left-8 bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary hover:shadow-lg hover:-translate-y-1 transition-all w-12 h-12 rounded-full flex items-center justify-center shadow-md z-40"
         title="Quay lại danh sách tin tức"
         >
     <span class="material-symbols-outlined">arrow_back</span>

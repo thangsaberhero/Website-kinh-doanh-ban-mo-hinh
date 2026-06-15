@@ -4,7 +4,7 @@
       <div class="flex items-center gap-4">
         <button 
           @click="$emit('toggle-sidebar')" 
-          class="text-slate-500 hover:text-[#ff8f73] bg-slate-50 hover:bg-[#ff8f73]/10 p-2 -ml-3 rounded-lg transition-colors"
+          class="text-slate-500 hover:text-primary bg-slate-50 hover:bg-primary/10 p-2 -ml-3 rounded-lg transition-colors"
         >
           <span class="material-symbols-outlined">menu</span>
         </button>
@@ -17,7 +17,7 @@
             <button class="relative text-slate-500 hover:text-slate-900 hover:bg-slate-100 p-2 rounded-full transition-colors">
               <span class="material-symbols-outlined text-[20px]">notifications</span>
               <span v-if="unreadCount > 0" class="absolute top-2 right-2 flex h-2.5 w-2.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff8f73] opacity-75"></span>
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#ff3d00] border-2 border-white"></span>
               </span>
             </button>
@@ -25,13 +25,13 @@
             <div class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50 overflow-hidden cursor-default flex flex-col"> 
               <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
                 <h3 class="text-sm font-bold text-slate-900">Thông báo mới ({{ unreadCount }})</h3>
-                <button v-if="unreadCount > 0" @click="markAllAsRead" class="text-[10px] text-[#ff8f73] hover:text-[#ff3d00] font-semibold">Đánh dấu đã đọc</button>
+                <button v-if="unreadCount > 0" @click="markAllAsRead" class="text-[10px] text-primary hover:text-[#ff3d00] font-semibold">Đánh dấu đã đọc</button>
               </div>
               
               <div class="max-h-[300px] overflow-y-auto">
                 <a v-for="notif in notifications" :key="notif.MaTB" @click.prevent="clickNotification(notif)" 
                   href="#" class="flex gap-3 p-4 hover:bg-slate-50 border-b border-slate-50 transition-colors"
-                  :class="notif.DaDoc === 0 ? 'bg-[#ff8f73]/5' : ''">
+                  :class="notif.DaDoc === 0 ? 'bg-primary/5' : ''">
                   
                   <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                       :class="notif.LoaiThongBao === 'DonHang' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'">
@@ -43,7 +43,7 @@
                   <div>
                     <p class="text-sm text-slate-800 font-medium">{{ notif.TieuDe }}</p>
                     <p class="text-[11px] text-slate-500 mt-0.5">{{ notif.NoiDung }}</p>
-                    <p class="text-[10px] font-semibold mt-1" :class="notif.DaDoc === 0 ? 'text-[#ff8f73]' : 'text-slate-400'">
+                    <p class="text-[10px] font-semibold mt-1" :class="notif.DaDoc === 0 ? 'text-primary' : 'text-slate-400'">
                       {{ new Date(notif.NgayTao).toLocaleString('vi-VN') }}
                     </p>
                   </div>
@@ -57,7 +57,7 @@
               </div>
 
               <div class="border-t border-slate-100 bg-slate-50 shrink-0">
-                <button @click="router.push('/admin/notifications')" class="w-full text-center py-2.5 text-xs font-bold text-[#ff8f73] hover:text-[#ff3d00] hover:bg-slate-100/80 transition-all">
+                <button @click="router.push('/admin/notifications')" class="w-full text-center py-2.5 text-xs font-bold text-primary hover:text-[#ff3d00] hover:bg-slate-100/80 transition-all">
                   Xem tất cả thông báo
                 </button>
               </div>
@@ -70,10 +70,10 @@
         <div class="relative group cursor-pointer">
           <div class="flex items-center gap-3">
             <div class="text-right hidden md:block">
-              <p class="text-xs font-bold text-slate-900 group-hover:text-[#ff8f73] transition-colors">{{ user?.TenNV || user?.username || user?.TenDN || 'Admin' }}</p>
-              <p class="text-[10px] text-[#ff8f73] uppercase font-bold tracking-wider">{{ roleName }}</p>
+              <p class="text-xs font-bold text-slate-900 group-hover:text-primary transition-colors">{{ user?.TenNV || user?.username || user?.TenDN || 'Admin' }}</p>
+              <p class="text-[10px] text-primary uppercase font-bold tracking-wider">{{ roleName }}</p>
             </div>
-            <div class="w-9 h-9 rounded-full bg-[#ff8f73]/10 border border-[#ff8f73]/30 flex items-center justify-center text-[#ff8f73] font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-[#ff8f73]/30 transition-all">
+            <div class="w-9 h-9 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-primary/30 transition-all">
               <img :src="adminAvatar" alt="Admin Avatar" class="w-10 h-10 rounded-full object-cover border border-slate-200" />
             </div>
           </div>
@@ -84,11 +84,11 @@
               <p class="text-sm font-bold text-slate-900 truncate">{{ user?.Email || user?.email || 'Chưa cập nhật email' }}</p>
             </div>
             <div class="py-1">
-              <RouterLink to="/admin/profile" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73]">
+              <RouterLink to="/admin/profile" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary">
                 <span class="material-symbols-outlined text-[18px]">person</span> Hồ sơ cá nhân
               </RouterLink>
               
-              <RouterLink to="/admin/change-password" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#ff8f73]">
+              <RouterLink to="/admin/change-password" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-primary">
                 <span class="material-symbols-outlined text-[18px]">shield_person</span> Bảo mật tài khoản
               </RouterLink>
             </div>

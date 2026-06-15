@@ -11,19 +11,19 @@
       <AdminHeader @toggle-sidebar="layoutStore.toggleSidebar" />
       <main class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar pb-24">
         <div v-if="isLoading" class="flex justify-center items-center h-64">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff8f73]"></div>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
 
         <!-- Nội dung chính - chỉ hiển thị khi có data -->
         <template v-else-if="detailData">
           <div class="flex items-center gap-4 border-b border-slate-200 pb-4">
-            <button @click="$router.push('/admin/promotion')" class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-200 text-slate-500 hover:text-[#ff8f73] transition-all shadow-sm">
+            <button @click="$router.push('/admin/promotion')" class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-200 text-slate-500 hover:text-primary transition-all shadow-sm">
               <span class="material-symbols-outlined">arrow_back</span>
             </button>
             <div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider"
-                      :class="promoType === 'campaign' ? 'bg-orange-50 text-[#ff8f73] border border-orange-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
+                      :class="promoType === 'campaign' ? 'bg-orange-50 text-primary border border-orange-200' : 'bg-purple-50 text-purple-600 border border-purple-200'">
                   {{ promoType === 'campaign' ? 'Khuyến mãi hệ thống' : 'Mã Voucher' }}
                 </span>
               </div>
@@ -117,10 +117,10 @@
           </div>
 
           <div class="flex gap-1 bg-slate-200/50 p-1 rounded-xl w-fit border border-slate-200">
-            <button @click="activeSubTab = 'products'" :class="activeSubTab === 'products' ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500'" class="px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
+            <button @click="activeSubTab = 'products'" :class="activeSubTab === 'products' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'" class="px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
               <span class="material-symbols-outlined text-[16px]">category</span> Sản phẩm áp dụng
             </button>
-            <button @click="activeSubTab = 'logs'" :class="activeSubTab === 'logs' ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500'" class="px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
+            <button @click="activeSubTab = 'logs'" :class="activeSubTab === 'logs' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'" class="px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
               <span class="material-symbols-outlined text-[16px]">history</span> Lịch sử sử dụng
             </button>
           </div>
@@ -333,7 +333,7 @@
                     <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-500">
                       {{ prod.ChiTietPhanLoai || 'Mặc định' }}
                     </span>
-                    <span class="text-[11px] font-bold text-[#ff8f73]">
+                    <span class="text-[11px] font-bold text-primary">
                       {{ formatCurrency(prod.DonGia) }}
                     </span>
                     

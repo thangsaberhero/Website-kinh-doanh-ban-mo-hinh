@@ -5,7 +5,7 @@
   >
     <div class="py-8 flex flex-col whitespace-nowrap overflow-hidden transition-all duration-300" 
          :class="isCollapsed ? 'items-center px-0' : 'px-6'">
-      <h1 class="font-headline font-brand font-bold text-[#ff8f73] tracking-tighter transition-all duration-300" 
+      <h1 class="font-headline font-brand font-bold text-primary tracking-tighter transition-all duration-300" 
           :class="isCollapsed ? 'text-xl' : 'text-2xl'">
           {{ isCollapsed 
             ? getAcronym(systemStore.settings.shop_name) 
@@ -30,11 +30,11 @@
           <button 
             @click="toggleSubMenu(item.name)"
             class="w-full flex items-center justify-between py-3 font-body text-sm font-medium transition-all duration-200 border-l-2 text-[#a3aac4] hover:text-white hover:bg-[#141f38]"
-            :class="isGroupActive(item) ? 'text-[#ff8f73] bg-[#141f38]/50 border-[#ff3d00]' : 'border-transparent'"
+            :class="isGroupActive(item) ? 'text-primary bg-[#141f38]/50 border-[#ff3d00]' : 'border-transparent'"
           >
             <div class="flex items-center">
               <div class="flex items-center justify-center min-w-[80px]">
-                <span class="material-symbols-outlined" :class="isGroupActive(item) ? 'font-bold text-[#ff8f73]' : ''">
+                <span class="material-symbols-outlined" :class="isGroupActive(item) ? 'font-bold text-primary' : ''">
                   {{ item.icon }}
                 </span>
               </div>
@@ -48,7 +48,7 @@
             <span 
               v-show="!isCollapsed"
               class="material-symbols-outlined text-[18px] mr-4 transition-transform duration-300"
-              :class="layoutStore.openSubMenus[item.name] ? 'rotate-180 text-[#ff8f73]' : 'text-slate-500'"
+              :class="layoutStore.openSubMenus[item.name] ? 'rotate-180 text-primary' : 'text-slate-500'"
             >
               expand_more
             </span>
@@ -60,7 +60,7 @@
               :key="child.path"
               :to="child.path"
               class="flex items-center py-2.5 pl-14 pr-4 font-body text-sm font-medium text-[#a3aac4] hover:text-white hover:bg-white/5 transition-colors"
-              exact-active-class="!text-[#ff8f73] !font-bold bg-[#141f38]/30"
+              exact-active-class="!text-primary !font-bold bg-[#141f38]/30"
             >
               <span class="material-symbols-outlined text-[18px] mr-3 opacity-70">
                 {{ child.icon }}
@@ -74,7 +74,7 @@
           <RouterLink 
             :to="item.path" 
             class="flex items-center py-3 font-body text-sm font-medium transition-all duration-200 border-l-2 border-transparent text-[#a3aac4] hover:text-white hover:bg-[#141f38]"
-            exact-active-class="!text-[#ff8f73] !bg-[#141f38] !border-[#ff3d00]"
+            exact-active-class="!text-primary !bg-[#141f38] !border-[#ff3d00]"
           >
             <div class="flex items-center justify-center min-w-[80px]">
               <span class="material-symbols-outlined">{{ item.icon }}</span>
@@ -105,7 +105,7 @@
                 :key="child.path"
                 :to="child.path"
                 class="flex items-center px-4 py-2.5 font-body text-sm font-medium text-[#a3aac4] hover:text-white hover:bg-white/5 transition-colors"
-                exact-active-class="!text-[#ff8f73] !bg-[#1a2642]"
+                exact-active-class="!text-primary !bg-[#1a2642]"
               >
                 <span class="material-symbols-outlined text-[18px] mr-3 opacity-70">
                   {{ child.icon }}
@@ -123,7 +123,7 @@
         <RouterLink 
           to="/admin/settings" 
           class="flex items-center py-3 font-body text-sm font-medium transition-all duration-200 border-l-2 border-transparent text-[#a3aac4] hover:text-white hover:bg-[#141f38]"
-          exact-active-class="!text-[#ff8f73] !bg-[#141f38] !border-[#ff3d00]"
+          exact-active-class="!text-primary !bg-[#141f38] !border-[#ff3d00]"
         >
           <div class="flex items-center justify-center min-w-[80px]">
             <span class="material-symbols-outlined">settings</span>
@@ -142,7 +142,7 @@
       </div>
       
       <div class="relative" @mouseenter="handleMouseEnter($event, 'logout')" @mouseleave="hoveredMenu = null">
-        <button @click="handleLogout" class="w-full flex items-center py-3 text-[#a3aac4] hover:text-[#ff6e84] hover:bg-[#141f38] transition-all duration-200 font-body text-sm font-medium border-l-2 border-transparent">
+        <button @click="handleLogout" class="w-full flex items-center py-3 text-[#a3aac4] hover:text-error hover:bg-[#141f38] transition-all duration-200 font-body text-sm font-medium border-l-2 border-transparent">
           <div class="flex items-center justify-center min-w-[80px]">
             <span class="material-symbols-outlined">logout</span>
           </div>

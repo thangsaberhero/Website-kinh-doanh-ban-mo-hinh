@@ -24,7 +24,7 @@
               
               <div class="flex flex-col sm:flex-row items-center gap-6 pb-8 border-b border-slate-100">
                 <div class="relative group cursor-pointer shrink-0">
-                  <div class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-slate-50 shadow-md overflow-hidden transition-all duration-300 group-hover:border-[#ff8f73]/50 bg-slate-100">
+                  <div class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-slate-50 shadow-md overflow-hidden transition-all duration-300 group-hover:border-primary/50 bg-slate-100">
                     <img 
                       :src="avatarPreview || `https://ui-avatars.com/api/?name=${encodeURIComponent(form.name || 'Admin')}&background=ff8f73&color=fff&bold=true&size=150`" 
                       alt="Admin Avatar" 
@@ -56,22 +56,22 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div class="space-y-2">
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Họ và tên</label>
-                  <input v-model="form.name" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="text" placeholder="Nhập họ và tên quản trị viên"/>
+                  <input v-model="form.name" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="text" placeholder="Nhập họ và tên quản trị viên"/>
                 </div>
 
                 <div class="space-y-2">
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Email</label>
-                  <input v-model="form.email" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="email" placeholder="admin@figurecollect.vn"/>
+                  <input v-model="form.email" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="email" placeholder="admin@figurecollect.vn"/>
                 </div>
 
                 <div class="space-y-2">
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Số điện thoại</label>
-                  <input v-model="form.phone" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="tel" placeholder="Ví dụ: 0901234567"/>
+                  <input v-model="form.phone" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="tel" placeholder="Ví dụ: 0901234567"/>
                 </div>
 
                 <div class="space-y-2 md:col-span-2">
                   <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">Địa chỉ công tác / Nơi ở</label>
-                  <input v-model="form.address" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="text" placeholder="Nhập địa chỉ của bạn..."/>
+                  <input v-model="form.address" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white" type="text" placeholder="Nhập địa chỉ của bạn..."/>
                 </div>
               </div>
 
@@ -79,7 +79,7 @@
                 <button type="button" @click="fetchUserData" class="px-6 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all">
                   Hủy bỏ
                 </button>
-                <button type="submit" class="bg-[#ff8f73] hover:bg-[#ff7a59] text-white font-bold text-sm px-8 py-2.5 rounded-xl shadow-lg shadow-[#ff8f73]/30 transition-all flex items-center gap-2 active:scale-95">
+                <button type="submit" class="bg-primary hover:bg-[#ff7a59] text-white font-bold text-sm px-8 py-2.5 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center gap-2 active:scale-95">
                   <span v-if="isSaving" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                   {{ isSaving ? 'ĐANG LƯU...' : 'LƯU THAY ĐỔI' }}
                 </button>
@@ -89,16 +89,16 @@
 
           <div class="space-y-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-              <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-3xl -z-10 group-hover:bg-[#ff8f73]/10 transition-colors duration-500"></div>
+              <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-3xl -z-10 group-hover:bg-primary/10 transition-colors duration-500"></div>
               
               <h3 class="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#ff8f73]">admin_panel_settings</span> Phân quyền hệ thống
+                <span class="material-symbols-outlined text-primary">admin_panel_settings</span> Phân quyền hệ thống
               </h3>
               
               <div class="space-y-4">
                 <div class="flex justify-between items-center pb-4 border-b border-slate-100">
                   <span class="text-sm text-slate-500 font-medium">Vai trò</span>
-                  <span class="text-sm font-bold text-[#ff8f73] bg-[#ff8f73]/10 px-3 py-1 rounded-lg">{{ userRole }}</span>
+                  <span class="text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">{{ userRole }}</span>
                 </div>
                 <div class="flex justify-between items-center pb-4 border-b border-slate-100">
                   <span class="text-sm text-slate-500 font-medium">Trạng thái</span>

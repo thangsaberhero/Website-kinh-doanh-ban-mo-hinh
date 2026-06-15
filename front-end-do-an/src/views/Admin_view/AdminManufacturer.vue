@@ -19,7 +19,7 @@
             <p class="text-slate-500 text-sm font-medium">Theo dõi và quản lý danh sách các đối tác cung cấp mô hình.</p>
           </div>
           
-          <button @click="openAddModal" class="w-full xl:w-auto bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
+          <button @click="openAddModal" class="w-full xl:w-auto bg-primary hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95 text-sm">
             <span class="material-symbols-outlined text-[20px]">add_business</span>
             Thêm hãng mới
           </button>
@@ -37,12 +37,12 @@
             </div>
           </div>
 
-          <div class="bg-white p-6 rounded-2xl border border-[#ff8f73]/20 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
+          <div class="bg-white p-6 rounded-2xl border border-primary/20 shadow-sm flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
             <div class="relative z-10">
-              <p class="text-[11px] text-[#ff8f73] font-bold uppercase tracking-widest mb-2">Tổng sản phẩm</p>
+              <p class="text-[11px] text-primary font-bold uppercase tracking-widest mb-2">Tổng sản phẩm</p>
               <p class="text-3xl font-brand font-bold text-[#ff3d00]">{{ tongSoSanPham }}</p>
             </div>
-            <div class="w-12 h-12 bg-[#ff8f73]/10 rounded-xl flex items-center justify-center border border-[#ff8f73]/20 shadow-inner">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 shadow-inner">
               <span class="material-symbols-outlined text-[#ff3d00]">inventory_2</span>
             </div>
           </div>
@@ -54,7 +54,7 @@
           <div class="p-6 flex flex-col md:flex-row justify-between gap-4 items-center border-b border-slate-100">
               <div class="relative w-full md:w-96">
                   <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-                  <input v-model="searchQuery" type="text" placeholder="Tìm kiếm tên hãng..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 shadow-sm">
+                  <input v-model="searchQuery" type="text" placeholder="Tìm kiếm tên hãng..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 shadow-sm">
               </div>
           </div>
 
@@ -74,7 +74,7 @@
                     <div class="flex items-center gap-4">
                       <div class="w-12 h-12 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-center overflow-hidden">
                         <img v-if="mfr.logo" :src="mfr.logo" class="w-full h-full object-contain p-1" />
-                        <span v-else class="text-lg font-black text-[#ff8f73]">{{ mfr.code }}</span>
+                        <span v-else class="text-lg font-black text-primary">{{ mfr.code }}</span>
                       </div>
                       <div class="flex flex-col">
                         <p class="font-bold text-slate-900 text-[15px] mb-0.5">{{ mfr.name }}</p>
@@ -104,7 +104,7 @@
                   
                   <td class="px-8 py-4">
                     <div class="flex justify-center gap-2">
-                      <button @click="openEditModal(mfr)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-[#ff8f73] hover:bg-[#ff8f73]/10 rounded-xl transition-all border border-transparent hover:border-[#ff8f73]/20" title="Sửa thông tin">
+                      <button @click="openEditModal(mfr)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-transparent hover:border-primary/20" title="Sửa thông tin">
                         <span class="material-symbols-outlined text-[18px]">edit</span>
                       </button>
                       <button @click="confirmDelete(mfr)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100" title="Xóa">
@@ -130,19 +130,19 @@
             </p>
             <div class="flex items-center gap-2">
               <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" 
-                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400">
+                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400">
                   <span class="material-symbols-outlined text-sm">chevron_left</span>
               </button>
               
               <button v-for="page in totalPages" :key="page" 
                       @click="currentPage = page"
                       class="w-8 h-8 flex items-center justify-center rounded-xl font-bold text-xs transition-all shadow-sm"
-                      :class="currentPage === page ? 'bg-[#ff8f73] text-white shadow-lg shadow-[#ff8f73]/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73]'">
+                      :class="currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary'">
               {{ page }}
               </button>
 
               <button @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages"
-                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400">
+                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400">
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
               </button>
             </div>
@@ -158,7 +158,7 @@
       <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
         <div>
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#ff8f73]">{{ isEditMode ? 'edit_square' : 'add_business' }}</span> 
+            <span class="material-symbols-outlined text-primary">{{ isEditMode ? 'edit_square' : 'add_business' }}</span> 
             {{ isEditMode ? 'Chỉnh sửa hãng sản xuất' : 'Thêm hãng mới' }}
           </h3>
         </div>
@@ -176,7 +176,7 @@
               <span v-else class="material-symbols-outlined text-slate-300 text-3xl">image</span>
             </div>
             <div class="flex-1">
-              <input type="file" accept="image/*" ref="logoInput" @change="onLogoChange" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer"/>
+              <input type="file" accept="image/*" ref="logoInput" @change="onLogoChange" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"/>
               <p class="text-[10px] text-slate-400 mt-2">Định dạng: PNG, JPG (Khuyên dùng ảnh nền trong suốt).</p>
             </div>
           </div>
@@ -184,26 +184,26 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên hãng sản xuất (*)</label>
-          <input v-model="formManufacturer.name" type="text" placeholder="VD: Bandai Namco" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-slate-800">
+          <input v-model="formManufacturer.name" type="text" placeholder="VD: Bandai Namco" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold text-slate-800">
         </div>
         
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mô tả thông tin (Tùy chọn)</label>
-          <textarea v-model="formManufacturer.description" rows="4" placeholder="Nhập thông tin giới thiệu về hãng sản xuất này..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 resize-none"></textarea>
+          <textarea v-model="formManufacturer.description" rows="4" placeholder="Nhập thông tin giới thiệu về hãng sản xuất này..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 resize-none"></textarea>
         </div>
         <!-- <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Quốc gia</label>
-          <input v-model="formManufacturer.country" type="text" placeholder="VD: Nhật Bản" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none font-medium text-slate-700">
+          <input v-model="formManufacturer.country" type="text" placeholder="VD: Nhật Bản" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium text-slate-700">
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Liên hệ</label>
-          <input v-model="formManufacturer.contact" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none font-medium text-slate-700">
+          <input v-model="formManufacturer.contact" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium text-slate-700">
         </div> -->
 
         <!-- <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Trạng thái</label>
-          <select v-model="formManufacturer.status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] outline-none font-bold text-slate-700 bg-white">
+          <select v-model="formManufacturer.status" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary outline-none font-bold text-slate-700 bg-white">
             <option value="Đang hợp tác">Đang hợp tác</option>
             <option value="Ngưng cung cấp">Ngưng cung cấp</option>
           </select>
@@ -212,7 +212,7 @@
 
       <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
         <button @click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
-        <button @click="saveManufacturer" class="px-6 py-2.5 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 rounded-xl transition-all">
+        <button @click="saveManufacturer" class="px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-[#ff3d00] shadow-lg shadow-primary/20 rounded-xl transition-all">
           {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
         </button>
       </div>

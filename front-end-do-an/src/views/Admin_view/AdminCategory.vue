@@ -17,7 +17,7 @@
             <p class="text-slate-500 text-sm font-medium">Tổ chức và phân loại bộ sưu tập sản phẩm của bạn.</p>
           </div>
           
-          <button @click="openAddModal" class="w-full xl:w-auto bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
+          <button @click="openAddModal" class="w-full xl:w-auto bg-primary hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95 text-sm">
             <span class="material-symbols-outlined text-[20px]">add_circle</span>
             Thêm danh mục mới
           </button>
@@ -54,7 +54,7 @@
           <div class="p-6 flex justify-between gap-4 items-center border-b border-slate-100">
             <div class="relative w-full md:w-96">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-              <input v-model="searchQuery" type="text" placeholder="Tìm tên danh mục, mô tả..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 shadow-sm">
+              <input v-model="searchQuery" type="text" placeholder="Tìm tên danh mục, mô tả..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 shadow-sm">
             </div>
           </div>
 
@@ -103,7 +103,7 @@
                   
                   <td class="px-8 py-4">
                     <div class="flex justify-end gap-2">
-                      <button @click="openEditModal(cat)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-[#ff8f73] hover:bg-[#ff8f73]/10 rounded-xl transition-all border border-transparent hover:border-[#ff8f73]/20" title="Sửa thông tin">
+                      <button @click="openEditModal(cat)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-transparent hover:border-primary/20" title="Sửa thông tin">
                         <span class="material-symbols-outlined text-[18px]">edit</span>
                       </button>
                       <button @click="confirmDelete(cat)" class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100" title="Xóa">
@@ -131,7 +131,7 @@
               <button 
                 @click="currentPage > 1 && currentPage--" 
                 :disabled="currentPage === 1" 
-                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50"
+                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50"
               >
                 <span class="material-symbols-outlined text-sm">chevron_left</span>
               </button>
@@ -140,7 +140,7 @@
                 v-for="page in totalPages" :key="page"
                 @click="currentPage = page"
                 class="w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all"
-                :class="currentPage === page ? 'bg-[#ff8f73] text-white shadow-lg shadow-[#ff8f73]/20' : 'bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73]'"
+                :class="currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-500 hover:text-primary'"
               >
                 {{ page }}
               </button>
@@ -148,7 +148,7 @@
               <button 
                 @click="currentPage < totalPages && currentPage++" 
                 :disabled="currentPage === totalPages"
-                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50"
+                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50"
               >
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
               </button>
@@ -163,7 +163,7 @@
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out] flex flex-col max-h-[90vh]">
         <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#ff8f73]">{{ isEditMode ? 'edit_note' : 'category' }}</span> 
+            <span class="material-symbols-outlined text-primary">{{ isEditMode ? 'edit_note' : 'category' }}</span> 
             {{ isEditMode ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới' }}
           </h3>
           <button @click="isModalOpen = false" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
@@ -173,25 +173,25 @@
 
         <div class="p-6 space-y-6 overflow-y-auto custom-scrollbar">
           
-          <div class="flex items-center justify-between p-4 bg-[#ff8f73]/5 border border-[#ff8f73]/20 rounded-xl">
+          <div class="flex items-center justify-between p-4 bg-primary/5 border border-primary/20 rounded-xl">
             <div>
               <p class="text-sm font-bold text-slate-800">Hiển thị nổi bật trang chủ</p>
               <p class="text-[10px] text-slate-500 mt-0.5">Danh mục sẽ xuất hiện trên lưới Slide ngoài trang chủ</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" v-model="formCategory.isFeatured" class="sr-only peer">
-              <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ff8f73]"></div>
+              <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
             </label>
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên danh mục (*)</label>
-            <input v-model="formCategory.name" type="text" placeholder="VD: Action Figure" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-slate-800">
+            <input v-model="formCategory.name" type="text" placeholder="VD: Action Figure" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold text-slate-800">
           </div>
           
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mô tả ngắn</label>
-            <textarea v-model="formCategory.description" rows="2" placeholder="Nhập mô tả cho danh mục..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 resize-none custom-scrollbar"></textarea>
+            <textarea v-model="formCategory.description" rows="2" placeholder="Nhập mô tả cho danh mục..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 resize-none custom-scrollbar"></textarea>
           </div>
 
           <div>
@@ -207,12 +207,12 @@
             </div>
 
             <div v-if="selectedFileUrls.length > 0" class="flex gap-3 mb-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-              <div v-for="(url, idx) in selectedFileUrls" :key="'new'+idx" class="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+              <div v-for="(url, idx) in selectedFileUrls" :key="'new'+idx" class="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-primary shadow-sm">
                 <img :src="url" class="w-full h-full object-cover">
               </div>
             </div>
 
-            <input type="file" multiple accept="image/*" @change="handleFileSelect" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 transition-all cursor-pointer border border-slate-200 rounded-xl p-1 bg-white">
+            <input type="file" multiple accept="image/*" @change="handleFileSelect" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer border border-slate-200 rounded-xl p-1 bg-white">
           </div>
 
           <div class="pt-6 border-t border-slate-100">
@@ -222,14 +222,14 @@
             </label>
 
             <div class="space-y-2 mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <input v-model="newDetail.name" type="text" placeholder="Tên phân loại (VD: Master Grade)" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-[#ff8f73] outline-none">
+              <input v-model="newDetail.name" type="text" placeholder="Tên phân loại (VD: Master Grade)" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-primary outline-none">
               <div class="flex gap-2">
-                <input v-model="newDetail.desc" type="text" placeholder="Mô tả ngắn cho phân loại này..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-[#ff8f73] outline-none">
+                <input v-model="newDetail.desc" type="text" placeholder="Mô tả ngắn cho phân loại này..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-primary outline-none">
                 <button @click="addDetail" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold">Thêm</button>
               </div>
             </div>
             <div class="space-y-3 pr-1 mt-4">
-              <div v-for="(detail, index) in formCategory.details" :key="index" class="flex flex-col gap-1 p-3 bg-white border border-slate-100 rounded-xl relative group hover:border-[#ff8f73]/30 transition-all shadow-sm">
+              <div v-for="(detail, index) in formCategory.details" :key="index" class="flex flex-col gap-1 p-3 bg-white border border-slate-100 rounded-xl relative group hover:border-primary/30 transition-all shadow-sm">
                 
                 <div class="flex items-center gap-2 pr-6">
                   <span class="text-[10px] font-bold text-slate-300 mt-0.5">#{{ index + 1 }}</span>
@@ -252,7 +252,7 @@
 
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
           <button @click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
-          <button @click="saveCategory" class="px-6 py-2.5 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 rounded-xl transition-all">
+          <button @click="saveCategory" class="px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-[#ff3d00] shadow-lg shadow-primary/20 rounded-xl transition-all">
             {{ isEditMode ? 'Cập nhật' : 'Lưu danh mục' }}
           </button>
         </div>

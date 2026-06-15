@@ -19,12 +19,12 @@
           
           <div class="flex gap-1 bg-slate-200/50 p-1 rounded-xl w-fit border border-slate-200">
             <button @click="activeTab = 'reviews'" 
-                    :class="activeTab === 'reviews' ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500 hover:bg-white/50'"
+                    :class="activeTab === 'reviews' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:bg-white/50'"
                     class="px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">star</span> Đánh giá sản phẩm
             </button>
             <button @click="activeTab = 'contacts'" 
-                    :class="activeTab === 'contacts' ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500 hover:bg-white/50'"
+                    :class="activeTab === 'contacts' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:bg-white/50'"
                     class="px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 relative">
               <span class="material-symbols-outlined text-[18px]">mail</span> Tin nhắn liên hệ
               </button>
@@ -64,10 +64,10 @@
           <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">             
             <div class="relative w-full md:w-80">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-              <input v-model="searchQuery" type="text" placeholder="Tìm tên khách, sản phẩm, nội dung..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+              <input v-model="searchQuery" type="text" placeholder="Tìm tên khách, sản phẩm, nội dung..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
             </div>
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <select v-model="filterStar" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#ff8f73] cursor-pointer">
+              <select v-model="filterStar" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
                   <option value="all">Tất cả số sao</option>
                   <option value="5">5 Sao (Tuyệt vời)</option>
                   <option value="4">4 Sao (Tốt)</option>
@@ -75,7 +75,7 @@
                   <option value="1-2">1-2 Sao (Cần xử lý)</option>
               </select>
               <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl hover:bg-slate-100 transition-colors">
-                  <input type="checkbox" v-model="filterUnreplied" class="rounded text-[#ff8f73] focus:ring-[#ff8f73] w-4 h-4">
+                  <input type="checkbox" v-model="filterUnreplied" class="rounded text-primary focus:ring-primary w-4 h-4">
                   Chỉ hiện chưa phản hồi
               </label>
             </div>
@@ -85,7 +85,7 @@
             <div v-for="review in reviews" :key="review.id" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-6">    
               <div class="md:w-1/4 shrink-0 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-6 flex flex-col gap-3">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[#ff8f73] overflow-hidden border border-slate-200 shadow-inner">
+                  <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-primary overflow-hidden border border-slate-200 shadow-inner">
                     <img v-if="review.customerAvatar" :src="review.customerAvatar" class="w-full h-full object-cover">
                     <span v-else>{{ review.customerName ? review.customerName.charAt(0).toUpperCase() : '?' }}</span>
                   </div>
@@ -96,7 +96,7 @@
                 </div>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 mt-2">
                   <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sản phẩm đánh giá</p>
-                  <p class="font-bold text-slate-700 text-xs line-clamp-2 hover:text-[#ff8f73] cursor-pointer" title="Xem sản phẩm">{{ review.productName }}</p>
+                  <p class="font-bold text-slate-700 text-xs line-clamp-2 hover:text-primary cursor-pointer" title="Xem sản phẩm">{{ review.productName }}</p>
                   <p v-if="review.variant" class="text-[10px] text-slate-500 mt-1">Phân loại: {{ review.variant }}</p>
                 </div>
               </div>
@@ -115,7 +115,7 @@
                 </div>
                 <p class="text-slate-700 text-sm leading-relaxed mb-4">{{ review.content }}</p>
                 <div v-if="review.images && review.images.length > 0" class="flex gap-2 mb-6">
-                  <div v-for="(img, idx) in review.images" :key="idx" class="w-16 h-16 rounded-lg border border-slate-200 overflow-hidden cursor-zoom-in hover:border-[#ff8f73]">
+                  <div v-for="(img, idx) in review.images" :key="idx" class="w-16 h-16 rounded-lg border border-slate-200 overflow-hidden cursor-zoom-in hover:border-primary">
                     <img :src="img.startsWith('http') ? img : `${API_BASE_URL}/Images_review/${img}`" 
                          @click="zoomedImage = img" 
                          class="w-full h-full object-cover">
@@ -126,21 +126,21 @@
                   <div v-if="review.shopReply" class="bg-orange-50/50 border border-orange-100 p-4 rounded-xl relative group">
                     <div class="flex justify-between items-center mb-1">
                         <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[#ff8f73] text-[16px]" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
-                            <span class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest">Phản hồi của Shop</span>
+                            <span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+                            <span class="text-[10px] font-bold text-primary uppercase tracking-widest">Phản hồi của Shop</span>
                         </div>
                         <span v-if="review.responderName" class="text-[10px] text-red-500 font-bold italic">
                             Xử lý bởi: {{ review.responderName }}
                         </span>
                     </div>
                     <p class="text-xs text-slate-600 font-medium">{{ review.shopReply }}</p>
-                    <button @click="openReplyModal(review)" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-[#ff8f73] transition-all">
+                    <button @click="openReplyModal(review)" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary transition-all">
                         <span class="material-symbols-outlined text-[16px]">edit</span>
                     </button>
                   </div>
                   
                   <div v-else class="flex gap-3">
-                    <button @click="openReplyModal(review)" class="flex-1 border-2 border-dashed border-slate-200 hover:border-[#ff8f73] hover:bg-[#ff8f73]/5 text-slate-500 hover:text-[#ff8f73] py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
+                    <button @click="openReplyModal(review)" class="flex-1 border-2 border-dashed border-slate-200 hover:border-primary hover:bg-primary/5 text-slate-500 hover:text-primary py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
                       <span class="material-symbols-outlined text-[16px]">reply</span> Nhấn để viết phản hồi
                     </button>
                   </div>
@@ -154,7 +154,7 @@
               </p>
               <div class="flex items-center gap-2">
                 <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" 
-                        class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:text-slate-500">
+                        class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
                   <span class="material-symbols-outlined text-sm">chevron_left</span>
                 </button>
                 <template v-for="(item, index) in visiblePages" :key="index">
@@ -162,12 +162,12 @@
                   <button v-else 
                           @click="changePage(item)"
                           class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm"
-                          :class="currentPage === item ? 'bg-[#ff8f73] text-white shadow-lg shadow-[#ff8f73]/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73]'">
+                          :class="currentPage === item ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary'">
                     {{ item }}
                   </button>
                 </template>
                 <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
-                        class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:text-slate-500">
+                        class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
                   <span class="material-symbols-outlined text-sm">chevron_right</span>
                 </button>
               </div>
@@ -209,10 +209,10 @@
           <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">             
             <div class="relative w-full md:w-80">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-              <input v-model="searchContactQuery" type="text" placeholder="Tìm tên, email, SĐT khách hàng..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700">
+              <input v-model="searchContactQuery" type="text" placeholder="Tìm tên, email, SĐT khách hàng..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700">
             </div>
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-              <select v-model="filterContactStatus" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#ff8f73] cursor-pointer">
+              <select v-model="filterContactStatus" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
                   <option value="all">Tất cả tin nhắn</option>
                   <option value="pending">Chờ xử lý (Cần trả lời)</option>
                   <option value="resolved">Đã xử lý</option>
@@ -238,7 +238,7 @@
                   </div>
                 </div>
                 <span v-if="item.TrangThai === 1" class="text-[10px] font-bold text-emerald-500 bg-emerald-50 px-3 py-1.5 border border-emerald-100 rounded-lg">ĐÃ XỬ LÝ</span>
-                <button v-else @click="openEmailModal(item)" class="text-[10px] font-bold text-white bg-[#ff8f73] px-4 py-2 rounded-xl hover:bg-[#ff3d00] flex items-center gap-1 shadow-lg shadow-[#ff8f73]/20 transition-all">
+                <button v-else @click="openEmailModal(item)" class="text-[10px] font-bold text-white bg-primary px-4 py-2 rounded-xl hover:bg-[#ff3d00] flex items-center gap-1 shadow-lg shadow-primary/20 transition-all">
                   <span class="material-symbols-outlined text-[14px]">mail</span> TRẢ LỜI EMAIL
                 </button>
               </div>
@@ -246,7 +246,7 @@
                 "{{ item.NoiDung }}"
               </div>
               <div v-if="item.PhanHoiShop" class="bg-orange-50/50 p-4 rounded-xl border border-orange-100">
-                <p class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest mb-1 flex items-center gap-1">
+                <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 flex items-center gap-1">
                   <span class="material-symbols-outlined text-[14px]">forward_to_inbox</span> Đã gửi qua Email
                 </p>
                 <p class="text-xs text-slate-600 font-medium whitespace-pre-line">{{ item.PhanHoiShop }}</p>
@@ -268,7 +268,7 @@
             </p>
             <div class="flex items-center gap-2">
               <button @click="changeContactPage(currentContactPage - 1)" :disabled="currentContactPage === 1" 
-                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:text-slate-500">
+                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
                 <span class="material-symbols-outlined text-sm">chevron_left</span>
               </button>
               <template v-for="(item, index) in visibleContactPages" :key="index">
@@ -276,12 +276,12 @@
                 <button v-else 
                         @click="changeContactPage(item)"
                         class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm"
-                        :class="currentContactPage === item ? 'bg-[#ff8f73] text-white shadow-lg shadow-[#ff8f73]/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73]'">
+                        :class="currentContactPage === item ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary'">
                   {{ item }}
                 </button>
               </template>
               <button @click="changeContactPage(currentContactPage + 1)" :disabled="currentContactPage === totalContactPages"
-                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:text-slate-500">
+                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
               </button>
             </div>
@@ -294,7 +294,7 @@
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-[fadeIn_0.2s_ease-out]">
         <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#ff8f73]">reply</span> Phản hồi Khách hàng
+            <span class="material-symbols-outlined text-primary">reply</span> Phản hồi Khách hàng
           </h3>
           <button @click="isReplyModalOpen = false" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined">close</span></button>
         </div>
@@ -306,12 +306,12 @@
           </div>
           
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nội dung phản hồi</label>
-          <textarea v-model="replyContent" rows="4" placeholder="Cảm ơn bạn đã ủng hộ FigureCollect..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 resize-none"></textarea>
+          <textarea v-model="replyContent" rows="4" placeholder="Cảm ơn bạn đã ủng hộ FigureCollect..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 resize-none"></textarea>
         </div>
 
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
           <button @click="isReplyModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-xl">Hủy</button>
-          <button @click="submitReply" class="px-6 py-2.5 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] rounded-xl shadow-lg shadow-[#ff8f73]/20">Gửi phản hồi</button>
+          <button @click="submitReply" class="px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-[#ff3d00] rounded-xl shadow-lg shadow-primary/20">Gửi phản hồi</button>
         </div>
       </div>
     </div>
@@ -320,7 +320,7 @@
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-[fadeIn_0.2s_ease-out]">
         <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#ff8f73]">forward_to_inbox</span> Gửi Email Trả Lời
+            <span class="material-symbols-outlined text-primary">forward_to_inbox</span> Gửi Email Trả Lời
           </h3>
           <button @click="isEmailModalOpen = false" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined">close</span></button>
         </div>
@@ -338,12 +338,12 @@
           </div>
           
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nội dung Email (Shop gửi đi)</label>
-          <textarea v-model="emailContent" rows="6" placeholder="Kính gửi quý khách..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 resize-none"></textarea>
+          <textarea v-model="emailContent" rows="6" placeholder="Kính gửi quý khách..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 resize-none"></textarea>
         </div>
 
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
           <button @click="isEmailModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-xl">Hủy</button>
-          <button @click="submitEmailReply" :disabled="isSendingEmail" class="px-6 py-2.5 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] rounded-xl shadow-lg shadow-[#ff8f73]/20 flex items-center gap-2 disabled:opacity-70">
+          <button @click="submitEmailReply" :disabled="isSendingEmail" class="px-6 py-2.5 text-sm font-bold text-white bg-primary hover:bg-[#ff3d00] rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-70">
               <span v-if="isSendingEmail" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
               {{ isSendingEmail ? 'Đang gửi...' : 'Gửi Email ngay' }}
           </button>

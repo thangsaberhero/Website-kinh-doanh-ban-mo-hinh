@@ -38,7 +38,7 @@
                 </span>
               </div>
 
-              <div class="absolute inset-0 p-4 md:p-8 flex flex-col justify-end bg-gradient-to-t from-[#0c0e17] via-[#0c0e17]/60 to-transparent">
+              <div class="absolute inset-0 p-4 md:p-8 flex flex-col justify-end bg-gradient-to-t from-outline via-outline/60 to-transparent">
                 <div class="mb-2">
                   <span :class="`px-2 py-0.5 text-[10px] font-black rounded border uppercase tracking-widest ${getStatusClass(item.SoLuong, item.TrangThai)}`">
                     {{ item.SoLuong === 0 ? 'Hết hàng' : (item.TrangThai || 'Sẵn có') }}

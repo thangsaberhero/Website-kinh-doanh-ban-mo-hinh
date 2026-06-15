@@ -19,7 +19,7 @@
             </div>
             
             <div class="flex gap-2 shrink-0">
-              <button @click="markAllAsRead" class="px-4 py-2 bg-white border border-slate-200 hover:border-[#ff8f73] hover:text-[#ff8f73] rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+              <button @click="markAllAsRead" class="px-4 py-2 bg-white border border-slate-200 hover:border-primary hover:text-primary rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-sm">done_all</span> Đọc tất cả
               </button>
             
@@ -41,7 +41,7 @@
             
             <div class="flex items-center gap-2 w-full lg:w-auto">
               <span class="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Trạng thái:</span>
-              <select v-model="activeStatusFilter" class="w-full lg:w-40 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-[#ff8f73] bg-slate-50 cursor-pointer">
+              <select v-model="activeStatusFilter" class="w-full lg:w-40 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-primary bg-slate-50 cursor-pointer">
                 <option value="all">Tất cả thông báo</option>
                 <option value="unread">Chưa đọc</option>
                 <option value="read">Đã đọc</option>
@@ -50,7 +50,7 @@
           </div>
   
           <div v-if="isLoading" class="flex justify-center items-center h-64 bg-white rounded-2xl border border-slate-200 shadow-sm">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#ff8f73]"></div>
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
           </div>
   
           <div v-else class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -58,7 +58,7 @@
               <div v-for="notif in notificationList" :key="notif.MaTB" 
                    @click="handleNotificationClick(notif)"
                    class="p-5 flex items-start gap-4 transition-all hover:bg-slate-50/80 cursor-pointer relative group"
-                   :class="notif.DaDoc === 0 ? 'bg-[#ff8f73]/5' : ''">
+                   :class="notif.DaDoc === 0 ? 'bg-primary/5' : ''">
                 
                 <div v-if="notif.DaDoc === 0" class="absolute left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#ff3d00] shadow-[0_0_8px_#ff3d00]"></div>
   
@@ -98,8 +98,8 @@
             <div v-if="pagination.totalPage > 1 && notificationList.length > 0" class="flex items-center justify-between bg-slate-50 p-4 border-t border-slate-100">
               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trang {{ pagination.currentPage }} / {{ pagination.totalPage }}</p>
               <div class="flex items-center gap-1">
-                <button @click="changePage(pagination.currentPage - 1)" :disabled="pagination.currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] transition-all disabled:opacity-40 disabled:pointer-events-none"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
-                <button @click="changePage(pagination.currentPage + 1)" :disabled="pagination.currentPage === pagination.totalPage" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-[#ff8f73] transition-all disabled:opacity-40 disabled:pointer-events-none"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+                <button @click="changePage(pagination.currentPage - 1)" :disabled="pagination.currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-40 disabled:pointer-events-none"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+                <button @click="changePage(pagination.currentPage + 1)" :disabled="pagination.currentPage === pagination.totalPage" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-40 disabled:pointer-events-none"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
               </div>
             </div>
           </div>

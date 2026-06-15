@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed top-0 left-0 h-1 bg-[#ff8f73] z-[100] transition-all duration-150 shadow-[0_0_10px_rgba(255,143,115,0.8)]" 
+  <div class="fixed top-0 left-0 h-1 bg-primary z-[100] transition-all duration-150 shadow-[0_0_10px_rgba(255,143,115,0.8)]" 
     :style="{ width: readingProgress + '%' }">
   </div>
 
@@ -132,7 +132,7 @@
   </div>
   <button 
     @click="router.push('/news')" 
-    class="hidden md:flex fixed top-[80px] left-8 bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73] hover:border-[#ff8f73] hover:shadow-lg hover:-translate-y-1 transition-all w-12 h-12 rounded-full items-center justify-center shadow-md z-40"
+    class="hidden md:flex fixed top-[80px] left-8 bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary hover:shadow-lg hover:-translate-y-1 transition-all w-12 h-12 rounded-full items-center justify-center shadow-md z-40"
     title="Quay lại danh sách tin tức"
   >
     <span class="material-symbols-outlined">arrow_back</span>

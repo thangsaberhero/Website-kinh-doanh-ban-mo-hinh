@@ -24,7 +24,7 @@
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#ff8f73]">info</span>
+                <span class="material-symbols-outlined text-primary">info</span>
                 Thông tin chung
               </h2>
               <p class="text-xs text-slate-500 mt-1">Tên website, hotline và email liên hệ.</p>
@@ -32,21 +32,21 @@
             <div class="p-6 space-y-5 flex-1">
               <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Tên thương hiệu (Shop Name)</label>
-                <input v-model="formText.shop_name" type="text" placeholder="VD: FigureCollect" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-bold text-slate-800">
+                <input v-model="formText.shop_name" type="text" placeholder="VD: FigureCollect" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold text-slate-800">
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hotline</label>
-                  <input v-model="formText.contact_phone" type="text" placeholder="VD: 0123456789" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800">
+                  <input v-model="formText.contact_phone" type="text" placeholder="VD: 0123456789" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-800">
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Email hỗ trợ</label>
-                  <input v-model="formText.contact_email" type="email" placeholder="VD: hotro@shop.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800">
+                  <input v-model="formText.contact_email" type="email" placeholder="VD: hotro@shop.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-800">
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Địa chỉ cửa hàng</label>
-                <textarea v-model="formText.shop_address" rows="2" placeholder="VD: Số 123 Đà Nẵng, Phường Ngô Quyền, TP. Hải Phòng" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-800 resize-none"></textarea>
+                <textarea v-model="formText.shop_address" rows="2" placeholder="VD: Số 123 Đà Nẵng, Phường Ngô Quyền, TP. Hải Phòng" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-800 resize-none"></textarea>
               </div>
             </div>
             <div class="p-6 pt-0">
@@ -61,7 +61,7 @@
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#ff8f73]">branding_watermark</span>
+                <span class="material-symbols-outlined text-primary">branding_watermark</span>
                 Nhận diện thương hiệu
               </h2>
               <p class="text-xs text-slate-500 mt-1">Cập nhật Logo hiển thị trên thanh điều hướng và Favicon.</p>
@@ -77,8 +77,8 @@
                     <label class="block text-sm font-bold text-slate-800 mb-1">Logo Header (Ngang)</label>
                     <p class="text-[10px] text-slate-500 mb-4">Hiển thị ở góc trái thanh điều hướng.</p>
                     <div class="flex gap-2">
-                      <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_header')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-[#ff8f73]/10 file:text-[#ff8f73] hover:file:bg-[#ff8f73]/20 cursor-pointer">
-                      <button v-if="files.logo_header" @click="saveSingleImage('logo_header', '/update_logo_header')" class="shrink-0 bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm">Lưu ảnh</button>
+                      <input type="file" accept="image/*" @change="e => handleSingleFile(e, 'logo_header')" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer">
+                      <button v-if="files.logo_header" @click="saveSingleImage('logo_header', '/update_logo_header')" class="shrink-0 bg-primary hover:bg-[#ff3d00] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm">Lưu ảnh</button>
                     </div>
                   </div>
                 </div>
@@ -118,7 +118,7 @@
           <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#ff8f73]">share</span>
+                <span class="material-symbols-outlined text-primary">share</span>
                 Liên kết Mạng xã hội
               </h2>
               <p class="text-xs text-slate-500 mt-1">Đường dẫn tới Fanpage và kênh truyền thông của cửa hàng (Để trống nếu không muốn hiển thị).</p>
@@ -162,12 +162,12 @@
             <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
               <div>
                 <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#ff8f73]">wallpaper</span>
+                  <span class="material-symbols-outlined text-primary">wallpaper</span>
                   Slider nền Đăng nhập
                 </h2>
                 <p class="text-xs text-slate-500 mt-1">Danh sách các ảnh nền luân phiên ở trang Login.</p>
               </div>
-              <button @click="saveLoginBanners" class="bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+              <button @click="saveLoginBanners" class="bg-primary hover:bg-[#ff3d00] shadow-lg shadow-primary/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">cloud_upload</span> Lưu Slider
               </button>
             </div>
@@ -183,7 +183,7 @@
                 ghost-class="opacity-40"
               >
                 <template #item="{ element: banner, index: idx }">
-                  <div class="relative group w-full aspect-[9/16] rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-[#ff8f73] transition-all">
+                  <div class="relative group w-full aspect-[9/16] rounded-xl overflow-hidden border-2 border-slate-200 shadow-sm cursor-move hover:border-primary transition-all">
                     <img :src="banner.url" class="w-full h-full object-cover" />
                     
                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
@@ -197,7 +197,7 @@
                 </template>
 
                 <template #footer>
-                  <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group w-full aspect-[9/16] rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+                  <div v-for="(preview, idx) in previews.login_bg" :key="'new_login'+idx" class="relative group w-full aspect-[9/16] rounded-xl overflow-hidden border-2 border-primary shadow-sm">
                     <img :src="preview" class="w-full h-full object-cover" />
                     <button @click="removeNewLoginBanner(idx)" class="absolute top-2 right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10">
                       <span class="material-symbols-outlined text-[14px]">close</span>
@@ -205,9 +205,9 @@
                     <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[10px] text-center text-white py-1 font-medium">Chờ lưu</div>
                   </div>
 
-                  <label class="w-full aspect-[9/16] rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors group">
-                    <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#ff8f73] mb-1">add_photo_alternate</span>
-                    <span class="text-xs font-bold text-slate-500 group-hover:text-[#ff8f73]">Thêm ảnh</span>
+                  <label class="w-full aspect-[9/16] rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-primary transition-colors group">
+                    <span class="material-symbols-outlined text-3xl text-slate-400 group-hover:text-primary mb-1">add_photo_alternate</span>
+                    <span class="text-xs font-bold text-slate-500 group-hover:text-primary">Thêm ảnh</span>
                     <input type="file" multiple accept="image/*" @change="handleLoginBannerFiles" class="hidden" />
                   </label>
                 </template>
@@ -218,7 +218,7 @@
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#ff8f73]">payments</span>
+                <span class="material-symbols-outlined text-primary">payments</span>
                 Cổng thanh toán
               </h2>
               <p class="text-xs text-slate-500 mt-1">Bật/Tắt các phương thức thanh toán hiển thị cho khách hàng.</p>
@@ -252,12 +252,12 @@
             <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
               <div>
                 <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span class="material-symbols-outlined text-[#ff8f73]">view_carousel</span>
+                  <span class="material-symbols-outlined text-primary">view_carousel</span>
                   Dữ liệu Slider Trang chủ
                 </h2>
                 <p class="text-xs text-slate-500 mt-1">Quản lý hình ảnh và nội dung Text, Link cho từng Banner.</p>
               </div>
-              <button @click="saveHomeBanners" class="bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+              <button @click="saveHomeBanners" class="bg-primary hover:bg-[#ff3d00] shadow-lg shadow-primary/20 text-white px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">save</span> Lưu cấu hình Slider
               </button>
             </div>
@@ -276,10 +276,10 @@
                 ghost-class="opacity-50"
               >
                 <template #item="{ element: slide, index: idx }">
-                  <div class="flex flex-col md:flex-row gap-6 p-5 border border-slate-200 rounded-xl bg-slate-50/30 relative group transition-all hover:border-[#ff8f73]/40 hover:shadow-md pl-10">
+                  <div class="flex flex-col md:flex-row gap-6 p-5 border border-slate-200 rounded-xl bg-slate-50/30 relative group transition-all hover:border-primary/40 hover:shadow-md pl-10">
                     
-                    <div class="drag-handle absolute left-0 top-0 bottom-0 w-8 bg-slate-100 border-r border-slate-200 flex items-center justify-center cursor-move rounded-l-xl group-hover:bg-[#ff8f73]/20 transition-colors z-10" title="Kéo để đổi vị trí">
-                      <span class="material-symbols-outlined text-slate-400 group-hover:text-[#ff8f73]">drag_indicator</span>
+                    <div class="drag-handle absolute left-0 top-0 bottom-0 w-8 bg-slate-100 border-r border-slate-200 flex items-center justify-center cursor-move rounded-l-xl group-hover:bg-primary/20 transition-colors z-10" title="Kéo để đổi vị trí">
+                      <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">drag_indicator</span>
                     </div>
 
                     <button @click="removeExistingBanner(idx)" class="absolute -top-3 -right-3 w-8 h-8 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-all">
@@ -296,19 +296,19 @@
                     <div class="w-full md:w-2/3 grid grid-cols-2 gap-4">
                       <div class="space-y-1.5">
                         <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tag / Nhãn</label>
-                        <input v-model="slide.tag" type="text" placeholder="VD: LIMITED EDITION" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] outline-none bg-white">
+                        <input v-model="slide.tag" type="text" placeholder="VD: LIMITED EDITION" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-primary outline-none bg-white">
                       </div>
                       <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">Link<span class="text-[9px] text-[#ff8f73] italic">* Đúp chuột</span></label>
-                        <input v-model="slide.link" list="link-suggestions" type="text" placeholder="Chọn link..." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-[#ff8f73] outline-none bg-white">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">Link<span class="text-[9px] text-primary italic">* Đúp chuột</span></label>
+                        <input v-model="slide.link" list="link-suggestions" type="text" placeholder="Chọn link..." class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:border-primary outline-none bg-white">
                       </div>
                       <div class="space-y-1.5">
                         <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tiêu đề chính</label>
                         <input v-model="slide.title" type="text" class="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 font-bold bg-white text-slate-800">
                       </div>
                       <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-[#ff8f73] uppercase tracking-widest">Chữ Cam</label>
-                        <input v-model="slide.titleAccent" type="text" class="w-full text-sm border border-[#ff8f73]/50 rounded-lg px-3 py-2 font-bold text-[#ff8f73] bg-white">
+                        <label class="text-[10px] font-bold text-primary uppercase tracking-widest">Chữ Cam</label>
+                        <input v-model="slide.titleAccent" type="text" class="w-full text-sm border border-primary/50 rounded-lg px-3 py-2 font-bold text-primary bg-white">
                       </div>
                       <div class="space-y-1.5 col-span-2">
                         <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mô tả ngắn</label>
@@ -327,13 +327,13 @@
                 </p>
                 <div class="flex flex-wrap gap-4">
                   
-                  <div v-for="(preview, idx) in previews.home_banner" :key="'new'+idx" class="relative w-36 h-24 rounded-xl overflow-hidden border-2 border-[#ff8f73] shadow-sm">
+                  <div v-for="(preview, idx) in previews.home_banner" :key="'new'+idx" class="relative w-36 h-24 rounded-xl overflow-hidden border-2 border-primary shadow-sm">
                     <img :src="preview" class="w-full h-full object-cover" />
                     <button @click="removeNewBanner(idx)" class="absolute top-1 right-1 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg"><span class="material-symbols-outlined text-[14px]">close</span></button>
                     <div class="absolute bottom-0 inset-x-0 bg-black/60 text-[9px] text-center text-white py-0.5">Chờ lưu</div>
                   </div>
 
-                  <label class="w-36 h-24 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-[#ff8f73] transition-colors">
+                  <label class="w-36 h-24 rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50 cursor-pointer hover:bg-slate-100 hover:border-primary transition-colors">
                     <span class="material-symbols-outlined text-2xl text-slate-400">upload</span>
                     <span class="text-[10px] font-bold text-slate-500 mt-1">Chọn ảnh</span>
                     <input type="file" multiple accept="image/*" @change="handleHomeBannerFiles" class="hidden" />

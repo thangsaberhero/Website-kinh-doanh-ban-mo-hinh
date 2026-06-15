@@ -28,7 +28,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="bg-white p-6 rounded-2xl border-l-4 border-l-[#ff8f73] border-y border-r border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+          <div class="bg-white p-6 rounded-2xl border-l-4 border-l-primary border-y border-r border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Tổng bài viết</p>
             <h3 class="text-3xl font-brand font-bold text-slate-900">{{stats.total}}</h3>
           </div>
@@ -59,7 +59,7 @@
             <div class="flex bg-slate-100 p-1 rounded-xl">
               <button v-for="tab in tabs" :key="tab.id" @click="changeTab(tab.id)"
                 class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all"
-                :class="activeTab === tab.id ? 'bg-white text-[#ff8f73] shadow-sm' : 'text-slate-500 hover:text-slate-900'">
+                :class="activeTab === tab.id ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-900'">
                 {{ tab.name }}
               </button>
             </div>
@@ -67,7 +67,7 @@
             <div class="flex items-center gap-3 w-full md:w-auto">
               <div class="relative w-full md:w-64">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-                <input v-model="searchQuery" @input="handleSearch" type="text" placeholder="Tìm tiêu đề, tác giả..." class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-[#ff8f73] focus:ring-2 focus:ring-[#ff8f73]/20 outline-none transition-all font-medium text-slate-700 bg-white">
+                <input v-model="searchQuery" @input="handleSearch" type="text" placeholder="Tìm tiêu đề, tác giả..." class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all font-medium text-slate-700 bg-white">
               </div>
             </div>
           </div>
@@ -106,7 +106,7 @@
                           <img :src="post.thumbnail" alt="Thumbnail" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
                         </div>
                         <div class="flex flex-col max-w-[300px]">
-                          <span class="text-sm font-bold text-slate-900 truncate group-hover:text-[#ff8f73] transition-colors cursor-pointer" :title="post.title">{{ post.title }}</span>
+                          <span class="text-sm font-bold text-slate-900 truncate group-hover:text-primary transition-colors cursor-pointer" :title="post.title">{{ post.title }}</span>
                           <div class="flex items-center gap-2 mt-1">
                             <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-100 px-1.5 py-0.5 rounded">{{ post.idCode }}</span>
                             <span class="text-[11px] text-slate-500 font-medium"><span class="material-symbols-outlined text-[12px] align-text-bottom">schedule</span> {{ post.date }}</span>
@@ -148,7 +148,7 @@
                         <button @click="goToPreview(post.id)" class="w-8 h-8 flex items-center justify-center rounded-xl hover:text-sky-500 hover:bg-sky-50 transition-all text-slate-400 shadow-sm" title="Xem trước trang (Preview)">
                           <span class="material-symbols-outlined text-[18px]">visibility</span>
                         </button>
-                        <button @click="goToEditPost(post.id)" class="w-8 h-8 flex items-center justify-center rounded-xl hover:text-[#ff8f73] hover:bg-[#ff8f73]/10 transition-all text-slate-400 shadow-sm" title="Chỉnh sửa bài viết">
+                        <button @click="goToEditPost(post.id)" class="w-8 h-8 flex items-center justify-center rounded-xl hover:text-primary hover:bg-primary/10 transition-all text-slate-400 shadow-sm" title="Chỉnh sửa bài viết">
                           <span class="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button @click="openDeleteConfirm(post)" class="w-8 h-8 flex items-center justify-center rounded-xl hover:text-rose-500 hover:bg-rose-50 transition-all text-slate-400 shadow-sm" title="Xóa">
@@ -181,19 +181,19 @@
               </p>
               <div class="flex items-center gap-2">
                   <button @click="changePage(pagination.currentPage - 1)" :disabled="pagination.currentPage === 1" 
-                          class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] transition-all disabled:opacity-50">
+                          class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50">
                       <span class="material-symbols-outlined text-sm">chevron_left</span>
                   </button>
                   
                   <button v-for="page in pagination.totalPages" :key="page" 
                           @click="changePage(page)"
                           class="w-8 h-8 flex items-center justify-center rounded-xl font-bold text-xs transition-all shadow-sm"
-                          :class="pagination.currentPage === page ? 'bg-[#ff8f73] text-white shadow-lg shadow-[#ff8f73]/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-[#ff8f73]'">
+                          :class="pagination.currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary'">
                   {{ page }}
                   </button>
 
                   <button @click="changePage(pagination.currentPage + 1)" :disabled="pagination.currentPage === pagination.totalPages"
-                          class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] transition-all disabled:opacity-50">
+                          class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50">
                   <span class="material-symbols-outlined text-sm">chevron_right</span>
                   </button>
               </div>

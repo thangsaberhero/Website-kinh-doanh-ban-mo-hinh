@@ -35,7 +35,7 @@
               <span v-if="selectedOrders.length > 0" class="bg-white text-slate-900 text-[10px] px-1.5 py-0.5 rounded-md ml-1">{{ selectedOrders.length }}</span>
             </button>
             
-            <button @click="openBulkUpdateModal" class="flex-1 xl:flex-none bg-[#ff8f73] hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-[#ff8f73]/20 transition-all active:scale-95 text-sm">
+            <button @click="openBulkUpdateModal" class="flex-1 xl:flex-none bg-primary hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95 text-sm">
               <span class="material-symbols-outlined text-[20px]">inventory</span>
               Xử lý hàng loạt
               <span v-if="selectedOrders.length > 0" class="bg-white text-[#ff3d00] text-[10px] px-1.5 py-0.5 rounded-md ml-1">{{ selectedOrders.length }}</span>
@@ -105,7 +105,7 @@
               v-for="tab in tabs" :key="tab.id"
               @click="activeTab = tab.id"
               class="px-6 py-4 text-sm font-bold whitespace-nowrap transition-colors border-b-2"
-              :class="activeTab === tab.id ? 'border-[#ff8f73] text-[#ff3d00]' : 'border-transparent text-slate-500 hover:text-slate-900'"
+              :class="activeTab === tab.id ? 'border-primary text-[#ff3d00]' : 'border-transparent text-slate-500 hover:text-slate-900'"
             >
               {{ tab.name }}
             </button>
@@ -118,8 +118,8 @@
               </div>
               
               <div class="flex items-center gap-2">
-                <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-[#ff8f73] transition-all">
-                  <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer transition-colors"/>
+                <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-primary transition-all">
+                  <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300 cursor-pointer transition-colors"/>
                   <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn trang này</span>
                 </label>
 
@@ -151,18 +151,18 @@
 
               <div class="relative w-full md:w-60">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
-                <input type="text" v-model="searchQuery" placeholder="Mã đơn, khách hàng..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:border-[#ff8f73] focus:ring-4 focus:ring-[#ff8f73]/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
+                <input type="text" v-model="searchQuery" placeholder="Mã đơn, khách hàng..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
               </div>
 
               <div class="flex items-center gap-2 shrink-0">
-                <button @click="isFilterPanelOpen = true" class="w-10 h-10 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all shadow-sm" title = "Bộ lọc">
+                <button @click="isFilterPanelOpen = true" class="w-10 h-10 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm" title = "Bộ lọc">
                   <span class="material-symbols-outlined text-[20px]">filter_list</span>
                 </button>
                 <div class="relative">
                   <button 
                     @click="isSortMenuOpen = !isSortMenuOpen" 
-                    class="w-10 h-10 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all shadow-sm"
-                    :class="{ 'border-[#ff8f73] text-[#ff8f73] bg-[#ff8f73]/5': isSortMenuOpen }"
+                    class="w-10 h-10 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm"
+                    :class="{ 'border-primary text-primary bg-primary/5': isSortMenuOpen }"
                   >
                     <span class="material-symbols-outlined text-[20px]">sort</span>
                   </button>
@@ -174,25 +174,25 @@
                     <p class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sắp xếp theo</p>
                     
                     <button @click="setSort('date_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                      <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Mới nhất (Mặc định)</span>
-                      <span v-if="sortBy === 'date_desc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Mới nhất (Mặc định)</span>
+                      <span v-if="sortBy === 'date_desc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
                     </button>
 
                     <button @click="setSort('date_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                      <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Cũ nhất trước</span>
-                      <span v-if="sortBy === 'date_asc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Cũ nhất trước</span>
+                      <span v-if="sortBy === 'date_asc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
                     </button>
 
                     <div class="border-t border-slate-50 my-1"></div>
 
                     <button @click="setSort('total_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                      <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Tổng tiền: Cao đến Thấp</span>
-                      <span v-if="sortBy === 'total_desc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Tổng tiền: Cao đến Thấp</span>
+                      <span v-if="sortBy === 'total_desc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
                     </button>
 
                     <button @click="setSort('total_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                      <span class="font-medium text-slate-700 group-hover:text-[#ff8f73]">Tổng tiền: Thấp đến Cao</span>
-                      <span v-if="sortBy === 'total_asc'" class="material-symbols-outlined text-[#ff8f73] text-[18px]">check</span>
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Tổng tiền: Thấp đến Cao</span>
+                      <span v-if="sortBy === 'total_asc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
                     </button>
                   </div>
                 </div>
@@ -217,12 +217,12 @@
                 <tr v-for="(order, index) in orders" :key="order.id" 
                     class="transition-colors group cursor-default"
                     :class="[
-                      selectedOrders.includes(order.id) ? 'bg-[#ff8f73]/5 hover:bg-[#ff8f73]/10' : 'hover:bg-slate-50/80',
+                      selectedOrders.includes(order.id) ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-slate-50/80',
                       order.paymentStatus === 'Chờ hoàn tiền' ? 'bg-rose-50/40' : '' /* ĐỀ XUẤT 1: Đổi màu nền nguyên dòng nếu Chờ hoàn tiền */
                     ]">
                   
                   <td class="px-6 py-4 text-center">
-                    <input v-model="selectedOrders" :value="order.id" type="checkbox" class="w-4 h-4 rounded text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300 cursor-pointer"/>
+                    <input v-model="selectedOrders" :value="order.id" type="checkbox" class="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300 cursor-pointer"/>
                   </td>
                   
                   <td class="px-6 py-4">
@@ -349,7 +349,7 @@
 
                           <div v-show="activeMenuId === order.id" @click.stop class="absolute right-8 top-10 w-40 bg-white rounded-lg shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-1 z-50 text-left overflow-hidden">
                               
-                              <button @click="handlePrintInvoice(order.id)" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#ff8f73] flex items-center gap-2">
+                              <button @click="handlePrintInvoice(order.id)" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px]">print</span> In hóa đơn
                               </button>
                               
@@ -383,7 +383,7 @@
               <button 
                 @click="changePage(currentPage - 1)" 
                 :disabled="currentPage === 1"
-                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
               >
                 <span class="material-symbols-outlined text-sm">chevron_left</span>
               </button>
@@ -393,8 +393,8 @@
                 :key="p" 
                 @click="changePage(p)"
                 :class="currentPage === p 
-                  ? 'bg-[#ff8f73] text-white shadow-lg shadow-[#ff8f73]/20 border-transparent' 
-                  : 'bg-white border-slate-200 text-slate-500 hover:text-[#ff8f73] hover:border-[#ff8f73]'"
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20 border-transparent' 
+                  : 'bg-white border-slate-200 text-slate-500 hover:text-primary hover:border-primary'"
                 class="w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold border transition-all"
               >
                 {{ p }}
@@ -403,7 +403,7 @@
               <button 
                 @click="changePage(currentPage + 1)" 
                 :disabled="currentPage === totalPages"
-                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-[#ff8f73] hover:border-[#ff8f73] transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+                class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
               >
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
               </button>
@@ -417,7 +417,7 @@
           
           <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0 z-10">
             <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-              Chi tiết đơn hàng <span class="text-[#ff8f73]">{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi }}</span>
+              Chi tiết đơn hàng <span class="text-primary">{{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi }}</span>
             </h3>
             <button @click="isDetailModalOpen = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-200 transition-colors">
               <span class="material-symbols-outlined">close</span>
@@ -688,14 +688,14 @@
                 <div class="w-full xl:w-96 shrink-0 xl:sticky xl:top-0 space-y-4">
                   <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white space-y-5">
                     <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-[16px] text-[#ff8f73]">tune</span> Điều khiển lệnh
+                      <span class="material-symbols-outlined text-[16px] text-primary">tune</span> Điều khiển lệnh
                     </h4>
                     
                     <div class="grid grid-cols-1 gap-3">
                       
                       <button v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6" 
                               @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
-                              class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                              class="w-full bg-primary hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
                         <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
                       </button>
     
@@ -785,7 +785,7 @@
         </label>
         <div class="relative">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[16px]">search</span>
-          <input type="text" v-model="advancedFilter.productName" placeholder="Nhập tên nhân vật, mô hình..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:border-[#ff8f73] outline-none font-medium text-slate-700">
+          <input type="text" v-model="advancedFilter.productName" placeholder="Nhập tên nhân vật, mô hình..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:border-primary outline-none font-medium text-slate-700">
         </div>
       </div>
 
@@ -815,19 +815,19 @@
         </label>
         <div class="flex flex-col gap-2.5">
           <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="all" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <input type="radio" value="all" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
             <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Tất cả trạng thái</span>
           </label>
           <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="Chưa thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <input type="radio" value="Chưa thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
             <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Chưa thanh toán</span>
           </label>
           <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="Đã thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <input type="radio" value="Đã thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
             <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Đã thanh toán đủ</span>
           </label>
           <label class="flex items-center gap-3 cursor-pointer group">
-            <input type="radio" value="Chờ hoàn tiền" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-[#ff8f73] focus:ring-[#ff8f73] border-slate-300">
+            <input type="radio" value="Chờ hoàn tiền" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
             <span class="text-xs font-bold text-rose-600 group-hover:text-rose-800">Cần hoàn trả tiền</span>
           </label>
         </div>
@@ -839,10 +839,10 @@
         </label>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <input type="number" v-model="advancedFilter.minPrice" placeholder="Từ mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-[#ff8f73] outline-none font-medium">
+            <input type="number" v-model="advancedFilter.minPrice" placeholder="Từ mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-primary outline-none font-medium">
           </div>
           <div>
-            <input type="number" v-model="advancedFilter.maxPrice" placeholder="Đến mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-[#ff8f73] outline-none font-medium">
+            <input type="number" v-model="advancedFilter.maxPrice" placeholder="Đến mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-primary outline-none font-medium">
           </div>
         </div>
       </div>
@@ -851,7 +851,7 @@
 
     <div class="p-6 border-t border-slate-100 bg-white flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
       <button @click="resetAdvancedFilter" class="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">Đặt lại</button>
-      <button @click="applyAdvancedFilter" class="flex-[2] py-3 rounded-xl font-bold text-white bg-[#ff8f73] hover:bg-[#ff3d00] shadow-lg shadow-[#ff8f73]/20 transition-all text-sm">Áp dụng</button>
+      <button @click="applyAdvancedFilter" class="flex-[2] py-3 rounded-xl font-bold text-white bg-primary hover:bg-[#ff3d00] shadow-lg shadow-primary/20 transition-all text-sm">Áp dụng</button>
     </div>
   </div>
   
@@ -1119,13 +1119,13 @@
     </div>
 
     <div v-if="isUpdateModalOpen && selectedOrder" class="print:hidden fixed inset-0 z-[140] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-[#ff8f73] animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-primary animate-[fadeIn_0.2s_ease-out]">
         <h3 class="text-lg font-bold text-slate-900 mb-2">Cập nhật tiến trình đơn hàng</h3>
         <p class="text-xs text-slate-400 mb-4 font-medium">Thay đổi trạng thái cho mã đơn: {{ selectedOrder.ThongTinGiaoHang?.MaDonHangHienThi }}</p>
         
         <div class="mb-6">
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Chọn trạng thái mới</label>
-          <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-[#ff8f73] font-semibold text-slate-700 focus:ring-1 focus:ring-[#ff8f73] outline-none cursor-pointer">
+          <select v-model="updateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-primary font-semibold text-slate-700 focus:ring-1 focus:ring-primary outline-none cursor-pointer">
           <option :value="1" :disabled="getCurrentStatusCode() > 1">
             CHỜ DUYỆT {{ getCurrentStatusCode() == 1 ? '(Trạng thái hiện tại)' : '' }}
           </option>
@@ -1166,7 +1166,7 @@
 
         <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
           <button @click="isUpdateModalOpen = false" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg">Quay lại</button>
-          <button @click="submitUpdateStatus" class="px-5 py-2 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff7352] rounded-lg shadow-sm">Xác nhận đổi</button>
+          <button @click="submitUpdateStatus" class="px-5 py-2 text-sm font-bold text-white bg-primary hover:bg-[#ff7352] rounded-lg shadow-sm">Xác nhận đổi</button>
         </div>
       </div>
     </div>
@@ -1210,13 +1210,13 @@
     </div>
 
     <div v-if="isBulkUpdateModalOpen" class="print:hidden fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-[#ff8f73] animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border-t-4 border-primary animate-[fadeIn_0.2s_ease-out]">
         <h3 class="text-lg font-bold text-slate-900 mb-2">Cập nhật trạng thái hàng loạt</h3>
         <p class="text-sm text-slate-600 mb-4 font-medium">Bạn đang chọn <span class="font-bold text-rose-500">{{ selectedOrders.length }}</span> đơn hàng để chuyển trạng thái.</p>
         
         <div class="mb-6">
           <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Chọn trạng thái đích chung</label>
-          <select v-model="bulkUpdateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-[#ff8f73] font-semibold text-slate-700 focus:ring-1 focus:ring-[#ff8f73] outline-none cursor-pointer">
+          <select v-model="bulkUpdateStatusValue" class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:border-primary font-semibold text-slate-700 focus:ring-1 focus:ring-primary outline-none cursor-pointer">
             <option value="2">ĐANG ĐÓNG GÓI (Chuẩn bị hàng trong kho)</option>
             <option value="3">ĐANG VẬN CHUYỂN (Giao cho shipper)</option>
             <option value="4">ĐÃ GIAO (Khách ký nhận thành công)</option>
@@ -1226,7 +1226,7 @@
 
         <div class="flex justify-end gap-2 border-t border-slate-100 pt-4">
           <button @click="isBulkUpdateModalOpen = false" class="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">Hủy bỏ</button>
-          <button @click="submitBulkUpdateStatus" :disabled="isBulkUpdating" class="px-5 py-2 text-sm font-bold text-white bg-[#ff8f73] hover:bg-[#ff7352] rounded-lg shadow-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all">
+          <button @click="submitBulkUpdateStatus" :disabled="isBulkUpdating" class="px-5 py-2 text-sm font-bold text-white bg-primary hover:bg-[#ff7352] rounded-lg shadow-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all">
             <span v-if="isBulkUpdating" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
             {{ isBulkUpdating ? 'Đang xử lý...' : 'Xác nhận đổi' }}
           </button>
