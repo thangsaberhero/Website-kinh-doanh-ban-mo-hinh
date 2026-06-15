@@ -35,7 +35,7 @@
             </button>
           </template>
 
-          <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus.includes('Đóng gói'))">
+          <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus === 'Đang đóng gói')">
             <button @click="openRepayRemaining"
                     class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 active:scale-95">
               <span class="material-symbols-outlined text-lg">credit_card</span>
