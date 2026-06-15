@@ -35,21 +35,6 @@
             </button>
           </template>
 
-          <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus === 'Đang đóng gói')">
-            <button @click="openRepayRemaining"
-                    class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 active:scale-95">
-              <span class="material-symbols-outlined text-lg">credit_card</span>
-              Thanh toán nốt Online
-            </button>
-
-            <button @click="confirmCOD"
-                    class="w-full sm:w-auto px-6 py-3 bg-surface-container-highest border border-outline-variant/30 text-white hover:bg-surface-bright text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all active:scale-95">
-              <span class="material-symbols-outlined text-lg">local_shipping</span>
-              Nhận hàng thu COD
-            </button>
-            
-          </template>
-
           <button v-if="currentOrderStatus === 'Chờ duyệt' && orderInfo.TrangThaiThanhToan === 'Chưa thanh toán'"
                   @click="showCancelModal = true"
                   class="w-full sm:w-auto px-6 py-3 border border-error/50 text-error hover:bg-error/10 hover:border-error text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all active:scale-95">
@@ -246,6 +231,33 @@
                   {{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}
                 </span>
               </div>
+
+              <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end mt-2 bg-primary/5 -mx-6 px-6 py-4 border-b border-b-primary/20">
+                <span class="font-headline font-bold text-white uppercase tracking-widest text-[11px] w-2/3">
+                  Số tiền cần trả 
+                </span>
+                <span class="text-3xl font-headline font-black text-primary tracking-tighter">
+                  {{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}
+                </span>
+              </div>
+
+              <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus.includes('Đóng gói') || currentOrderStatus.includes('Vận chuyển'))">
+                <div class="pt-6 flex flex-col gap-3">
+                  <p class="text-[10px] text-outline font-bold uppercase tracking-widest text-center mb-1">Hãy chọn cách thanh toán phần còn lại</p>
+                  
+                  <button @click="openRepayRemaining"
+                          class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:brightness-110 active:scale-95">
+                    <span class="material-symbols-outlined text-lg">credit_card</span>
+                    Thanh toán nốt Online ngay
+                  </button>
+
+                  <button @click="confirmCOD"
+                          class="w-full py-3.5 bg-surface-container-highest border border-outline-variant/30 text-white hover:bg-surface-bright text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-lg">local_shipping</span>
+                    Nhận hàng & Thu tiền mặt (COD)
+                  </button>
+                </div>
+              </template>
             </div>
             
             <div class="p-4 rounded-lg bg-surface-container-lowest border border-primary/20 flex items-start gap-3">
