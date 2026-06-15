@@ -232,15 +232,6 @@
                 </span>
               </div>
 
-              <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end mt-2 bg-primary/5 -mx-6 px-6 py-4 border-b border-b-primary/20">
-                <span class="font-headline font-bold text-white uppercase tracking-widest text-[11px] w-2/3">
-                  Số tiền cần trả 
-                </span>
-                <span class="text-3xl font-headline font-black text-primary tracking-tighter">
-                  {{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}
-                </span>
-              </div>
-
               <template v-if="orderInfo.TrangThaiThanhToan?.toLowerCase().includes('cọc') && (currentOrderStatus.includes('Đóng gói') || currentOrderStatus.includes('Vận chuyển'))">
                 <div class="pt-6 flex flex-col gap-3">
                   <p class="text-[10px] text-outline font-bold uppercase tracking-widest text-center mb-1">Hãy chọn cách thanh toán phần còn lại</p>
