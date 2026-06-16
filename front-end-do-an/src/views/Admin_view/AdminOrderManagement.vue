@@ -146,7 +146,7 @@
                 <button @click="setQuickDate('today')" :class="filterDate.from === getToday() && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Hôm nay</button>
                 <button @click="setQuickDate('7days')" :class="filterDate.from === getDaysAgo(7) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">7 Ngày</button>
                 <button @click="setQuickDate('30days')" :class="filterDate.from === getDaysAgo(30) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">30 Ngày</button>
-                <button @click="setQuickDate('all')" :class="filterDate.from === '' && filterDate.to === '' ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Tất cả</button>
+                <button @click="setQuickDate('all')" :class="filterDate.from === '' && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Tất cả</button>
               </div>
 
               <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-0.5 shadow-sm w-full md:w-auto">
@@ -3069,7 +3069,7 @@ const exportExcelReport = async () => {
     } else if (range === '30days') {
       filterDate.value = { from: getDaysAgo(30), to: getToday() };
     } else if (range === 'all') {
-      filterDate.value = { from: '', to: '' };
+      filterDate.value = { from: '', to: getToday() };
     }
   };
 
