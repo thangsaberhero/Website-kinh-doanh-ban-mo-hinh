@@ -175,29 +175,59 @@
               </table>
             </div>
 
-            <div class="px-6 py-4 flex items-center justify-between bg-slate-50/30 border-t border-slate-100">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  Hiển thị {{startItem}} - {{endItem}} của {{ pagination.totalItems }} bài viết
-              </p>
+            <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30">
+            
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-slate-400">
+                Hiển thị {{ startItem }} - {{ endItem }} của {{ pagination.totalItems }} bài viết
+              </span>
+              
+              <div class="h-4 w-px bg-slate-200"></div>
+              
               <div class="flex items-center gap-2">
-                  <button @click="changePage(pagination.currentPage - 1)" :disabled="pagination.currentPage === 1" 
-                          class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50">
-                      <span class="material-symbols-outlined text-sm">chevron_left</span>
-                  </button>
-                  
-                  <button v-for="page in pagination.totalPages" :key="page" 
-                          @click="changePage(page)"
-                          class="w-8 h-8 flex items-center justify-center rounded-xl font-bold text-xs transition-all shadow-sm"
-                          :class="pagination.currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary'">
-                  {{ page }}
-                  </button>
-
-                  <button @click="changePage(pagination.currentPage + 1)" :disabled="pagination.currentPage === pagination.totalPages"
-                          class="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50">
-                  <span class="material-symbols-outlined text-sm">chevron_right</span>
-                  </button>
+                <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                <select v-model="pagination.limit" @change="changeItemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                  <option :value="10">10</option>
+                  <option :value="20">20</option>
+                  <option :value="50">50</option>
+                </select>
               </div>
             </div>
+            
+            <div v-if="pagination.totalPage > 1" class="flex items-center gap-1.5">
+              <button 
+                @click="changePage(pagination.currentPage - 1)" 
+                :disabled="pagination.currentPage === 1"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+              >
+                <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+              </button>
+              
+              <template v-for="(p, index) in visiblePages" :key="index">
+                <button 
+                  v-if="p !== '...'"
+                  @click="changePage(p)"
+                  :class="pagination.currentPage === p 
+                    ? 'bg-primary text-white shadow-md shadow-primary/20 border-transparent' 
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-primary hover:border-primary'"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold border transition-all"
+                >
+                  {{ p }}
+                </button>
+                <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">
+                  ...
+                </span>
+              </template>
+              
+              <button 
+                @click="changePage(pagination.currentPage + 1)" 
+                :disabled="pagination.currentPage === pagination.totalPage"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+              >
+                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
           </div>
         </div>  
       </main>
@@ -301,6 +331,31 @@
     limit: 5
   });
 
+  const startItem = computed(() => pagination.value.totalItems === 0 ? 0 : (pagination.value.currentPage - 1) * (pagination.value.limit || 10) + 1);
+  const endItem = computed(() => Math.min(pagination.value.currentPage * (pagination.value.limit || 10), pagination.value.totalItems));
+
+  const visiblePages = computed(() => {
+    const current = pagination.value.currentPage;
+    const total = pagination.value.totalPage;
+    
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  });
+
+  const changeItemsPerPage = () => {
+    pagination.value.currentPage = 1;
+    fetchAdminNews(pagination.value.currentPage); 
+  };
+
+  const changePage = (page) => {
+    if (page === '...' || page === pagination.value.currentPage) return;
+    pagination.value.currentPage = page;
+    fetchAdminNews(pagination.value.currentPage);
+  };
+
   const fetchAdminNews = async (page = 1) => {
     isLoading.value = true;
     try {
@@ -381,12 +436,6 @@
     activeTab.value = tabId;
     fetchAdminNews(1); // Chuyển tab tự động load lại trang 1
   };
-
-  const changePage = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= pagination.value.totalPages) {
-        fetchAdminNews(pageNumber);
-    }
-  };
   
   // --- CÁC HÀM XỬ LÝ MÀU SẮC (UI LOGIC) ---
   
@@ -411,19 +460,6 @@
     if (status === 'Bản nháp') return 'bg-slate-400';
     return 'bg-slate-400';
   };
-
-  const startItem = computed(() => {
-    if (pagination.value.totalItems === 0) return 0;
-    return (pagination.value.currentPage - 1) * pagination.value.limit + 1;
-  });
-
-  const endItem = computed(() => {
-    if (pagination.value.totalItems === 0) return 0;
-    return Math.min(
-        pagination.value.currentPage * pagination.value.limit, 
-        pagination.value.totalItems
-    );
-  });
   // --- HÀNH ĐỘNG NÚT BẤM ---
   const goToCreatePost = () => {
     router.push(`/admin/news/create`);
