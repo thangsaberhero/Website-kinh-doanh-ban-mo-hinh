@@ -660,6 +660,32 @@
       </div>
     </div>
   </div>
+
+  <div v-if="isResetPasswordModalOpen" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100 border-t-4 border-amber-500">
+      <div class="p-6 text-center">
+        <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+          <span class="material-symbols-outlined text-amber-500 text-[32px]">key</span>
+        </div>
+        
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Đặt lại mật khẩu?</h3>
+        <p class="text-sm text-slate-500 mb-4 font-medium">Bạn có chắc chắn muốn đặt lại mật khẩu của người dùng này về mặc định không?</p>
+        
+        <div class="bg-amber-50 border border-amber-200/60 rounded-xl p-3 mb-6">
+            <p class="text-[11px] text-amber-800 font-bold uppercase tracking-widest">MẬT KHẨU MỚI: <span class="font-black text-lg ml-1">123456</span></p>
+        </div>
+        
+        <div class="flex gap-3 justify-center">
+          <button @click="isResetPasswordModalOpen = false" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors flex-1 shadow-sm">
+            Hủy bỏ
+          </button>
+          <button @click="executeResetPassword" class="px-5 py-2.5 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 transition-all flex-1 active:scale-95 flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span> Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
   
 <script setup>
@@ -1216,11 +1242,20 @@
     }
   };
 
-  const resetPassword = async (id) => {
-    if(!confirm("Bạn có chắc chắn muốn đặt lại mật khẩu của người dùng này thành '123456' không?")) return;
-    
+  const isResetPasswordModalOpen = ref(false);
+  const userToResetId = ref(null);
+
+  // 1. Hàm mở Modal (Gắn vào nút bấm)
+  const resetPassword = (id) => {
+    userToResetId.value = id;
+    isResetPasswordModalOpen.value = true;
+    activeMenuId.value = null; // Đóng menu 3 chấm nếu nó đang mở
+  };
+
+  // 2. Hàm thực thi gọi API (Gắn vào nút Xác nhận trong Modal)
+  const executeResetPassword = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/account_admin/reset-password/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/account_admin/reset-password/${userToResetId.value}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -1232,6 +1267,7 @@
       if(res.ok && result.success) {
         toastStore.showToast("Đã đặt lại mật khẩu thành 123456!", "success");
         fetchSecurityLogs();
+        isResetPasswordModalOpen.value = false; // Đóng modal khi thành công
       } 
       else {
         toastStore.showToast("Lỗi khi đặt lại mật khẩu", "error");
@@ -1239,9 +1275,6 @@
     } 
     catch(error) {
       toastStore.showToast("Lỗi kết nối máy chủ", "error");
-    } 
-    finally {
-      activeMenuId.value = null; 
     }
   };
   
