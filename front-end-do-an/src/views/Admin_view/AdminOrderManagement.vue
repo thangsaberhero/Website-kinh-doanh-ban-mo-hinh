@@ -647,13 +647,26 @@
                         <tbody class="divide-y divide-slate-100">
                           <tr v-if="!selectedOrder.ThanhToan || selectedOrder.ThanhToan.length === 0">
                             <td colspan="4" class="p-6 text-center text-slate-400 italic">Chưa có giao dịch.</td>
-                          </tr>
-                          <tr v-for="(tx, idx) in selectedOrder.ThanhToan" :key="idx" class="hover:bg-slate-50">
-                            <td class="p-3 text-center text-xs text-slate-500">{{ new Date(tx.NgayThanhToan).toLocaleString('vi-VN') }}</td>
-                            <td class="p-3 font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-blue-600'">{{ tx.TenPhuongThuc || 'Thu hộ COD' }}</td>
-                            <td class="p-3 text-xs">{{ tx.LoaiGiaoDich }}</td>
-                            <td class="p-3 text-right font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-emerald-600'">
-                              {{ tx.SoTienGiaoDich > 0 ? '+' : '' }}{{ formatPrice(tx.SoTienGiaoDich) }}
+                              </tr>
+                              <tr v-for="(tx, idx) in selectedOrder.ThanhToan" :key="idx" class="hover:bg-slate-50 transition-colors">
+                                <td class="p-3 text-center text-xs text-slate-500">{{ new Date(tx.NgayThanhToan).toLocaleString('vi-VN') }}</td>
+                                
+                                <td class="p-3 font-bold" :class="tx.TrangThaiGiaoDich === 'Chờ thanh toán' ? 'text-amber-600' : (tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-blue-600')">
+                                  {{ tx.TenPhuongThuc || 'Thu hộ COD' }}
+                                  <span v-if="tx.TrangThaiGiaoDich === 'Chờ thanh toán'" class="block mt-0.5 text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded w-fit border border-amber-200">
+                                    Đang chờ thu
+                                  </span>
+                                </td>
+                            
+                            <td class="p-3 text-xs text-slate-600">{{ tx.LoaiGiaoDich }}</td>
+                            
+                            <td class="p-3 text-right font-bold">
+                              <span v-if="tx.TrangThaiGiaoDich === 'Chờ thanh toán'" class="text-slate-400 italic">
+                                Dự kiến thu
+                              </span>
+                              <span v-else :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-emerald-600'">
+                                {{ tx.SoTienGiaoDich > 0 ? '+' : '' }}{{ formatPrice(tx.SoTienGiaoDich) }}
+                              </span>
                             </td>
                           </tr>
                         </tbody>

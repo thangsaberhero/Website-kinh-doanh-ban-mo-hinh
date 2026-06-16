@@ -954,7 +954,7 @@ const donhang_admin = {
                 SELECT tt.NgayThanhToan, tt.SoTienGiaoDich, tt.LoaiGiaoDich, tt.TrangThaiGiaoDich, pt.TenPhuongThuc
                 FROM ThanhToan tt
                 LEFT JOIN PhuongThucThanhToan pt on pt.MaPT = tt.MaPT
-                WHERE tt.MaDH = ? AND tt.TrangThaiGiaoDich = 'Thành công'
+                WHERE tt.MaDH = ?
                 ORDER BY tt.NgayThanhToan DESC
             `;
 
@@ -1221,6 +1221,53 @@ const donhang_admin = {
             const maHienThi = trangthai[0].MaDonHangHienThi; 
             const noteDonHang = trangthai[0].Note || '';
             const tinhTrangGomHang = trangthai[0].TinhTrangGomHang;
+
+            // Giả sử bồ đã lấy được biến TrangThai (Trạng thái mới gửi lên) và MaDH
+            // =========================================================
+            // 🔴 AUTO-COD: TỰ ĐỘNG CHỐT TIỀN KHI SHIPPER GIAO THÀNH CÔNG
+            // =========================================================
+            if (Number(TrangThai) === 4) { // Trạng thái 4 là "Đã giao"
+                
+                // 1. Tìm xem đơn này có đang nợ tiền COD không
+                const [checkCOD] = await connection.query(`
+                    SELECT MaTT FROM ThanhToan 
+                    WHERE MaDH = ? AND TrangThaiGiaoDich = 'Chờ thanh toán' AND LoaiGiaoDich LIKE '%COD%' 
+                    LIMIT 1
+                `, [MaDH]);
+
+                if (checkCOD.length > 0) {
+                    const maTT_COD = checkCOD[0].MaTT;
+
+                    // 2. Tính chính xác số tiền còn nợ (Thành tiền - Tiền đã cọc thành công)
+                    const [tinhTien] = await connection.query(`
+                        SELECT 
+                            dh.ThanhTien, 
+                            COALESCE((SELECT SUM(SoTienGiaoDich) FROM ThanhToan WHERE MaDH = dh.MaDH AND TrangThaiGiaoDich = 'Thành công'), 0) AS DaTra
+                        FROM DonHang dh 
+                        WHERE dh.MaDH = ?
+                    `, [MaDH]);
+
+                    const tienCanThu = Number(tinhTien[0].ThanhTien) - Number(tinhTien[0].DaTra);
+
+                    if (tienCanThu > 0) {
+                        // 3. Kích hoạt giao dịch: Bơm tiền vào và đổi thành Thành công
+                        await connection.query(`
+                            UPDATE ThanhToan 
+                            SET SoTienGiaoDich = ?, 
+                                TrangThaiGiaoDich = 'Thành công', 
+                                NgayThanhToan = NOW() 
+                            WHERE MaTT = ?
+                        `, [tienCanThu, maTT_COD]);
+
+                        // 4. Đổi trạng thái thanh toán của Đơn hàng cho đồng bộ
+                        await connection.query(`
+                            UPDATE DonHang 
+                            SET TrangThaiThanhToan = 'Đã thanh toán (Thu hộ COD)' 
+                            WHERE MaDH = ?
+                        `, [MaDH]);
+                    }
+                }
+            }
 
             if(matrangthai >= 4){
                 await connection.rollback();
