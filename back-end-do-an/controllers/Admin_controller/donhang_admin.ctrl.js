@@ -14,7 +14,7 @@ const donhang_admin = {
             }
             
             const MaNV = check_nv[0].MaNV;
-            const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note, ThuTienNgay, PhuongThucTT, SoTienDaTra, ChoPhepNoCoc } = req.body;
+            const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note, ThuTienNgay, PhuongThucTT, SoTienDaTra, ChoPhepNoCoc, Note } = req.body;
             // DanhSachSanPham từ FE gửi lên phải có dạng: [{ MaPhanLoai: 1, SoLuong: 2 }, ...]
 
             if (!DanhSachSanPham || !Array.isArray(DanhSachSanPham) || DanhSachSanPham.length === 0) {

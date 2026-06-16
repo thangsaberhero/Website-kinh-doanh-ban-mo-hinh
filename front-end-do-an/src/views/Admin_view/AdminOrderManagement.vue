@@ -567,9 +567,18 @@
                         <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Địa chỉ giao</p>
                         <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
                       </div>
-                      <div class="p-4 md:col-span-2 border-t border-slate-200">
-                        <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú</p>
-                        <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có.' }}</p>
+                      <div class="p-4 md:col-span-2 border-t border-slate-200 flex justify-between items-start gap-4 hover:bg-slate-50 transition-colors group rounded-b-xl">
+                        <div class="flex-1">
+                          <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú</p>
+                          <p class="text-rose-600 font-medium italic whitespace-pre-wrap">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có.' }}</p>
+                        </div>
+                        
+                        <button v-if="selectedOrder.ThongTinGiaoHang?.Note" 
+                                @click="copyNoteText(selectedOrder.ThongTinGiaoHang?.Note)" 
+                                class="text-slate-400 hover:text-rose-500 bg-white hover:bg-rose-50 border border-slate-200 p-2 rounded-lg transition-all shadow-sm active:scale-95 opacity-0 group-hover:opacity-100 shrink-0"
+                                title="Copy Ghi Chú">
+                          <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -929,6 +938,10 @@
                   </label>
                   <input v-model="externalOrderForm.DiaChiGiao" type="text" placeholder="Nhập địa chỉ chi tiết để giao hàng..." class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 </div>
+                <div class="sm:col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Ghi chú đơn hàng (Nếu có)</label>
+                        <textarea v-model="externalOrderForm.Note" rows="2" placeholder="VD: Giao giờ hành chính, Khách dặn bọc kỹ hộp..." class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-slate-300 font-medium resize-none"></textarea>
+                      </div>
               </div>
 
               <div class="space-y-4">
@@ -2220,7 +2233,8 @@ const exportExcelReport = async () => {
     SoTienDaTra: 0,
     MaGG: null,
     GiamGiaVoucher: 0,
-    ChoPhepNoCoc: false
+    ChoPhepNoCoc: false,
+    Note: ''
   });
 
   const isCartContainsOrder = computed(() => {
@@ -2426,7 +2440,8 @@ const exportExcelReport = async () => {
         ThuTienNgay: externalOrderForm.value.ThuTienNgay,
         PhuongThucTT: externalOrderForm.value.PhuongThucTT,
         SoTienDaTra: externalOrderForm.value.SoTienDaTra,
-        ChoPhepNoCoc: externalOrderForm.value.ChoPhepNoCoc
+        ChoPhepNoCoc: externalOrderForm.value.ChoPhepNoCoc,
+        Note: externalOrderForm.value.Note.trim() || undefined
       };
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/add`, {
         method: 'POST',
@@ -2640,6 +2655,16 @@ const exportExcelReport = async () => {
     } catch (err) {
       console.error('Lỗi khi copy: ', err);
       // Fallback cho một số trình duyệt cũ nếu cần
+      toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
+    }
+  };
+
+  const copyNoteText = async (text) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toastStore.showToast(`Đã copy ghi chú!`, "success");
+    } catch (err) {
       toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
     }
   };
