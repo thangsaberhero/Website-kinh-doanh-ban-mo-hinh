@@ -239,9 +239,19 @@
                                 :class="order.statusId < 3 ? 'text-rose-500 animate-pulse' : 'text-slate-400'">
                             edit_note
                           </span>
-                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-lg opacity-0 group-hover/note:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-slate-700 whitespace-normal">
-                            <p class="font-bold uppercase tracking-widest mb-1 text-[9px]" :class="order.statusId < 3 ? 'text-rose-400' : 'text-slate-400'">Ghi chú của khách:</p> 
-                            {{ order.note }}
+                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-64 max-h-48 overflow-y-auto custom-scrollbar bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-3 rounded-xl opacity-0 group-hover/note:opacity-100 transition-opacity z-50 shadow-xl border border-slate-700 pointer-events-auto">
+                            
+                            <p class="font-bold uppercase tracking-widest mb-2 text-[9px] sticky top-0 bg-slate-800/95 pb-1.5 border-b border-slate-600/50 z-10" :class="order.statusId < 3 ? 'text-rose-400' : 'text-slate-400'">
+                                Lịch sử Ghi chú:
+                            </p> 
+                            
+                            <div class="space-y-2 mt-1">
+                                <p v-for="(line, idx) in order.note.split('\n')" :key="idx" 
+                                   class="leading-relaxed relative pl-3 before:content-[''] before:absolute before:left-0 before:top-1.5 before:w-1.5 before:h-1.5 before:bg-slate-500 before:rounded-full text-slate-200">
+                                  {{ line }}
+                                </p>
+                            </div>
+
                           </div>
                         </div>
                       </div>
@@ -569,8 +579,10 @@
                       </div>
                       <div class="p-4 md:col-span-2 border-t border-slate-200 flex justify-between items-start gap-4 hover:bg-slate-50 transition-colors group rounded-b-xl">
                         <div class="flex-1">
-                          <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú</p>
-                          <p class="text-rose-600 font-medium italic whitespace-pre-wrap">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có.' }}</p>
+                          <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú / Nhật ký</p>
+                          <div class="text-rose-600 font-medium italic whitespace-pre-wrap max-h-24 overflow-y-auto custom-scrollbar pr-2">
+                            {{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có.' }}
+                          </div>
                         </div>
                         
                         <button v-if="selectedOrder.ThongTinGiaoHang?.Note" 
@@ -780,7 +792,7 @@
           </button>
         </div>
 
-        <div class="p-6 space-y-4">
+        <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
           <div>
             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tên người nhận <span class="text-rose-500">*</span></label>
             <input v-model="editInfoForm.hoten" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white">
@@ -792,6 +804,22 @@
           <div>
             <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Địa chỉ giao hàng <span class="text-rose-500">*</span></label>
             <textarea v-model="editInfoForm.diachi" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white resize-none"></textarea>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 mt-2">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">lock</span> Ghi chú hiện tại (Không thể xóa)
+            </label>
+            <div class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-2.5 text-[11px] text-slate-500 font-medium whitespace-pre-wrap h-20 overflow-y-auto cursor-not-allowed italic shadow-inner">
+              {{ selectedOrder?.ThongTinGiaoHang?.Note || 'Không có ghi chú.' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-sky-600 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">add_notes</span> Thêm ghi chú bổ sung
+            </label>
+            <textarea v-model="editInfoForm.ghiChuBoSung" rows="2" placeholder="Nhập thêm ghi chú nếu cần..." class="w-full border border-sky-200 rounded-xl px-4 py-2.5 text-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all font-medium text-slate-700 bg-sky-50/30 focus:bg-white resize-none"></textarea>
           </div>
         </div>
 
@@ -2126,7 +2154,7 @@ const exportExcelReport = async () => {
 
   // --- QUẢN LÝ SỬA THÔNG TIN ĐƠN HÀNG ---
   const isEditInfoModalOpen = ref(false);
-  const editInfoForm = ref({ MaDH: '', hoten: '', sdt: '', diachi: '' });
+  const editInfoForm = ref({ MaDH: '', hoten: '', sdt: '', diachi: '', ghiChuBoSung: '' });
 
   const openEditInfoModal = () => {
     // Đổ dữ liệu hiện tại vào form
@@ -2134,7 +2162,8 @@ const exportExcelReport = async () => {
       MaDH: selectedOrder.value.MaDH,
       hoten: selectedOrder.value.ThongTinGiaoHang?.TenNguoiNhan || '',
       sdt: selectedOrder.value.ThongTinGiaoHang?.SDTNguoiNhan || '',
-      diachi: selectedOrder.value.ThongTinGiaoHang?.DiaChiGiao || ''
+      diachi: selectedOrder.value.ThongTinGiaoHang?.DiaChiGiao || '',
+      ghiChuBoSung: ''
     };
     isEditInfoModalOpen.value = true;
   };
@@ -2155,7 +2184,13 @@ const exportExcelReport = async () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(editInfoForm.value)
+        body: JSON.stringify({
+          MaDH: editInfoForm.value.MaDH,
+          hoten: editInfoForm.value.hoten,
+          sdt: editInfoForm.value.sdt,
+          diachi: editInfoForm.value.diachi,
+          ghiChuBoSung: editInfoForm.value.ghiChuBoSung.trim()
+        })
       });
 
       const result = await response.json();

@@ -574,7 +574,7 @@ const donhang_admin = {
         const connection = await db.getConnection();
         try {
             await connection.beginTransaction();
-            const {MaDH, sdt, hoten, diachi} = req.body;
+            const {MaDH, sdt, hoten, diachi, ghiChuBoSung} = req.body;
             if (!MaDH || !sdt || !hoten || !diachi) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin!" });
@@ -597,7 +597,7 @@ const donhang_admin = {
             const currentStatus = trang_thai[0].MaTrangThai;
             const maHienThi = trang_thai[0].MaDonHangHienThi;
                 
-            if(currentStatus === 4 || currentStatus === 5 || currentStatus === 6){
+            if(currentStatus === 3 || currentStatus === 4 || currentStatus === 5 || currentStatus === 6){
                 await connection.rollback();
                 return res.status(400).json({
                     success: false,
@@ -605,15 +605,26 @@ const donhang_admin = {
                 });
             }
 
-            const sql_cap_nhat_tt = `
-                UPDATE DonHang dh
-                SET dh.TenNguoiNhan = ?,
-                    dh.SDTNguoiNhan = ?,
-                    dh.DiaChiGiao = ?
-                WHERE dh.MaDH = ?
-            `;
-            
-            await connection.query(sql_cap_nhat_tt,[hoten, sdt, diachi, MaDH]);
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const timeString = `${h}:${min} ${d}/${m}`;
+
+            let sql_update = `UPDATE DonHang SET TenNguoiNhan = ?, SDTNguoiNhan = ?, DiaChiGiao = ?`;
+            let params = [hoten, sdt, diachi];
+
+            if (ghiChuBoSung && ghiChuBoSung.trim() !== '') {
+                sql_update += `, Note = CONCAT_WS('\\n', IFNULL(Note, ''), ?)`;
+                params.push(`[NV cập nhật - ${timeString}]: ${ghiChuBoSung.trim()}`);
+            }
+
+            sql_update += ` WHERE MaDH = ?`;
+            params.push(MaDH);
+
+            // Thực thi lệnh cập nhật
+            await connection.query(sql_update, params);
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
