@@ -383,10 +383,18 @@
             <div class="flex-1 space-y-6 w-full">
               
               <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
-                <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3">
+                <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
                   <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-[16px]">contact_mail</span> Thông tin nhận hàng
                   </h4>
+                  <div class="flex items-center gap-2">
+                    <button @click="copyCustomerInfo" class="flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 transition-colors bg-white px-2 py-1 rounded border border-slate-200 shadow-sm active:scale-95">
+                      <span class="material-symbols-outlined text-[14px]">content_copy</span> Copy
+                    </button>
+                    <RouterLink :to="`/admin/orders?viewOrderId=${selectedOrder.MaDH}`" class="flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-sky-600 transition-colors bg-white px-2 py-1 rounded border border-slate-200 shadow-sm active:scale-95">
+                      <span class="material-symbols-outlined text-[14px]">edit</span> Sửa
+                    </RouterLink>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-200 text-sm">
@@ -412,9 +420,21 @@
                     <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Địa chỉ giao</p>
                     <p class="font-medium text-slate-700">{{ selectedOrder.ThongTinGiaoHang?.DiaChiGiao || 'N/A' }}</p>
                   </div>
-                  <div class="p-4 md:col-span-2 border-t border-slate-200">
-                    <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú</p>
-                    <p class="text-rose-600 font-medium italic">{{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có.' }}</p>
+                  
+                  <div class="p-4 md:col-span-2 border-t border-slate-200 flex justify-between items-start gap-4 hover:bg-slate-50 transition-colors group rounded-b-xl">
+                    <div class="flex-1">
+                      <p class="text-slate-400 font-medium mb-1 text-[11px] uppercase tracking-wider">Ghi chú / Nhật ký</p>
+                      <div class="text-rose-600 font-medium italic whitespace-pre-wrap max-h-24 overflow-y-auto custom-scrollbar pr-2">
+                        {{ selectedOrder.ThongTinGiaoHang?.Note || 'Không có.' }}
+                      </div>
+                    </div>
+                    
+                    <button v-if="selectedOrder.ThongTinGiaoHang?.Note" 
+                            @click="copyTrackingCode(selectedOrder.ThongTinGiaoHang?.Note)" 
+                            class="text-slate-400 hover:text-rose-500 bg-white hover:bg-rose-50 border border-slate-200 p-2 rounded-lg transition-all shadow-sm active:scale-95 opacity-0 group-hover:opacity-100 shrink-0"
+                            title="Copy Ghi Chú">
+                      <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -441,7 +461,13 @@
               </div>
 
               <div>
-                <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Lịch sử giao dịch</h4>
+                <div class="flex justify-between items-end mb-2">
+                  <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400">Lịch sử giao dịch</h4>
+                  <RouterLink :to="`/admin/orders?viewOrderId=${selectedOrder.MaDH}`" 
+                              class="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">payments</span> Thu thêm tiền
+                  </RouterLink>
+                </div>
                 <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
                   <table class="w-full text-left text-sm">
                     <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
@@ -458,131 +484,67 @@
                       </tr>
                       <tr v-for="(tx, idx) in selectedOrder.ThanhToan" :key="idx" class="hover:bg-slate-50">
                         <td class="p-3 text-center text-xs text-slate-500">{{ new Date(tx.NgayThanhToan).toLocaleString('vi-VN') }}</td>
-                        <td class="p-3 font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-blue-600'">{{ tx.TenPhuongThuc || 'Thu hộ COD' }}</td>
+                        <td class="p-3 font-bold" :class="tx.TrangThaiGiaoDich === 'Chờ thanh toán' ? 'text-amber-600' : (tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-blue-600')">
+                          {{ tx.TenPhuongThuc || 'Thu hộ COD' }}
+                          <span v-if="tx.TrangThaiGiaoDich === 'Chờ thanh toán'" class="block mt-0.5 text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded w-fit border border-amber-200">
+                            Đang chờ thu
+                          </span>
+                        </td>
                         <td class="p-3 text-xs">{{ tx.LoaiGiaoDich }}</td>
-                        <td class="p-3 text-right font-bold" :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-emerald-600'">
-                          {{ tx.SoTienGiaoDich > 0 ? '+' : '' }}{{ formatPrice(tx.SoTienGiaoDich) }}
+                        <td class="p-3 text-right font-bold">
+                          <span v-if="tx.TrangThaiGiaoDich === 'Chờ thanh toán'" class="text-slate-400 italic">Dự kiến thu</span>
+                          <span v-else :class="tx.SoTienGiaoDich < 0 ? 'text-purple-600' : 'text-emerald-600'">
+                            {{ tx.SoTienGiaoDich > 0 ? '+' : '' }}{{ formatPrice(tx.SoTienGiaoDich) }}
+                          </span>
                         </td>
                       </tr>
                     </tbody>
                   </table>
-                </div>
-              </div>
-
-              <div>
-                <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Giỏ hàng</h4>
-                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                  <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
-                      <tr>
-                        <th class="p-4 text-center">Hình</th>
-                        <th class="p-4">Sản phẩm</th>
-                        <th class="p-4 text-right">Đơn giá</th>
-                        <th class="p-4 text-center">SL</th>
-                        <th class="p-4 text-right">Thành tiền</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                      <tr v-for="(item, index) in selectedOrder.DanhSachHang" :key="item.MaPhanLoai || index">
-                        <td class="p-4 text-center">
-                          <img v-if="item.AnhDaiDien" :src="item.AnhDaiDien.startsWith('http') ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/${item.AnhDaiDien}`" class="w-12 h-12 object-cover rounded-xl border border-slate-200 mx-auto" />
-                        </td>
-                        <td class="p-4">
-                          <p class="font-bold text-slate-900">{{ item.TenMH }}</p>
-                          <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] mt-1 inline-block">{{ item.ChiTietPhanLoai || 'Mặc định' }}</span>
-                        </td>
-                        <td class="p-4 text-right">
-                          <p :class="item.LaHangKhuyenMai === 1 ? 'line-through text-slate-400 text-xs' : ''">{{ formatPrice(item.DonGiaGoc) }}</p>
-                          <p v-if="item.LaHangKhuyenMai === 1" class="text-rose-500">{{ formatPrice(item.DonGiaBan) }}</p>
-                        </td>
-                        <td class="p-4 text-center font-bold">{{ item.SoLuong }}</td>
-                        <td class="p-4 text-right text-rose-500 font-bold">{{ formatPrice(item.DonGiaBan * item.SoLuong) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div class="flex justify-end">
-                <div class="w-80 bg-white border border-slate-200 rounded-xl p-5 space-y-3 text-sm shadow-sm">
-                  <div class="flex justify-between text-slate-500">
-                    <span>Tổng tiền hàng:</span>
-                    <span class="font-semibold text-slate-800">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.TongTien) }}</span>
-                  </div>
-                  <div class="flex justify-between text-slate-500">
-                    <span>Giảm giá:</span>
-                    <span class="font-semibold text-emerald-600">-{{ formatPrice((selectedOrder.ThongTinGiaoHang?.TongTien || 0) - (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0)) }}</span>
-                  </div>
-                  <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline">
-                    <span class="font-bold text-slate-700">Giá trị đơn:</span>
-                    <span class="font-bold text-slate-900">{{ formatPrice(selectedOrder.ThongTinGiaoHang?.ThanhTien) }}</span>
-                  </div>
-                  <div class="flex justify-between items-baseline">
-                    <span class="font-bold text-slate-700">Đã thanh toán:</span>
-                    <span class="font-bold text-emerald-600">
-                      {{ formatPrice(selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0) }}
-                    </span>
-                  </div>
-                  <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline bg-rose-50 -mx-5 px-5 pb-5 -mb-5 rounded-b-xl">
-                    <span class="font-bold text-rose-900 text-base mt-2">CÒN PHẢI THU:</span>
-                    <span class="font-black text-rose-600 text-xl">
-                      {{ formatPrice(Math.max(0, (selectedOrder.ThongTinGiaoHang?.ThanhTien || 0) - (selectedOrder.ThanhToan?.reduce((sum, tx) => sum + Number(tx.SoTienGiaoDich), 0) || 0))) }}
-                    </span>
-                  </div>
                 </div>
               </div>
 
             </div>
 
-            <div class="w-full xl:w-96 shrink-0 xl:sticky xl:top-0 space-y-4">
+            <!-- 🔴 ĐÃ ĐỒNG BỘ: Giao diện ĐIỀU KHIỂN LỆNH Dark Mode giống hệt Quản lý đơn -->
+            <div class="w-full xl:w-[320px] shrink-0 xl:sticky xl:top-0 space-y-4">
               
-              <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-2xl shadow-sm">
-                <div class="flex gap-3 items-start mb-4">
-                  <span class="material-symbols-outlined text-indigo-500 bg-white p-1.5 rounded-lg shadow-sm">lightbulb</span>
-                  <p class="text-xs text-indigo-700 font-medium leading-relaxed">Để chỉnh sửa địa chỉ, thêm mã vận đơn, thao tác thu/hoàn tiền, vui lòng sang chế độ Xử lý toàn diện.</p>
-                </div>
-                <RouterLink :to="`/admin/orders?viewOrderId=${selectedOrder.MaDH}`" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 active:scale-95">
-                  <span class="material-symbols-outlined text-[18px]">open_in_new</span> Mở trang xử lý toàn diện
-                </RouterLink>
-              </div>
-
-              <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white space-y-5">
-                <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[16px] text-primary">bolt</span> Thao tác nhanh
+              <div class="bg-[#1e2330] p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white flex flex-col h-full border border-slate-700/50">
+                <h4 class="text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5 mb-5">
+                  <span class="material-symbols-outlined text-[16px] text-rose-500">tune</span> ĐIỀU KHIỂN LỆNH
                 </h4>
                 
-                <div class="grid grid-cols-1 gap-3">
+                <div class="grid grid-cols-1 gap-3 flex-1">
                   
                   <template v-if="getCurrentStatusCode() !== 4 && getCurrentStatusCode() !== 5 && getCurrentStatusCode() !== 6">
                     
                     <button v-if="getSaleType() !== 'Có sẵn' && getFulfillmentStatus() !== 'Đủ hàng' && getCurrentStatusCode() === 1" 
                             @click="toastStore.showToast(`Đơn hàng đang ${getFulfillmentStatus()}. Vui lòng chờ đủ hàng hoặc Tách đơn gửi trước!`, 'warning')" 
-                            class="w-full bg-slate-100 text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 cursor-not-allowed transition-all">
+                            class="w-full bg-transparent text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-600 cursor-not-allowed transition-all">
                       <span class="material-symbols-outlined text-[18px]">lock</span> Khóa: Chờ gom hàng
                     </button>
                     
                     <button v-else 
                             @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
-                            class="w-full bg-primary hover:bg-[#ff7352] text-white font-bold text-xs py-3 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                            class="w-full bg-primary/10 hover:bg-primary/20 text-[#ff7352] border border-primary/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
                       <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
                     </button>
                     
                   </template>
 
                   <button @click="handlePrintInvoice(selectedOrder.MaDH)" 
-                          class="w-full bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-600 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 hover:border-sky-200 active:scale-95 shadow-sm">
-                    <span class="material-symbols-outlined text-[18px] text-sky-500">print</span> In hóa đơn
+                          class="w-full bg-transparent hover:bg-slate-700 text-sky-400 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">print</span> In hóa đơn
                   </button>
 
                   <button v-if="getCurrentStatusCode() === 1 || getCurrentStatusCode() === 2"
                           @click="cancelOrder(selectedOrder)" 
-                          class="w-full bg-rose-50 hover:bg-rose-500 text-rose-600 hover:text-white border border-rose-200 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm">
+                          class="w-full bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-800/50 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn hàng
                   </button>
 
                   <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4"
                           @click="returnOrder(selectedOrder)" 
-                          class="w-full bg-purple-50 hover:bg-purple-500 text-purple-600 hover:text-white border border-purple-200 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-sm">
+                          class="w-full bg-purple-900/30 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-800/50 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">assignment_return</span> Hoàn hàng
                   </button>
                 </div>
@@ -1464,6 +1426,18 @@
     try {
       await navigator.clipboard.writeText(code);
       toastStore.showToast(`Đã copy mã vận đơn: ${code}`, "success");
+    } catch (err) {
+      console.error('Lỗi khi copy: ', err);
+      toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
+    }
+  };
+
+  const copyCustomerInfo = async () => {
+    if (!selectedOrder.value) return;
+    const info = `Tên: ${selectedOrder.value.ThongTinGiaoHang?.TenNguoiNhan || ''}\nSĐT: ${selectedOrder.value.ThongTinGiaoHang?.SDTNguoiNhan || ''}\nĐịa chỉ: ${selectedOrder.value.ThongTinGiaoHang?.DiaChiGiao || ''}`;
+    try {
+      await navigator.clipboard.writeText(info);
+      toastStore.showToast("Đã copy thông tin khách hàng!", "success");
     } catch (err) {
       console.error('Lỗi khi copy: ', err);
       toastStore.showToast("Trình duyệt không hỗ trợ copy tự động!", "warning");
