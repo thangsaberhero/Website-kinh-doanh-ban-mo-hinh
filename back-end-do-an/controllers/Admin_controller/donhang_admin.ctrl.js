@@ -204,7 +204,7 @@ const donhang_admin = {
             // Chốt chặn kiểm tra tiền cọc
             if (tienThucThu < tongCocToiThieuYeuCau) {
                 if (ChoPhepNoCoc) {
-                    finalNote += `\n [BẢO LÃNH CỌC] Nhân viên NV${MaNV} cho phép nợ cọc. (Quy định cọc: ${tongCocToiThieuYeuCau.toLocaleString('vi-VN')}đ | Khách nộp: ${tienThucThu.toLocaleString('vi-VN')}đ).`;
+                    finalNote += `\n[BẢO LÃNH CỌC] Nhân viên NV${MaNV} cho phép nợ cọc. (Quy định cọc: ${tongCocToiThieuYeuCau.toLocaleString('vi-VN')}đ | Khách nộp: ${tienThucThu.toLocaleString('vi-VN')}đ).`;
                 } else {
                     await connection.rollback();
                     return res.status(400).json({ 
