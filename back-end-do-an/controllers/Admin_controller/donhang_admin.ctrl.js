@@ -2375,6 +2375,10 @@ const donhang_admin = {
                     trangThaiThanhToanMoi = 'Đã thanh toán';
                 }
                 loaiGiaoDich = daTraTruocDo > 0 ? 'Thanh toán phần còn lại' : 'Thanh toán toàn bộ';
+                await connection.query(`
+                    DELETE FROM ThanhToan 
+                    WHERE MaDH = ? AND TrangThaiGiaoDich = 'Chờ thanh toán'
+                `, [MaDH]);
             }
 
             await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiThanhToanMoi, MaDH]);

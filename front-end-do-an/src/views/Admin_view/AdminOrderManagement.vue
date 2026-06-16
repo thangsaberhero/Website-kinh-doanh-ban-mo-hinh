@@ -2537,8 +2537,22 @@ const exportExcelReport = async () => {
   const alreadyPaidAmount = ref(0);
   const suggestedDepositAmount = ref(0);
 
+  const hasPendingCOD = (order) => {
+    if (!order || !order.ThanhToan) return false;
+    // Kiểm tra xem có giao dịch nào đang "Chờ thanh toán" không
+    return order.ThanhToan.some(tx => tx.TrangThaiGiaoDich === 'Chờ thanh toán');
+  };
+
   const orderCodeToPay = ref('');
   const confirmPayment = (order) => {
+    
+    // 🔴 ĐÃ THÊM: Cảnh báo ghi đè COD
+    if (hasPendingCOD(order)) {
+      if (!confirm("⚠️ CẢNH BÁO XUNG ĐỘT NGHIỆP VỤ:\n\nĐơn hàng này đang có giao dịch Chờ thu hộ (COD) tự động. Nếu bạn tiếp tục thu tiền thủ công (VD: Khách vừa chuyển khoản), hệ thống sẽ XÓA BỎ giao dịch COD dự kiến kia.\n\nBạn có chắc chắn muốn thu tiền thủ công không?")) {
+        return; // Hủy thao tác nếu Admin bấm "Cancel"
+      }
+    }
+
     orderToPay.value = order;
     orderCodeToPay.value = order.ThongTinGiaoHang?.MaDonHangHienThi;
     
@@ -2550,10 +2564,9 @@ const exportExcelReport = async () => {
     if (amountToCollect.value < 0) amountToCollect.value = 0; 
     let totalDepositRequired = 0;
     if (selectedOrder.value && selectedOrder.value.DanhSachHang) {
-      // Cộng dồn: (Tiền cọc 1 món * Số lượng)
       totalDepositRequired = selectedOrder.value.DanhSachHang.reduce((sum, item) => sum + ((item.TienCocToiThieu || 0) * item.SoLuong), 0);
     }
-    // Số tiền cọc cần thu thêm = Tổng cọc yêu cầu của các món - Số tiền khách ĐÃ TRẢ trước đó
+    
     suggestedDepositAmount.value = Math.max(0, totalDepositRequired - alreadyPaidAmount.value);
 
     collectionMethod.value = 5; 
