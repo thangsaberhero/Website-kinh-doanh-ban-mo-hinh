@@ -286,7 +286,9 @@
                           </div>
                           <div class="flex flex-col">
                             
-                            <p class="font-bold text-slate-900 text-[14px] whitespace-normal line-clamp-2 w-full max-w-[280px] xl:max-w-[360px] leading-snug" :title="product.name">
+                            <p @click="openEditModal(product)" 
+                              class="font-bold text-sky-600 text-sm line-clamp-2 hover:text-sky-700 hover:underline cursor-pointer transition-colors" 
+                              title="Bấm để xem và sửa chi tiết sản phẩm">
                               {{ product.name }}
                             </p>
                             
