@@ -142,11 +142,18 @@
             </div>
 
             <div class="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+              <div class="hidden lg:flex items-center p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
+                <button @click="setQuickDate('today')" :class="filterDate.from === getToday() && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Hôm nay</button>
+                <button @click="setQuickDate('7days')" :class="filterDate.from === getDaysAgo(7) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">7 Ngày</button>
+                <button @click="setQuickDate('30days')" :class="filterDate.from === getDaysAgo(30) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">30 Ngày</button>
+                <button @click="setQuickDate('all')" :class="filterDate.from === '' && filterDate.to === '' ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Tất cả</button>
+              </div>
+
               <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-0.5 shadow-sm w-full md:w-auto">
                 <span class="material-symbols-outlined text-slate-400 text-[18px]">calendar_today</span>
-                <input type="date" v-model="filterDate.from" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5">
+                <input type="date" v-model="filterDate.from" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5 w-[110px]">
                 <span class="text-slate-300">-</span>
-                <input type="date" v-model="filterDate.to" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5">
+                <input type="date" v-model="filterDate.to" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5 w-[110px]">
               </div>
 
               <div class="relative w-full md:w-60">
@@ -1628,7 +1635,6 @@
   
   // --- Quản lý Tìm kiếm & Lọc thời gian ---
   const searchQuery = ref('');
-  const filterDate = ref({ from: '', to: '' });
   const isFilterPanelOpen = ref(false); 
   const isSortMenuOpen = ref(false);    
 
@@ -3035,6 +3041,35 @@ const exportExcelReport = async () => {
     } catch (error) {
       console.error("Lỗi khi gọi API tách đơn:", error);
       toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    }
+  };
+
+  // Các hàm hỗ trợ tính toán ngày
+  const getToday = () => {
+    const d = new Date();
+    return d.toISOString().slice(0, 10);
+  };
+  const getDaysAgo = (days) => {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const filterDate = ref({ 
+    from: getDaysAgo(7), 
+    to: getToday() 
+  });
+
+  // Hàm xử lý nút chọn ngày nhanh
+  const setQuickDate = (range) => {
+    if (range === 'today') {
+      filterDate.value = { from: getToday(), to: getToday() };
+    } else if (range === '7days') {
+      filterDate.value = { from: getDaysAgo(7), to: getToday() };
+    } else if (range === '30days') {
+      filterDate.value = { from: getDaysAgo(30), to: getToday() };
+    } else if (range === 'all') {
+      filterDate.value = { from: '', to: '' };
     }
   };
 

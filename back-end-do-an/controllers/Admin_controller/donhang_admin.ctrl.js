@@ -766,10 +766,15 @@ const donhang_admin = {
                     whereValues.push(trangthaitt);
                 }
             }
-
-            // =========================================================
-            // 🔴 XỬ LÝ LỌC KHOẢNG GIÁ TRỊ ĐƠN HÀNG (MIN - MAX)
-            // =========================================================
+            if (ngaybatdau) {
+                conditions.push("dh.NgayLapDon >= ?");
+                whereValues.push(`${ngaybatdau} 00:00:00`);
+            }
+            if (ngayketthuc) {
+                conditions.push("dh.NgayLapDon <= ?");
+                // Ép thời gian đến 23:59:59 để lấy trọn vẹn các đơn hàng phát sinh trong ngày đó
+                whereValues.push(`${ngayketthuc} 23:59:59`);
+            }
             if (minPrice) {
                 conditions.push("dh.ThanhTien >= ?");
                 whereValues.push(Number(minPrice));
