@@ -373,6 +373,41 @@
         </div>
       </div>
     </div>
+
+    <div v-if="showCODConfirmModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl w-full max-w-md overflow-hidden flex flex-col animate-[fadeIn_0.2s_ease-out]">
+        
+        <div class="px-6 py-4 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container shrink-0">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-lg">local_shipping</span> Xác nhận hình thức COD
+          </h3>
+          <button @click="showCODConfirmModal = false" class="text-outline hover:text-white transition-colors">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-2">
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Bạn có chắc chắn muốn xác nhận thanh toán số tiền còn lại <strong class="text-primary">{{ formatPrice(Math.max(0, orderInfo.ThanhTien - (orderInfo.DaThanhToan || 0))) }}</strong> bằng hình thức tiền mặt (COD) khi nhận hàng không?
+          </p>
+          <p class="text-[10px] text-outline italic leading-relaxed">
+            * Sau khi xác nhận, hệ thống sẽ báo cho nhân viên chuẩn bị đóng gói và gửi hàng đi.
+          </p>
+        </div>
+
+        <div class="px-6 py-4 border-t border-outline-variant/20 bg-surface-container flex justify-end gap-3 shrink-0">
+          <button @click="showCODConfirmModal = false" 
+                  class="px-4 py-2 text-[11px] font-bold text-outline bg-transparent border border-outline-variant/30 hover:bg-surface-bright rounded-lg transition-colors">
+            Hủy bỏ
+          </button>
+          <button @click="executeConfirmCOD" 
+                  class="px-4 py-2 text-[11px] font-bold text-white bg-primary hover:bg-primary/90 shadow-md rounded-lg transition-all active:scale-95 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">check_circle</span> Xác nhận
+          </button>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
 
@@ -396,6 +431,9 @@
   const orderInfo = ref({});
   const orderStatus = ref([]);
   const order = ref([]);
+
+  // XÁC NHẬN COD
+  const showCODConfirmModal = ref(false);
 
   // QUẢN LÝ THANH TOÁN LẠI
   const showPaymentModal = ref(false);
@@ -627,26 +665,29 @@
     }
   };
 
-  const confirmCOD = async () => {
-    if(confirm("Xác nhận: Bạn muốn thanh toán phần tiền còn lại bằng Tiền mặt cho Shipper khi nhận hàng (COD)?")) {
-      try {
-        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-        const response = await fetch(`${API_BASE_URL}/api/don_hang/confirm-cod`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ MaDH: route.params.id })
-        });
-        
-        const data = await response.json();
-        if (response.ok) {
-          toastStore.showToast("Đã báo cho Shop gửi hàng thu COD thành công!", "success");
-          fetchOrderdata(); // Load lại giao diện
-        } else {
-          toastStore.showToast(data.message || "Lỗi khi xác nhận COD", "error");
-        }
-      } catch (error) {
-        toastStore.showToast("Lỗi kết nối máy chủ", "error");
+  const confirmCOD = () => {
+    showCODConfirmModal.value = true; // Mở modal xác nhận đơn giản
+  };
+
+  const executeConfirmCOD = async () => {
+    showCODConfirmModal.value = false; // Đóng modal ngay khi bấm
+    try {
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const response = await fetch(`${API_BASE_URL}/api/don_hang/confirm-cod`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ MaDH: route.params.id })
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        toastStore.showToast("Đã báo cho Shop gửi hàng thu COD thành công!", "success");
+        fetchOrderdata(); // Tải lại dữ liệu đơn hàng
+      } else {
+        toastStore.showToast(data.message || "Lỗi khi xác nhận COD", "error");
       }
+    } catch (error) {
+      toastStore.showToast("Lỗi kết nối máy chủ", "error");
     }
   };
 
