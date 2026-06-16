@@ -1074,7 +1074,6 @@ const thongke = {
             const { NgayBatDau, NgayKetThuc, types } = req.query;
             
             const selectedTypes = types ? types.split(',') : [];
-            
             if (selectedTypes.length === 0) {
                 return res.status(400).json({ message: "Không có loại báo cáo nào được chọn" });
             }
@@ -1102,31 +1101,48 @@ const thongke = {
             const workbook = new ExcelJS.Workbook();
             const COLOR_PRIMARY = 'FFFF8F73';
             
+            // ==============================================================
+            // HÀM HỖ TRỢ ĐỊNH DẠNG & SỬA LỖI
+            // ==============================================================
+            // Hàm định dạng ngày tháng chuẩn Việt Nam
+            const formatDateVN = (dateStr) => {
+                if (!dateStr) return '';
+                if (dateStr.includes('-')) {
+                    const parts = dateStr.split('-');
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return dateStr;
+            };
+
             const taoHeaderBaoCao = (workbook, ws, titleName, endCol = 'E') => {
                 ws.views = [{ showGridLines: false }];
+                ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true };
 
-                for (let i = 1; i <= 7; i++) {
-                    for (let j = 1; j <= 10; j++) {
+                const maxCol = endCol.charCodeAt(0) - 64; 
+                for (let i = 1; i <= 8; i++) {
+                    for (let j = 1; j <= maxCol; j++) {
                         ws.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
                     }
                 }
 
                 try {
+                    const path = require('path');
+                    const fs = require('fs');
                     const logoPath = path.join(__dirname, '../../public/logo.png'); 
                     if (fs.existsSync(logoPath)) {
                         const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
-                        ws.addImage(logoId, { tl: { col: 0.2, row: 0.2 }, ext: { width: 60, height: 60 } });
+                        ws.addImage(logoId, { tl: { col: 0.1, row: 0.2 }, ext: { width: 75, height: 75 } });
                     }
                 } catch (err) { }
 
                 ws.mergeCells(`B1:${endCol}1`);
                 ws.getCell('B1').value = 'FIGURECOLLECT';
-                ws.getCell('B1').font = { size: 16, bold: true, color: { argb: COLOR_PRIMARY }, name: 'Space Grotesk' };
+                ws.getCell('B1').font = { size: 22, bold: true, color: { argb: COLOR_PRIMARY }, name: 'Space Grotesk' };
                 ws.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
 
                 ws.mergeCells(`B2:${endCol}2`);
                 ws.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
-                ws.getCell('B2').font = { size: 10, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' };
+                ws.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' };
                 ws.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
 
                 ws.mergeCells(`A4:${endCol}4`);
@@ -1135,19 +1151,27 @@ const thongke = {
                 ws.mergeCells(`A5:${endCol}5`);
                 const titleCell = ws.getCell('A5');
                 titleCell.value = titleName.toUpperCase();
-                titleCell.font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                titleCell.font = { size: 18, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
                 titleCell.alignment = { horizontal: 'center', vertical: 'middle' }; 
 
-                const filterText = (NgayBatDau && NgayKetThuc) ? `Kỳ báo cáo: Từ ${NgayBatDau} đến ${NgayKetThuc}` : 'Kỳ báo cáo: Toàn thời gian';
+                // Áp dụng format ngày Việt Nam
+                const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${formatDateVN(NgayBatDau)} đến ${formatDateVN(NgayKetThuc)}` : 'Toàn thời gian';
+                
                 ws.mergeCells(`A6:${endCol}6`);
                 const dateCell = ws.getCell('A6');
-                dateCell.value = `${filterText} | Ngày trích xuất: ${new Date().toLocaleString('vi-VN')}`;
-                dateCell.font = { size: 10, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' };
-                dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
+                dateCell.value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')}`;
+                dateCell.font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+                dateCell.alignment = { horizontal: 'center' };
+
+                ws.mergeCells(`A7:${endCol}7`);
+                const filterCell = ws.getCell('A7');
+                filterCell.value = `Kỳ dữ liệu: ${filterText}`;
+                filterCell.font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+                filterCell.alignment = { horizontal: 'center' };
             };
 
             const dinhDangHeaderBang = (row) => {
-                row.height = 24;
+                row.height = 25;
                 row.eachCell((cell) => {
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_PRIMARY } };
                     cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
@@ -1158,119 +1182,163 @@ const thongke = {
 
             const dinhDangDongDuLieu = (row, index, centerCols = [], rightCols = []) => {
                 const fillStyle = { type: 'pattern', pattern: 'solid', fgColor: { argb: (index % 2 === 0) ? 'FFFFFFFF' : 'FFF8F9FA' } };
+                row.height = 25;
                 row.eachCell((cell, colNum) => {
                     cell.fill = fillStyle;
                     cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
                     cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+                    
                     if (centerCols.includes(colNum)) cell.alignment = { horizontal: 'center', vertical: 'middle' };
                     else if (rightCols.includes(colNum)) cell.alignment = { horizontal: 'right', vertical: 'middle' };
-                    else cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                    else cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
                 });
             };
 
-            const khoanhVungBang = (ws, startRow, endRow, startCol, endCol) => {
-                for (let r = startRow; r <= endRow; r++) {
-                    for (let c = startCol; c <= endCol; c++) {
-                        const cell = ws.getCell(r, c);
-                        let currentBorder = cell.border || {};
-                        let newBorder = { ...currentBorder };
-
-                        if (r === startRow) newBorder.top = { style: 'medium', color: { argb: 'FF94A3B8' } }; 
-                        if (r === endRow) newBorder.bottom = { style: 'medium', color: { argb: 'FF94A3B8' } };
-                        if (c === startCol) newBorder.left = { style: 'medium', color: { argb: 'FF94A3B8' } }; 
-                        if (c === endCol) newBorder.right = { style: 'medium', color: { argb: 'FF94A3B8' } }; 
-
-                        cell.border = newBorder;
-                    }
-                }
-            };
-
+            // ==============================================================
+            // TRÍCH XUẤT SHEET 1: DOANH THU & TÀI CHÍNH
+            // ==============================================================
             if (selectedTypes.includes('doanhthu')) {
                 const [resKPI] = await db.query(`SELECT COUNT(DISTINCT dh.MaDH) as TongSoDonHang, IFNULL(SUM(dh.ThanhTien), 0) as TongDoanhThu, IFNULL(SUM(dh.ThanhTien - OrderImportCost.TotalImport), 0) as TongLoiNhuan FROM DonHang dh INNER JOIN (SELECT MaDH, SUM(COALESCE(GiaNhapThucTe, 0) * SoLuong) as TotalImport FROM ChiTietDonHang GROUP BY MaDH) OrderImportCost ON dh.MaDH = OrderImportCost.MaDH ${latestStatusJoin} ${whereClauseSuccess}`, valueTime);
                 const [resBieuDo] = await db.query(`SELECT DATE_FORMAT(dh.NgayLapDon, '%d/%m/%Y') as Ngay, IFNULL(SUM(dh.ThanhTien), 0) as DoanhThuNgay FROM DonHang dh ${latestStatusJoin} ${whereClauseSuccess} GROUP BY Ngay ORDER BY MAX(dh.NgayLapDon) ASC`, valueTime);
 
                 const ws1 = workbook.addWorksheet('Tổng quan & Tài chính');
-                ws1.columns = [{ key: 'A', width: 18 }, { key: 'B', width: 22 }, { key: 'C', width: 22 }, { key: 'D', width: 22 }];
-                taoHeaderBaoCao(workbook, ws1, 'Tổng quan hoạt động & Doanh thu', 'D');
+                ws1.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 25 }, { key: 'C', width: 25 }, { key: 'D', width: 22 }];
+                taoHeaderBaoCao(workbook, ws1, 'BÁO CÁO TỔNG QUAN HOẠT ĐỘNG', 'D');
 
-                ws1.getCell('A8').value = 'TỔNG ĐƠN'; ws1.getCell('A9').value = Number(resKPI[0]?.TongSoDonHang || 0);
-                ws1.getCell('C8').value = 'DOANH THU'; ws1.getCell('C9').value = Number(resKPI[0]?.TongDoanhThu || 0);
-                ws1.getCell('C9').numFmt = '#,##0" đ"';
+                ws1.mergeCells('B9:C9');
+                ws1.getCell('B9').value = 'TỔNG QUAN HIỆU SUẤT TRONG KỲ';
+                ws1.getCell('B9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                ws1.getCell('B9').alignment = { horizontal: 'center', vertical: 'middle' };
 
-                ws1.getCell('A12').value = 'DOANH THU BIẾN ĐỘNG THEO NGÀY';
-                const hRow1 = ws1.getRow(13);
-                hRow1.values = ['STT', 'Ngày', 'Doanh thu'];
+                ws1.getCell('B10').value = 'Tổng đơn hàng hoàn thành:';
+                ws1.getCell('C10').value = Number(resKPI[0]?.TongSoDonHang || 0);
+                ws1.getCell('C10').font = { bold: true, color: { argb: 'FF222532' } };
+
+                ws1.getCell('B11').value = 'Tổng doanh thu thực tế:';
+                ws1.getCell('C11').value = Number(resKPI[0]?.TongDoanhThu || 0);
+                ws1.getCell('C11').numFmt = '#,##0" đ"';
+                ws1.getCell('C11').font = { bold: true, color: { argb: COLOR_PRIMARY } };
+
+                ws1.mergeCells('A13:D13');
+                ws1.getCell('A13').value = 'BẢNG DOANH THU BIẾN ĐỘNG THEO NGÀY';
+                ws1.getCell('A13').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                ws1.getCell('A13').alignment = { horizontal: 'center', vertical: 'middle' };
+
+                const hRow1 = ws1.getRow(14);
+                hRow1.values = ['STT', 'Ngày ghi nhận', 'Doanh thu thu về', 'Ghi chú'];
                 dinhDangHeaderBang(hRow1);
 
                 resBieuDo.forEach((row, i) => {
-                    const r = ws1.addRow([i + 1, row.Ngay, Number(row.DoanhThuNgay)]);
+                    const r = ws1.getRow(15 + i); 
+                    r.values = [i + 1, row.Ngay, Number(row.DoanhThuNgay), ''];
                     dinhDangDongDuLieu(r, i, [1, 2], [3]);
                     r.getCell(3).numFmt = '#,##0" đ"';
+                    r.getCell(3).font = { bold: true, color: { argb: COLOR_PRIMARY } };
                 });
-                khoanhVungBang(ws1, 13, 13 + resBieuDo.length, 1, 3);
             }
 
+            // ==============================================================
+            // TRÍCH XUẤT SHEET 2: DANH MỤC & THƯƠNG HIỆU
+            // ==============================================================
             if (selectedTypes.includes('sanpham')) {
                 const [resDanhMuc] = await db.query(`SELECT dm.TenDM, IFNULL(SUM(ctdh.SoLuong), 0) as TongSoSP, IFNULL(SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong), 0) as TongLoiNhuan FROM DanhMuc dm INNER JOIN MoHinh mh ON mh.MaDM = dm.MaDM INNER JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh INNER JOIN ChiTietDonHang ctdh ON pl.MaPhanLoai = ctdh.MaPhanLoai INNER JOIN DonHang dh ON dh.MaDH = ctdh.MaDH ${latestStatusJoin} ${whereClauseSuccess} GROUP BY dm.MaDM, dm.TenDM ORDER BY TongSoSP DESC`, valueTime);
                 const [resThuongHieu] = await db.query(`SELECT hsx.TenHSX, IFNULL(SUM(ctdh.SoLuong), 0) as TongSoSP, IFNULL(SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong), 0) as TongLoiNhuan FROM HangSanXuat hsx INNER JOIN MoHinh mh ON mh.MaHSX = hsx.MaHSX INNER JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh INNER JOIN ChiTietDonHang ctdh ON pl.MaPhanLoai = ctdh.MaPhanLoai INNER JOIN DonHang dh ON dh.MaDH = ctdh.MaDH ${latestStatusJoin} ${whereClauseSuccess} GROUP BY hsx.MaHSX, hsx.TenHSX ORDER BY TongSoSP DESC`, valueTime);
 
                 const ws2 = workbook.addWorksheet('Danh mục & Thương hiệu');
-                ws2.columns = [{ key: 'A', width: 28 }, { key: 'B', width: 16 }, { key: 'C', width: 24 }, { key: 'D', width: 5 }, { key: 'E', width: 28 }, { key: 'F', width: 16 }, { key: 'G', width: 24 }];
-                taoHeaderBaoCao(workbook, ws2, 'Thống kê Danh mục & Thương hiệu', 'G');
+                ws2.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 28 }, { key: 'C', width: 15 }, { key: 'D', width: 20 }, { key: 'E', width: 5 }, { key: 'F', width: 12 }, { key: 'G', width: 28 }, { key: 'H', width: 15 }, { key: 'I', width: 20 }];
+                taoHeaderBaoCao(workbook, ws2, 'THỐNG KÊ DANH MỤC & THƯƠNG HIỆU', 'I');
 
-                ws2.getCell('A8').value = 'CƠ CẤU THEO DANH MỤC';
-                ws2.getCell('E8').value = 'CƠ CẤU THEO HÃNG SẢN XUẤT';
-                const hRow2 = ws2.getRow(9);
-                hRow2.getCell(1).value = 'Tên Danh Mục'; hRow2.getCell(2).value = 'SL Bán'; hRow2.getCell(3).value = 'Lợi Nhuận';
-                hRow2.getCell(5).value = 'Thương Hiệu'; hRow2.getCell(6).value = 'SL Bán'; hRow2.getCell(7).value = 'Lợi Nhuận';
+                ws2.mergeCells('A9:D9');
+                ws2.getCell('A9').value = 'CƠ CẤU THEO DANH MỤC';
+                ws2.getCell('A9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                
+                ws2.mergeCells('F9:I9');
+                ws2.getCell('F9').value = 'CƠ CẤU THEO HÃNG SẢN XUẤT';
+                ws2.getCell('F9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+
+                const hRow2 = ws2.getRow(10);
+                hRow2.values = ['STT', 'Tên Danh Mục', 'SL Bán', 'Lợi Nhuận', '', 'STT', 'Thương Hiệu', 'SL Bán', 'Lợi Nhuận'];
                 dinhDangHeaderBang(hRow2);
+                
+                // Khôi phục lại khoảng trắng chia cách 2 bảng (do lệnh loại bỏ if bên trên)
+                hRow2.getCell(5).fill = { type: 'pattern', pattern: 'none' };
+                hRow2.getCell(5).border = {};
 
                 const maxLen = Math.max(resDanhMuc.length, resThuongHieu.length);
                 for (let i = 0; i < maxLen; i++) {
                     const dm = resDanhMuc[i];
                     const h = resThuongHieu[i];
-                    const r = ws2.getRow(10 + i);
-                    r.getCell(1).value = dm ? dm.TenDM : ''; r.getCell(2).value = dm ? Number(dm.TongSoSP) : null; r.getCell(3).value = dm ? Number(dm.TongLoiNhuan) : null;
-                    r.getCell(5).value = h ? h.TenHSX : ''; r.getCell(6).value = h ? Number(h.TongSoSP) : null; r.getCell(7).value = h ? Number(h.TongLoiNhuan) : null;
-                    dinhDangDongDuLieu(r, i, [2, 6], [3, 7]);
-                    if(dm) { r.getCell(2).numFmt = '#,##0'; r.getCell(3).numFmt = '#,##0" đ"'; }
-                    if(h) { r.getCell(6).numFmt = '#,##0'; r.getCell(7).numFmt = '#,##0" đ"'; }
+                    const r = ws2.getRow(11 + i);
+                    r.values = [
+                        dm ? i + 1 : '', dm ? dm.TenDM : '', dm ? Number(dm.TongSoSP) : '', dm ? Number(dm.TongLoiNhuan) : '', 
+                        '', // Khoảng cách
+                        h ? i + 1 : '', h ? h.TenHSX : '', h ? Number(h.TongSoSP) : '', h ? Number(h.TongLoiNhuan) : ''
+                    ];
+                    
+                    dinhDangDongDuLieu(r, i, [1, 3, 6, 8], [4, 9]);
+                    if(dm) { r.getCell(3).numFmt = '#,##0'; r.getCell(4).numFmt = '#,##0" đ"'; }
+                    if(h) { r.getCell(8).numFmt = '#,##0'; r.getCell(9).numFmt = '#,##0" đ"'; }
+                    
+                    r.getCell(5).fill = { type: 'pattern', pattern: 'none' };
+                    r.getCell(5).border = {};
                 }
-                const endRowSheet2 = 9 + maxLen;
-                khoanhVungBang(ws2, 9, endRowSheet2, 1, 3); 
-                khoanhVungBang(ws2, 9, endRowSheet2, 5, 7); 
             }
 
+            // ==============================================================
+            // TRÍCH XUẤT SHEET 3: MARKETING
+            // ==============================================================
             if (selectedTypes.includes('marketing')) {
                 const [resMaGiamGia] = await db.query(`SELECT ma.TenMaGiamGia, COUNT(DISTINCT log.MaDH) as TongDonHang, IFNULL(SUM(log.SoTienDaGiam), 0) as TongTienDaGiam, IFNULL(SUM(LoiNhuan.LoiNhuanGoc) - SUM(log.SoTienDaGiam), 0) as LoiNhuanRong FROM MaGiamGia ma INNER JOIN LogSuDungMaGiamGia log ON ma.MaGG = log.MaGG INNER JOIN DonHang dh ON dh.MaDH = log.MaDH ${latestStatusJoin} INNER JOIN (SELECT ctdh.MaDH, SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong) as LoiNhuanGoc FROM ChiTietDonHang ctdh GROUP BY ctdh.MaDH) as LoiNhuan ON log.MaDH = LoiNhuan.MaDH ${whereClauseSuccess} GROUP BY ma.MaGG, ma.TenMaGiamGia ORDER BY TongDonHang DESC`, valueTime);
+                
                 const ws3 = workbook.addWorksheet('Hiệu quả Marketing');
-                ws3.columns = [{ key: 'A', width: 8 }, { key: 'B', width: 32 }, { key: 'C', width: 16 }, { key: 'D', width: 24 }, { key: 'E', width: 24 }];
-                taoHeaderBaoCao(workbook, ws3, 'Hiệu quả Marketing', 'E');
-                const hRow3 = ws3.getRow(9);
-                hRow3.values = ['STT', 'Mã giảm giá', 'Lượt dùng', 'Chi phí giảm giá', 'Lợi nhuận ròng'];
+                ws3.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 35 }, { key: 'C', width: 16 }, { key: 'D', width: 24 }, { key: 'E', width: 24 }];
+                taoHeaderBaoCao(workbook, ws3, 'BÁO CÁO HIỆU QUẢ MARKETING', 'E');
+
+                ws3.mergeCells('A9:E9');
+                ws3.getCell('A9').value = 'BẢNG CHI TIẾT SỬ DỤNG MÃ GIẢM GIÁ';
+                ws3.getCell('A9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                ws3.getCell('A9').alignment = { horizontal: 'center', vertical: 'middle' };
+
+                const hRow3 = ws3.getRow(10);
+                hRow3.values = ['STT', 'Tên mã giảm giá', 'Lượt sử dụng', 'Chi phí giảm giá', 'Lợi nhuận ròng'];
                 dinhDangHeaderBang(hRow3);
+                
                 resMaGiamGia.forEach((row, i) => {
-                    const r = ws3.addRow([i + 1, row.TenMaGiamGia, Number(row.TongDonHang), Number(row.TongTienDaGiam), Number(row.LoiNhuanRong)]);
+                    const r = ws3.getRow(11 + i);
+                    r.values = [i + 1, row.TenMaGiamGia, Number(row.TongDonHang), Number(row.TongTienDaGiam), Number(row.LoiNhuanRong)];
                     dinhDangDongDuLieu(r, i, [1, 3], [4, 5]);
-                    r.getCell(4).numFmt = '#,##0" đ"'; r.getCell(5).numFmt = '#,##0" đ"';
+                    r.getCell(4).numFmt = '#,##0" đ"'; 
+                    r.getCell(5).numFmt = '#,##0" đ"';
+                    r.getCell(5).font = { bold: true, color: { argb: 'FF10B981' } }; 
                 });
-                khoanhVungBang(ws3, 9, 9 + resMaGiamGia.length, 1, 5);
             }
 
+            // ==============================================================
+            // TRÍCH XUẤT SHEET 4: CẢNH BÁO TỒN KHO
+            // ==============================================================
             if (selectedTypes.includes('tonkho')) {
                 const [resTonKho] = await db.query(`SELECT mh.TenMH, pl.ChiTietPhanLoai, pl.SoLuong FROM PhanLoai pl INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh WHERE pl.SoLuong <= 5 ORDER BY pl.SoLuong ASC`);
+                
                 const ws4 = workbook.addWorksheet('Cảnh báo Tồn kho');
-                ws4.columns = [{ key: 'A', width: 10 }, { key: 'B', width: 40 }, { key: 'C', width: 20 }, { key: 'D', width: 15 }];
-                taoHeaderBaoCao(workbook, ws4, 'Cảnh báo Tồn kho sắp hết', 'D');
-                const hRow4 = ws4.getRow(9);
-                hRow4.values = ['STT', 'Tên Mô Hình', 'Phân Loại', 'Số Lượng Tồn'];
+                ws4.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 45 }, { key: 'C', width: 25 }, { key: 'D', width: 20 }];
+                taoHeaderBaoCao(workbook, ws4, 'CẢNH BÁO VẬN HÀNH KHO BÃI', 'D');
+
+                ws4.mergeCells('A9:D9');
+                ws4.getCell('A9').value = 'DANH SÁCH MÔ HÌNH TỒN KHO THẤP (<= 5)';
+                ws4.getCell('A9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                ws4.getCell('A9').alignment = { horizontal: 'center', vertical: 'middle' };
+
+                const hRow4 = ws4.getRow(10);
+                hRow4.values = ['STT', 'Tên Mô Hình', 'Chi tiết Phân Loại', 'Số Lượng Tồn'];
                 dinhDangHeaderBang(hRow4);
+                
                 resTonKho.forEach((row, i) => {
-                    const r = ws4.addRow([i + 1, row.TenMH, row.ChiTietPhanLoai, Number(row.SoLuong)]);
+                    const r = ws4.getRow(11 + i);
+                    r.values = [i + 1, row.TenMH, row.ChiTietPhanLoai, Number(row.SoLuong)];
                     dinhDangDongDuLieu(r, i, [1, 4], []);
+                    
                     if(row.SoLuong === 0) r.getCell(4).font = { color: { argb: 'FFEF4444' }, bold: true };
                 });
-                khoanhVungBang(ws4, 9, 9 + resTonKho.length, 1, 4);
             }
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
