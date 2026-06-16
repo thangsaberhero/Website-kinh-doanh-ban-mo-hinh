@@ -239,7 +239,8 @@
                                 :class="order.statusId < 3 ? 'text-rose-500 animate-pulse' : 'text-slate-400'">
                             edit_note
                           </span>
-                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-64 max-h-48 overflow-y-auto custom-scrollbar bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-3 rounded-xl opacity-0 group-hover/note:opacity-100 transition-opacity z-50 shadow-xl border border-slate-700 pointer-events-auto">
+                          
+                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-72 max-h-48 overflow-y-auto custom-scrollbar bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-3 rounded-xl opacity-0 group-hover/note:opacity-100 transition-opacity z-50 shadow-xl border border-slate-700 pointer-events-auto whitespace-normal break-words">
                             
                             <p class="font-bold uppercase tracking-widest mb-2 text-[9px] sticky top-0 bg-slate-800/95 pb-1.5 border-b border-slate-600/50 z-10" :class="order.statusId < 3 ? 'text-rose-400' : 'text-slate-400'">
                                 Lịch sử Ghi chú:
