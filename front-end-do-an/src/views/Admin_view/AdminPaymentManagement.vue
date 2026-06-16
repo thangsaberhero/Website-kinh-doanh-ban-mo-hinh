@@ -214,8 +214,12 @@
                   <td class="px-6 py-4">
                     <div class="flex flex-col items-start gap-1">
                       <span class="text-xs font-bold text-slate-700">{{ item.LoaiGiaoDich }}</span>
+                      
                       <span v-if="item.TrangThaiGiaoDich === 'Thành công'" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-sm">
                         Thành công
+                      </span>
+                      <span v-else-if="item.TrangThaiGiaoDich === 'Chờ thanh toán'" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-amber-50 text-amber-700 border border-amber-100 shadow-sm">
+                        Chờ thanh toán
                       </span>
                       <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-rose-50 text-rose-700 border border-rose-100 shadow-sm">
                         Thất bại

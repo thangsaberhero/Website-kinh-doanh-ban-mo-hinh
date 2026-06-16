@@ -1123,9 +1123,9 @@ const donhang_admin = {
                     // Insert dòng thanh toán tương đương cho đơn mới
                     if (tienTachDi > 0) {
                         await connection.query(`
-                            INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich)
+                            INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac)
                             VALUES (?, ?, ?, ?, ?, ?)
-                        `, [tx.MaPT, maDHMoi, tx.NgayThanhToan, tienTachDi, `(Phân bổ tách đơn) ${tx.LoaiGiaoDich}`, tx.TrangThaiGiaoDich]);
+                        `, [tx.MaPT, maDHMoi, tx.NgayThanhToan, tienTachDi, `(Phân bổ tách đơn) ${tx.LoaiGiaoDich}`, tx.TrangThaiGiaoDich, tx.MaGiaoDichCuaDoiTac]);
                     }
                 }
             }
