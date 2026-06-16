@@ -8,7 +8,7 @@
           showMobileFilter ? 'translate-x-0' : '-translate-x-full'
         ]"
       >
-        <button @click="showMobileFilter = false" class="lg:hidden absolute top-4 right-4 w-8 h-8 bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center text-white">
+        <button @click="showMobileFilter = false" class="lg:hidden absolute top-4 right-4 w-8 h-8 bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center text-on-surface">
           <span class="material-symbols-outlined text-sm">close</span>
         </button>
         <div class="p-8">
@@ -16,23 +16,23 @@
             <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
               <span class="material-symbols-outlined text-on-primary-fixed text-lg">filter_list</span>
             </div>
-            <h2 class="text-xl font-headline font-bold uppercase tracking-widest text-white">Filters</h2>
+            <h2 class="text-xl font-headline font-bold uppercase tracking-widest text-on-surface">Filters</h2>
           </div>
           
           <div class="mb-10">
-            <div class="flex items-center gap-2 mb-4 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+            <div class="flex items-center gap-2 mb-4 text-outline dark:text-gray-400 uppercase text-[10px] font-bold tracking-widest">
               <span class="material-symbols-outlined text-sm">category</span>
               <span>Danh mục</span>
             </div>
             <div class="space-y-3">
               <div @click="goToCategory('')" class="flex items-center justify-between group cursor-pointer py-1">
-                <span :class="['text-sm transition-colors', !categoryId ? 'text-primary font-bold' : 'group-hover:text-white text-gray-300 font-medium']">Tất cả sản phẩm</span>
+                <span :class="['text-sm transition-colors', !categoryId ? 'text-primary font-bold' : 'group-hover:text-primary dark:group-hover:text-white text-on-surface-variant dark:text-gray-300 font-medium']">Tất cả sản phẩm</span>
                 <input :checked="!categoryId" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none" type="checkbox"/>
               </div>
 
               <div v-for="cat in categories" :key="cat.MaDM" class="flex flex-col">
                 <div @click="goToCategory(cat.MaDM)" class="flex items-center justify-between group cursor-pointer py-2">
-                  <span :class="['text-sm transition-colors', categoryId == cat.MaDM ? 'text-primary font-bold' : 'group-hover:text-white text-gray-300 font-medium']">{{ cat.TenDM }}</span>
+                  <span :class="['text-sm transition-colors', categoryId == cat.MaDM ? 'text-primary font-bold' : 'group-hover:text-primary dark:group-hover:text-white text-on-surface-variant dark:text-gray-300 font-medium']">{{ cat.TenDM }}</span>
                   <input :checked="categoryId == cat.MaDM && !subCategoryId" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none" type="checkbox"/>
                 </div>
 
@@ -43,7 +43,7 @@
                     @click="selectSubCategory(cat.MaDM, sub.MaChiTietDM)"
                     class="flex items-center justify-between group cursor-pointer"
                   >
-                    <span :class="['text-[13px] transition-colors', subCategoryId == sub.MaChiTietDM ? 'text-primary font-bold' : 'group-hover:text-white text-gray-400']">
+                    <span :class="['text-[13px] transition-colors', subCategoryId == sub.MaChiTietDM ? 'text-primary font-bold' : 'hover:text-on-surface text-outline']">
                       - {{ sub.TenChiTietDM }}
                     </span>
                     <input :checked="subCategoryId == sub.MaChiTietDM" class="rounded-sm bg-surface-container-highest border-none text-primary focus:ring-offset-0 focus:ring-primary pointer-events-none w-3 h-3" type="checkbox"/>
@@ -54,7 +54,7 @@
           </div>
 
           <div class="mb-10">
-            <div class="flex items-center gap-2 mb-4 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+            <div class="flex items-center gap-2 mb-4 text-outline dark:text-gray-400 uppercase text-[10px] font-bold tracking-widest">
               <span class="material-symbols-outlined text-sm">payments</span>
               <span>Mức giá tối đa: {{ formatPrice(maxPrice) }}</span>
             </div>
@@ -67,7 +67,7 @@
             </div>
           </div>
           <div v-if="availableBrands.length > 0" class="mb-10">
-            <div class="flex items-center gap-2 mb-4 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+            <div class="flex items-center gap-2 mb-4 text-outline dark:text-gray-400 uppercase text-[10px] font-bold tracking-widest">
               <span class="material-symbols-outlined text-sm">stars</span>
               <span>Thương hiệu</span>
             </div>
@@ -79,7 +79,7 @@
                   v-model="selectedBrands" 
                   class="w-4 h-4 rounded border-outline-variant bg-surface text-primary focus:ring-primary focus:ring-offset-surface"
                 />
-                <span class="text-sm text-gray-300 group-hover:text-white transition-colors font-medium">{{ brand.TenHSX }}</span>
+                <span class="text-sm text-on-surface-variant dark:text-gray-300 group-hover:text-primary dark:group-hover:text-white transition-colors font-medium">{{ brand.TenHSX }}</span>
               </label>
             </div>
           </div>
@@ -91,21 +91,21 @@
       <main class="flex-1 overflow-y-auto bg-surface p-6 lg:p-12 custom-scrollbar">
         <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 class="text-3xl sm:text-4xl lg:text-6xl font-headline font-bold tracking-tight mb-2 uppercase text-white flex items-baseline gap-2 sm:gap-3 whitespace-nowrap">
+            <h1 class="text-3xl sm:text-4xl lg:text-6xl font-headline font-bold tracking-tight mb-2 uppercase text-on-surface flex items-baseline gap-2 sm:gap-3 whitespace-nowrap">
               <span class="truncate">{{ getCategoryName() }}</span>
               <span class="text-primary shrink-0">{{ getCategoryNumber() }}</span>
             </h1>
-            <p class="text-gray-400 max-w-xl font-medium">Khám phá những tạo tác tinh xảo nhất từ thế giới Anime và Mecha. Mỗi mô hình là một câu chuyện huyền thoại.</p>
+            <p class="text-on-surface-variant dark:text-gray-400 max-w-xl font-medium">Khám phá những tạo tác tinh xảo nhất từ thế giới Anime và Mecha. Mỗi mô hình là một câu chuyện huyền thoại.</p>
           </div>
           <div class="flex flex-wrap items-center gap-3 text-sm shrink-0 mt-4 md:mt-0">         
-            <button @click="showMobileFilter = true" class="lg:hidden flex items-center gap-2 bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold hover:bg-primary hover:text-black transition-colors w-full sm:w-auto justify-center">
+            <button @click="showMobileFilter = true" class="lg:hidden flex items-center gap-2 bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface font-bold hover:bg-primary hover:text-white transition-colors w-full sm:w-auto justify-center">
               <span class="material-symbols-outlined text-sm">filter_list</span>
               <span class="text-xs uppercase tracking-widest">Bộ lọc</span>
             </button>
 
             <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
               <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Hiển thị:</span>
-              <select v-model="limit" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
+              <select v-model="limit" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
                 <option value="9">9 SP</option>
                 <option value="18">18 SP</option>
                 <option value="27">27 SP</option>
@@ -114,7 +114,7 @@
             
             <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
               <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Sắp xếp:</span>
-              <select v-model="sortBy" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
+              <select v-model="sortBy" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
                 <option value="newest">Mới nhất</option>
                 <option value="price_asc">Giá Tăng</option>
                 <option value="price_desc">Giá Giảm</option>
@@ -147,10 +147,10 @@
             class="w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-all shadow-sm border"
             :class="[
               currentPage === page 
-                ? 'bg-primary text-black shadow-lg shadow-primary/20 border-primary' 
-                : 'bg-surface-container text-white border-outline-variant/30',
+                ? 'bg-primary text-white shadow-lg shadow-primary/20 border-primary' 
+                : 'bg-surface-container text-on-surface border-outline-variant/30',
               page === '...' 
-                ? 'cursor-default border-transparent hover:text-white bg-transparent shadow-none' 
+                ? 'cursor-default border-transparent hover:text-on-surface bg-transparent shadow-none' 
                 : 'hover:text-primary cursor-pointer hover:border-primary/50'
             ]"
           >
@@ -173,7 +173,7 @@
               min="1" 
               :max="totalPages"
               @keyup.enter="jumpToPage"
-              class="w-16 h-10 bg-surface-container border border-outline-variant/30 rounded-xl text-center text-white text-xs font-bold outline-none focus:border-primary transition-colors custom-scrollbar"
+              class="w-16 h-10 bg-surface-container border border-outline-variant/30 rounded-xl text-center text-on-surface text-xs font-bold outline-none focus:border-primary transition-colors custom-scrollbar"
             />
           </div>
         </div>
@@ -197,7 +197,7 @@
           </div>
           <div class="bg-surface-container p-10 rounded-2xl flex flex-col justify-center border border-outline-variant/30">
             <span class="material-symbols-outlined text-primary text-5xl mb-6">verified_user</span>
-            <h3 class="text-xl font-headline font-bold mb-2 text-white">Bảo Hành Chính Hãng</h3>
+            <h3 class="text-xl font-headline font-bold mb-2 text-on-surface dark:text-white">Bảo Hành Chính Hãng</h3>
             <p class="text-sm text-gray-400 font-medium leading-relaxed">Cam kết 100% hàng chính hãng, hỗ trợ bảo hành trọn đời cho các lỗi từ nhà sản xuất.</p>
           </div>
         </section>

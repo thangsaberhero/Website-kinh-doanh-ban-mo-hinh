@@ -5,10 +5,10 @@
       <div class="absolute inset-0 w-full h-full">
         <Transition name="fade-slide" mode="out-in">
           <div :key="currentHeroIndex" class="absolute inset-0 w-full h-full">
-            <div class="absolute inset-0 opacity-60">
+            <div class="absolute inset-0 opacity-100 dark:opacity-60">
               <img class="w-full h-full object-cover object-[60%_20%]" :alt="heroSlides[currentHeroIndex].title" :src="heroSlides[currentHeroIndex].image" fetchpriority="high"/>
-              <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
-              <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-80 lg:hidden"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/50 to-transparent dark:from-surface dark:via-surface/40"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-90 dark:opacity-80 lg:hidden"></div>
             </div>
 
             <div class="relative max-w-7xl mx-auto px-6 h-full flex flex-col justify-center items-start">
@@ -44,7 +44,7 @@
         <button 
           v-for="(slide, index) in heroSlides" :key="index"
           @click="currentHeroIndex = index"
-          :class="['h-1.5 rounded-full transition-all duration-500', currentHeroIndex === index ? 'w-10 bg-primary' : 'w-2 bg-white/30']"
+          :class="['h-1.5 rounded-full transition-all duration-500', currentHeroIndex === index ? 'w-10 bg-primary' : 'w-2 bg-outline-variant/60 dark:bg-white/30']"
         ></button>
       </div>
     </section>
@@ -134,7 +134,7 @@
                 {{ cat.MoTa && cat.MoTa !== 'Chưa có mô tả' ? cat.MoTa : 'Khám phá bộ sưu tập mô hình độc quyền, cập nhật những phiên bản giới hạn mới nhất.' }}
               </p>
               <div>
-                <span class="px-7 py-3 bg-primary text-white text-sm font-bold rounded-xl group-hover:bg-[#ff3d00] transition-colors shadow-lg shadow-primary/30 inline-flex items-center gap-2">
+                <span class="px-7 py-3 bg-[#ff8f73] text-white text-sm font-bold rounded-xl group-hover:bg-[#ff3d00] transition-colors shadow-lg shadow-[#ff8f73]/30 inline-flex items-center gap-2">
                   Xem ngay
                   <span class="material-symbols-outlined text-[18px]">arrow_right_alt</span>
                 </span>
@@ -143,7 +143,7 @@
             
             <!-- Style riêng cho Ô số 2 (Ngang) -->
             <template v-else-if="index === 1">
-              <span class="text-sm font-bold text-primary group-hover:text-white transition-colors flex items-center gap-1 drop-shadow-md w-fit">
+              <span class="text-sm font-bold text-[#ff8f73] group-hover:text-white transition-colors flex items-center gap-1 drop-shadow-md w-fit">
                 Khám phá ngay <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
               </span>
             </template>
@@ -214,16 +214,16 @@
     </section>
 
     <section class="max-w-7xl mx-auto px-6 py-24">
-      <div class="relative rounded-2xl overflow-hidden min-h-[400px] flex items-center justify-center border border-tertiary/20 shadow-2xl shadow-tertiary/5">
+      <div class="relative rounded-[2rem] overflow-hidden min-h-[400px] flex items-center justify-center border border-outline-variant/50 dark:border-tertiary/20 shadow-2xl shadow-slate-200 dark:shadow-tertiary/5">        
         <img loading="lazy" class="absolute inset-0 w-full h-full object-cover" alt="Neon background" src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80"/>
-        <div class="absolute inset-0 glass-panel bg-surface/60"></div>
+        <div class="absolute inset-0 bg-slate-900/80 dark:bg-black/60 backdrop-blur-sm dark:backdrop-blur-md"></div>
         <div class="relative z-10 flex flex-col justify-center items-center text-center p-6 md:p-12 w-full">
-          <span class="font-headline text-tertiary font-bold tracking-[0.4em] text-[10px] md:text-sm mb-4">MEMBER EXCLUSIVE</span>
-          <h2 class="font-headline text-2xl md:text-5xl font-bold mb-4 md:mb-6 text-on-surface">Special Member Rewards Program</h2>
-          <p class="text-base md:text-lg text-on-surface-variant max-w-2xl mb-10 leading-relaxed">
+          <span class="font-headline text-primary-container dark:text-tertiary font-bold tracking-[0.4em] text-[10px] md:text-sm mb-4">MEMBER EXCLUSIVE</span>
+          <h2 class="font-headline text-2xl md:text-5xl font-bold mb-4 md:mb-6 text-white drop-shadow-md">Special Member Rewards Program</h2>
+          <p class="text-base md:text-lg text-slate-200 dark:text-white/80 max-w-2xl mb-10 leading-relaxed drop-shadow-sm">
             Tích lũy điểm cho mỗi đơn hàng, nhận ưu tiên Pre-order các phiên bản cực hiếm và voucher giảm giá độc quyền dành riêng cho Collector.
           </p>
-          <button class="bg-on-surface text-surface font-bold px-10 py-4 rounded-lg hover:bg-primary hover:text-on-primary active:scale-95 transition-all shadow-xl">
+          <button @click="handleMemberJoin" class="bg-primary dark:bg-white text-white dark:text-black font-bold px-10 py-4 rounded-xl hover:bg-primary-dim dark:hover:bg-primary dark:hover:text-white active:scale-95 transition-all shadow-xl shadow-primary/30 dark:shadow-none">
             Tham gia ngay
           </button>
         </div>
@@ -466,6 +466,17 @@
       toastStore.showToast("Có lỗi mạng xảy ra khi thêm vào giỏ!", "error");
     }
   };
+
+  const handleMemberJoin = () => {
+    if (authStore.user) {
+      toastStore.showToast(
+        `Bạn đang là thành viên của ${systemStore.settings.shop_name || 'FigureCollect'}!`, "info"
+      );
+      router.push('/profile');
+    } else {
+      router.push('/register');
+    }
+  };
 </script>
 
 <style scoped>
@@ -475,6 +486,12 @@
   }
 
   .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .dark .glass-panel {
     background: rgba(28, 31, 43, 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -485,6 +502,12 @@
   }
 
   .text-gradient {
+    background: linear-gradient(45deg, #dc3300, #8626b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .dark .text-gradient {
     background: linear-gradient(45deg, #ff8f73, #e9aaff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

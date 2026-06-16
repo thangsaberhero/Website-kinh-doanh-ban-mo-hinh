@@ -20,9 +20,10 @@
 
 <script setup>
   import { RouterView, useRoute } from 'vue-router';
-  import { ref, onMounted, onUnmounted } from 'vue'; // Thêm import ref, lifecycle
+  import { ref, onMounted, onUnmounted, watch } from 'vue';
   import { useAuthStore } from '@/stores/auth';
   import { useSystemStore } from '@/stores/system';
+  import { useThemeStore } from '@/stores/theme';
 
   import TheToast from '@/components/TheToast.vue';
   import FooterFull from '@/components/FooterFull.vue';
@@ -34,7 +35,20 @@
   const route = useRoute();
   const authStore = useAuthStore();
   const systemStore = useSystemStore();
-
+  const themeStore = useThemeStore();
+  
+  watch(() => route.meta?.requiresAdmin, (isAdmin) => {
+    const html = document.documentElement;
+    if (isAdmin) {
+      html.classList.add('dark');
+    } else {
+      if (themeStore.isDark) {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+    }
+  }, { immediate: true });
   // --- LOGIC CON TRỎ CHUỘT ---
   const customCursor = ref(null);
   const cursorType = ref('is-normal'); // Trạng thái mặc định

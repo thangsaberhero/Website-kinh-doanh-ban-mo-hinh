@@ -1,20 +1,20 @@
 <template>
-  <div class="min-h-screen bg-[#0d0e12] text-white pb-24">
+  <div class="min-h-screen bg-background dark:bg-[#0d0e12] text-on-surface dark:text-white pb-24">
     <TheHeader />
 
-    <div class="relative h-[300px] md:h-[420px] bg-[#0d0e12] overflow-hidden flex items-center justify-center text-center">
+    <div class="relative h-[300px] md:h-[420px] bg-background dark:bg-[#0d0e12] overflow-hidden flex items-center justify-center text-center">
       <div class="absolute inset-0 opacity-[0.07]" style="background-image: linear-gradient(#ff6b4a 1px, transparent 1px), linear-gradient(to right, #ff6b4a 1px, transparent 1px); background-size: 40px 40px;"></div>
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,107,74,0.12)_0%,transparent_70%)]"></div>
       <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0d0e12]/50 to-[#0d0e12]"></div>
       <div class="relative z-20 px-4 isolate">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black tracking-wider text-white my-2.5 drop-shadow-[0_0_25px_rgba(255,107,74,0.4)] uppercase">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black tracking-wider text-on-surface dark:text-white my-2.5 drop-shadow-[0_0_25px_rgba(255,107,74,0.4)] uppercase">
           Truy xuất Blockchain
         </h1>
         <p class="text-sm md:text-lg text-[#ff6b4a] tracking-[4px] font-medium uppercase">
           Xác thực nguồn gốc - Bảo vệ giá trị sưu tầm
         </p>
 
-        <div class="flex justify-center gap-7 mt-5 text-xs md:text-sm text-gray-400">
+        <div class="flex justify-center gap-7 mt-5 text-xs md:text-sm text-white/70 dark:text-gray-400">
           <div><span class="text-[#ff6b4a] font-bold">Nodes:</span> 1,204</div>
           <div><span class="text-[#ff6b4a] font-bold">Status:</span> Operational</div>
           <div><span class="text-[#ff6b4a] font-bold">Network:</span> FigureChain Mainnet</div>
@@ -23,23 +23,23 @@
     </div>
 
     <div class="max-w-[1300px] mx-auto -mt-12 md:-mt-20 px-4 md:px-5 relative z-20">
-      <div class="bg-[#1c1d21]/95 border border-[#ff6b4a]/15 rounded-[24px] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)] backdrop-blur-md mb-10 max-w-[900px] mx-auto">
+      <div class="bg-surface-container dark:bg-[#1c1d21]/95 border border-outline-variant/30 dark:border-[#ff6b4a]/15 rounded-[24px] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)] backdrop-blur-md mb-10 max-w-[900px] mx-auto">
         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-2">         
-          <div class="flex items-center flex-1 bg-black/20 border border-zinc-700 focus-within:border-[#ff6b4a] focus-within:shadow-[0_0_10px_rgba(255,107,74,0.2)] rounded-xl md:rounded-full px-3 py-1 md:py-1 transition-all duration-300">
+          <div class="flex items-center flex-1 bg-black/20 border border-outline-variant/40 dark:border-zinc-700 focus-within:border-[#ff6b4a] focus-within:shadow-[0_0_10px_rgba(255,107,74,0.2)] rounded-xl md:rounded-full px-3 py-1 md:py-1 transition-all duration-300">
             <span class="text-xl ml-1">🔍</span>
             <input
               v-model="searchQuery"
               @keyup.enter="handleSearch"
               type="text"
               placeholder="Nhập mã Serial..."
-              class="w-full min-w-0 bg-transparent border-none text-white text-base outline-none px-3 py-2.5 focus:outline-none focus:ring-0"
+              class="w-full min-w-0 bg-transparent border-none text-on-surface dark:text-white text-base outline-none px-3 py-2.5 focus:outline-none focus:ring-0"
             >
           </div>
           
           <button
             @click="handleSearch"
             :disabled="isLoadingSearch"
-            class="w-full md:w-auto bg-[#ff6b4a] text-white border-none py-3.5 md:py-3.5 px-5 md:px-10 rounded-xl md:rounded-full font-extrabold cursor-pointer transition duration-300 hover:bg-[#ff8566] hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,74,0.4)] disabled:opacity-50 whitespace-nowrap"
+            class="w-full md:w-auto bg-[#ff6b4a] text-on-surface dark:text-white border-none py-3.5 md:py-3.5 px-5 md:px-10 rounded-xl md:rounded-full font-extrabold cursor-pointer transition duration-300 hover:bg-[#ff8566] hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,74,0.4)] disabled:opacity-50 whitespace-nowrap"
           >
             {{ isLoadingSearch ? 'Đang tìm...' : 'TRUY XUẤT' }}
           </button>
@@ -50,47 +50,47 @@
       <div v-if="!productData && !isLoadingSearch" class="max-w-[1000px] mx-auto transition-all">
         <div>
           <div class="flex items-center gap-4 mb-8">
-            <span class="text-4xl font-black text-[#ff6b4a]/20 italic">01</span>
+            <span class="text-4xl font-black text-primary italic">01</span>
             <h3 class="text-xl font-bold">Cách thức hoạt động</h3>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div class="bg-white/[0.02] border border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
+            <div class="bg-white/[0.02] border border-outline-variant/40 dark:border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
               <div class="text-[#ff6b4a] text-xs font-black mb-2 tracking-widest">STEP 1</div>
               <h4 class="text-lg font-bold mb-1">Nhập mã Serial</h4>
-              <p class="text-gray-400 text-sm leading-relaxed">Mã được in trên thẻ chứng thực đi kèm hoặc dưới đế của mô hình Figure.</p>
+              <p class="text-on-surface-variant dark:text-gray-400 text-sm leading-relaxed">Mã được in trên thẻ chứng thực đi kèm hoặc dưới đế của mô hình Figure.</p>
             </div>
-            <div class="bg-white/[0.02] border border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
+            <div class="bg-white/[0.02] border border-outline-variant/40 dark:border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
               <div class="text-[#ff6b4a] text-xs font-black mb-2 tracking-widest">STEP 2</div>
               <h4 class="text-lg font-bold mb-1">Quét Blockchain</h4>
-              <p class="text-gray-400 text-sm leading-relaxed">Hệ thống sẽ đối chiếu mã định danh với sổ cái phi tập trung thời gian thực.</p>
+              <p class="text-on-surface-variant dark:text-gray-400 text-sm leading-relaxed">Hệ thống sẽ đối chiếu mã định danh với sổ cái phi tập trung thời gian thực.</p>
             </div>
-            <div class="bg-white/[0.02] border border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
+            <div class="bg-white/[0.02] border border-outline-variant/40 dark:border-zinc-800 p-6 rounded-2xl transition duration-300 hover:border-[#ff6b4a] hover:-translate-y-1">
               <div class="text-[#ff6b4a] text-xs font-black mb-2 tracking-widest">STEP 3</div>
               <h4 class="text-lg font-bold mb-1">Xác minh kết quả</h4>
-              <p class="text-gray-400 text-sm leading-relaxed">Nhận đầy đủ thông tin về ngày sản xuất, chủ sở hữu và lịch sử vận chuyển.</p>
+              <p class="text-on-surface-variant dark:text-gray-400 text-sm leading-relaxed">Nhận đầy đủ thông tin về ngày sản xuất, chủ sở hữu và lịch sử vận chuyển.</p>
             </div>
           </div>
         </div>
 
         <div class="mt-16">
           <div class="flex items-center gap-4 mb-8">
-            <span class="text-4xl font-black text-[#ff6b4a]/20 italic">02</span>
+            <span class="text-4xl font-black text-primary italic">02</span>
             <h3 class="text-xl font-bold">Bảo mật & Cốt lõi công nghệ</h3>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div class="group flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#ff6b4a]/40 hover:shadow-[0_10px_25px_rgba(255,107,74,0.12)] hover:bg-[#ff6b4a]/[0.02]">
               <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#ff6b4a]/20">🛡️</div>
               <div>
-                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg transition-colors duration-300 group-hover:text-white">Dữ liệu Immutable (Không thể thay đổi)</h4>
-                <p class="text-gray-400 text-sm leading-relaxed">Mọi thông tin một khi đã được ghi vào mạng lưới Blockchain sẽ tồn tại vĩnh viễn. Không một cá nhân hay tổ chức nào có thể tự ý can thiệp hay sửa đổi.</p>
+                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg transition-colors duration-300 group-hover:text-on-surface dark:group-hover:text-white">Dữ liệu Immutable (Không thể thay đổi)</h4>
+                <p class="text-on-surface-variant dark:text-gray-400 text-sm leading-relaxed">Mọi thông tin một khi đã được ghi vào mạng lưới Blockchain sẽ tồn tại vĩnh viễn. Không một cá nhân hay tổ chức nào có thể tự ý can thiệp hay sửa đổi.</p>
               </div>
             </div>
 
             <div class="group flex items-start gap-5 bg-gradient-to-br from-[#ff6b4a]/5 to-black/20 p-7 rounded-2xl border border-[#ff6b4a]/20 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#ff6b4a]/40 hover:shadow-[0_10px_25px_rgba(255,107,74,0.12)] hover:bg-[#ff6b4a]/[0.02]">
               <div class="text-4xl bg-[#ff6b4a]/10 p-4 rounded-2xl shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#ff6b4a]/20">💎</div>
               <div>
-                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg transition-colors duration-300 group-hover:text-white">Định danh độc bản (Digital Twin)</h4>
-                <p class="text-gray-400 text-sm leading-relaxed">Mỗi mô hình vật lý được liên kết với một chữ ký số duy nhất trên Smart Contract, loại bỏ hoàn toàn rủi ro hàng giả trên thị trường sưu tầm.</p>
+                <h4 class="text-[#ff6b4a] font-bold mb-2 text-lg transition-colors duration-300 group-hover:text-on-surface dark:group-hover:text-white">Định danh độc bản (Digital Twin)</h4>
+                <p class="text-on-surface-variant dark:text-gray-400 text-sm leading-relaxed">Mỗi mô hình vật lý được liên kết với một chữ ký số duy nhất trên Smart Contract, loại bỏ hoàn toàn rủi ro hàng giả trên thị trường sưu tầm.</p>
               </div>
             </div>
           </div>
@@ -99,12 +99,12 @@
 
       <transition name="fade">
         <div v-if="productData" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1.5fr_1.5fr] gap-6 mt-5">
-          <div class="bg-[#15161a] border border-[#2a2b30] rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1">
-            <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
-              <h3 class="text-base font-bold text-white">📦 Thông tin sản phẩm</h3>
+          <div class="bg-surface-container-high dark:bg-[#15161a] border border-outline-variant/50 dark:border-[#2a2b30] rounded-2xl p-6 flex flex-col md:col-span-2 lg:col-span-1">
+            <div class="border-b border-dashed border-outline-variant/40 dark:border-zinc-800 pb-4 mb-5">
+              <h3 class="text-base font-bold text-on-surface dark:text-white">📦 Thông tin sản phẩm</h3>
             </div>
             <div class="flex flex-col gap-4 items-center text-center">
-              <div class="w-[180px] h-[180px] mb-3 flex items-center justify-center bg-[#1c1d21] rounded-2xl overflow-hidden border border-[#ff6b4a]/30">
+              <div class="w-[180px] h-[180px] mb-3 flex items-center justify-center bg-surface-container dark:bg-[#1c1d21] rounded-2xl overflow-hidden border border-[#ff6b4a]/30">
                 <img
                   v-if="productData.image"
                   :src="(productData.image.startsWith('http')) ? productData.image : `${API_BASE_URL}/Images_product/${productData.image}`"
@@ -113,18 +113,18 @@
                 >
                 <div v-else class="text-6xl">🤖</div>
               </div>
-              <h4 class="text-xl font-bold text-white uppercase tracking-wide">{{ productData.name }}</h4>
-              <p class="text-gray-400 text-sm -mt-2">{{ productData.manufacturer }}</p>
+              <h4 class="text-xl font-bold text-on-surface dark:text-white uppercase tracking-wide">{{ productData.name }}</h4>
+              <p class="text-on-surface-variant dark:text-gray-400 text-sm -mt-2">{{ productData.manufacturer }}</p>
 
               <div class="w-full text-left mt-3">
-                <label class="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Mã Serial (Định danh)</label>
-                <div class="bg-[#0d0e12] p-2.5 px-4 rounded-lg border border-zinc-800 font-mono break-all text-[#ff6b4a] font-bold text-lg text-center">
+                <label class="text-xs text-outline dark:text-zinc-500 uppercase tracking-wider mb-1 block">Mã Serial (Định danh)</label>
+                <div class="bg-background dark:bg-[#0d0e12] p-2.5 px-4 rounded-lg border border-outline-variant/40 dark:border-zinc-800 font-mono break-all text-[#ff6b4a] font-bold text-lg text-center">
                   {{ productData.serialNumber }}
                 </div>
               </div>
 
               <div class="w-full text-left">
-                <label class="text-xs text-zinc-500 uppercase tracking-wider mb-1 block">Trạng thái hiện tại</label>
+                <label class="text-xs text-outline dark:text-zinc-500 uppercase tracking-wider mb-1 block">Trạng thái hiện tại</label>
                 <div class="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-full font-bold text-sm w-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                   <span class="w-2 h-2 bg-current rounded-full animate-pulse"></span>
                   {{ productData.history?.length ? productData.history[productData.history.length-1].status : 'Đã xác thực' }}
@@ -133,9 +133,9 @@
             </div>
           </div>
 
-          <div class="bg-[#15161a] border border-[#2a2b30] rounded-2xl p-6 flex flex-col">
-            <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
-              <h3 class="text-base font-bold text-white">✈️ Hành Trình Blockchain</h3>
+          <div class="bg-surface-container-high dark:bg-[#15161a] border border-outline-variant/50 dark:border-[#2a2b30] rounded-2xl p-6 flex flex-col">
+            <div class="border-b border-dashed border-outline-variant/40 dark:border-zinc-800 pb-4 mb-5">
+              <h3 class="text-base font-bold text-on-surface dark:text-white">✈️ Hành Trình Blockchain</h3>
             </div>
             <div class="flex-1 overflow-y-auto pr-1 max-h-[500px]">
               <div v-if="productData.history && productData.history.length > 0" class="relative">
@@ -147,42 +147,42 @@
                     :class="index === productData.history.length - 1 ? 'bg-[#ff6b4a] shadow-[0_0_10px_#ff6b4a]' : 'bg-zinc-600'"
                   ></div>
 
-                  <div class="flex-1 bg-[#1c1d21] p-4 rounded-xl border border-[#2a2b30]">
-                    <h4 class="text-base font-bold text-white mb-1">{{ record.status }}</h4>
-                    <div class="flex flex-col gap-1 text-xs text-gray-400 mb-2.5">
+                  <div class="flex-1 bg-surface-container dark:bg-[#1c1d21] p-4 rounded-xl border border-outline-variant/50 dark:border-[#2a2b30]">
+                    <h4 class="text-base font-bold text-on-surface dark:text-white mb-1">{{ record.status }}</h4>
+                    <div class="flex flex-col gap-1 text-xs text-on-surface-variant dark:text-gray-400 mb-2.5">
                       <span class="text-[#ff6b4a]">🕒 {{ formatDate(record.timestamp) }}</span>
                       <span>📍 {{ record.location }}</span>
                     </div>
-                    <div class="text-[11px] bg-[#0d0e12] py-1.5 px-2.5 rounded-md text-zinc-500 font-mono">
+                    <div class="text-[11px] bg-background dark:bg-[#0d0e12] py-1.5 px-2.5 rounded-md text-outline dark:text-zinc-500 font-mono">
                       TX Wallet: <code>{{ formatAddress(record.updater) }}</code>
                     </div>
                   </div>
                 </div>
               </div>
               <div v-else class="flex flex-col items-center justify-center text-center py-16 px-4">
-                <div class="w-16 h-16 bg-[#1c1d21] border border-zinc-800 rounded-full flex items-center justify-center mb-5 shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+                <div class="w-16 h-16 bg-surface-container dark:bg-[#1c1d21] border border-outline-variant/40 dark:border-zinc-800 rounded-full flex items-center justify-center mb-5 shadow-[0_0_15px_rgba(0,0,0,0.3)]">
                   <span class="text-2xl opacity-60">⏳</span>
                 </div>
                 <h4 class="text-gray-300 font-bold text-base mb-1">Chưa có dữ liệu hành trình</h4>
-                <p class="text-zinc-600 text-sm mt-1">Thông tin sẽ được ghi nhận lên mạng lưới Blockchain ngay khi sản phẩm bắt đầu di chuyển.</p>
+                <p class="text-outline dark:text-zinc-600 text-sm mt-1">Thông tin sẽ được ghi nhận lên mạng lưới Blockchain ngay khi sản phẩm bắt đầu di chuyển.</p>
               </div>
             </div>
           </div>
 
-          <div class="bg-[#15161a] border border-[#2a2b30] rounded-2xl p-6 flex flex-col">
-            <div class="border-b border-dashed border-zinc-800 pb-4 mb-5">
-              <h3 class="text-base font-bold text-white">🗺️ Bản Đồ Vị Trí</h3>
+          <div class="bg-surface-container-high dark:bg-[#15161a] border border-outline-variant/50 dark:border-[#2a2b30] rounded-2xl p-6 flex flex-col">
+            <div class="border-b border-dashed border-outline-variant/40 dark:border-zinc-800 pb-4 mb-5">
+              <h3 class="text-base font-bold text-on-surface dark:text-white">🗺️ Bản Đồ Vị Trí</h3>
             </div>
-            <div class="relative w-full h-full flex-1 min-h-[250px] md:min-h-[350px] flex items-center justify-center rounded-xl overflow-hidden bg-[#1c1d21] border border-[#2a2b30]/50">
+            <div class="relative w-full h-full flex-1 min-h-[250px] md:min-h-[350px] flex items-center justify-center rounded-xl overflow-hidden bg-surface-container dark:bg-[#1c1d21] border border-outline-variant/50 dark:border-[#2a2b30]/50">
               <div v-if="productData.history && productData.history.length > 0" class="absolute top-4 right-4 z-30">
                 <div class="bg-[#ff6b4a]/15 border border-[#ff6b4a]/40 text-[#ff6b4a] py-1.5 px-3 rounded-full text-xs font-bold flex items-center gap-2 backdrop-blur-sm shadow-[0_0_10px_rgba(255,107,74,0.2)]">
                   <span class="w-2 h-2 bg-[#ff6b4a] rounded-full animate-ping"></span> LIVE TRACKING
                 </div>
               </div>
-              <div v-if="!productData.history || productData.history.length === 0" class="absolute inset-0 flex flex-col items-center justify-center z-20 bg-[#15161a]">
+              <div v-if="!productData.history || productData.history.length === 0" class="absolute inset-0 flex flex-col items-center justify-center z-20 bg-surface-container-high dark:bg-[#15161a]">
                 <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>            
                 <div class="text-5xl mb-4 opacity-20 grayscale">🗺️</div>
-                <p class="text-zinc-500 text-sm font-medium z-10">Bản đồ sẽ hiển thị khi có tọa độ vị trí</p>
+                <p class="text-outline dark:text-zinc-500 text-sm font-medium z-10">Bản đồ sẽ hiển thị khi có tọa độ vị trí</p>
               </div>
               <div id="real-map" 
                   class="absolute inset-0 w-full h-full z-10 transition-opacity duration-500"
@@ -193,30 +193,30 @@
         </div>
       </transition>
 
-      <div v-if="isAdmin" class="mt-16 border-t border-zinc-800 pt-10 max-w-[1000px] mx-auto">
+      <div v-if="isAdmin" class="mt-16 border-t border-outline-variant/40 dark:border-zinc-800 pt-10 max-w-[1000px] mx-auto">
         <div class="flex items-center gap-4 mb-8">
           <span class="text-2xl">🛠️</span>
           <h2 class="text-2xl font-bold">Bảng Điều Khiển Admin</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div class="bg-[#1c1d21] p-6 rounded-2xl border border-dashed border-zinc-700">
-            <h3 class="text-base font-bold mb-4 text-gray-200">1. Khởi tạo sản phẩm (Mint NFT)</h3>
+          <div class="bg-surface-container dark:bg-[#1c1d21] p-6 rounded-2xl border border-dashed border-outline-variant/40 dark:border-zinc-700">
+            <h3 class="text-base font-bold mb-4 text-on-surface dark:text-gray-200">1. Khởi tạo sản phẩm (Mint NFT)</h3>
             <div class="space-y-3">
-              <input v-model="mintForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
-              <input v-model="mintForm.manufacturer" type="text" placeholder="Nhà sản xuất..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
-              <button @click="handleMint" :disabled="isLoadingMint" class="w-full p-3 rounded-lg font-bold cursor-pointer border-none bg-[#ff6b4a] text-white hover:bg-[#ff8566] transition-colors disabled:opacity-50">
+              <input v-model="mintForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-background dark:bg-[#0d0e12] border border-outline-variant/40 dark:border-zinc-800 rounded-lg text-on-surface dark:text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="mintForm.manufacturer" type="text" placeholder="Nhà sản xuất..." class="w-full p-3 bg-background dark:bg-[#0d0e12] border border-outline-variant/40 dark:border-zinc-800 rounded-lg text-on-surface dark:text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <button @click="handleMint" :disabled="isLoadingMint" class="w-full p-3 rounded-lg font-bold cursor-pointer border-none bg-[#ff6b4a] text-on-surface dark:text-white hover:bg-[#ff8566] transition-colors disabled:opacity-50">
                 {{ isLoadingMint ? 'Đang ghi Blockchain...' : 'KÍCH HOẠT (MINT)' }}
               </button>
             </div>
           </div>
 
-          <div class="bg-[#1c1d21] p-6 rounded-2xl border border-dashed border-zinc-700">
-            <h3 class="text-base font-bold mb-4 text-gray-200">2. Cập nhật hành trình</h3>
+          <div class="bg-surface-container dark:bg-[#1c1d21] p-6 rounded-2xl border border-dashed border-outline-variant/40 dark:border-zinc-700">
+            <h3 class="text-base font-bold mb-4 text-on-surface dark:text-gray-200">2. Cập nhật hành trình</h3>
             <div class="space-y-3">
-              <input v-model="updateForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
-              <input v-model="updateForm.newStatus" type="text" placeholder="Trạng thái (VD: Đang giao)..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
-              <input v-model="updateForm.location" type="text" placeholder="Vị trí (VD: Kho Hải Phòng)..." class="w-full p-3 bg-[#0d0e12] border border-zinc-800 rounded-lg text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
-              <button @click="handleUpdate" :disabled="isLoadingUpdate" class="w-full p-3 rounded-lg font-bold cursor-pointer border-none bg-blue-600 text-white hover:bg-blue-500 transition-colors disabled:opacity-50">
+              <input v-model="updateForm.serialNumber" type="text" placeholder="Mã Serial..." class="w-full p-3 bg-background dark:bg-[#0d0e12] border border-outline-variant/40 dark:border-zinc-800 rounded-lg text-on-surface dark:text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="updateForm.newStatus" type="text" placeholder="Trạng thái (VD: Đang giao)..." class="w-full p-3 bg-background dark:bg-[#0d0e12] border border-outline-variant/40 dark:border-zinc-800 rounded-lg text-on-surface dark:text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <input v-model="updateForm.location" type="text" placeholder="Vị trí (VD: Kho Hải Phòng)..." class="w-full p-3 bg-background dark:bg-[#0d0e12] border border-outline-variant/40 dark:border-zinc-800 rounded-lg text-on-surface dark:text-white text-base md:text-sm outline-none focus:border-[#ff6b4a] transition-colors">
+              <button @click="handleUpdate" :disabled="isLoadingUpdate" class="w-full p-3 rounded-lg font-bold cursor-pointer border-none bg-blue-600 text-on-surface dark:text-white hover:bg-blue-500 transition-colors disabled:opacity-50">
                 {{ isLoadingUpdate ? 'Đang cập nhật...' : 'CẬP NHẬT TRẠNG THÁI' }}
               </button>
             </div>

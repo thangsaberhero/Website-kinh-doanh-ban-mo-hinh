@@ -4,7 +4,7 @@
 
     <main class="flex-1 max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12 w-full">
       <div class="mb-12">
-        <h1 class="text-3xl sm:text-5xl md:text-6xl font-headline font-bold tracking-tighter uppercase text-white mb-2">
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-headline font-bold tracking-tighter uppercase text-on-surface mb-2">
           Kho Báu <span class="text-primary italic">Đang Chờ</span>
         </h1>
         <p class="text-on-surface-variant font-medium tracking-wide">
@@ -24,7 +24,7 @@
             </span>
             <div class="flex items-center gap-3">
               <span class="text-xs text-outline font-bold uppercase tracking-widest">Sắp xếp:</span>
-              <select v-model="sortBy" class="bg-background text-white border border-outline-variant/30 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary cursor-pointer">
+              <select v-model="sortBy" class="bg-surface-container text-on-surface border border-outline-variant/30 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary cursor-pointer">
                 <option value="default">Vừa thêm gần đây</option>
                 <option value="price_asc">Giá khuyến mãi tăng dần</option>
                 <option value="price_desc">Giá khuyến mãi giảm dần</option>
@@ -52,7 +52,7 @@
                     <div class="pr-6 md:pr-0"> <span class="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-full mb-1 sm:mb-3 inline-block text-tertiary bg-tertiary/10 border border-tertiary/20">
                         Phân loại: {{ item.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : item.ChiTietPhanLoai }}
                       </span>               
-                      <h3 @click="goToProduct(item.MaMoHinh)" class="text-sm sm:text-lg md:text-2xl font-headline font-bold text-white leading-tight cursor-pointer hover:text-primary transition-colors line-clamp-2">
+                      <h3 @click="goToProduct(item.MaMoHinh)" class="text-sm sm:text-lg md:text-2xl font-headline font-bold text-on-surface leading-tight cursor-pointer hover:text-primary transition-colors line-clamp-2">
                         {{ item.TenMH }}
                       </h3>          
                       <p class="text-on-surface-variant text-xs sm:text-sm mt-1 font-medium">Đơn giá: {{ formatPrice(item.DonGia) }}</p>
@@ -69,7 +69,7 @@
                     <button @click="decreaseQty(item)" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
                       <span class="material-symbols-outlined text-[14px] sm:text-sm">remove</span>
                     </button>
-                    <span class="w-6 sm:w-10 text-center font-bold text-white text-xs sm:text-base">{{ item.SoLuong }}</span>        
+                    <span class="w-6 sm:w-10 text-center font-bold text-on-surface text-xs sm:text-base">{{ item.SoLuong }}</span>
                     <button @click="increaseQty(item)" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-outline hover:text-primary transition-colors">
                       <span class="material-symbols-outlined text-[14px] sm:text-sm">add</span>
                     </button>
@@ -117,11 +117,11 @@
 
         <div class="lg:col-span-4">
           <div class="lg:sticky lg:top-28 bg-surface-container p-5 md:p-8 rounded-2xl shadow-xl lg:shadow-2xl border border-outline-variant/20 mt-8 lg:mt-0">
-            <h2 class="text-xl font-headline font-bold tracking-widest uppercase border-b border-outline-variant/20 pb-4 mb-6 text-white">Tóm tắt đơn hàng</h2>
+            <h2 class="text-xl font-headline font-bold tracking-widest uppercase border-b border-outline-variant/20 pb-4 mb-6 text-on-surface">Tóm tắt đơn hàng</h2>
             <div class="space-y-4 mb-6 text-sm font-medium">
               <div class="flex justify-between text-on-surface-variant">
                 <span>Tạm tính ({{ totalItems }} SP)</span>
-                <span class="text-white">{{ formatPrice(cartSummary.subtotal) }}</span>
+                <span class="text-on-surface">{{ formatPrice(cartSummary.subtotal) }}</span>
               </div>
               <div class="flex justify-between text-on-surface-variant">
                 <span>Giảm giá</span>
@@ -131,7 +131,7 @@
             
             <div class="pt-6 border-t border-outline-variant/20 mb-8">
               <div class="flex justify-between items-end">
-                <span class="text-lg font-bold text-white uppercase tracking-widest">Tổng cộng</span>
+                <span class="text-lg font-bold text-on-surface uppercase tracking-widest">Tổng cộng</span>
                 <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(cartSummary.totalPrice) }}</span>
               </div>
             </div>
@@ -140,7 +140,7 @@
               <button @click="router.push('/checkout')" class="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-widest text-sm rounded-lg shadow-[0_0_20px_rgba(255,143,115,0.2)] hover:brightness-110 active:scale-95 transition-all">
                 THANH TOÁN NGAY
               </button>
-              <button @click="router.push('/category')" class="w-full py-4 bg-transparent border border-outline-variant/30 text-outline font-bold uppercase tracking-widest text-xs hover:text-white hover:bg-surface-container-highest transition-colors rounded-lg">
+              <button @click="router.push('/category')" class="w-full py-4 bg-transparent border border-outline-variant/30 text-outline font-bold uppercase tracking-widest text-xs hover:text-primary dark:hover:text-white hover:bg-surface-container-highest transition-colors rounded-lg">
                 Tiếp tục mua sắm
               </button>
             </div>
@@ -157,7 +157,7 @@
 
       <div v-else class="text-center py-20 bg-surface-container-low rounded-2xl border border-dashed border-outline-variant/30">
         <span class="material-symbols-outlined text-6xl text-outline-variant mb-4">shopping_cart_off</span>
-        <h2 class="text-2xl font-headline font-bold text-white mb-2">Giỏ hàng trống</h2>
+        <h2 class="text-2xl font-headline font-bold text-on-surface dark:text-white mb-2">Giỏ hàng trống</h2>
         <p class="text-on-surface-variant mb-8">Kho báu của bạn đang trống trải. Hãy lấp đầy nó nhé!</p>
         <button @click="router.push('/category')" class="px-8 py-3 bg-primary text-on-primary-fixed font-bold rounded-lg hover:brightness-110 transition-all">
           Khám phá cửa hàng
@@ -165,7 +165,7 @@
       </div>
 
       <section v-if="suggestions.length > 0" class="mt-24 pt-16 border-t border-outline-variant/15">
-        <h2 class="text-3xl font-headline font-bold tracking-tight uppercase mb-8 text-white">Có thể bạn sẽ thích</h2>
+        <h2 class="text-3xl font-headline font-bold tracking-tight uppercase mb-8 text-on-surface dark:text-white">Có thể bạn sẽ thích</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           <ProductCard 
             v-for="sp in suggestions" 
@@ -182,7 +182,7 @@
         <div class="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mb-4 border border-error/20">
           <span class="material-symbols-outlined text-4xl">warning</span>
         </div>
-        <h3 class="text-xl font-headline font-bold text-white mb-2">Xóa toàn bộ giỏ hàng?</h3>
+        <h3 class="text-xl font-headline font-bold text-on-surface dark:text-white mb-2">Xóa toàn bộ giỏ hàng?</h3>
         <p class="text-sm text-on-surface-variant font-medium">
           Bạn có chắc chắn muốn dọn sạch kho báu của mình không? Hành động này không thể hoàn tác.
         </p>
@@ -190,7 +190,7 @@
       
       <div class="p-4 bg-surface-container border-t border-outline-variant/20 flex gap-3">
         <button @click="isClearCartModalOpen = false" 
-          class="flex-1 py-3 text-sm font-bold text-white bg-surface-container-highest hover:bg-surface-bright rounded-xl transition-colors border border-outline-variant/30">
+          class="flex-1 py-3 text-sm font-bold text-on-surface dark:text-white bg-surface-container-highest hover:bg-surface-bright rounded-xl transition-colors border border-outline-variant/30">
           Hủy bỏ
         </button>
         <button @click="executeClearCart" 
@@ -206,15 +206,15 @@
         <div class="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mb-4 border border-error/20">
           <span class="material-symbols-outlined text-4xl">delete_forever</span>
         </div>
-        <h3 class="text-xl font-headline font-bold text-white mb-2">Xóa sản phẩm này?</h3>
+        <h3 class="text-xl font-headline font-bold text-on-surface dark:text-white mb-2">Xóa sản phẩm này?</h3>
         <p class="text-sm text-on-surface-variant font-medium line-clamp-2">
-          Bạn có chắc chắn muốn xóa <span class="text-white font-bold">{{ itemToDelete?.TenMH }}</span> khỏi giỏ hàng?
+          Bạn có chắc chắn muốn xóa <span class="text-on-surface dark:text-white font-bold">{{ itemToDelete?.TenMH }}</span> khỏi giỏ hàng?
         </p>
       </div>
       
       <div class="p-4 bg-surface-container border-t border-outline-variant/20 flex gap-3">
         <button @click="isDeleteItemModalOpen = false" 
-          class="flex-1 py-3 text-sm font-bold text-white bg-surface-container-highest hover:bg-surface-bright rounded-xl transition-colors border border-outline-variant/30">
+          class="flex-1 py-3 text-sm font-bold text-on-surface dark:text-white bg-surface-container-highest hover:bg-surface-bright rounded-xl transition-colors border border-outline-variant/30">
           Giữ lại
         </button>
         <button @click="executeDeleteItem" 

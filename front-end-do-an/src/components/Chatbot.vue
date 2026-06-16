@@ -2,14 +2,14 @@
   <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end">
     <div
       v-if="isOpen"
-      class="w-[calc(100vw-2rem)] sm:w-80 bg-gray-900 border border-gray-700 shadow-2xl rounded-2xl flex flex-col mb-4 overflow-hidden transition-all duration-300"
+      class="w-[calc(100vw-2rem)] sm:w-80 bg-surface-container-lowest dark:bg-gray-900 border border-outline-variant/30 dark:border-gray-700 shadow-2xl rounded-2xl flex flex-col mb-4 overflow-hidden transition-all duration-300"
     >
-      <div class="bg-gray-800 text-white p-4 flex justify-between items-center border-b border-gray-700">
+      <div class="bg-surface-container dark:bg-gray-800 text-on-surface dark:text-white p-4 flex justify-between items-center border-b border-outline-variant/30 dark:border-gray-700">
         <div class="font-bold flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
           Trợ lý Figure
         </div>
-        <button @click="isOpen = false" class="text-gray-400 hover:text-white transition-colors">
+        <button @click="isOpen = false" class="text-outline dark:text-gray-400 hover:text-on-surface dark:hover:text-white transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -34,7 +34,7 @@
           <!-- Bot vẫn có thể render HTML, nhưng đã được sanitize cơ bản ở frontend + escape ở backend -->
           <div
             v-else
-            class="bot-html-message px-3 py-2 text-sm shadow-sm bg-gray-800 text-gray-100 border border-gray-700 rounded-r-xl rounded-tl-xl"
+            class="bot-html-message px-3 py-2 text-sm shadow-sm bg-surface-container dark:bg-gray-800 text-primary dark:text-white border border-primary/30 hover:bg-surface-container-high dark:hover:bg-gray-700 rounded-r-xl rounded-tl-xl"
             v-html="safeBotHtml(msg.text)"
             @click="handleBotHtmlClick"
           ></div>
@@ -44,18 +44,18 @@
               v-for="sp in msg.products"
               :key="sp.MaMoHinh"
               @click="goToProduct(sp.MaMoHinh)"
-              class="flex items-center gap-3 p-2 bg-gray-800 border border-gray-700 rounded-xl cursor-pointer hover:bg-gray-700 hover:border-[#ff7a59] transition-all group"
+              class="flex items-center gap-3 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-[#ff7a59] dark:hover:border-[#ff7a59] transition-all group"
             >
               <img :src="getProductImage(sp)" @error="handleProductImageError" class="w-14 h-14 object-cover rounded-lg bg-white" alt="Product image" />
 
               <div class="flex-1 overflow-hidden">
-                <div class="text-sm font-semibold text-white truncate group-hover:text-[#ff7a59] transition-colors">
+                <div class="text-sm font-semibold text-gray-800 dark:text-white truncate group-hover:text-[#ff7a59] transition-colors">
                   {{ sp.TenMH }}
                 </div>
                 <div class="text-xs text-[#ff7a59] font-bold mt-1">
                   {{ formatPrice(sp.GiaThucTe || sp.GiaGoc || sp.DonGia) }}
                 </div>
-                <div v-if="sp.ChatLieu" class="text-[11px] text-gray-300 mt-0.5 truncate">
+                <div v-if="sp.ChatLieu" class="text-[11px] text-gray-500 dark:text-gray-300 mt-0.5 truncate">
                   Chất liệu: {{ sp.ChatLieu }}
                 </div>
                 <div v-if="sp.TongSoLuong !== undefined" class="text-[11px] text-gray-400 mt-0.5">
@@ -70,7 +70,7 @@
               v-for="suggestion in msg.suggestions"
               :key="suggestion"
               @click="sendSuggestion(suggestion)"
-              class="text-xs px-3 py-1 rounded-full border border-gray-600 text-gray-200 hover:border-[#ff7a59] hover:text-[#ff7a59] transition-colors"
+              class="text-xs px-3 py-1 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:border-[#ff7a59] hover:text-[#ff7a59] transition-colors"
             >
               {{ suggestion }}
             </button>
@@ -79,7 +79,7 @@
 
         <div
           v-if="isLoading"
-          class="self-start max-w-[85%] bg-gray-800 border border-gray-700 rounded-r-xl rounded-tl-xl px-4 py-3 shadow-sm flex items-center gap-1"
+          class="self-start max-w-[85%] bg-surface-container dark:bg-gray-800 border border-outline-variant/30 dark:border-gray-700 rounded-r-xl rounded-tl-xl px-4 py-3 shadow-sm flex items-center gap-1"
         >
           <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
           <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
@@ -87,14 +87,14 @@
         </div>
       </div>
 
-      <div class="p-3 bg-gray-800 border-t border-gray-700 flex items-center gap-2">
+      <div class="p-3 bg-surface-container dark:bg-gray-800 border-t border-outline-variant/30 dark:border-gray-700 flex items-center gap-2">
         <input
           v-model="userInput"
           @keyup.enter="sendMessage"
           type="text"
           placeholder="Nhập tin nhắn..."
           :disabled="isLoading"
-          class="flex-1 bg-gray-900 text-white border border-gray-700 rounded-full px-4 py-2 text-sm outline-none focus:border-[#ff7a59] transition-colors placeholder-gray-500 disabled:opacity-50"
+          class="flex-1 bg-background dark:bg-gray-900 text-on-surface dark:text-white placeholder-outline dark:placeholder-gray-500 text-sm rounded-full px-4 py-2 border border-outline-variant/30 dark:border-gray-700 focus:outline-none focus:border-primary transition-colors"
         />
 
         <button

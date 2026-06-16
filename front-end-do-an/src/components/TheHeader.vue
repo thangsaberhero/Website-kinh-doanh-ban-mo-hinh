@@ -1,5 +1,5 @@
 <template>
-  <nav class="sticky top-0 z-50 glass-panel border-b border-outline-variant/15 transition-all duration-300">
+  <nav class="sticky top-0 z-50 bg-surface/95 dark:bg-surface-container-high/80 backdrop-blur-md shadow-sm dark:shadow-none border-b border-outline-variant/15 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
       
       <div class="flex items-center gap-4 md:gap-12">
@@ -57,7 +57,7 @@
                     v-for="item in searchResults" 
                     :key="item.MaMoHinh" 
                     @click="goToProduct(item.MaMoHinh)"
-                    class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
+                    class="flex items-center gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
                 >
                     <div class="w-14 h-14 shrink-0 rounded-md overflow-hidden bg-surface-container-lowest border border-white/10">
                       <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover">
@@ -74,7 +74,14 @@
         </div>
         
         <div class="flex items-center gap-2 md:gap-4">
-          <button @click="router.push('/wishlist')" class="hidden md:block hover:text-primary transition-colors"><span class="material-symbols-outlined">favorite</span></button>
+          <button 
+            @click="toggleTheme" 
+            class="hover:text-primary transition-colors py-2 outline-none"
+            title="Chuyển đổi giao diện Sáng/Tối"
+          >
+            <span class="material-symbols-outlined">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
+          </button>
+          <button @click="router.push('/wishlist')" class="hidden md:block hover:text-primary transition-colors py-2 outline-none"><span class="material-symbols-outlined">favorite</span></button>
           <div class="relative" @mouseenter="showMiniCart = true" @mouseleave="showMiniCart = false">          
             <button @click="router.push('/cart')" class="hover:text-primary relative transition-colors outline-none py-2" title="Xem giỏ hàng">
               <span class="material-symbols-outlined">shopping_cart</span>
@@ -89,8 +96,8 @@
               leave-from-class="opacity-100 translate-y-0"
               leave-to-class="opacity-0 translate-y-2"
             >
-              <div v-show="showMiniCart" class="absolute top-full right-0 pt-4 z-50"> 
-                <div class="w-80 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden flex flex-col cursor-default">                    
+              <div v-show="showMiniCart" class="hidden lg:block absolute top-full right-0 pt-4 z-50"> 
+                <div class="w-80 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden flex flex-col cursor-default">
                   <div class="px-4 py-3 border-b border-outline-variant/10 bg-surface-container flex justify-between items-center">
                     <span class="text-sm font-bold text-on-surface">Giỏ hàng của bạn</span>
                     <span class="text-xs font-medium text-primary">{{ cartCount }} sản phẩm</span>
@@ -147,7 +154,7 @@
               Chào, {{ authStore.user.TenKH || authStore.user.username || 'Collector' }}!
             </span>
             
-            <div @click="showUserMenu = !showUserMenu" class="w-8 h-8 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-primary transition-all duration-300" :class="{'ring-2 ring-primary ring-offset-2 ring-offset-background': showUserMenu}">
+            <div @click="showUserMenu = !showUserMenu" class="w-8 h-8 shrink-0 rounded-full overflow-hidden border border-primary/20 cursor-pointer hover:border-primary transition-all duration-300" :class="{'ring-2 ring-primary ring-offset-2 ring-offset-background': showUserMenu}">
               <img alt="User Profile" class="w-full h-full object-cover" :src="userAvatar"/>
             </div>
 
@@ -190,8 +197,8 @@
             </transition>
           </div>
 
-          <div v-else class="ml-1 md:ml-2 border-l border-outline-variant/30 pl-2 md:pl-4">
-            <button @click="router.push({ path: '/login', query: { redirect: route.fullPath } })" class="px-3 py-1.5 md:px-5 md:py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-xs md:text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
+          <div v-else class="ml-1 md:ml-2 border-l border-outline-variant/30 pl-2 md:pl-4 shrink-0">
+            <button @click="router.push({ path: '/login', query: { redirect: route.fullPath } })" class="whitespace-nowrap px-3 py-1.5 md:px-5 md:py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-xs md:text-sm rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
               Đăng nhập
             </button>
           </div>    
@@ -206,13 +213,13 @@
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-4"
     >
-      <div v-if="showMobileMenu" class="md:hidden absolute top-full left-0 w-full bg-surface-container-high border-b border-outline-variant/20 shadow-xl z-40">
-        <div class="flex flex-col px-4 py-2">
-          <router-link to="/category" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Cửa hàng</router-link>
-          <router-link to="/news" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Tin tức</router-link>
-          <router-link to="/contact" @click="showMobileMenu = false" class="py-3 border-b border-white/5 text-sm font-medium">Liên hệ</router-link>
-          <router-link to="/wishlist" @click="showMobileMenu = false" class="py-3 text-sm font-medium">Mô hình yêu thích</router-link>
-          <router-link to="/truy-xuat/" @click="showMobileMenu = false" class="py-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary">Truy xuất Blockchain</router-link>
+      <div v-if="showMobileMenu" class="md:hidden absolute top-full left-0 w-full bg-surface-container-highest border-b border-outline-variant/20 shadow-2xl z-40">
+        <div class="flex flex-col p-3 space-y-1">
+          <router-link to="/category" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Cửa hàng</router-link>
+          <router-link to="/news" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Tin tức</router-link>          
+          <router-link to="/contact" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Liên hệ</router-link>          
+          <router-link to="/wishlist" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Mô hình yêu thích</router-link>          
+          <router-link to="/truy-xuat/" @click="showMobileMenu = false" active-class="bg-primary/10 font-bold border-transparent" class="p-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary rounded-lg transition-colors">Truy xuất Blockchain</router-link>
         </div>
       </div>
     </transition>
@@ -231,7 +238,7 @@
             v-model="searchQuery" 
             @input="handleSearch"
             @keyup.enter="submitSearch(); showMobileSearch = false"
-            class="bg-transparent border-none focus:ring-0 text-sm w-full pr-8 placeholder:text-outline text-on-surface outline-none" 
+            class="bg-transparent border-none focus:ring-0 text-base md:text-sm w-full pr-8 placeholder:text-outline text-on-surface outline-none" 
             placeholder="Tìm kiếm mô hình..." 
             type="text"
           />
@@ -279,11 +286,16 @@
   import { useRouter, useRoute } from 'vue-router';
   import { useAuthStore } from '@/stores/auth';
   import { useSystemStore } from '@/stores/system';
+  import { useThemeStore } from '@/stores/theme';
+  import { storeToRefs } from 'pinia';
 
   const router = useRouter();
   const route = useRoute();
   const authStore = useAuthStore();
   const systemStore = useSystemStore();
+  const themeStore = useThemeStore();
+  const { isDark } = storeToRefs(themeStore);
+  const { toggleTheme } = themeStore;
 
   const showUserMenu = ref(false);
   const cartCount = ref(0);
@@ -466,8 +478,11 @@
 
 <style scoped>
   .glass-panel {
-    background: rgba(28, 31, 43, 0.6);
+    background-color: rgb(var(--color-surface) / 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #40485d; border-radius: 4px; }
 </style>

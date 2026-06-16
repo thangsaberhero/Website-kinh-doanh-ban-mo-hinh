@@ -1,9 +1,9 @@
 <template>
   <div class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen flex items-center justify-center relative overflow-hidden">
     
-    <router-link to="/login" class="hidden lg:flex fixed top-6 left-6 z-50 items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
-      <span class="material-symbols-outlined text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
-      <span class="text-sm font-bold text-white/90 tracking-wide">Quay lại đăng nhập</span>
+    <router-link to="/login" class="hidden lg:flex fixed top-6 left-6 z-50 items-center gap-2 px-4 py-2 rounded-full bg-surface/80 dark:bg-white/10 hover:bg-surface dark:hover:bg-white/20 backdrop-blur-md border border-outline-variant/30 dark:border-white/10 transition-all group shadow-sm">
+      <span class="material-symbols-outlined text-on-surface dark:text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
+      <span class="text-sm font-bold text-on-surface dark:text-white/90 tracking-wide">Quay lại đăng nhập</span>
     </router-link>
 
     <!-- NỀN MỜ PHÍA SAU (Đồng bộ với Slider) -->
@@ -45,7 +45,7 @@
               />
             </transition>
             <!-- Lớp phủ cho dễ đọc chữ -->
-            <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30 dark:from-background dark:via-background/40"></div>
           </div>
           
           <div class="relative z-10 w-full p-12 flex flex-col justify-between">
@@ -92,7 +92,7 @@
             </div>
 
             <div class="w-full max-w-xs mx-auto mb-10 relative hidden sm:block">
-              <div class="absolute left-0 top-4 -translate-y-1/2 w-full h-1 bg-white/20 rounded-full z-0"></div>
+              <div class="absolute left-0 top-4 -translate-y-1/2 w-full h-1 bg-outline-variant/50 dark:bg-white/20 rounded-full z-0"></div>
               <div class="absolute left-0 top-4 -translate-y-1/2 h-1 bg-primary rounded-full z-0 transition-all duration-500 ease-out" :style="{ width: ((step - 1) / 2) * 100 + '%' }"></div>
               
               <div class="flex justify-between relative z-10">
@@ -174,10 +174,10 @@
                   <p class="text-on-surface-variant text-sm mb-4">
                     Mã xác thực gồm 6 chữ số đã được gửi tới <br>
                     <strong class="text-primary">{{ form.email }}</strong>
-                    <button type="button" @click="step = 1" class="text-xs text-outline hover:text-white underline ml-2">Sửa Email</button>
+                    <button type="button" @click="step = 1" class="text-xs text-outline hover:text-on-surface dark:hover:text-white underline ml-2">Sửa Email</button>
                   </p>
                   
-                  <div class="inline-flex items-center justify-center py-2 px-4 rounded-full bg-surface-container/50 border border-white/5">
+                  <div class="inline-flex items-center justify-center py-2 px-4 rounded-full bg-surface-container/50 border border-outline-variant/30 dark:border-white/5">
                     <div v-if="countdown > 0" class="flex items-center gap-2 text-sm">
                       <span class="material-symbols-outlined text-tertiary text-lg animate-pulse">timer</span>
                       <span class="text-on-surface-variant">Mã hết hạn sau:</span>
@@ -446,6 +446,13 @@
 
 <style scoped>
   .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .glass-panel {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);

@@ -8,7 +8,7 @@
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
         <header class="mb-10">
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-on-surface dark:text-white mb-2">
             Quản lý <span class="text-primary italic">Đơn hàng</span>
           </h1>
           <p class="text-on-surface-variant font-medium">Theo dõi và kiểm tra lịch sử các kho báu bạn đã sở hữu.</p>
@@ -19,7 +19,7 @@
             v-for="tab in ['Tất cả', 'Chờ duyệt', 'Đang đóng gói', 'Đang vận chuyển', 'Đã giao', 'Đã hoàn hàng', 'Đã hủy']" 
             :key="tab"
             @click="activeTab = tab"
-            :class="['px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300', activeTab === tab ? 'bg-primary text-on-primary-fixed shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container border border-outline-variant/20 text-outline hover:text-white hover:border-outline-variant']"
+            :class="['px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300', activeTab === tab ? 'bg-primary text-on-primary-fixed shadow-[0_0_15px_rgba(255,143,115,0.3)]' : 'bg-surface-container border border-outline-variant/20 text-outline hover:text-on-surface dark:hover:text-white hover:border-outline-variant']"
           >
             {{ tab }}
           </button>
@@ -42,7 +42,7 @@
                 <div class="flex items-center gap-6">
                   <div class="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex-shrink-0 p-2 overflow-hidden relative">
                     <div v-if="order.TongSoSanPham > 1" class="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-sm z-10">
-                      <span class="font-bold text-white text-sm">+{{ order.TongSoSanPham - 1 }}</span>
+                      <span class="font-bold text-on-surface dark:text-white text-sm">+{{ order.TongSoSanPham - 1 }}</span>
                     </div>
                     <img 
                         v-if="order.Thumbnail" 
@@ -58,7 +58,7 @@
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 lg:gap-8 flex-grow">
                     <div class="flex flex-col gap-1">
                       <span class="text-[10px] font-bold text-primary tracking-widest uppercase">Mã đơn</span>
-                      <span class="text-lg font-headline font-bold text-white tracking-tight">{{ order.MaDonHangHienThi || order.MaDH }}</span>
+                      <span class="text-lg font-headline font-bold text-on-surface dark:text-white tracking-tight">{{ order.MaDonHangHienThi || order.MaDH }}</span>
                     </div>
                     
                     <div class="flex flex-col gap-1">
@@ -68,7 +68,7 @@
                     
                     <div class="flex flex-col gap-1">
                       <span class="text-[10px] font-bold text-outline uppercase tracking-widest">Tổng tiền</span>
-                      <span class="text-base font-bold text-white">{{ formatPrice(order.ThanhTien) }}</span>
+                      <span class="text-base font-bold text-on-surface dark:text-white">{{ formatPrice(order.ThanhTien) }}</span>
                     </div>
                     
                     <div class="flex flex-col gap-1">
@@ -104,7 +104,7 @@
                     <button 
                       @click="openPaymentModal(order)" 
                       :disabled="isExpired(order.NgayLapDon)"
-                      class="w-full px-4 py-2 bg-gradient-to-r from-rose-600 to-[#a50064] text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-1 shadow-lg shadow-pink-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="w-full px-4 py-2 bg-gradient-to-r from-rose-600 to-[#a50064] text-on-surface dark:text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-1 shadow-lg shadow-pink-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Thanh toán
                     </button>
@@ -117,7 +117,7 @@
                     </div>
                   </div>
 
-                  <button @click="router.push(`/orders/${order.MaDH}`)" class="flex-1 lg:w-36 px-4 py-2 bg-surface-container-high hover:bg-primary/10 border border-outline-variant/30 hover:border-primary/50 text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:text-primary transition-all text-center">
+                  <button @click="router.push(`/orders/${order.MaDH}`)" class="flex-1 lg:w-36 px-4 py-2 bg-surface-container-high hover:bg-primary/10 border border-outline-variant/30 hover:border-primary/50 text-on-surface dark:text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:text-primary transition-all text-center">
                     Xem chi tiết
                   </button>
                 </div>
@@ -126,7 +126,7 @@
 
             <div v-if="orders.length === 0" class="text-center py-20 border border-dashed border-outline-variant/30 rounded-2xl bg-surface-container-low">
               <span class="material-symbols-outlined text-6xl text-outline-variant mb-4">inventory_2</span>
-              <h2 class="font-headline text-2xl text-white font-bold mb-2">Chưa có đơn hàng nào</h2>
+              <h2 class="font-headline text-2xl text-on-surface dark:text-white font-bold mb-2">Chưa có đơn hàng nào</h2>
               <p class="text-on-surface-variant">Thư mục "{{ activeTab }}" của bạn đang trống.</p>
             </div>
 
@@ -153,7 +153,7 @@
     
     <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-5 sm:p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
-        <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
+        <h3 class="font-headline text-xl font-bold text-on-surface dark:text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
         <p class="text-sm text-on-surface-variant mb-6">Mã đơn: <span class="font-bold text-primary">{{ selectedOrder?.MaDonHangHienThi || selectedOrder?.MaDH }}</span></p>
         
         <div class="space-y-4 mb-6">
@@ -173,17 +173,17 @@
           <div class="space-y-3 mb-8">
             <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#a50064] transition-all">
               <input type="radio" v-model="paymentGateway" value="momo" class="text-[#a50064] focus:ring-[#a50064]" />
-              <span class="text-sm font-bold text-white">Ví MoMo</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white">Ví MoMo</span>
             </label>
             <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#0068FF] transition-all">
               <input type="radio" v-model="paymentGateway" value="zalopay" class="text-[#0068FF] focus:ring-[#0068FF]" />
-              <span class="text-sm font-bold text-white">ZaloPay</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white">ZaloPay</span>
             </label>
           </div>
         </div>
 
         <div class="flex gap-3">
-          <button @click="showPaymentModal = false" class="flex-1 py-3 bg-surface-container text-xs font-bold uppercase tracking-widest text-outline hover:text-white rounded-lg transition-colors">Hủy</button>
+          <button @click="showPaymentModal = false" class="flex-1 py-3 bg-surface-container text-xs font-bold uppercase tracking-widest text-outline hover:text-on-surface dark:hover:text-white rounded-lg transition-colors">Hủy</button>
           <button @click="handleRepay" class="flex-[2] py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2">
             <span v-if="isProcessingPayment" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
             Quét mã

@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-full md:w-72 flex flex-col border-b md:border-b-0 md:border-r border-outline-variant/20 bg-surface-container-low pt-0 md:pt-8 shrink-0 z-20">    
+  <aside class="w-full md:w-72 flex flex-col border-b md:border-b-0 md:border-r border-outline-variant/20 bg-surface dark:bg-surface-container-low pt-0 md:pt-8 shrink-0 z-20">    
     <div class="hidden md:flex flex-col items-center gap-3 mb-8 px-6">
       <div class="relative group cursor-pointer shrink-0">
         <div class="w-24 h-24 rounded-full border-2 border-primary/50 p-1 group-hover:border-primary transition-colors">
@@ -21,22 +21,22 @@
 
     <div class="flex flex-row md:flex-col gap-0 flex-1 overflow-x-auto hide-scrollbar md:custom-scrollbar px-2 md:px-0 pb-0">  
       <router-link to="/profile" 
-        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-on-surface dark:hover:text-white hover:bg-surface-container-highest" 
         active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
         <span class="material-symbols-outlined text-[18px] md:text-[24px]">person</span> <span>Thông tin cá nhân</span>
       </router-link>  
       <router-link v-if="!isSocialAccount" to="/change-password" 
-        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-on-surface dark:hover:text-white hover:bg-surface-container-highest" 
         active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
         <span class="material-symbols-outlined text-[18px] md:text-[24px]">lock</span> <span>Đổi mật khẩu</span>
       </router-link>    
       <router-link to="/wishlist" 
-        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-on-surface dark:hover:text-white hover:bg-surface-container-highest" 
         active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
         <span class="material-symbols-outlined text-[18px] md:text-[24px]">favorite</span> <span>Danh sách yêu thích</span>
       </router-link>    
       <router-link to="/orders" 
-        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-white hover:bg-surface-container-highest" 
+        class="flex shrink-0 items-center gap-2 md:gap-3 px-5 py-4 md:px-6 md:py-4 text-xs md:text-sm font-medium transition-all text-on-surface-variant hover:text-on-surface dark:hover:text-white hover:bg-surface-container-highest" 
         active-class="!text-primary border-b-4 md:border-b-0 md:border-r-4 border-primary bg-gradient-to-t md:bg-gradient-to-r from-primary/10 to-transparent">
         <span class="material-symbols-outlined text-[18px] md:text-[24px]">inventory_2</span> <span>Lịch sử đơn hàng</span>
       </router-link>

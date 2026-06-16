@@ -12,7 +12,7 @@
         role="alert" 
         @mouseenter="toastStore.pauseToast(toast.id)"
         @mouseleave="toastStore.resumeToast(toast.id)"
-        class="relative overflow-hidden pointer-events-auto flex items-center gap-3 px-4 py-3 md:px-5 md:py-4 border rounded-xl shadow-2xl bg-surface-container-highest transition-all w-full"
+        class="relative overflow-hidden pointer-events-auto flex items-center gap-3 px-4 py-3 md:px-5 md:py-4 border rounded-xl shadow-2xl bg-surface dark:bg-surface-container-highest transition-all w-full"
         :class="themeConfig[toast.type]?.borderClass"
       >
         <span 
@@ -41,7 +41,7 @@
         
         <button 
           @click="toastStore.closeToast(toast.id)" 
-          class="ml-auto text-on-surface-variant hover:text-white transition-colors shrink-0 z-10"
+          class="ml-auto text-on-surface-variant hover:text-on-surface dark:hover:text-white transition-colors shrink-0 z-10"
         >
           <span class="material-symbols-outlined text-sm">close</span>
         </button>
@@ -88,11 +88,11 @@
   };
 
   const themeConfig = {
-    success: { borderClass: 'border-green-500/50', textClass: 'text-green-400', icon: 'check_circle' },
-    error: { borderClass: 'border-error/50', textClass: 'text-error-dim', icon: 'error' },
-    warning: { borderClass: 'border-yellow-500/50', textClass: 'text-yellow-400', icon: 'warning' },
-    info: { borderClass: 'border-blue-500/50', textClass: 'text-blue-400', icon: 'info' }
-};
+    success: { borderClass: 'border-green-500/50', textClass: 'text-green-600 dark:text-green-400', icon: 'check_circle' },
+    error: { borderClass: 'border-error/50', textClass: 'text-error dark:text-error-dim', icon: 'error' },
+    warning: { borderClass: 'border-yellow-600/50 dark:border-yellow-500/50', textClass: 'text-yellow-600 dark:text-yellow-400', icon: 'warning' },
+    info: { borderClass: 'border-blue-600/50 dark:border-blue-500/50', textClass: 'text-blue-600 dark:text-blue-400', icon: 'info' }
+  };
 </script>
 
 <style scoped>

@@ -10,7 +10,7 @@
           class="relative group flex items-center justify-center w-[38px] h-[38px] md:w-[45px] md:h-[45px] rounded-full bg-[#0068FF] shadow-lg hover:scale-110 transition-transform"
         >
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/3840px-Icon_of_Zalo.svg.png" alt="Zalo Logo" class="w-full h-full object-cover p-1.5 rounded-full" />
-          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-black/80 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
+          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-surface-container-high/90 dark:bg-black/80 text-on-surface dark:text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
             Chat qua Zalo
           </span>
         </a>
@@ -23,7 +23,7 @@
         >
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFfhn0USgl1kRzOAzyn2wOGYsmp0uddsb1cw&s" alt="Messenger Logo" class="w-full h-full object-cover p-1.5 rounded-full" />
           
-          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-black/80 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
+          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-surface-container-high/90 dark:bg-black/80 text-on-surface dark:text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
             Chat Messenger
           </span>
         </a>
@@ -35,7 +35,7 @@
         >
           <img src="https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Gmail.width-500.format-webp.webp" alt="Gmail Logo" class="w-full h-full object-cover p-1.5 rounded-full" />
           
-          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-black/80 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
+          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-surface-container-high/90 dark:bg-black/80 text-on-surface dark:text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
             Gửi Email
           </span>
         </a>
@@ -48,7 +48,7 @@
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/>
           </svg>
-          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-black/80 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
+          <span class="hidden md:block absolute left-14 px-3 py-1.5 bg-surface-container-high/90 dark:bg-black/80 text-on-surface dark:text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-md z-50">
             {{ systemStore.settings.contact_phone || 'Đang cập nhật' }}
           </span>
         </a>

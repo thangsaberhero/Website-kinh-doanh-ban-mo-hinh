@@ -5,7 +5,7 @@
     <main class="flex-1 pt-8 pb-24 px-6 max-w-7xl mx-auto w-full relative">
       <div class="absolute top-20 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
-      <button @click="router.push('/orders')" class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-outline hover:text-white transition-colors mb-8 group">
+      <button @click="router.push('/orders')" class="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-outline hover:text-on-surface dark:hover:text-white transition-colors mb-8 group">
         <span class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
         Quay lại danh sách đơn
       </button>
@@ -13,7 +13,7 @@
       <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
         <div>
           <span class="font-headline text-primary tracking-widest text-xs uppercase font-bold mb-2 block">Chi Tiết Giao Dịch</span>
-          <h1 class="text-5xl md:text-6xl font-headline font-black tracking-tighter text-white">
+          <h1 class="text-5xl md:text-6xl font-headline font-black tracking-tighter text-on-surface dark:text-white">
             {{ "Mã: " + (orderInfo.MaDonHangHienThi || route.params.id) }}
           </h1>
         </div>
@@ -22,7 +22,7 @@
           <template v-if="!isCOD(orderInfo)">
             <button v-if="orderInfo.TrangThaiThanhToan === 'Chưa thanh toán' && !isExpired(orderInfo.NgayLapDon)"
                     @click="showPaymentModal = true" 
-                    class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
+                    class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-rose-600 to-[#a50064] text-on-surface dark:text-white text-sm font-bold rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all shadow-[0_0_15px_rgba(225,29,72,0.4)] animate-pulse hover:brightness-110 active:scale-95">
               <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
               Thanh toán ngay ({{ formatCountdown(orderInfo.NgayLapDon) }})
             </button>
@@ -56,7 +56,7 @@
         <div class="lg:col-span-8 space-y-8">       
           <section class="glass-panel rounded-xl p-8 border border-outline-variant/10 shadow-xl">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 border-b border-outline-variant/10 pb-5">
-              <h3 class="font-headline text-lg font-bold flex items-center gap-2 text-white">
+              <h3 class="font-headline text-lg font-bold flex items-center gap-2 text-on-surface dark:text-white">
                 <span class="material-symbols-outlined text-primary">local_shipping</span>
                 Lộ Trình Vận Chuyển
               </h3>
@@ -67,12 +67,12 @@
                     <span class="material-symbols-outlined text-[12px] text-primary">inventory_2</span> 
                     {{ orderInfo.HangVanChuyen || 'Đơn vị vận chuyển' }}
                   </p>
-                  <p class="text-sm font-bold text-white font-headline tracking-wider">{{ orderInfo.MaVanDon }}</p>
+                  <p class="text-sm font-bold text-on-surface dark:text-white font-headline tracking-wider">{{ orderInfo.MaVanDon }}</p>
                 </div>
                 
                 <div class="w-px h-8 bg-outline-variant/20 hidden sm:block"></div>
                 
-                <button @click="copyTrackingCode(orderInfo.MaVanDon)" class="text-primary hover:text-white bg-primary/10 hover:bg-primary/30 p-2 rounded-lg transition-all flex items-center justify-center active:scale-95" title="Copy mã vận đơn">
+                <button @click="copyTrackingCode(orderInfo.MaVanDon)" class="text-primary hover:text-on-surface dark:hover:text-white bg-primary/10 hover:bg-primary/30 p-2 rounded-lg transition-all flex items-center justify-center active:scale-95" title="Copy mã vận đơn">
                   <span class="material-symbols-outlined text-[16px]">content_copy</span>
                 </button>
               </div>
@@ -88,11 +88,11 @@
                   <span class="material-symbols-outlined text-lg font-bold">check</span>
                 </div>
                 
-                <div v-else-if="step.status === 'active' && step.name === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)] animate-pulse">
+                <div v-else-if="step.status === 'active' && step.name === 'Đã hủy'" class="w-12 h-12 -mt-1 rounded-full bg-error border-4 border-surface flex items-center justify-center text-on-surface dark:text-white mb-2 shadow-[0_0_20px_rgba(244,63,94,0.6)] animate-pulse">
                   <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
 
-                <div v-else-if="step.status === 'active' && step.name.includes('hoàn hàng')" class="w-12 h-12 -mt-1 rounded-full bg-orange-500 border-4 border-surface flex items-center justify-center text-white mb-2 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-pulse">
+                <div v-else-if="step.status === 'active' && step.name.includes('hoàn hàng')" class="w-12 h-12 -mt-1 rounded-full bg-orange-500 border-4 border-surface flex items-center justify-center text-on-surface dark:text-white mb-2 shadow-[0_0_20px_rgba(249,115,22,0.6)] animate-pulse">
                   <span class="material-symbols-outlined text-xl">{{ step.icon }}</span>
                 </div>
                 
@@ -104,7 +104,7 @@
                   <span class="material-symbols-outlined text-lg">{{ step.icon }}</span>
                 </div>
 
-                <span :class="['text-[9px] md:text-[11px] font-bold uppercase tracking-tighter text-center max-w-[70px] md:max-w-none leading-tight mt-1', step.status === 'active' ? (step.name === 'Đã hủy' ? 'text-error' : (step.name.includes('hoàn hàng') ? 'text-orange-400' : 'text-primary')) : (step.status === 'completed' ? 'text-white' : 'text-outline')]">
+                <span :class="['text-[9px] md:text-[11px] font-bold uppercase tracking-tighter text-center max-w-[70px] md:max-w-none leading-tight mt-1', step.status === 'active' ? (step.name === 'Đã hủy' ? 'text-error' : (step.name.includes('hoàn hàng') ? 'text-orange-400' : 'text-primary')) : (step.status === 'completed' ? 'text-on-surface dark:text-white' : 'text-outline')]">
                   {{ step.name }}
                 </span>
                 <span v-if="step.time" class="text-[10px] text-outline mt-1">{{ step.time }}</span>
@@ -113,7 +113,7 @@
           </section>
 
           <section class="space-y-4">
-            <h3 class="font-headline text-lg font-bold px-2 flex items-center gap-2 text-white">
+            <h3 class="font-headline text-lg font-bold px-2 flex items-center gap-2 text-on-surface dark:text-white">
               <span class="material-symbols-outlined text-tertiary">inventory_2</span>
               Danh Sách Sản Phẩm
             </h3>
@@ -131,7 +131,7 @@
                       <span class="material-symbols-outlined text-[10px] md:text-[12px]">local_fire_department</span> SALE
                     </span>
                   </div>
-                  <h4 class="font-headline text-sm md:text-xl font-bold text-white group-hover:text-primary transition-colors line-clamp-2">{{ item.TenMH }}</h4>
+                  <h4 class="font-headline text-sm md:text-xl font-bold text-on-surface dark:text-white group-hover:text-primary transition-colors line-clamp-2">{{ item.TenMH }}</h4>
                   <p class="text-[10px] md:text-sm text-outline font-medium tracking-tight">Mã định danh: {{ item.MaPhanLoai }}</p>
                 </div>
                 
@@ -157,13 +157,13 @@
                   <span class="material-symbols-outlined text-primary">person_pin_circle</span>
                 </div>
                 <div>
-                  <h3 class="font-headline font-bold text-white leading-none">Người Nhận</h3>
+                  <h3 class="font-headline font-bold text-on-surface dark:text-white leading-none">Người Nhận</h3>
                   <p class="text-[10px] text-outline uppercase tracking-widest mt-1">Thông tin giao hàng</p>
                 </div>
               </div>
               <button v-if="currentOrderStatus === 'Chờ duyệt'" 
                       @click="openEditAddressModal" 
-                      class="text-[11px] font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/30">
+                      class="text-[11px] font-bold uppercase tracking-widest text-primary hover:text-on-surface dark:hover:text-white transition-colors flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/30">
                 <span class="material-symbols-outlined text-[14px]">edit</span> Sửa
               </button>
             </div>
@@ -171,11 +171,11 @@
             <div class="space-y-4">
               <div>
                 <label class="text-[10px] text-outline font-black uppercase tracking-widest">Họ và tên</label>
-                <p class="font-bold text-white mt-1">{{ orderInfo.TenNguoiNhan }}</p>
+                <p class="font-bold text-on-surface dark:text-white mt-1">{{ orderInfo.TenNguoiNhan }}</p>
               </div>
               <div>
                 <label class="text-[10px] text-outline font-black uppercase tracking-widest">Số điện thoại</label>
-                <p class="font-bold text-white mt-1">{{ orderInfo.SDTNguoiNhan }}</p>
+                <p class="font-bold text-on-surface dark:text-white mt-1">{{ orderInfo.SDTNguoiNhan }}</p>
               </div>
               <div>
                 <label class="text-[10px] text-outline font-black uppercase tracking-widest">Địa chỉ chi tiết</label>
@@ -189,7 +189,7 @@
           </section>
 
           <section class="glass-panel rounded-xl p-6 border border-outline-variant/10 bg-gradient-to-br from-surface-container-high to-surface shadow-xl">
-            <h3 class="font-headline text-lg font-bold mb-6 flex items-center gap-2 text-white">
+            <h3 class="font-headline text-lg font-bold mb-6 flex items-center gap-2 text-on-surface dark:text-white">
               <span class="material-symbols-outlined text-secondary">payments</span>
               Thanh Toán
             </h3>
@@ -197,7 +197,7 @@
             <div class="space-y-4 mb-8">
               <div class="flex justify-between items-center text-sm">
                 <span class="text-outline">Tạm tính (Tiền hàng)</span>
-                <span class="font-bold text-white">{{ formatPrice(orderInfo.TongTien) }}</span>
+                <span class="font-bold text-on-surface dark:text-white">{{ formatPrice(orderInfo.TongTien) }}</span>
               </div>
               
               <div class="flex justify-between items-center text-sm" v-if="orderInfo.TongTien > orderInfo.ThanhTien">
@@ -206,8 +206,8 @@
               </div>
               
               <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end">
-                <span class="font-headline font-bold text-white uppercase tracking-widest text-xs">Tổng Hóa Đơn</span>
-                <span class="text-lg font-headline font-black text-white">{{ formatPrice(orderInfo.ThanhTien) }}</span>
+                <span class="font-headline font-bold text-on-surface dark:text-white uppercase tracking-widest text-xs">Tổng Hóa Đơn</span>
+                <span class="text-lg font-headline font-black text-on-surface dark:text-white">{{ formatPrice(orderInfo.ThanhTien) }}</span>
               </div>
 
               <div class="pt-4 border-t border-outline-variant/20 mt-4">
@@ -217,14 +217,14 @@
                 </div>
                 <div class="flex justify-between items-center text-sm mt-2">
                   <span class="text-outline uppercase font-bold text-[10px] tracking-widest">Phương thức</span>
-                  <span class="text-white font-medium max-w-[200px] text-right truncate" :title="orderInfo.TenPhuongThuc || 'Chưa giao dịch'">
+                  <span class="text-on-surface dark:text-white font-medium max-w-[200px] text-right truncate" :title="orderInfo.TenPhuongThuc || 'Chưa giao dịch'">
                     {{ orderInfo.TenPhuongThuc || 'Chưa giao dịch' }}
                   </span>
                 </div>
               </div>
 
               <div class="pt-4 border-t border-outline-variant/20 flex justify-between items-end mt-2 bg-primary/5 -mx-6 px-6 py-4 border-b border-b-primary/20">
-                <span class="font-headline font-bold text-white uppercase tracking-widest text-[11px] w-2/3">
+                <span class="font-headline font-bold text-on-surface dark:text-white uppercase tracking-widest text-[11px] w-2/3">
                   Số tiền cần trả 
                 </span>
                 <span class="text-3xl font-headline font-black text-primary tracking-tighter">
@@ -265,7 +265,7 @@
     <!-- MODAL THANH TOÁN -->
     <div v-if="showPaymentModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div class="bg-surface-container-high border border-outline-variant/30 rounded-2xl p-5 md:p-8 max-w-sm w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
-        <h3 class="font-headline text-xl font-bold text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
+        <h3 class="font-headline text-xl font-bold text-on-surface dark:text-white mb-2 uppercase italic">Thanh toán đơn hàng</h3>
         <p class="text-sm text-on-surface-variant mb-6">Mã đơn: <span class="font-bold text-primary">{{ orderInfo.MaDonHangHienThi || route.params.id }}</span></p>
         
         <div class="space-y-4 mb-6">
@@ -295,17 +295,17 @@
           <div class="space-y-3 mb-8">
             <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#a50064] transition-all">
               <input type="radio" v-model="paymentGateway" value="momo" class="text-[#a50064] focus:ring-[#a50064]" />
-              <span class="text-sm font-bold text-white">Ví MoMo</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white">Ví MoMo</span>
             </label>
             <label class="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-outline-variant/20 cursor-pointer hover:border-[#0068FF] transition-all">
               <input type="radio" v-model="paymentGateway" value="zalopay" class="text-[#0068FF] focus:ring-[#0068FF]" />
-              <span class="text-sm font-bold text-white">ZaloPay</span>
+              <span class="text-sm font-bold text-on-surface dark:text-white">ZaloPay</span>
             </label>
           </div>
         </div>
 
         <div class="flex gap-3">
-          <button @click="showPaymentModal = false" class="flex-1 py-3 bg-surface-container text-xs font-bold uppercase tracking-widest text-outline hover:text-white rounded-lg transition-colors">Hủy</button>
+          <button @click="showPaymentModal = false" class="flex-1 py-3 bg-surface-container text-xs font-bold uppercase tracking-widest text-outline hover:text-on-surface dark:hover:text-white rounded-lg transition-colors">Hủy</button>
           <button @click="handleRepay" class="flex-[2] py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed rounded-lg font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2">
             <span v-if="isProcessingPayment" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
             Quét mã
@@ -321,15 +321,15 @@
           <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center text-error mb-4 border border-error/20">
             <span class="material-symbols-outlined text-3xl">warning</span>
           </div>
-          <h3 class="font-headline text-2xl font-bold text-white mb-2">Hủy đơn hàng?</h3>
-          <p class="text-sm text-on-surface-variant">Bạn có chắc chắn muốn hủy đơn hàng <span class="font-bold text-white">{{ orderInfo.MaDonHangHienThi || route.params.id }}</span> không? Hành động này không thể hoàn tác.</p>
+          <h3 class="font-headline text-2xl font-bold text-on-surface dark:text-white mb-2">Hủy đơn hàng?</h3>
+          <p class="text-sm text-on-surface-variant">Bạn có chắc chắn muốn hủy đơn hàng <span class="font-bold text-on-surface dark:text-white">{{ orderInfo.MaDonHangHienThi || route.params.id }}</span> không? Hành động này không thể hoàn tác.</p>
         </div>
         
         <div class="flex gap-3">
-          <button @click="showCancelModal = false" class="flex-1 py-3.5 bg-surface-container text-sm font-bold uppercase tracking-widest text-outline hover:text-white rounded-xl transition-colors">
+          <button @click="showCancelModal = false" class="flex-1 py-3.5 bg-surface-container text-sm font-bold uppercase tracking-widest text-outline hover:text-on-surface dark:hover:text-white rounded-xl transition-colors">
             Quay lại
           </button>
-          <button @click="confirmCancelOrder" :disabled="isCanceling" class="flex-1 py-3.5 bg-error text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2 shadow-lg shadow-error/20 disabled:opacity-50">
+          <button @click="confirmCancelOrder" :disabled="isCanceling" class="flex-1 py-3.5 bg-error text-on-surface dark:text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2 shadow-lg shadow-error/20 disabled:opacity-50">
             <span v-if="isCanceling" class="material-symbols-outlined animate-spin text-sm">autorenew</span>
             Đồng ý hủy
           </button>
@@ -341,7 +341,7 @@
     <div v-if="showEditAddressModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div class="bg-surface-container-high border border-outline-variant/30 rounded-3xl p-5 md:p-8 max-w-md w-full shadow-2xl animate-[fadeIn_0.2s_ease-out]">
         <div class="flex justify-between items-center mb-6">
-          <h3 class="font-headline text-xl font-bold text-white uppercase tracking-widest">Sửa địa chỉ giao hàng</h3>
+          <h3 class="font-headline text-xl font-bold text-on-surface dark:text-white uppercase tracking-widest">Sửa địa chỉ giao hàng</h3>
           <button @click="showEditAddressModal = false" class="text-outline hover:text-error transition-colors">
             <span class="material-symbols-outlined">close</span>
           </button>
@@ -350,20 +350,20 @@
         <div class="space-y-4 mb-8">
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Họ và tên người nhận</label>
-            <input v-model="editAddressForm.hoten" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập họ và tên" />
+            <input v-model="editAddressForm.hoten" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-on-surface dark:text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập họ và tên" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Số điện thoại</label>
-            <input v-model="editAddressForm.sdt" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập số điện thoại (VD: 098...)" />
+            <input v-model="editAddressForm.sdt" type="text" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-on-surface dark:text-white focus:outline-none focus:border-primary transition-colors" placeholder="Nhập số điện thoại (VD: 098...)" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Địa chỉ chi tiết</label>
-            <textarea v-model="editAddressForm.diachi" rows="3" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-white focus:outline-none focus:border-primary transition-colors resize-none" placeholder="Nhập số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+            <textarea v-model="editAddressForm.diachi" rows="3" class="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-3 text-base md:text-sm text-on-surface dark:text-white focus:outline-none focus:border-primary transition-colors resize-none" placeholder="Nhập số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
           </div>
         </div>
 
         <div class="flex gap-3">
-          <button @click="showEditAddressModal = false" class="flex-1 py-3.5 bg-surface-container text-sm font-bold uppercase tracking-widest text-outline hover:text-white rounded-xl transition-colors">
+          <button @click="showEditAddressModal = false" class="flex-1 py-3.5 bg-surface-container text-sm font-bold uppercase tracking-widest text-outline hover:text-on-surface dark:hover:text-white rounded-xl transition-colors">
             Hủy
           </button>
           <button @click="submitUpdateAddress" :disabled="isUpdatingAddress" class="flex-[2] py-3.5 bg-primary text-on-primary-fixed rounded-xl font-bold text-sm uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50">
@@ -775,7 +775,11 @@
 
 <style scoped>
   .glass-panel { 
-    background: rgba(28, 31, 43, 0.4); 
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px); 
+  }
+  .dark .glass-panel { 
+    background: rgba(28, 31, 43, 0.4);
     backdrop-filter: blur(16px); 
   }
   @keyframes fadeIn {

@@ -16,12 +16,12 @@
             </span>
             <span class="text-on-surface-variant text-xs font-bold tracking-widest uppercase">• {{ heroNews.readTime }} phút đọc</span>
           </div>
-          <h1 class="font-headline text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-white leading-tight mb-4 md:mb-6 uppercase max-w-4xl" v-html="heroNews.titleHtml"></h1>
+          <h1 class="font-headline text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-black italic tracking-tighter text-on-surface dark:text-white leading-tight mb-4 md:mb-6 uppercase max-w-4xl" v-html="heroNews.titleHtml"></h1>
           <p class="font-body text-sm md:text-lg text-on-surface-variant max-w-2xl mb-6 md:mb-8 leading-relaxed font-medium line-clamp-2 md:line-clamp-none">
             {{ heroNews.summary }}
           </p>
           <div>
-            <button @click="router.push(`/news/${heroNews.id}`)" class="px-8 py-3.5 bg-primary text-black font-headline font-black tracking-widest rounded-lg hover:bg-white transition-all neon-glow flex items-center group uppercase text-sm">
+            <button @click="router.push(`/news/${heroNews.id}`)" class="px-8 py-3.5 bg-primary text-white dark:text-black font-headline font-black tracking-widest rounded-lg hover:bg-white transition-all neon-glow flex items-center group uppercase text-sm">
               Đọc Bài Viết
               <span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </button>
@@ -32,7 +32,7 @@
       <section class="py-12 bg-background overflow-hidden">
         <div class="max-w-7xl mx-auto px-6">
           <div class="flex items-end justify-between mb-8">
-            <h2 class="text-2xl font-headline font-black tracking-tight text-white uppercase flex items-center gap-3">
+            <h2 class="text-2xl font-headline font-black tracking-tight text-on-surface dark:text-white uppercase flex items-center gap-3">
               <span class="material-symbols-outlined text-primary text-3xl">local_fire_department</span>
               Đang Thịnh Hành
             </h2>
@@ -44,7 +44,7 @@
               <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
               <div class="absolute bottom-6 left-6 right-6">
                 <span class="text-primary text-[10px] font-black uppercase tracking-widest mb-2 block">{{ item.category }}</span>
-                <h4 class="font-headline font-bold text-lg leading-tight text-white group-hover:text-primary transition-colors">{{ item.title }}</h4>
+                <h4 class="font-headline font-bold text-lg leading-tight text-on-surface dark:text-white group-hover:text-primary transition-colors">{{ item.title }}</h4>
               </div>
             </div>
           </div>
@@ -63,8 +63,8 @@
                     :class="[
                       'snap-start shrink-0 px-5 py-2 rounded-lg font-headline font-bold text-[11px] tracking-widest uppercase transition-all',
                       activeCategory === tab 
-                        ? 'bg-primary text-black shadow-[0_0_10px_rgba(255,61,0,0.3)]' 
-                        : 'bg-surface-container border border-outline-variant/50 text-on-surface-variant hover:border-primary/50 hover:text-white'
+                        ? 'bg-primary text-white dark:text-black shadow-[0_0_10px_rgba(255,61,0,0.3)]' 
+                        : 'bg-surface-container border border-outline-variant/50 text-on-surface-variant hover:border-primary/50 hover:text-on-surface dark:text-white'
                     ]"
                   >
                     {{ tab }}
@@ -86,7 +86,7 @@
                   <div class="absolute top-4 bottom-4 left-4 right-4 border-x border-white scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-center z-10 pointer-events-none opacity-80"></div>
 
                   <div class="absolute top-3 right-3 z-20">
-                    <span class="bg-background/80 backdrop-blur-md text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded text-white border border-white/10">
+                    <span class="bg-background/80 backdrop-blur-md text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded text-on-surface dark:text-white border border-white/10">
                       {{ post.category }}
                     </span>
                   </div>
@@ -97,7 +97,7 @@
                   <div class="absolute top-full left-0 w-0 h-0 border-t-[8px] border-l-[8px] border-l-transparent border-t-[#cc3200]"></div>
                 </div>
                 <div class="flex flex-col px-1">
-                  <h3 class="font-headline text-lg font-bold leading-snug group-hover:text-primary transition-colors text-white line-clamp-2" :title="post.title">
+                  <h3 class="font-headline text-lg font-bold leading-snug group-hover:text-primary transition-colors text-on-surface dark:text-white line-clamp-2" :title="post.title">
                     {{ post.title }}
                   </h3>
                 </div>
@@ -106,12 +106,12 @@
             
             <div v-else-if="!isLoading" class="text-center py-20 bg-surface-container rounded-2xl border border-dashed border-outline-variant/50">
               <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4">article</span>
-              <h3 class="font-headline text-xl font-bold text-white mb-2">Chưa có dữ liệu</h3>
+              <h3 class="font-headline text-xl font-bold text-on-surface dark:text-white mb-2">Chưa có dữ liệu</h3>
               <p class="text-on-surface-variant text-sm">Chưa có bài viết nào thuộc chuyên mục này.</p>
             </div>
 
             <div v-if="filteredNews.length > 0 && visibleCount < filteredNews.length" class="mt-12 flex justify-center">
-              <button @click = "loadMore" class="px-10 py-3 border border-outline-variant hover:border-primary text-white hover:text-primary font-headline font-bold text-[11px] tracking-[0.2em] uppercase rounded-lg transition-all">
+              <button @click = "loadMore" class="px-10 py-3 border border-outline-variant hover:border-primary text-on-surface dark:text-white hover:text-primary font-headline font-bold text-[11px] tracking-[0.2em] uppercase rounded-lg transition-all">
                 Tải thêm bài viết
               </button>
             </div>
@@ -119,15 +119,15 @@
 
           <aside class="lg:col-span-4 space-y-10">
             <div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/30">
-              <h4 class="font-headline font-bold text-sm tracking-widest uppercase text-white mb-6 flex items-center gap-2">
+              <h4 class="font-headline font-bold text-sm tracking-widest uppercase text-on-surface dark:text-white mb-6 flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-xl">auto_graph</span>
                 Đọc Nhiều Nhất
               </h4>
               <div class="space-y-6">
                 <div v-for="(post, index) in popularNews" :key="post.id" @click="router.push(`/news/${post.id}`)" class="flex gap-4 group cursor-pointer">
-                  <span class="text-4xl font-headline font-black text-outline-variant/50 group-hover:text-primary/30 transition-colors">0{{ index + 1 }}</span>
+                  <span class="text-4xl font-headline font-black text-outline dark:text-outline-variant/50 group-hover:text-primary/30 transition-colors">0{{ index + 1 }}</span>
                   <div>
-                    <h5 class="font-headline font-bold text-sm text-white group-hover:text-primary transition-colors leading-snug mb-1 line-clamp-2">{{ post.title }}</h5>
+                    <h5 class="font-headline font-bold text-sm text-on-surface dark:text-white group-hover:text-primary transition-colors leading-snug mb-1 line-clamp-2">{{ post.title }}</h5>
                     <span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">{{ post.date }}</span>
                   </div>
                 </div>
@@ -135,7 +135,7 @@
             </div>
 
             <div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/30">
-              <h4 class="font-headline font-bold text-sm tracking-widest uppercase text-white mb-6">Thẻ Phổ Biến</h4>
+              <h4 class="font-headline font-bold text-sm tracking-widest uppercase text-on-surface dark:text-white mb-6">Thẻ Phổ Biến</h4>
               <div class="flex flex-wrap gap-2">
                 <span 
                   v-for="tag in trendingTags" :key="tag" 
@@ -143,7 +143,7 @@
                   :class="[
                     'px-3 py-1.5 border text-[10px] font-bold tracking-widest uppercase rounded cursor-pointer transition-all',
                     activeTag === tag 
-                      ? 'bg-primary text-black border-primary shadow-[0_0_10px_rgba(255,143,115,0.4)]' 
+                      ? 'bg-primary text-white dark:text-black border-primary shadow-[0_0_10px_rgba(255,143,115,0.4)]' 
                       : 'bg-background border-outline-variant/50 text-on-surface-variant hover:border-primary hover:text-primary'
                   ]"
                 >
