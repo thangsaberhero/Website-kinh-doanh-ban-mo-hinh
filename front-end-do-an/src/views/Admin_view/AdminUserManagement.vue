@@ -218,17 +218,30 @@
             </div>
           </div>
           <div v-if="!isDrawerEditMode" class="pt-4 mt-4 border-t border-slate-100/50 flex flex-col gap-2">
-            <button @click="resetPassword(viewingUser.id)" class="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 border border-slate-200 shadow-sm">
-              <span class="material-symbols-outlined text-[16px]">key</span> Đặt lại mật khẩu mặc định
-            </button>
             
-            <button v-if="viewingUser.status === 'Hoạt động' && viewingUser.id !== currentAdminId" @click="lockUser(viewingUser.id)" class="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 border border-rose-200 shadow-sm">
-              <span class="material-symbols-outlined text-[16px]">lock</span> Khóa tài khoản này
-            </button>
+            <template v-if="viewingUser.role !== 'Admin' && viewingUser.id !== currentAdminId">
+              <button @click="resetPassword(viewingUser.id)" class="w-full py-2.5 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 border border-slate-200 shadow-sm">
+                <span class="material-symbols-outlined text-[16px]">key</span> Đặt lại mật khẩu mặc định
+              </button>
+              
+              <button v-if="viewingUser.status === 'Hoạt động'" @click="lockUser(viewingUser.id)" class="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 border border-rose-200 shadow-sm">
+                <span class="material-symbols-outlined text-[16px]">lock</span> Khóa tài khoản này
+              </button>
+              
+              <button v-else @click="unlockUser(viewingUser.id)" class="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 border border-emerald-200 shadow-sm">
+                <span class="material-symbols-outlined text-[16px]">lock_open</span> Mở khóa tài khoản
+              </button>
+            </template>
+
+            <template v-else>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
+                <span class="material-symbols-outlined text-slate-400 text-[20px]">shield_person</span>
+                <p class="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  Tài khoản <span class="font-bold text-slate-700">Quản trị viên</span> hoặc <span class="font-bold text-slate-700">Chính bạn</span> đang được bảo vệ. Hệ thống từ chối quyền can thiệp bảo mật tại đây.
+                </p>
+              </div>
+            </template>
             
-            <button v-else @click="unlockUser(viewingUser.id)" class="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 border border-emerald-200 shadow-sm">
-              <span class="material-symbols-outlined text-[16px]">lock_open</span> Mở khóa tài khoản
-            </button>
           </div>
           <p v-if="isDrawerEditMode" class="text-[10px] text-slate-400 italic mt-2">
             * Dữ liệu bảo mật do hệ thống tạo tự động, không thể chỉnh sửa thủ công.
@@ -400,7 +413,9 @@
                               <span class="material-symbols-outlined text-[18px]">visibility</span>
                           </button>
                           
-                          <button @click.stop="toggleUserMenu(user.id)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all" title="Thêm tùy chọn">
+                          <button v-if="user.role !== 'Admin' && user.id !== currentAdminId" 
+                                  @click.stop="toggleUserMenu(user.id)" 
+                                  class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all" title="Thêm tùy chọn">
                               <span class="material-symbols-outlined text-[18px]">more_vert</span>
                           </button>
                       </div>
@@ -411,11 +426,10 @@
                           class="absolute right-12 top-10 w-44 bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.15)] border border-slate-100 py-2 z-50 text-left overflow-hidden"
                           :class="index >= users.length - 2 ? 'bottom-8 top-auto' : 'top-10 bottom-auto'"
                       >
-                          <button @click="resetPassword(user.id)" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary flex items-center gap-2 font-medium transition-colors">
+                          <button @click="resetPassword(user.id)" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-amber-600 flex items-center gap-2 font-medium transition-colors">
                               <span class="material-symbols-outlined text-[18px]">key</span> Đặt lại mật khẩu
                           </button>
-                          
-                          <button v-if="user.status === 'Hoạt động' && user.id !== currentAdminId" @click="lockUser(user.id)" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-rose-50 hover:text-rose-600 flex items-center gap-2 font-medium transition-colors">
+                          <button v-if="user.status === 'Hoạt động'" @click="lockUser(user.id)" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-rose-50 hover:text-rose-600 flex items-center gap-2 font-medium transition-colors">
                               <span class="material-symbols-outlined text-[18px]">lock</span> Khóa tài khoản
                           </button>
                           <button v-else @click="unlockUser(user.id)" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 flex items-center gap-2 font-medium transition-colors">
