@@ -230,7 +230,11 @@
                   <td class="px-6 py-4">
                     <div class="flex flex-col">
                       <div class="flex items-center gap-2">
-                        <span class="font-bold text-slate-900 text-sm">{{ order.code }}</span>
+                        <span @click="viewOrderDetails(order)" 
+                              class="font-bold text-sky-600 text-sm hover:text-sky-700 hover:underline cursor-pointer transition-colors" 
+                              title="Bấm để xem chi tiết đơn hàng">
+                            {{ order.code }}
+                        </span>
                         <span class="text-[9px] px-1.5 py-0.5 rounded border font-black tracking-widest whitespace-nowrap transition-all"
                               :class="order.saleType?.toLowerCase().includes('order') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'">
                           {{ order.saleType?.toLowerCase().includes('order') ? 'ORDER' : 'SẴN' }}
@@ -242,7 +246,7 @@
                             edit_note
                           </span>
                           
-                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-72 max-h-48 overflow-y-auto custom-scrollbar bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-3 rounded-xl opacity-0 group-hover/note:opacity-100 transition-opacity z-50 shadow-xl border border-slate-700 pointer-events-auto whitespace-normal break-words">
+                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-72 max-h-48 overflow-y-auto custom-scrollbar bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-3 rounded-xl opacity-0 invisible group-hover/note:opacity-100 group-hover/note:visible transition-all z-50 shadow-xl border border-slate-700 pointer-events-auto whitespace-normal break-words">
                             
                             <p class="font-bold uppercase tracking-widest mb-2 text-[9px] sticky top-0 bg-slate-800/95 pb-1.5 border-b border-slate-600/50 z-10" :class="order.statusId < 3 ? 'text-rose-400' : 'text-slate-400'">
                                 Lịch sử Ghi chú:
