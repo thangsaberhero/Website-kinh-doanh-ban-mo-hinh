@@ -1123,8 +1123,10 @@
   const isLoading = ref(true);
   //Số trang
   const currentPage = ref(1);
-  let limit = 10;
   const totalPages = ref(1);
+  const itemsPerPage = ref(10);
+  const startItem = computed(() => totalProducts.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
+  const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalProducts.value));
   
   
   const totalProducts = ref(0);
@@ -1250,7 +1252,7 @@
     isLoading.value = true;
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); // Lấy thẻ
-      let url = `${API_BASE_URL}/api/product_admin?page=${currentPage.value}&limit=${limit}`;
+      let url = `${API_BASE_URL}/api/product_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       if (searchQuery.value.trim() !== '') {
         url += `&keyword=${encodeURIComponent(searchQuery.value.trim())}`;
       }
