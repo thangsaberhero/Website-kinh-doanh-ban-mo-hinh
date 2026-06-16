@@ -135,7 +135,7 @@
           <button 
             @click="currentPage > 1 && currentPage--" 
             :disabled="currentPage === 1"
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 disabled:hover:bg-surface-container cursor-pointer border border-outline-variant/30"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-on-surface dark:text-white hover:bg-primary transition-all disabled:opacity-30 disabled:hover:bg-surface-container cursor-pointer border border-outline-variant/30"
           >
             <span class="material-symbols-outlined text-sm">chevron_left</span>
           </button>
@@ -160,7 +160,7 @@
           <button 
             @click="currentPage < totalPages && currentPage++" 
             :disabled="currentPage === totalPages"
-            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 disabled:hover:bg-surface-container cursor-pointer border border-outline-variant/30"
+            class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-on-surface dark:text-white hover:bg-primary transition-all disabled:opacity-30 disabled:hover:bg-surface-container cursor-pointer border border-outline-variant/30"
           >
             <span class="material-symbols-outlined text-sm">chevron_right</span>
           </button>
@@ -179,7 +179,7 @@
         </div>
         <div v-else class="text-center py-20 border border-dashed border-outline-variant/40 rounded-2xl bg-surface-container-low">
           <span class="material-symbols-outlined text-6xl text-gray-500 mb-4">search_off</span>
-          <h2 class="font-headline text-2xl text-white font-bold mb-2">Không tìm thấy kho báu!</h2>
+          <h2 class="font-headline text-2xl text-on-surface dark:text-white font-bold mb-2">Không tìm thấy kho báu!</h2>
           <p class="text-gray-400">Thử đổi từ khóa tìm kiếm hoặc chọn danh mục khác xem sao.</p>
         </div>
 
