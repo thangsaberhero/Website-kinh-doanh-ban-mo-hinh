@@ -148,7 +148,7 @@ const authController = {
                 FROM TaiKhoan tk
                 LEFT JOIN KhachHang kh ON tk.MaTK = kh.MaTK
                 LEFT JOIN NhanVien nv ON tk.MaTK = nv.MaTK
-                WHERE tk.TenDN = ?
+                WHERE tk.TenDN = ? and Bi_khoa = 0
             `;
             const [users] = await db.query(sql_login, [TenDN]);
             
@@ -427,7 +427,7 @@ const authController = {
                 FROM TaiKhoan tk
                 LEFT JOIN KhachHang kh ON tk.MaTK = kh.MaTK
                 LEFT JOIN NhanVien nv ON tk.MaTK = nv.MaTK
-                WHERE tk.MaTK = ?
+                WHERE tk.MaTK = ? and Bi_khoa = 0
             `;
             const [fullUsers] = await connection.query(sql_login, [targetMaTK]);
             const fullUser = fullUsers[0];
@@ -511,7 +511,7 @@ const authController = {
                 FROM TaiKhoan tk
                 LEFT JOIN KhachHang kh ON tk.MaTK = kh.MaTK
                 LEFT JOIN NhanVien nv ON tk.MaTK = nv.MaTK
-                WHERE tk.MaTK = ?
+                WHERE tk.MaTK = ? and Bi_khoa = 0
             `;
             const [fullUsers] = await connection.query(sql_login, [targetMaTK]);
             const fullUser = fullUsers[0];
