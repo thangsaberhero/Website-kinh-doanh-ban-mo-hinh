@@ -17,7 +17,7 @@
                :class="isPaymentFailed 
                   ? 'bg-gradient-to-tr from-rose-500 to-rose-700 shadow-[0_0_40px_rgba(244,63,94,0.4)]' 
                   : 'bg-gradient-to-tr from-primary to-primary-container shadow-[0_0_40px_rgba(255,143,115,0.4)]'">
-            <span class="material-symbols-outlined text-white text-5xl font-bold" style="font-variation-settings: 'FILL' 1;">
+            <span class="material-symbols-outlined text-on-surface dark:text-white text-5xl font-bold" style="font-variation-settings: 'FILL' 1;">
               {{ isPaymentFailed ? 'cancel' : 'check_circle' }}
             </span>
           </div>
@@ -28,7 +28,7 @@
           </h1>
           
           <p class="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto font-medium leading-relaxed">
-            <span v-if="!isPaymentFailed">Cảm ơn bạn đã tin tưởng <span class="text-white font-bold">FigureCollect</span>. Tuyệt tác của bạn đang được chuẩn bị để gia nhập bộ sưu tập.</span>
+            <span v-if="!isPaymentFailed">Cảm ơn bạn đã tin tưởng <span class="text-on-surface dark:text-white font-bold">FigureCollect</span>. Tuyệt tác của bạn đang được chuẩn bị để gia nhập bộ sưu tập.</span>
             <span v-else>Giao dịch của bạn đã bị hủy hoặc xảy ra lỗi trong quá trình thanh toán. Đơn hàng của bạn sẽ được lưu lại để chờ thanh toán sau.</span>
           </p>
         </section>
@@ -41,17 +41,17 @@
             <div class="flex flex-col h-full justify-between relative z-10">
               <div class="mb-6">
                 <span class="text-[10px] uppercase tracking-[0.2em] mb-2 block font-bold" :class="isPaymentFailed ? 'text-rose-500' : 'text-primary'">Mã đơn hàng</span>
-                <h2 class="font-headline text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight break-all">Mã: {{ orderIdDisplay }}</h2>
+                <h2 class="font-headline text-2xl sm:text-3xl md:text-4xl font-bold text-on-surface dark:text-white tracking-tight break-all">Mã: {{ orderIdDisplay }}</h2>
               </div>
               
               <div class="grid grid-cols-2 gap-4 pt-6 border-t border-outline-variant/20">
                 <div>
                   <span class="text-[10px] uppercase tracking-[0.2em] text-outline mb-1 block font-bold">Ngày đặt</span>
-                  <p class="text-white font-medium">{{ formatTime(orderInfo.NgayLapDon) }}</p>
+                  <p class="text-on-surface dark:text-white font-medium">{{ formatTime(orderInfo.NgayLapDon) }}</p>
                 </div>
                 <div>
                   <span class="text-[10px] uppercase tracking-[0.2em] text-outline mb-1 block font-bold">Trạng thái</span>
-                  <p class="font-medium" :class="isPaymentFailed ? 'text-rose-400' : 'text-white'">
+                  <p class="font-medium" :class="isPaymentFailed ? 'text-rose-400' : 'text-on-surface dark:text-white'">
                     {{ isPaymentFailed ? 'Chưa thanh toán' : 'Chờ duyệt' }}
                   </p>
                 </div>
@@ -64,11 +64,11 @@
             <div class="space-y-4">
               <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
                 <span class="text-sm text-on-surface-variant font-medium">Số lượng</span>
-                <span class="text-white font-bold">{{ totalQty < 10 ? '0' + totalQty : totalQty }} SP</span>
+                <span class="text-on-surface dark:text-white font-bold">{{ totalQty < 10 ? '0' + totalQty : totalQty }} SP</span>
               </div>
               <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
                 <span class="text-sm text-on-surface-variant font-medium">Vận chuyển</span>
-                <span class="text-white font-bold">Chưa rõ</span>
+                <span class="text-on-surface dark:text-white font-bold">Chưa rõ</span>
               </div>
               <div class="pt-2">
                 <span class="text-[10px] uppercase tracking-[0.2em] text-outline mb-1 block font-bold">Tổng cần thanh toán</span>

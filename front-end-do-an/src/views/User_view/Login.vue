@@ -1,9 +1,9 @@
 <template>
   <div class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen flex items-center justify-center relative overflow-hidden">
     
-    <router-link to="/" class="hidden lg:flex fixed top-6 left-6 z-50 items-center gap-2 px-4 py-2 rounded-full glass-panel hover:bg-white/10 transition-all group">
-      <span class="material-symbols-outlined text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
-      <span class="text-sm font-bold text-white/90 tracking-wide">Quay lại</span>
+    <router-link to="/" class="hidden lg:flex fixed top-6 left-6 z-50 items-center gap-2 px-4 py-2 rounded-full bg-surface/80 dark:bg-white/10 hover:bg-surface dark:hover:bg-white/20 backdrop-blur-md transition-all group border border-outline-variant/30 dark:border-white/10 shadow-sm">
+      <span class="material-symbols-outlined text-on-surface dark:text-white/80 text-xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
+      <span class="text-sm font-bold text-on-surface dark:text-white/90 tracking-wide">Quay lại</span>
     </router-link>
 
     <!-- NỀN MỜ PHÍA SAU (Đồng bộ với Slider) -->
@@ -45,7 +45,7 @@
               />
             </transition>
             <!-- Lớp phủ cho dễ đọc chữ -->
-            <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30 dark:from-background dark:via-background/40"></div>
           </div>
 
           <div class="relative z-10 w-full p-12 flex flex-col justify-between">
@@ -157,7 +157,7 @@
               <button 
                 type="submit" 
                 :disabled="isLoading"
-                class="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold rounded shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+                class="w-full py-4 px-6 bg-primary dark:bg-gradient-to-r dark:from-primary dark:to-primary-container text-white dark:text-on-primary font-bold rounded-xl shadow-lg shadow-primary/30 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
               >
                 {{ isLoading ? 'Đang xác thực...' : 'Đăng nhập' }}
               </button>
@@ -175,11 +175,11 @@
             <div class="grid grid-cols-2 gap-3">
               <button @click="handleGoogleLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.21-3.21C17.54 1.84 14.99 1 12 1 7.37 1 3.4 3.65 1.5 7.5l3.86 3c.91-2.72 3.47-4.46 6.64-4.46z" fill="#EA4335"></path><path d="M23.49 12.27c0-.81-.07-1.59-.21-2.34H12v4.42h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.88 3.39-8.47z" fill="#4285F4"></path><path d="M5.36 14.5c-.23-.68-.36-1.41-.36-2.17s.13-1.49.36-2.17l-3.86-3C.68 8.65 0 10.25 0 12s.68 3.35 1.5 4.84l3.86-2.34z" fill="#FBBC05"></path><path d="M12 23c3.12 0 5.73-1.03 7.64-2.8l-3.66-2.84c-1.06.71-2.42 1.14-3.98 1.14-3.17 0-5.84-2.14-6.8-5.04l-3.86 3C3.51 20.35 7.42 23 12 23z" fill="#34A853"></path></svg>
-                <span class="text-sm font-semibold text-white">Google</span>
+                <span class="text-sm font-semibold text-on-surface dark:text-white">Google</span>
               </button>
               <button @click="handleFacebookLogin" type="button" class="flex items-center justify-center gap-2 py-2.5 px-2 sm:px-4 bg-surface-container hover:bg-surface border border-outline-variant/20 rounded-xl transition-colors group">
                 <svg class="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg>
-                <span class="text-sm font-semibold text-white">Facebook</span>
+                <span class="text-sm font-semibold text-on-surface dark:text-white">Facebook</span>
               </button>
             </div>
 
@@ -188,11 +188,11 @@
               <router-link to="/register" class="text-tertiary font-bold hover:underline decoration-2 underline-offset-4 transition-all">Đăng ký ngay</router-link>
             </p>
             
-            <footer class="mt-12 pt-6 border-t border-white/5 text-[10px] text-outline/60 w-full flex justify-between items-center">
-              <span>© 2026 {{ systemStore.settings.shop_name || 'FigureCollect' }} Hub. All rights reserved.</span>
+            <footer class="mt-12 pt-6 border-t border-outline-variant/30 dark:border-white/5 text-[10px] text-on-surface-variant dark:text-outline/60 w-full flex justify-between items-center">
+              <span>© {{ new Date().getFullYear() }} {{ systemStore.settings.shop_name || 'FigureCollect' }} Hub. All rights reserved.</span>
               <div class="flex gap-4">
-                <a class="hover:text-on-surface-variant transition-colors" href="#">Điều khoản</a>
-                <a class="hover:text-on-surface-variant transition-colors" href="#">Bảo mật</a>
+                <a href="#" @click.prevent="openPolicy('terms')" class="hover:text-primary transition-colors">Điều khoản</a>
+                <a href="#" @click.prevent="openPolicy('privacy')" class="hover:text-primary transition-colors">Bảo mật</a>
               </div>
             </footer>
           </div>
@@ -200,10 +200,47 @@
       </div>
     </main>
   </div>
+  <transition 
+    enter-active-class="transition duration-500 ease-out" 
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition duration-300 ease-in"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="showPolicyModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" @click="showPolicyModal = false"></div>
+      
+      <div class="relative bg-surface-container-high w-full max-w-md rounded-2xl shadow-2xl border border-outline-variant/20 overflow-hidden transform scale-100 transition-all">
+        <div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container">
+          <h3 class="text-lg font-headline font-bold text-on-surface dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">{{ policyContent.icon }}</span>
+            {{ policyContent.title }}
+          </h3>
+          <button @click="showPolicyModal = false" class="text-outline hover:text-error transition-colors p-1">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+        
+        <div class="p-6 space-y-5 bg-surface/50">
+          <div v-for="(line, index) in policyContent.body" :key="index" class="flex gap-3 items-start">
+            <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">verified</span>
+            <p class="text-sm text-on-surface-variant leading-relaxed">{{ line }}</p>
+          </div>
+        </div>
+        
+        <div class="p-5 border-t border-outline-variant/20 bg-surface-container flex justify-end">
+          <button @click="showPolicyModal = false" class="px-6 py-2.5 bg-primary text-on-primary-fixed font-bold rounded-lg hover:brightness-110 transition-all active:scale-95 shadow-lg shadow-primary/20">
+            Tôi đã hiểu
+          </button>
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup>
-  import { ref, reactive, onMounted, onUnmounted } from 'vue';
+  import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import { useAuthStore } from '../../stores/auth.js';
   import { useToastStore } from '../../stores/toast.js';
@@ -346,6 +383,37 @@
       const redirectPath = (userRole === 1 || userRole === 2) ? '/admin' : (route.query.redirect || '/');
       router.push(redirectPath);
     }, 500);
+  };
+
+  const showPolicyModal = ref(false);
+  const policyType = ref('');
+
+  const policyContent = computed(() => {
+    if (policyType.value === 'terms') {
+      return {
+        title: 'Điều khoản dịch vụ',
+        icon: 'gavel',
+        body: [
+          'Bằng việc đăng nhập, bạn đồng ý với các quy định hoạt động của hệ thống.',
+          'Mọi hành vi gian lận, cố tình phá hoại sẽ dẫn đến việc khóa tài khoản vĩnh viễn.',
+          'Chúng tôi có quyền từ chối cung cấp dịch vụ nếu phát hiện vi phạm tiêu chuẩn cộng đồng.'
+        ]
+      };
+    }
+    return {
+      title: 'Chính sách bảo mật',
+      icon: 'security',
+      body: [
+        'Chúng tôi chỉ sử dụng thông tin cơ bản của bạn để phục vụ việc xác thực đăng nhập.',
+        'Cam kết KHÔNG bán hay chia sẻ dữ liệu cá nhân của bạn cho bên thứ ba.',
+        'Thông tin mật khẩu được mã hóa một chiều hoàn toàn an toàn theo tiêu chuẩn hiện đại.'
+      ]
+    };
+  });
+
+  const openPolicy = (type) => {
+    policyType.value = type;
+    showPolicyModal.value = true;
   };
 </script>
 

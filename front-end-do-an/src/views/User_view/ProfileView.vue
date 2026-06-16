@@ -8,7 +8,7 @@
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
         <header class="mb-10">
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-on-surface dark:text-white mb-2">
             Hồ sơ <span class="text-primary italic">Cá nhân</span>
           </h1>
           <p class="text-on-surface-variant font-medium">Quản lý thông tin liên hệ và địa chỉ giao hàng của bạn.</p>
@@ -29,7 +29,7 @@
                 </div>
 
               <div class="space-y-3 text-center sm:text-left">
-                <h4 class="text-xl font-headline font-bold text-white">Ảnh đại diện</h4>
+                <h4 class="text-xl font-headline font-bold text-on-surface dark:text-white">Ảnh đại diện</h4>
                 <p class="text-sm text-on-surface-variant">Tải lên hình ảnh mới. Hỗ trợ: JPG, PNG (Max 5MB).</p>
                 <div class="flex gap-3 justify-center sm:justify-start pt-2">
                   
@@ -38,7 +38,7 @@
                   <button 
                     type="button" 
                     @click="triggerFileInput" 
-                    class="px-5 py-2 text-xs font-bold uppercase tracking-widest bg-surface-container-highest text-white border border-outline-variant/30 rounded-lg hover:bg-primary hover:border-primary hover:text-on-primary-fixed transition-all"
+                    class="px-5 py-2 text-xs font-bold uppercase tracking-widest bg-surface-container-highest text-on-surface dark:text-white border border-outline-variant/30 rounded-lg hover:bg-primary hover:border-primary hover:text-on-primary-fixed transition-all"
                   >
                     Tải ảnh lên
                   </button>
@@ -54,7 +54,7 @@
               
               <div class="space-y-2">
                 <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Họ và tên</label>
-                <input v-model="form.name" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" type="text" placeholder="Nhập họ và tên"/>
+                <input v-model="form.name" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 focus:outline-none text-on-surface dark:text-white transition-colors py-3 px-0 font-medium input-focus-glow" type="text" placeholder="Nhập họ và tên"/>
               </div>
 
               <div class="space-y-2">
@@ -77,18 +77,18 @@
 
               <div class="space-y-2">
                 <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Số điện thoại</label>
-                <input v-model="form.phone" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" type="tel" placeholder="Ví dụ: 0901234567"/>
+                <input v-model="form.phone" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 focus:outline-none text-on-surface dark:text-white transition-colors py-3 px-0 font-medium input-focus-glow" type="tel" placeholder="Ví dụ: 0901234567"/>
               </div>
 
               <div class="space-y-2 md:col-span-2">
                 <label class="block text-[11px] font-bold uppercase tracking-widest text-outline">Địa chỉ </label>
-                <input v-model="form.address" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" type="text" placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..."/>
+                <input v-model="form.address" class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 focus:outline-none text-on-surface dark:text-white transition-colors py-3 px-0 font-medium input-focus-glow" type="text" placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..."/>
               </div>
 
             </div>
 
             <div class="pt-8 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4 border-t border-outline-variant/15">
-              <button type="button" @click="fetchUserData" class="w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-white bg-surface-container-highest border border-outline-variant/30 rounded-lg hover:bg-surface-bright transition-colors text-center">
+              <button type="button" @click="fetchUserData" class="w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface dark:text-white bg-surface-container-highest border border-outline-variant/30 rounded-lg hover:bg-surface-bright transition-colors text-center">
                 Hủy thay đổi
               </button>
               <button type="submit" class="w-full sm:w-auto bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-widest px-8 py-3.5 rounded-lg neon-glow hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2">
@@ -108,12 +108,12 @@
           <div class="glass-panel p-6 rounded-2xl border border-secondary/20 hover:border-secondary/50 transition-colors">
             <span class="material-symbols-outlined text-secondary mb-4 text-3xl">inventory_2</span>
             <h5 class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Bộ sưu tập</h5>
-            <p class="text-3xl font-headline font-bold text-white">{{ stats.totalFigures }} <span class="text-sm font-medium text-secondary">Figures</span></p>
+            <p class="text-3xl font-headline font-bold text-on-surface dark:text-white">{{ stats.totalFigures }} <span class="text-sm font-medium text-secondary">Figures</span></p>
           </div>
           <div class="glass-panel p-6 rounded-2xl border border-primary/20 hover:border-primary/50 transition-colors">
             <span class="material-symbols-outlined text-primary mb-4 text-3xl">rate_review</span>
             <h5 class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Đã đánh giá</h5>
-            <p class="text-3xl font-headline font-bold text-white">{{ stats.totalReviews }} <span class="text-sm font-medium text-primary">Lượt</span></p>
+            <p class="text-3xl font-headline font-bold text-on-surface dark:text-white">{{ stats.totalReviews }} <span class="text-sm font-medium text-primary">Lượt</span></p>
           </div>
         </div>
       </main>
@@ -329,20 +329,24 @@
 </script>
 
 <style scoped>
-.glass-panel {
-  background: rgba(28, 31, 43, 0.4);
-  backdrop-filter: blur(16px);
-}
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+  }
+  .dark .glass-panel {
+    background: rgba(28, 31, 43, 0.4);
+    backdrop-filter: blur(16px);
+  }
 
-.neon-glow {
-  box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
-}
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
+  }
 
-.input-focus-glow:focus {
-  box-shadow: 0 10px 15px -3px rgba(255, 143, 115, 0.05);
-}
+  .input-focus-glow:focus {
+    box-shadow: 0 10px 15px -3px rgba(255, 143, 115, 0.05);
+  }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
 </style>

@@ -51,7 +51,7 @@
             {{ product.TenHSX || 'UNKNOWN' }} <span v-if="product.KichThuoc">• {{ product.KichThuoc }}</span>
           </p>
           
-          <h3 class="font-headline font-bold text-sm md:text-base leading-snug group-hover:text-primary transition-colors text-white line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem]">
+          <h3 class="font-headline font-bold text-sm md:text-base leading-snug group-hover:text-primary transition-colors text-on-surface line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem]">
             {{ product.TenMH }}
           </h3>
         </div>

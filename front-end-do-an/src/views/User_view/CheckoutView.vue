@@ -10,7 +10,7 @@
           <section>
             <div class="flex items-center gap-3 mb-8">
               <span class="text-primary font-headline text-2xl md:text-3xl font-bold italic">01</span>
-              <h2 class="text-xl md:text-2xl font-headline font-bold uppercase tracking-tight text-white">Thông tin giao hàng</h2>
+              <h2 class="text-xl md:text-2xl font-headline font-bold uppercase tracking-tight text-on-surface dark:text-white">Thông tin giao hàng</h2>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -39,14 +39,14 @@
         <section>
             <div class="flex items-center gap-3 mb-8">
               <span class="text-primary font-headline text-2xl md:text-3xl font-bold italic">02</span>
-              <h2 class="text-xl md:text-2xl font-headline font-bold uppercase tracking-tight text-white">Phương thức thanh toán</h2>
+              <h2 class="text-xl md:text-2xl font-headline font-bold uppercase tracking-tight text-on-surface dark:text-white">Phương thức thanh toán</h2>
             </div>
             
             <div class="space-y-4">
               <div v-if="isPaymentMethodEnabled('momo')" :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'momo' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
                 <label class="flex items-center gap-4 cursor-pointer p-4 md:p-6">
                   <input v-model="paymentMethod" value="momo" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
-                  <span class="flex-grow font-bold text-white">Thanh toán qua Ví MoMo</span>
+                  <span class="flex-grow font-bold text-on-surface dark:text-white">Thanh toán qua Ví MoMo</span>
                   <span class="material-symbols-outlined text-outline text-[#A50064]">account_balance_wallet</span>
                 </label>
               </div>
@@ -54,7 +54,7 @@
               <div v-if="isPaymentMethodEnabled('zalo')" :class="['border rounded-xl transition-all duration-300 overflow-hidden', paymentMethod === 'zalopay' ? 'border-primary bg-surface-container-high' : 'border-outline-variant/30 bg-surface-container-low hover:border-outline-variant']">
                 <label class="flex items-center gap-4 cursor-pointer p-4 md:p-6">
                   <input v-model="paymentMethod" value="zalopay" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5 cursor-pointer" type="radio"/>
-                  <span class="flex-grow font-bold text-white">Thanh toán qua ZaloPay</span>
+                  <span class="flex-grow font-bold text-on-surface dark:text-white">Thanh toán qua ZaloPay</span>
                   <span class="material-symbols-outlined text-outline text-[#0068FF]">account_balance_wallet</span>
                 </label>
               </div>
@@ -64,11 +64,11 @@
                   <div class="flex flex-col gap-3">
                     <label class="flex items-center gap-3 cursor-pointer">
                       <input v-model="momoType" value="Thanh toán toàn bộ" type="radio" class="text-primary w-4 h-4" />
-                      <span class="text-sm font-medium text-white">Thanh toán toàn bộ (100%)</span>
+                      <span class="text-sm font-medium text-on-surface dark:text-white">Thanh toán toàn bộ (100%)</span>
                     </label>
                     <label v-if="requiresDeposit" class="flex items-center gap-3 cursor-pointer">
                       <input v-model="momoType" value="Cọc một phần" type="radio" class="text-primary w-4 h-4" />
-                      <span class="text-sm font-medium text-white">Chỉ đặt cọc trước (Theo quy định sản phẩm)</span>
+                      <span class="text-sm font-medium text-on-surface dark:text-white">Chỉ đặt cọc trước (Theo quy định sản phẩm)</span>
                     </label>
                   </div>
               </div>
@@ -77,7 +77,7 @@
                 <label class="flex items-center gap-4 p-6" :class="requiresDeposit ? 'cursor-not-allowed' : 'cursor-pointer'">
                   <input v-model="paymentMethod" value="cod" :disabled="requiresDeposit" class="text-primary focus:ring-primary bg-surface-dim border-outline w-5 h-5" type="radio" :class="requiresDeposit ? 'cursor-not-allowed' : 'cursor-pointer'"/>
                   <div class="flex-grow">
-                      <span class="font-bold text-white block">Thanh toán khi nhận hàng (COD)</span>
+                      <span class="font-bold text-on-surface dark:text-white block">Thanh toán khi nhận hàng (COD)</span>
                       <span v-if="requiresDeposit" class="text-[11px] text-error font-bold mt-1 block">Không hỗ trợ COD vì giỏ hàng chứa sản phẩm bắt buộc phải đặt cọc!</span>
                   </div>
                   <span class="material-symbols-outlined text-outline">local_shipping</span>
@@ -91,7 +91,7 @@
           <div class="bg-surface-container-high rounded-2xl p-5 md:p-8 shadow-2xl relative overflow-hidden border border-outline-variant/20">
             <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
             
-            <h2 class="text-xl font-headline font-bold uppercase tracking-widest mb-6 border-b border-outline-variant/20 pb-4 text-white">Tóm tắt đơn hàng</h2>
+            <h2 class="text-xl font-headline font-bold uppercase tracking-widest mb-6 border-b border-outline-variant/20 pb-4 text-on-surface dark:text-white">Tóm tắt đơn hàng</h2>
             
             <div class="space-y-6 mb-6 max-h-[40vh] overflow-y-auto custom-scrollbar pr-2">
               <div v-for="item in checkoutItems" :key="item.MaPhanLoai" class="flex gap-4">
@@ -99,7 +99,7 @@
                   <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" class="w-full h-full object-contain p-2"/>
                 </div>
                 <div class="flex-grow flex flex-col justify-center">
-                  <h4 class="text-sm font-bold text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
+                  <h4 class="text-sm font-bold text-on-surface dark:text-white leading-tight line-clamp-2">{{ item.TenMH }}</h4>
                   <p class="text-[10px] text-outline font-bold uppercase tracking-wider mt-1">SL: {{ item.SoLuong }}</p>
                   
                   <div v-if="Number(item.DonGiaKhuyenMai) < Number(item.DonGia)">
@@ -123,7 +123,7 @@
 
             <div class="border-y border-outline-variant/20 py-5 my-5 relative z-10">
               <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-slate-300 flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-800 dark:text-slate-300 flex items-center gap-2">
                   <span class="material-symbols-outlined text-primary text-[18px]">confirmation_number</span>
                   Mã giảm giá
                 </span>
@@ -152,7 +152,7 @@
             <div class="space-y-4 pt-2">
               <div class="flex justify-between text-sm text-on-surface-variant font-medium">
                 <span>Tạm tính</span>
-                <span class="text-white">{{ formatPrice(cartSummary.subtotal) }}</span>
+                <span class="text-on-surface dark:text-white">{{ formatPrice(cartSummary.subtotal) }}</span>
               </div>
               <div v-if="cartSummary.discount > 0" class="flex justify-between text-sm text-on-surface-variant font-medium">
                 <span>Khuyến mãi (Flash Sale)</span>
@@ -164,7 +164,7 @@
               </div>
               
               <div class="flex justify-between items-end pt-6 border-t border-outline-variant/20 mt-4">
-                <span class="text-sm font-bold uppercase tracking-widest text-white">Tổng cộng</span>
+                <span class="text-sm font-bold uppercase tracking-widest text-on-surface dark:text-white">Tổng cộng</span>
                 <span class="text-3xl font-headline font-black text-primary tracking-tighter">{{ formatPrice(finalTotal) }}</span>
               </div>
             </div>
@@ -181,7 +181,7 @@
             <button 
                 @click="router.push('/cart')" 
                 type="button" 
-                class="w-full mt-4 py-3 text-xs font-bold uppercase tracking-widest text-outline hover:text-white transition-colors flex items-center justify-center gap-2"
+                class="w-full mt-4 py-3 text-xs font-bold uppercase tracking-widest text-outline hover:text-on-surface dark:hover:text-white transition-colors flex items-center justify-center gap-2"
                 >
                 <span class="material-symbols-outlined text-[16px]">keyboard_return</span>
                 Trở về giỏ hàng
@@ -200,7 +200,7 @@
       <div class="bg-surface-container-high rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] border border-outline-variant/20">
         
         <div class="px-4 py-4 md:px-6 md:py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container shrink-0">
-          <h3 class="text-lg font-headline font-bold text-white flex items-center gap-2">
+          <h3 class="text-lg font-headline font-bold text-on-surface dark:text-white flex items-center gap-2">
             <span class="material-symbols-outlined text-primary">sell</span>
             Chọn Mã Giảm Giá
           </h3>
@@ -213,7 +213,7 @@
           <div>
             <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-3">Thêm mã giảm giá cá nhân</label>
             <div class="flex gap-2">
-              <input v-model="voucherInputCode" type="text" placeholder="Nhập mã voucher..." class="flex-1 bg-background border border-outline-variant/30 focus:border-primary focus:ring-0 text-white p-3 rounded-xl uppercase transition-colors outline-none font-medium">
+              <input v-model="voucherInputCode" type="text" placeholder="Nhập mã voucher..." class="flex-1 bg-background border border-outline-variant/30 focus:border-primary focus:ring-0 text-on-surface dark:text-white p-3 rounded-xl uppercase transition-colors outline-none font-medium">
               <button @click="applyVoucherByCode" class="bg-primary text-on-primary-fixed px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all active:scale-95 disabled:opacity-50" :disabled="!voucherInputCode.trim()">
                 ÁP DỤNG
               </button>
@@ -244,7 +244,7 @@
                 <div class="flex-1 p-4 relative">
                   <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-surface-container-low rounded-full"></div>
                   
-                  <h4 class="text-sm font-bold text-white mb-1 leading-tight">{{ formatVoucherDesc(v) }}</h4>
+                  <h4 class="text-sm font-bold text-on-surface dark:text-white mb-1 leading-tight">{{ formatVoucherDesc(v) }}</h4>
                   <p class="text-[11px] font-medium text-outline mb-2">Đơn tối thiểu {{ formatPrice(v.MucGiaToiThieu) }}</p>
                   
                   <div class="flex justify-between items-end mt-3">
@@ -270,7 +270,7 @@
         </div>
 
         <div class="px-4 py-4 md:px-6 md:py-5 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container shrink-0">
-          <button @click="isVoucherModalOpen = false" class="flex-1 py-3.5 rounded-xl font-bold text-outline hover:text-white bg-surface-container-highest transition-colors text-sm">Đóng</button>
+          <button @click="isVoucherModalOpen = false" class="flex-1 py-3.5 rounded-xl font-bold text-outline hover:text-on-surface dark:hover:text-white bg-surface-container-highest transition-colors text-sm">Đóng</button>
         </div>
       </div>
     </div>

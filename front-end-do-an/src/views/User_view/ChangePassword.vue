@@ -8,7 +8,7 @@
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
         <header class="mb-10">
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white mb-2">
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-on-surface dark:text-white mb-2">
             Đổi <span class="text-primary italic">Mật khẩu</span>
           </h1>
           <p class="text-on-surface-variant font-medium">Bảo vệ kho báu của bạn bằng cách cập nhật mật khẩu mạnh mẽ.</p>
@@ -22,7 +22,7 @@
                   <span class="material-symbols-outlined text-primary">key</span>
                 </div>
                 <div>
-                  <h4 class="text-lg font-headline font-bold text-white uppercase tracking-tight">Mật khẩu hiện tại</h4>
+                  <h4 class="text-lg font-headline font-bold text-on-surface dark:text-white uppercase tracking-tight">Mật khẩu hiện tại</h4>
                   <p class="text-sm text-on-surface-variant mt-1">Nhập mật khẩu hiện tại để xác minh danh tính của bạn.</p>
                 </div>
               </div>
@@ -33,11 +33,11 @@
                   <input 
                     v-model="form.currentPassword" 
                     :type="showCurrent ? 'text' : 'password'"
-                    class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" 
+                    class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 focus:outline-none text-on-surface dark:text-white transition-colors py-3 px-0 font-medium input-focus-glow" 
                     placeholder="••••••••••••" 
                     required
                   />
-                  <button type="button" @click="showCurrent = !showCurrent" class="absolute right-0 top-1/2 -translate-y-1/2 text-outline hover:text-white transition-colors">
+                  <button type="button" @click="showCurrent = !showCurrent" class="absolute right-0 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface dark:hover:text-white transition-colors">
                     <span class="material-symbols-outlined">{{ showCurrent ? 'visibility_off' : 'visibility' }}</span>
                   </button>
                 </div>
@@ -50,7 +50,7 @@
                   <span class="material-symbols-outlined text-tertiary">security</span>
                 </div>
                 <div>
-                  <h4 class="text-lg font-headline font-bold text-white uppercase tracking-tight">Thiết lập mật khẩu mới</h4>
+                  <h4 class="text-lg font-headline font-bold text-on-surface dark:text-white uppercase tracking-tight">Thiết lập mật khẩu mới</h4>
                   <p class="text-sm text-on-surface-variant mt-1">Đảm bảo mật khẩu của bạn đủ mạnh để chống lại các cuộc tấn công.</p>
                 </div>
               </div>
@@ -63,11 +63,11 @@
                       <input 
                         v-model="form.newPassword" 
                         :type="showNew ? 'text' : 'password'"
-                        class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" 
+                        class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 focus:outline-none text-on-surface dark:text-white transition-colors py-3 px-0 font-medium input-focus-glow" 
                         placeholder="Nhập mật khẩu mới" 
                         required
                       />
-                      <button type="button" @click="showNew = !showNew" class="absolute right-0 top-1/2 -translate-y-1/2 text-outline hover:text-white transition-colors">
+                      <button type="button" @click="showNew = !showNew" class="absolute right-0 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface dark:hover:text-white transition-colors">
                         <span class="material-symbols-outlined">{{ showNew ? 'visibility_off' : 'visibility' }}</span>
                       </button>
                     </div>
@@ -78,11 +78,11 @@
                       <input 
                         v-model="form.confirmPassword" 
                         :type="showConfirm ? 'text' : 'password'"
-                        class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 text-white transition-all py-3 px-0 font-medium input-focus-glow" 
+                        class="w-full bg-transparent border-none border-b-2 border-outline-variant/40 focus:border-primary focus:ring-0 focus:outline-none text-on-surface dark:text-white transition-colors py-3 px-0 font-medium input-focus-glow" 
                         placeholder="Nhập lại mật khẩu mới" 
                         required
                       />
-                      <button type="button" @click="showConfirm = !showConfirm" class="absolute right-0 top-1/2 -translate-y-1/2 text-outline hover:text-white transition-colors">
+                      <button type="button" @click="showConfirm = !showConfirm" class="absolute right-0 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface dark:hover:text-white transition-colors">
                         <span class="material-symbols-outlined">{{ showConfirm ? 'visibility_off' : 'visibility' }}</span>
                       </button>
                     </div>
@@ -114,7 +114,7 @@
             </div>
 
             <div class="p-5 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4 border-t border-outline-variant/15 bg-surface-container-low/30">
-              <button type="button" @click="resetForm" class="w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-white bg-surface-container-highest border border-outline-variant/30 rounded-lg hover:bg-surface-bright transition-colors text-center">
+              <button type="button" @click="resetForm" class="w-full sm:w-auto px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface dark:text-white bg-surface-container-highest border border-outline-variant/30 rounded-lg hover:bg-surface-bright transition-colors text-center">
                 Hủy thay đổi
               </button>
               <button type="submit" :disabled="isSaving || !isFormValid"
@@ -130,7 +130,7 @@
         <div class="mt-8 flex gap-4 p-6 glass-panel rounded-xl border-l-4 border-primary bg-primary/5">
           <span class="material-symbols-outlined text-primary shrink-0 text-2xl">info</span>
           <div class="text-sm text-on-surface-variant leading-relaxed">
-            <strong class="text-white">Mẹo bảo mật:</strong> Đừng sử dụng mật khẩu dễ đoán như ngày sinh, tên thú cưng hoặc mật khẩu bạn đã sử dụng cho các trang web khác. 
+            <strong class="text-on-surface dark:text-white">Mẹo bảo mật:</strong> Đừng sử dụng mật khẩu dễ đoán như ngày sinh, tên thú cưng hoặc mật khẩu bạn đã sử dụng cho các trang web khác. 
           </div>
         </div>
       </main>
@@ -267,20 +267,24 @@
 </script>
 
 <style scoped>
-.glass-panel {
-  background: rgba(28, 31, 43, 0.4);
-  backdrop-filter: blur(16px);
-}
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+  }
+  .dark .glass-panel {
+    background: rgba(28, 31, 43, 0.4);
+    backdrop-filter: blur(16px);
+  }
 
-.neon-glow {
-  box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
-}
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(255, 143, 115, 0.2);
+  }
 
-.input-focus-glow:focus {
-  box-shadow: 0 10px 15px -3px rgba(255, 143, 115, 0.05);
-}
+  .input-focus-glow:focus {
+    box-shadow: 0 10px 15px -3px rgba(255, 143, 115, 0.05);
+  }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
 </style>

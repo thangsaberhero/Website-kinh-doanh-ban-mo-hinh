@@ -9,7 +9,7 @@
 
         <header class="mb-12">
           <div class="flex items-center gap-4 mb-2">
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-white">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold uppercase tracking-tighter text-on-surface dark:text-white">
               Danh Sách <span class="text-primary italic">Yêu Thích</span>
             </h1>
           </div>
@@ -27,7 +27,7 @@
           <div 
             v-for="item in wishlistItems" 
             :key="item.MaMoHinh"
-            class="group rounded-2xl overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col h-[400px] md:h-[550px] bg-surface-container-low"
+            class="group rounded-2xl overflow-hidden border border-outline-variant/30 dark:border-outline-variant/15 hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col h-[400px] md:h-[550px] bg-surface-container-low"
           >
             <div class="relative flex-1 overflow-hidden bg-surface-container-lowest cursor-pointer" @click="router.push(`/product/${item.MaMoHinh}`)">
               <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ?  item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" :alt="item.TenMH" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 gallery-image-mask"/>
@@ -44,7 +44,7 @@
                     {{ item.SoLuong === 0 ? 'Hết hàng' : (item.TrangThai || 'Sẵn có') }}
                   </span>
                 </div>
-                <h3 class="font-headline text-xl md:text-3xl font-bold leading-none mb-2 text-white line-clamp-2">{{ item.TenMH }}</h3>
+                <h3 class="font-headline text-xl md:text-3xl font-bold leading-none mb-2 text-on-surface dark:text-white line-clamp-2">{{ item.TenMH }}</h3>
                 <div class="flex justify-between items-end">
                   <p class="font-headline text-lg md:text-2xl font-bold text-primary tracking-tighter">
                       {{ formatPrice(item.dongiakhuyenmai ? item.dongiakhuyenmai : item.DonGia) }}
@@ -113,7 +113,7 @@
 
         <div v-if="!isLoading && wishlistItems.length === 0" class="text-center py-32 border border-dashed border-outline-variant/30 rounded-2xl bg-surface-container-low">
           <span class="material-symbols-outlined text-6xl text-outline-variant mb-4">heart_broken</span>
-          <h2 class="font-headline text-2xl text-white font-bold mb-2">Chưa có báu vật nào!</h2>
+          <h2 class="font-headline text-2xl text-on-surface dark:text-white font-bold mb-2">Chưa có báu vật nào!</h2>
           <p class="text-on-surface-variant mb-6">Hãy dạo quanh cửa hàng và lưu lại những mô hình bạn yêu thích nhé.</p>
           <button @click="router.push('/category')" class="px-8 py-3 bg-primary text-on-primary-fixed font-bold rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20">
             Khám phá ngay
@@ -279,7 +279,7 @@
   const getTagClass = (type) => {
     if (type === 'Limited') return 'bg-primary/20 text-primary border-primary/30';
     if (type === 'Pre-order') return 'bg-tertiary-dim/20 text-tertiary-dim border-tertiary-dim/30';
-    return 'bg-outline/20 text-white border-outline/30';
+    return 'bg-outline/20 text-on-surface dark:text-white border-outline/30';
   };
 
   const getStatusClass = (soLuong, status) => {

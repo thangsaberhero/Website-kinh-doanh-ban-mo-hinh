@@ -42,7 +42,7 @@
             ></div>
 
             <div class="absolute bottom-4 right-4 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div class="p-2.5 bg-slate-900/60 backdrop-blur text-white rounded-full shadow-lg">
+              <div class="p-2.5 bg-slate-900/60 backdrop-blur text-on-surface dark:text-white rounded-full shadow-lg">
                 <span class="material-symbols-outlined text-[20px] block">zoom_in</span>
               </div>
             </div>
@@ -73,7 +73,7 @@
               <span class="text-outline-variant">•</span>
               <span class="text-on-surface-variant text-xs font-medium uppercase tracking-wider">Mô Hình</span>
             </div>
-            <h1 class="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 leading-[1.1] text-white">{{ product.TenMH }}</h1>
+            <h1 class="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 leading-[1.1] text-on-surface dark:text-white">{{ product.TenMH }}</h1>
             <div class="flex items-baseline gap-4 mt-6">
               <span class="font-headline text-3xl font-bold">
                 <div v-if="selectedVariant && Number(selectedVariant.DonGiaKhuyenMai) < Number(selectedVariant.DonGia)">
@@ -81,7 +81,7 @@
                   <span class="text-outline line-through text-base ml-3">{{ formatPrice(selectedVariant.DonGia) }}</span>
                 </div>
                 <div v-else-if="selectedVariant">
-                    <span class="text-white font-bold">{{ formatPrice(selectedVariant.DonGia) }}</span>
+                    <span class="text-on-surface dark:text-white font-bold">{{ formatPrice(selectedVariant.DonGia) }}</span>
                 </div>
                  <div v-else>
                     <span class="text-outline italic text-sm">Đang tải giá...</span>
@@ -95,33 +95,33 @@
               
               <div class="bg-surface-container-low p-4">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Thương hiệu</span>
-                <span class="text-white font-semibold">{{ product.TenHSX }}</span>
+                <span class="text-on-surface dark:text-white font-semibold">{{ product.TenHSX }}</span>
               </div>
               <div class="bg-surface-container-low p-4">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Chất liệu</span>
-                <span class="text-white font-semibold">{{ product.ChatLieu }}</span>
+                <span class="text-on-surface dark:text-white font-semibold">{{ product.ChatLieu }}</span>
               </div>
 
               <div class="bg-surface-container-low p-4">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Kích thước</span>
-                <span class="text-white font-semibold">{{ product.KichThuoc }}</span>
+                <span class="text-on-surface dark:text-white font-semibold">{{ product.KichThuoc }}</span>
               </div>
               <div class="bg-surface-container-low p-4">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Kho hàng</span>
-                <span class="text-white font-semibold">
+                <span class="text-on-surface dark:text-white font-semibold">
                   {{ selectedVariant ? (selectedVariant.SoLuong === 0 ? 'Hết hàng' : selectedVariant.SoLuong + ' hộp') : 'Đang tải...' }}
                 </span>
               </div>
 
               <div class="bg-surface-container-low p-4 overflow-hidden">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Series</span>
-                <span class="text-white font-semibold truncate block" :title="product.Series">
+                <span class="text-on-surface dark:text-white font-semibold truncate block" :title="product.Series">
                   {{ product.Series || 'Đang cập nhật' }}
                 </span>
               </div>
               <div class="bg-surface-container-low p-4 overflow-hidden">
                 <span class="block text-[10px] text-outline font-bold tracking-widest uppercase mb-1">Nhân vật</span>
-                <span class="text-white font-semibold truncate block" :title="product.TenNhanVat">
+                <span class="text-on-surface dark:text-white font-semibold truncate block" :title="product.TenNhanVat">
                   {{ product.TenNhanVat || 'Đang cập nhật' }}
                 </span>
               </div>
@@ -139,7 +139,7 @@
                     'px-5 py-2.5 border-2 rounded-md font-semibold transition-all text-sm',
                     selectedVariant?.MaPhanLoai === variant.MaPhanLoai
                       ? 'border-primary text-primary bg-primary/10 shadow-inner'
-                      : 'border-outline-variant/30 text-outline hover:border-primary/50 hover:text-white'
+                      : 'border-outline-variant/30 text-outline hover:border-primary/50 hover:text-on-surface dark:hover:text-white'
                   ]"
                 >
                   {{ variant.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : variant.ChiTietPhanLoai}}
@@ -151,7 +151,7 @@
               <div class="flex items-center gap-2 md:gap-4">
                 <div class="flex items-center bg-surface-container-highest rounded border border-outline-variant/20 h-12 md:h-14">
                   <button @click="buyQuantity > 1 && buyQuantity--" class="px-3 md:px-5 hover:text-primary transition-colors text-outline"><span class="material-symbols-outlined">remove</span></button>
-                  <span class="w-8 md:w-10 text-center font-bold text-lg md:text-xl text-white">{{ buyQuantity }}</span>
+                  <span class="w-8 md:w-10 text-center font-bold text-lg md:text-xl text-on-surface dark:text-white">{{ buyQuantity }}</span>
                   <button @click="buyQuantity < (selectedVariant ? selectedVariant.SoLuong : 0) && buyQuantity++" class="px-3 md:px-5 hover:text-primary transition-colors text-outline"><span class="material-symbols-outlined">add</span></button>
                 </div>
 
@@ -199,13 +199,13 @@
 
             <button
               @click="handleShowQR"
-              class="mt-4 flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl border border-orange-500/40 text-orange-500 hover:bg-orange-500 hover:text-white transition-all duration-300 font-bold uppercase text-xs tracking-[0.2em]"
+              class="mt-4 flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl border border-orange-500/40 text-orange-500 hover:bg-orange-500 hover:text-on-surface dark:hover:text-white transition-all duration-300 font-bold uppercase text-xs tracking-[0.2em]"
             >
               <span>{{ isQRVisible ? '✖ Đóng xác thực' : '🛡️ Truy xuất Blockchain' }}</span>
             </button>
 
             <transition name="fade">
-              <div v-if="isQRVisible && qrCodeImg" class="mt-4 flex flex-col gap-4 p-5 bg-white/5 border border-orange-500/20 rounded-2xl backdrop-blur-md shadow-2xl">
+              <div v-if="isQRVisible && qrCodeImg" class="mt-4 flex flex-col gap-4 p-5 bg-surface-container dark:bg-white/5 border border-orange-500/20 rounded-2xl backdrop-blur-md shadow-2xl">
                 <div class="flex flex-col sm:flex-row items-center gap-6">
                   <div class="relative group">
                     <div class="w-32 h-32 bg-white p-2 rounded-xl shadow-lg overflow-hidden relative">
@@ -216,11 +216,11 @@
 
                   <div class="flex-1 text-center sm:text-left">
                     <h4 class="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Genuine Product</h4>
-                    <p class="text-white font-bold text-sm mb-2 font-mono">{{ product.MaVach_Serial }}</p>
-                    <p class="text-gray-400 text-[11px] leading-relaxed mb-3">
+                    <p class="text-on-surface dark:text-white font-bold text-sm mb-2 font-mono">{{ product.MaVach_Serial }}</p>
+                    <p class="text-on-surface-variant dark:text-gray-400 text-[11px] leading-relaxed mb-3">
                       Mã QR chứa chữ ký số định danh sản phẩm trên mạng lưới Blockchain.
                     </p>
-                    <button @click="downloadQR" class="text-[10px] text-gray-400 hover:text-white underline">
+                    <button @click="downloadQR" class="text-[10px] text-on-surface-variant dark:text-gray-400 hover:text-on-surface dark:hover:text-white underline">
                       Tải ảnh QR về máy
                     </button>
                   </div>
@@ -244,7 +244,7 @@
       <section v-if="product.ThongTinChiTiet" class="max-w-7xl mx-auto px-6 py-12 w-full mt-8 border-t border-white/5">
         <div class="flex items-center gap-4 mb-8">
           <div class="h-8 w-1.5 bg-primary rounded-full"></div>
-          <h3 class="text-2xl font-headline font-black text-white uppercase italic tracking-wider">Thông tin chi tiết</h3>
+          <h3 class="text-2xl font-headline font-black text-on-surface dark:text-white uppercase italic tracking-wider">Thông tin chi tiết</h3>
         </div>
         <div class="bg-surface-container-low rounded-2xl p-8 border border-white/5 shadow-lg">
             <p class="text-on-surface-variant text-sm leading-relaxed whitespace-pre-wrap">{{ product.ThongTinChiTiet }}</p>
@@ -252,7 +252,7 @@
       </section>
 
       <section class="max-w-7xl mx-auto px-6 pb-24 w-full border-t border-white/5 pt-16">
-        <h3 class="font-headline text-3xl font-bold text-white mb-10 text-center uppercase tracking-widest">Đánh giá từ cộng đồng</h3>
+        <h3 class="font-headline text-3xl font-bold text-on-surface dark:text-white mb-10 text-center uppercase tracking-widest">Đánh giá từ cộng đồng</h3>
         <div class="bg-surface-container-low rounded-2xl p-5 md:p-8 lg:p-12 border border-white/5 shadow-2xl mb-12 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
           <div class="text-center md:w-1/3">
             <div class="text-7xl font-headline font-black text-primary drop-shadow-[0_0_15px_rgba(255,61,0,0.3)]">
@@ -275,7 +275,7 @@
         <div class="flex flex-col lg:flex-row gap-12">
           <div class="lg:w-1/3">
             <div v-if="canReview" class="lg:sticky lg:top-24 relative">
-              <h4 class="font-headline text-lg font-bold text-white mb-2">Bạn đã trải nghiệm siêu phẩm này?</h4>
+              <h4 class="font-headline text-lg font-bold text-on-surface dark:text-white mb-2">Bạn đã trải nghiệm siêu phẩm này?</h4>
 
               <form @submit.prevent="submitReview" class="space-y-4">
                 <div>
@@ -300,13 +300,13 @@
                 <div>
                   <label class="text-[10px] font-bold text-outline uppercase tracking-widest block mb-2">Nhận xét chi tiết</label>
                   <textarea v-model="reviewForm.NoiDung" required rows="4" placeholder="Chất lượng sơn, độ linh hoạt..."
-                            class="w-full bg-background border border-white/10 focus:border-primary focus:ring-0 rounded-xl p-4 text-sm text-white resize-none transition-all max-h-32 overflow-y-auto"></textarea>
+                            class="w-full bg-background border border-outline-variant/30 dark:border-white/10 focus:border-primary focus:ring-0 rounded-xl p-4 text-sm text-on-surface dark:text-white resize-none transition-all max-h-32 overflow-y-auto"></textarea>
                 </div>
                 <div v-if="previewUrls.length > 0" class="flex flex-wrap gap-3 mb-4">
                   <div v-for="(url, index) in previewUrls" :key="index" class="relative w-16 h-16 rounded-lg overflow-hidden border border-white/20 group">
                     <img :src="url" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                     <button type="button" @click="removeImage(index)" class="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity transform hover:scale-110">
-                      <span class="material-symbols-outlined text-[12px] text-white font-bold">close</span>
+                      <span class="material-symbols-outlined text-[12px] text-on-surface dark:text-white font-bold">close</span>
                     </button>
                   </div>
                 </div>
@@ -329,13 +329,13 @@
             <div class="flex flex-wrap gap-3 pb-4 border-b border-white/5">
               <button @click="currentFilter = 'all'"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
-                              currentFilter === 'all' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
+                              currentFilter === 'all' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-on-surface dark:hover:text-white border border-outline-variant/30 dark:border-white/5 hover:border-primary dark:hover:border-white/20']">
                 Tất cả ({{ reviewMeta.totalCount || 0}})
               </button>
 
               <button @click="currentFilter = 'withImage'"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all',
-                              currentFilter === 'withImage' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
+                              currentFilter === 'withImage' ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-on-surface dark:hover:text-white border border-outline-variant/30 dark:border-white/5 hover:border-primary dark:hover:border-white/20']">
                 Có hình ảnh ({{ reviewMeta.withImageCount || 0}})
               </button>
 
@@ -343,7 +343,7 @@
                       @click="currentFilter = star.toString()"
                       v-show="reviewMeta['star' + star] > 0"
                       :class="['px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-1',
-                              currentFilter === star.toString() ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-white border border-white/5 hover:border-white/20']">
+                              currentFilter === star.toString() ? 'bg-primary text-black shadow-[0_0_15px_rgba(255,61,0,0.3)]' : 'bg-surface-container text-on-surface-variant hover:text-on-surface dark:hover:text-white border border-outline-variant/30 dark:border-white/5 hover:border-primary dark:hover:border-white/20']">
                 {{ star }} Sao <span class="material-symbols-outlined text-[13px]">star</span> ({{ reviewMeta['star' + star] || 0 }})
               </button>
             </div>
@@ -351,14 +351,14 @@
             <div v-for="review in reviews" :key="review.MaDG" class="group border-b border-white/5 pb-8">
               <div class="flex justify-between items-start mb-4">
                 <div class="flex gap-3 md:gap-4 mb-4">
-                  <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-white/10 flex items-center justify-center font-headline font-bold text-white">
+                  <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-surface-bright to-surface-container-high border border-outline-variant/30 dark:border-white/10 flex items-center justify-center font-headline font-bold text-on-surface dark:text-white">
                     <img v-if="review.AnhDaiDien" :src="review.AnhDaiDien" class="w-full h-full object-cover">
                     <span v-else class="material-symbols-outlined text-primary text-lg md:text-xl">person</span>
                   </div>
                   
                   <div class="flex-1">
                     <div class="flex flex-wrap justify-between items-start gap-2">
-                      <div class="text-white font-bold text-sm flex flex-wrap items-center gap-2">
+                      <div class="text-on-surface dark:text-white font-bold text-sm flex flex-wrap items-center gap-2">
                         {{ review.TenKH }}
                         <!-- Thêm whitespace-nowrap để bảo vệ chữ không rớt dòng -->
                         <span class="text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded uppercase font-black border border-green-500/30 flex items-center gap-1 whitespace-nowrap">
@@ -383,7 +383,7 @@
               </p>
 
               <div v-if="review.HinhAnh && review.HinhAnh.length > 0" class="flex flex-wrap gap-3 pl-0 md:pl-16 mb-5">
-                <div v-for="(img, idx) in review.HinhAnh" :key="idx" class="w-24 h-24 rounded-xl overflow-hidden border border-white/10 hover:border-primary transition-all cursor-zoom-in group/img relative">
+                <div v-for="(img, idx) in review.HinhAnh" :key="idx" class="w-24 h-24 rounded-xl overflow-hidden border border-outline-variant/30 dark:border-white/10 hover:border-primary transition-all cursor-zoom-in group/img relative">
                   <img :src="img" @click="zoomedImage = img" class="w-full h-full object-cover opacity-80 group-hover/img:opacity-100 transition-opacity" />
                 </div>
               </div>
@@ -393,13 +393,13 @@
                   <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
                   <span class="text-[10px] font-black text-primary tracking-widest uppercase">Phản hồi từ FigureCollect</span>
                 </div>
-                <p class="text-xs text-white/80 leading-relaxed relative z-10">
+                <p class="text-xs text-on-surface-variant dark:text-white/80 leading-relaxed relative z-10">
                   {{ review.PhanHoiShop }}
                 </p>
               </div>
             </div>
 
-            <div v-if="reviews.length === 0" class="text-center py-12 text-on-surface-variant border border-dashed border-white/10 rounded-xl">
+            <div v-if="reviews.length === 0" class="text-center py-12 text-on-surface-variant border border-dashed border-outline-variant/30 dark:border-white/10 rounded-xl">
               <span class="material-symbols-outlined text-4xl mb-2 opacity-50">forum</span>
               <p class="text-sm">Chưa có đánh giá nào phù hợp.<br>Hãy là người đầu tiên để lại cảm nhận!</p>
             </div>
@@ -409,7 +409,7 @@
               <div v-if="reviews.length < totalReviewsFiltered" class="pt-8 flex justify-center items-center">
                 <button
                   @click="loadMoreReviews"
-                  class="px-8 py-3.5 border border-white/10 rounded-xl font-headline font-bold text-xs text-outline hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all uppercase tracking-[0.2em] shadow-lg flex items-center gap-2"
+                  class="px-8 py-3.5 border border-outline-variant/30 dark:border-white/10 rounded-xl font-headline font-bold text-xs text-outline hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all uppercase tracking-[0.2em] shadow-lg flex items-center gap-2"
                 >
                   <span class="material-symbols-outlined text-lg">expand_more</span>
                   Xem thêm {{ totalReviewsFiltered - reviews.length }} đánh giá
@@ -425,7 +425,7 @@
         </div>
       </section>
       <div v-if="zoomedImage" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 transition-opacity" @click="zoomedImage = null">
-        <button class="absolute top-6 right-6 text-white/50 hover:text-primary transition-colors">
+        <button class="absolute top-6 right-6 text-on-surface dark:text-white/50 hover:text-primary transition-colors">
           <span class="material-symbols-outlined text-4xl">close</span>
         </button>
         <img :src="zoomedImage"
@@ -436,7 +436,7 @@
       <section v-if="relatedProducts.length > 0" class="max-w-7xl mx-auto px-6 py-16 w-full border-t border-white/5">
         <div class="flex items-center gap-4 mb-8">
           <div class="h-8 w-1.5 bg-primary rounded-full"></div>
-          <h3 class="text-2xl font-headline font-black text-white uppercase italic tracking-wider">Có thể bạn sẽ thích</h3>
+          <h3 class="text-2xl font-headline font-black text-on-surface dark:text-white uppercase italic tracking-wider">Có thể bạn sẽ thích</h3>
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
@@ -461,7 +461,7 @@
     class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center animate-[fadeIn_0.2s_ease-out]"
     @click.self="closeLightbox">
 
-    <div class="absolute top-0 left-0 right-0 p-6 flex justify-between items-center text-white/70">
+    <div class="absolute top-0 left-0 right-0 p-6 flex justify-between items-center text-on-surface dark:text-white/70">
       <div class="font-headline font-bold tracking-widest text-sm">
         {{ currentIndex + 1 }} / {{ allImages.length }}
       </div>
@@ -473,7 +473,7 @@
     </div>
 
     <button @click="prevImage"
-            class="absolute left-4 md:left-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
+            class="absolute left-4 md:left-8 p-4 text-on-surface dark:text-white/50 hover:text-primary hover:bg-surface-container dark:bg-white/5 rounded-full transition-all">
       <span class="material-symbols-outlined text-5xl">chevron_left</span>
     </button>
 
@@ -486,7 +486,7 @@
     </div>
 
     <button @click="nextImage"
-            class="absolute right-4 md:right-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
+            class="absolute right-4 md:right-8 p-4 text-on-surface dark:text-white/50 hover:text-primary hover:bg-surface-container dark:bg-white/5 rounded-full transition-all">
       <span class="material-symbols-outlined text-5xl">chevron_right</span>
     </button>
 

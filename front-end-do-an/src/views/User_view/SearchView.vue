@@ -11,7 +11,7 @@
           showMobileFilter ? 'translate-x-0' : '-translate-x-full'
         ]"
       >
-        <button @click="showMobileFilter = false" class="lg:hidden absolute top-4 right-4 w-8 h-8 bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center text-white">
+        <button @click="showMobileFilter = false" class="lg:hidden absolute top-4 right-4 w-8 h-8 bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center text-on-surface dark:text-white">
           <span class="material-symbols-outlined text-sm">close</span>
         </button>
         <div class="flex flex-col py-8 gap-8 px-6">
@@ -64,7 +64,7 @@
               </div>
             </div>
             
-            <button @click="resetFilters" v-if="hasActiveFilters" class="w-full bg-surface-container-highest text-outline hover:text-white hover:bg-outline-variant/50 py-3 font-headline font-bold text-sm tracking-widest active:scale-[0.98] transition-all rounded-lg border border-outline-variant/30">
+            <button @click="resetFilters" v-if="hasActiveFilters" class="w-full bg-surface-container-highest text-outline hover:text-on-surface dark:hover:text-white hover:bg-outline-variant/50 py-3 font-headline font-bold text-sm tracking-widest active:scale-[0.98] transition-all rounded-lg border border-outline-variant/30">
               XÓA BỘ LỌC
             </button>
           </div>
@@ -79,7 +79,7 @@
         <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-outline-variant/20 pb-6">
           <div class="space-y-2">
             <p class="text-primary font-headline text-sm tracking-widest font-bold uppercase">Kết quả tìm kiếm</p>
-            <h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tighter text-white">
+            <h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tighter text-on-surface dark:text-white">
               Tìm thấy <span class="text-primary">{{ totalItems }}</span> kết quả  
               <span v-if="searchQuery">
                 cho "{{ searchQuery }}"
@@ -87,27 +87,27 @@
             </h1>
             
             <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 mt-4 pt-2">
-              <span v-if="selectedCategories.length" class="flex items-center gap-1 bg-surface-container-highest text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
+              <span v-if="selectedCategories.length" class="flex items-center gap-1 bg-surface-container-highest text-on-surface dark:text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
                 Đã chọn {{ selectedCategories.length }} danh mục
               </span>
-              <span v-if="selectedBrands.length" class="flex items-center gap-1 bg-surface-container-highest text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
+              <span v-if="selectedBrands.length" class="flex items-center gap-1 bg-surface-container-highest text-on-surface dark:text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
                 {{ selectedBrands.join(', ') }}
               </span>
-              <span v-if="maxPrice < 20000000" class="flex items-center gap-1 bg-surface-container-highest text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
+              <span v-if="maxPrice < 20000000" class="flex items-center gap-1 bg-surface-container-highest text-on-surface dark:text-white px-3 py-1 rounded-full text-xs font-bold border border-outline-variant/30">
                 Dưới {{ formatPrice(maxPrice) }}
               </span>
             </div>
           </div>
           
           <div class="flex flex-wrap items-center gap-3 text-sm shrink-0 mt-4 md:mt-0">      
-            <button @click="showMobileFilter = true" class="lg:hidden flex items-center gap-2 bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-white font-bold hover:bg-primary hover:text-black transition-colors w-full sm:w-auto justify-center">
+            <button @click="showMobileFilter = true" class="lg:hidden flex items-center gap-2 bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-2 text-on-surface dark:text-white font-bold hover:bg-primary hover:text-black transition-colors w-full sm:w-auto justify-center">
               <span class="material-symbols-outlined text-sm">filter_list</span>
               <span class="text-xs uppercase tracking-widest">Bộ lọc</span>
             </button>
 
             <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-              <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Hiển thị:</span>
-              <select v-model="limit" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
+              <span class="text-outline dark:text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Hiển thị:</span>
+              <select v-model="limit" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface dark:text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
                 <option value="9">9 SP</option>
                 <option value="18">18 SP</option>
                 <option value="27">27 SP</option>
@@ -115,8 +115,8 @@
             </div>
             
             <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-              <span class="text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Sắp xếp:</span>
-              <select v-model="sortBy" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
+              <span class="text-outline dark:text-gray-400 font-bold text-[10px] uppercase tracking-widest hidden sm:block">Sắp xếp:</span>
+              <select v-model="sortBy" class="bg-surface-container border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface dark:text-white font-bold cursor-pointer focus:ring-1 focus:ring-primary outline-none text-xs uppercase tracking-widest flex-1 sm:flex-none">
                 <option value="newest">Mới nhất</option>
                 <option value="price_asc">Giá Tăng</option>
                 <option value="price_desc">Giá Giảm</option>
@@ -134,31 +134,31 @@
           />
         </div>
         <div v-if="totalPages > 0" class="mt-12 flex justify-center items-center gap-2 flex-wrap pb-12">
-          <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 border border-outline-variant/30">
+          <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-on-surface dark:text-white hover:bg-primary transition-all disabled:opacity-30 border border-outline-variant/30">
             <span class="material-symbols-outlined text-sm">chevron_left</span>
           </button>
           
           <button v-for="(page, index) in visiblePages" :key="index" @click="page !== '...' ? currentPage = page : null" :disabled="page === '...'"
             :class="[
-              currentPage === page ? 'bg-primary text-black shadow-lg shadow-primary/20 border-primary' : 'bg-surface-container text-white border-outline-variant/30',
-              page === '...' ? 'cursor-default border-transparent hover:text-white bg-transparent shadow-none' : 'hover:text-primary cursor-pointer hover:border-primary/50',
+              currentPage === page ? 'bg-primary text-black shadow-lg shadow-primary/20 border-primary' : 'bg-surface-container text-on-surface dark:text-white border-outline-variant/30',
+              page === '...' ? 'cursor-default border-transparent hover:text-on-surface dark:hover:text-white bg-transparent shadow-none' : 'hover:text-primary cursor-pointer hover:border-primary/50',
               'w-10 h-10 flex items-center justify-center rounded-xl font-bold text-xs transition-all shadow-sm border'
             ]">
             {{ page }}
           </button>
 
-          <button @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-white hover:bg-primary transition-all disabled:opacity-30 border border-outline-variant/30">
+          <button @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container text-on-surface dark:text-white hover:bg-primary transition-all disabled:opacity-30 border border-outline-variant/30">
             <span class="material-symbols-outlined text-sm">chevron_right</span>
           </button>
 
           <div class="flex items-center gap-2 ml-4 border-l border-outline-variant/30 pl-4">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Đến trang:</span>
-            <input type="number" placeholder="" min="1" :max="totalPages" @keyup.enter="jumpToPage" class="w-16 h-10 bg-surface-container border border-outline-variant/30 rounded-xl text-center text-white text-xs font-bold outline-none focus:border-primary transition-colors custom-scrollbar" />
+            <span class="text-xs font-bold text-outline dark:text-gray-400 uppercase tracking-widest hidden sm:block">Đến trang:</span>
+            <input type="number" placeholder="" min="1" :max="totalPages" @keyup.enter="jumpToPage" class="w-16 h-10 bg-surface-container border border-outline-variant/30 rounded-xl text-center text-on-surface dark:text-white text-xs font-bold outline-none focus:border-primary transition-colors custom-scrollbar" />
           </div>
         </div>
         <div v-else-if="!isSearching" class="py-32 flex flex-col items-center justify-center text-center">
           <span class="material-symbols-outlined text-7xl text-outline-variant mb-6">search_off</span>
-          <h2 class="text-2xl font-headline font-bold text-white mb-2">Không tìm thấy báu vật nào</h2>
+          <h2 class="text-2xl font-headline font-bold text-on-surface dark:text-white mb-2">Không tìm thấy báu vật nào</h2>
           <p class="text-on-surface-variant max-w-md mb-8">Chúng tôi không tìm thấy kết quả nào phù hợp với từ khóa và bộ lọc hiện tại.</p>
           
           <div class="mb-8">

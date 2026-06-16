@@ -19,55 +19,55 @@
             </section>
     
             <section class="relative z-20 -mt-24 px-6 pb-24 max-w-7xl mx-auto">
-                <div class="bg-surface rounded-3xl overflow-hidden flex flex-col lg:flex-row shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10">         
-                    <div class="lg:w-2/5 p-6 md:p-12 bg-white/5 border-r border-white/5 relative overflow-hidden">
+                <div class="bg-surface rounded-3xl overflow-hidden flex flex-col lg:flex-row shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-outline-variant/40 dark:border-white/10">         
+                    <div class="lg:w-2/5 p-6 md:p-12 bg-surface-container dark:bg-white/5 border-r border-outline-variant/30 dark:border-white/5 relative overflow-hidden">
                         <div class="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
             
-                        <h2 class="font-headline text-3xl font-bold text-white mb-4 relative z-10">Thông tin liên hệ</h2>
+                        <h2 class="font-headline text-3xl font-bold text-on-surface dark:text-white mb-4 relative z-10">Thông tin liên hệ</h2>
                         <p class="text-on-surface-variant text-sm mb-10 leading-relaxed relative z-10">
                             Chúng tôi luôn sẵn sàng hỗ trợ bạn tìm kiếm những mẫu Figure độc bản và giải đáp mọi thắc mắc về hệ thống.
                         </p>
                     
                         <div class="space-y-8 relative z-10">
                             <div class="flex items-start gap-4 group">
-                                <div class="w-12 h-12 shrink-0 rounded-xl bg-background flex items-center justify-center border border-white/10 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,61,0,0.3)] transition-all">
+                                <div class="w-12 h-12 shrink-0 rounded-xl bg-background flex items-center justify-center border border-outline-variant/40 dark:border-white/10 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,61,0,0.3)] transition-all">
                                     <span class="material-symbols-outlined text-primary">location_on</span>
                                 </div>
                                 <div class="pt-1">
                                     <h4 class="font-headline text-[10px] font-black text-primary tracking-widest uppercase mb-1">Địa chỉ</h4>
-                                    <p class="text-white text-sm font-medium">{{ systemStore.settings.shop_address || 'Đang cập nhật địa chỉ...' }}</p>
+                                    <p class="text-on-surface dark:text-white text-sm font-medium">{{ systemStore.settings.shop_address || 'Đang cập nhật địa chỉ...' }}</p>
                                 </div>
                             </div>
                             
                             <div class="flex items-start gap-4 group">
-                                <div class="w-12 h-12 shrink-0 rounded-xl bg-background flex items-center justify-center border border-white/10 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,61,0,0.3)] transition-all">
+                                <div class="w-12 h-12 shrink-0 rounded-xl bg-background flex items-center justify-center border border-outline-variant/40 dark:border-white/10 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,61,0,0.3)] transition-all">
                                     <span class="material-symbols-outlined text-primary">call</span>
                                 </div>
                                 <div class="pt-1">
                                     <h4 class="font-headline text-[10px] font-black text-primary tracking-widest uppercase mb-1">Hotline</h4>
-                                    <p class="text-white text-lg font-bold">{{ systemStore.settings.contact_phone || 'Đang cập nhật' }}</p>
+                                    <p class="text-on-surface dark:text-white text-lg font-bold">{{ systemStore.settings.contact_phone || 'Đang cập nhật' }}</p>
                                     <p class="text-on-surface-variant text-xs mt-0.5">Thứ 2 - Chủ Nhật: 08:00 - 22:00</p>
                                 </div>
                             </div>
                             
                             <div class="flex items-start gap-4 group">
-                                <div class="w-12 h-12 shrink-0 rounded-xl bg-background flex items-center justify-center border border-white/10 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,61,0,0.3)] transition-all">
+                                <div class="w-12 h-12 shrink-0 rounded-xl bg-background flex items-center justify-center border border-outline-variant/40 dark:border-white/10 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,61,0,0.3)] transition-all">
                                     <span class="material-symbols-outlined text-primary">mail</span>
                                 </div>
                                 <div class="pt-1">
                                     <h4 class="font-headline text-[10px] font-black text-primary tracking-widest uppercase mb-1">Email</h4>
-                                    <p class="text-white text-sm font-medium">{{ systemStore.settings.contact_email || 'Đang cập nhật' }}</p>
+                                    <p class="text-on-surface dark:text-white text-sm font-medium">{{ systemStore.settings.contact_email || 'Đang cập nhật' }}</p>
                                 </div>
                             </div>
                         </div>
             
-                        <div class="mt-12 pt-8 border-t border-white/10 relative z-10">
+                        <div class="mt-12 pt-8 border-t border-outline-variant/40 dark:border-white/10 relative z-10">
                             <h4 class="font-headline text-[10px] text-on-surface-variant tracking-widest uppercase font-bold mb-4">Kết nối qua Social</h4>
                             <div class="flex gap-4">
                                 <a v-if="systemStore.settings.social_facebook" 
                                 :href="systemStore.settings.social_facebook" 
                                 target="_blank" rel="noopener noreferrer"
-                                class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+                                class="w-12 h-12 rounded-xl border border-outline-variant/40 dark:border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
                                 <img src="https://api.iconify.design/logos:facebook.svg" 
                                         alt="Facebook" 
                                         class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
@@ -76,7 +76,7 @@
                                 <a v-if="systemStore.settings.social_youtube" 
                                 :href="systemStore.settings.social_youtube" 
                                 target="_blank" rel="noopener noreferrer"
-                                class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+                                class="w-12 h-12 rounded-xl border border-outline-variant/40 dark:border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
                                 <img src="https://api.iconify.design/logos:youtube-icon.svg" 
                                         alt="YouTube" 
                                         class="w-7 h-7 object-contain group-hover:scale-110 transition-transform" />
@@ -85,7 +85,7 @@
                                 <a v-if="systemStore.settings.social_instagram" 
                                 :href="systemStore.settings.social_instagram" 
                                 target="_blank" rel="noopener noreferrer"
-                                class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+                                class="w-12 h-12 rounded-xl border border-outline-variant/40 dark:border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
                                 <img src="https://api.iconify.design/skill-icons:instagram.svg" 
                                         alt="Instagram" 
                                         class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
@@ -95,32 +95,32 @@
                     </div>
         
                     <div class="lg:w-3/5 p-6 md:p-12">
-                        <h3 class="font-headline text-2xl font-bold text-white mb-8">Gửi tin nhắn cho chúng tôi</h3>
+                        <h3 class="font-headline text-2xl font-bold text-on-surface dark:text-white mb-8">Gửi tin nhắn cho chúng tôi</h3>
                     
                         <form @submit.prevent="submitForm" class="space-y-8">
                             <div class="grid md:grid-cols-2 gap-8">
                                 <div class="relative">
                                     <label class="block text-[14px] font-headline text-primary font-bold tracking-widest uppercase mb-2">Họ và tên *</label>
                                     <input v-model="form.name" required type="text" placeholder="Nhập tên của bạn" 
-                                        class="w-full bg-transparent border-0 border-b border-white/20 focus:border-primary focus:ring-0 transition-colors text-white py-2 px-0 placeholder:text-white/20 text-sm"/>
+                                        class="w-full bg-transparent border-0 border-b border-outline-variant/50 dark:border-white/20 focus:border-primary focus:ring-0 transition-colors text-on-surface dark:text-white py-2 px-0 placeholder:text-outline dark:placeholder:text-white/20 text-sm"/>
                                 </div>
                                 <div class="relative">
                                     <label class="block text-[14px] font-headline text-primary font-bold tracking-widest uppercase mb-2">Email *</label>
                                     <input v-model="form.email" required type="email" placeholder="Nhập email của bạn" autocomplete="email"
-                                        class="w-full bg-transparent border-0 border-b border-white/20 focus:border-primary focus:ring-0 transition-colors text-white py-2 px-0 placeholder:text-white/20 text-sm"/>
+                                        class="w-full bg-transparent border-0 border-b border-outline-variant/50 dark:border-white/20 focus:border-primary focus:ring-0 transition-colors text-on-surface dark:text-white py-2 px-0 placeholder:text-outline dark:placeholder:text-white/20 text-sm"/>
                                 </div>
                             </div>
                             
                             <div class="relative">
                                 <label class="block text-[14px] font-headline text-primary font-bold tracking-widest uppercase mb-2">Số điện thoại</label>
                                 <input v-model="form.phone" type="tel" placeholder="Nhập số điện thoại của bạn" 
-                                    class="w-full bg-transparent border-0 border-b border-white/20 focus:border-primary focus:ring-0 transition-colors text-white py-2 px-0 placeholder:text-white/20 text-sm"/>
+                                    class="w-full bg-transparent border-0 border-b border-outline-variant/50 dark:border-white/20 focus:border-primary focus:ring-0 transition-colors text-on-surface dark:text-white py-2 px-0 placeholder:text-outline dark:placeholder:text-white/20 text-sm"/>
                             </div>
                             
                             <div class="relative">
                                 <label class="block text-[14px] font-headline text-primary font-bold tracking-widest uppercase mb-2">Lời nhắn *</label>
                                 <textarea v-model="form.message" required rows="4" placeholder="Nội dung ..." 
-                                    class="w-full bg-transparent border-0 border-b border-white/20 focus:border-primary focus:ring-0 transition-colors text-white py-2 px-0 placeholder:text-white/20 resize-none text-sm"></textarea>
+                                    class="w-full bg-transparent border-0 border-b border-outline-variant/50 dark:border-white/20 focus:border-primary focus:ring-0 transition-colors text-on-surface dark:text-white py-2 px-0 placeholder:text-outline dark:placeholder:text-white/20 resize-none text-sm"></textarea>
                             </div>
                             
                             <div class="pt-6">
@@ -141,16 +141,16 @@
                 </div>
             </section>
     
-            <section class="w-full bg-surface py-20 border-t border-white/5">
+            <section class="w-full bg-surface py-20 border-t border-outline-variant/30 dark:border-white/5">
                 <div class="max-w-7xl mx-auto px-6">
                     <div class="flex items-center gap-4 mb-10">
                         <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/30">
                             <span class="material-symbols-outlined text-primary">explore</span>
                         </div>
-                        <h3 class="font-headline text-2xl font-bold tracking-tight uppercase text-white">Hệ thống cửa hàng</h3>
+                        <h3 class="font-headline text-2xl font-bold tracking-tight uppercase text-on-surface dark:text-white">Hệ thống cửa hàng</h3>
                     </div>
                     
-                    <div class="relative h-[300px] md:h-[450px] w-full rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-surface-variant">    
+                    <div class="relative h-[300px] md:h-[450px] w-full rounded-3xl overflow-hidden border border-outline-variant/40 dark:border-white/10 shadow-2xl bg-surface-variant">    
                         <iframe 
                             :src="mapEmbedUrl" 
                             class="absolute inset-0 w-full h-full border-0 filter grayscale-[20%] invert-[90%] hue-rotate-[180deg] contrast-[1.1] opacity-80 hover:opacity-100 transition-opacity duration-500" 
@@ -160,9 +160,9 @@
                         </iframe>
                         
                         <div class="absolute top-6 left-6 pointer-events-none">
-                            <div class="bg-background/90 backdrop-blur-md border border-white/10 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+                            <div class="bg-background/90 backdrop-blur-md border border-outline-variant/40 dark:border-white/10 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                                <span class="text-white font-headline font-bold text-[10px] tracking-widest uppercase truncate max-w-[250px]">
+                                <span class="text-on-surface dark:text-white font-headline font-bold text-[10px] tracking-widest uppercase truncate max-w-[250px]">
                                     {{ systemStore.settings.shop_address || 'Phường Ngô Quyền, TP. Hải Phòng' }}
                                 </span>
                             </div>

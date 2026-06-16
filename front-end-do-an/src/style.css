@@ -5,6 +5,134 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------
+  1. GIAO DIỆN SÁNG
+--------------------------------------------------- */
+:root {
+  --color-background: 248 250 252; /* #f8fafc */
+  --color-surface: 255 255 255; /* #ffffff */
+  --color-surface-dim: 226 232 240; /* #e2e8f0 */
+  --color-surface-bright: 255 255 255; /* #ffffff */
+  --color-surface-container-lowest: 255 255 255; /* #ffffff */
+  --color-surface-container-low: 248 250 252; /* #f8fafc */
+  --color-surface-container: 241 245 249; /* #f1f5f9 */
+  --color-surface-container-high: 226 232 240; /* #e2e8f0 */
+  --color-surface-container-highest: 203 213 225; /* #cbd5e1 */
+  --color-surface-variant: 226 232 240; /* #e2e8f0 */
+  --color-surface-tint: 220 51 0; /* #dc3300 */
+
+  --color-on-background: 15 23 42; /* #0f172a */
+  --color-on-surface: 15 23 42; /* #0f172a */
+  --color-on-surface-variant: 71 85 105; /* #475569 */
+
+  --color-outline: 148 163 184; /* #94a3b8 */
+  --color-outline-variant: 203 213 225; /* #cbd5e1 */
+
+  --color-primary: 220 51 0; /* #dc3300 */
+  --color-on-primary: 255 255 255; /* #ffffff */
+  --color-primary-container: 220 70 200; /* #dc46c8 */
+  --color-on-primary-container: 64 20 0; /* #401400 */
+  --color-primary-dim: 255 143 115; /* #ff8f73 */
+  --color-primary-fixed: 255 120 86; /* #ff7856 */
+  --color-primary-fixed-dim: 255 92 52; /* #ff5c34 */
+  --color-on-primary-fixed: 0 0 0; /* #000000 */
+  --color-on-primary-fixed-variant: 90 15 0; /* #5a0f00 */
+  --color-inverse-primary: 255 143 115; /* #ff8f73 */
+
+  --color-secondary: 184 29 40; /* #b81d28 */
+  --color-on-secondary: 255 255 255; /* #ffffff */
+  --color-secondary-container: 255 218 219; /* #ffdadb */
+  --color-on-secondary-container: 65 0 8; /* #410008 */
+  --color-secondary-dim: 252 124 127; /* #fc7c7f */
+  --color-secondary-fixed: 255 195 194; /* #ffc3c2 */
+  --color-secondary-fixed-dim: 255 175 174; /* #ffafae */
+  --color-on-secondary-fixed: 106 14 25; /* #6a0e19 */
+  --color-on-secondary-fixed-variant: 146 44 51; /* #922c33 */
+
+  --color-tertiary: 134 38 179; /* #8626b3 */
+  --color-on-tertiary: 255 255 255; /* #ffffff */
+  --color-tertiary-container: 243 217 255; /* #f3d9ff */
+  --color-on-tertiary-container: 49 0 77; /* #31004d */
+  --color-tertiary-dim: 210 138 238; /* #d28aee */
+  --color-tertiary-fixed: 225 151 252; /* #e197fc */
+  --color-tertiary-fixed-dim: 210 138 238; /* #d28aee */
+  --color-on-tertiary-fixed: 49 0 69; /* #310045 */
+  --color-on-tertiary-fixed-variant: 93 25 121; /* #5d1979 */
+
+  --color-error: 186 26 26; /* #ba1a1a */
+  --color-on-error: 255 255 255; /* #ffffff */
+  --color-error-container: 255 218 214; /* #ffdad6 */
+  --color-on-error-container: 65 0 2; /* #410002 */
+  --color-error-dim: 215 51 87; /* #d73357 */
+
+  --color-inverse-surface: 49 48 51; /* #313033 */
+  --color-inverse-on-surface: 244 240 244; /* #f4f0f4 */
+}
+
+/* ---------------------------------------------------
+  2. GIAO DIỆN TỐI
+--------------------------------------------------- */
+.dark {
+  --color-background: 12 14 23; /* #0c0e17 */
+  --color-surface: 12 14 23; /* #0c0e17 */
+  --color-surface-dim: 12 14 23; /* #0c0e17 */
+  --color-surface-bright: 40 43 58; /* #282b3a */
+  --color-surface-container-lowest: 0 0 0; /* #000000 */
+  --color-surface-container-low: 17 19 29; /* #11131d */
+  --color-surface-container: 23 25 36; /* #171924 */
+  --color-surface-container-high: 28 31 43; /* #1c1f2b */
+  --color-surface-container-highest: 34 37 50; /* #222532 */
+  --color-surface-variant: 34 37 50; /* #222532 */
+  --color-surface-tint: 255 143 115; /* #ff8f73 */
+
+  --color-on-background: 240 240 253; /* #f0f0fd */
+  --color-on-surface: 240 240 253; /* #f0f0fd */
+  --color-on-surface-variant: 170 170 183; /* #aaaab7 */
+
+  --color-outline: 115 117 128; /* #737580 */
+  --color-outline-variant: 70 71 82; /* #464752 */
+
+  --color-primary: 255 143 115; /* #ff8f73 */
+  --color-on-primary: 94 16 0; /* #5e1000 */
+  --color-primary-container: 255 120 86; /* #ff7856 */
+  --color-on-primary-container: 73 11 0; /* #490b00 */
+  --color-primary-dim: 220 51 0; /* #dc3300 */
+  --color-primary-fixed: 255 120 86; /* #ff7856 */
+  --color-primary-fixed-dim: 255 92 52; /* #ff5c34 */
+  --color-on-primary-fixed: 0 0 0; /* #000000 */
+  --color-on-primary-fixed-variant: 90 15 0; /* #5a0f00 */
+  --color-inverse-primary: 181 41 0; /* #b52900 */
+
+  --color-secondary: 252 124 127; /* #fc7c7f */
+  --color-on-secondary: 83 0 13; /* #53000d */
+  --color-secondary-container: 132 34 42; /* #84222a */
+  --color-on-secondary-container: 255 193 192; /* #ffc1c0 */
+  --color-secondary-dim: 245 119 122; /* #f5777a */
+  --color-secondary-fixed: 255 195 194; /* #ffc3c2 */
+  --color-secondary-fixed-dim: 255 175 174; /* #ffafae */
+  --color-on-secondary-fixed: 106 14 25; /* #6a0e19 */
+  --color-on-secondary-fixed-variant: 146 44 51; /* #922c33 */
+
+  --color-tertiary: 233 170 255; /* #e9aaff */
+  --color-on-tertiary: 94 27 122; /* #5e1b7a */
+  --color-tertiary-container: 225 151 252; /* #e197fc */
+  --color-on-tertiary-container: 83 12 112; /* #530c70 */
+  --color-tertiary-dim: 210 138 238; /* #d28aee */
+  --color-tertiary-fixed: 225 151 252; /* #e197fc */
+  --color-tertiary-fixed-dim: 210 138 238; /* #d28aee */
+  --color-on-tertiary-fixed: 49 0 69; /* #310045 */
+  --color-on-tertiary-fixed-variant: 93 25 121; /* #5d1979 */
+
+  --color-error: 255 110 132; /* #ff6e84 */
+  --color-on-error: 73 0 19; /* #490013 */
+  --color-error-container: 167 1 56; /* #a70138 */
+  --color-on-error-container: 255 178 185; /* #ffb2b9 */
+  --color-error-dim: 215 51 87; /* #d73357 */
+
+  --color-inverse-surface: 250 248 255; /* #faf8ff */
+  --color-inverse-on-surface: 83 84 95; /* #53545f */
+}
+
 @keyframes slideUpFade {
   0% {
     opacity: 0;

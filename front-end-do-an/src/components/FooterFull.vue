@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-surface-container-lowest border-t border-outline-variant/15 pt-10 md:pt-20 pb-6 md:pb-10">
+  <footer class="bg-surface-container-high dark:bg-surface-container-lowest border-t border-outline-variant/15 pt-10 md:pt-20 pb-6 md:pb-10">
     <div class="max-w-7xl mx-auto px-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 mb-10 md:mb-16">        
         <div class="lg:col-span-1">
@@ -13,7 +13,7 @@
             <a v-if="systemStore.settings.social_facebook" 
               :href="systemStore.settings.social_facebook" 
               target="_blank" rel="noopener noreferrer"
-              class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+              class="w-12 h-12 rounded-xl border border-outline-variant dark:border-white/10 flex items-center justify-center text-on-surface-variant hover:text-primary dark:hover:text-white hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-all shadow-sm group">
               <img src="https://api.iconify.design/logos:facebook.svg" 
                     alt="Facebook" 
                     class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />
@@ -22,7 +22,7 @@
             <a v-if="systemStore.settings.social_youtube" 
               :href="systemStore.settings.social_youtube" 
               target="_blank" rel="noopener noreferrer"
-              class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+              class="w-12 h-12 rounded-xl border border-outline-variant dark:border-white/10 flex items-center justify-center text-on-surface-variant hover:text-primary dark:hover:text-white hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-all shadow-sm group">
               <img src="https://api.iconify.design/logos:youtube-icon.svg" 
                     alt="YouTube" 
                     class="w-7 h-7 object-contain group-hover:scale-110 transition-transform" />
@@ -31,7 +31,7 @@
             <a v-if="systemStore.settings.social_instagram" 
               :href="systemStore.settings.social_instagram" 
               target="_blank" rel="noopener noreferrer"
-              class="w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center text-on-surface-variant hover:text-white hover:border-primary hover:bg-primary/20 transition-all shadow-sm group">
+              class="w-12 h-12 rounded-xl border border-outline-variant dark:border-white/10 flex items-center justify-center text-on-surface-variant hover:text-primary dark:hover:text-white hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-all shadow-sm group">
               <img src="https://api.iconify.design/skill-icons:instagram.svg" 
                     alt="Instagram" 
                     class="w-6 h-6 object-contain group-hover:scale-110 transition-transform" />

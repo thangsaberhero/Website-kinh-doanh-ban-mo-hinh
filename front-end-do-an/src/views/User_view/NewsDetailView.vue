@@ -21,11 +21,11 @@
   
       <article v-else-if="article" class="max-w-4xl mx-auto px-6 relative z-10">      
         <header class="mb-12 text-center max-w-3xl mx-auto">
-          <span class="inline-block py-1.5 px-4 rounded bg-primary text-black font-headline font-black text-[10px] tracking-[0.2em] uppercase mb-6 shadow-[0_0_15px_rgba(255,143,115,0.3)]">
+          <span class="inline-block py-1.5 px-4 rounded bg-primary text-white dark:text-black font-headline font-black text-[10px] tracking-[0.2em] uppercase mb-6 shadow-[0_0_15px_rgba(255,143,115,0.3)]">
             {{ article.TheLoai }}
           </span>
           
-          <h1 class="text-3xl md:text-5xl lg:text-6xl font-headline font-black text-white leading-[1.15] tracking-tighter mb-8 italic uppercase">
+          <h1 class="text-3xl md:text-5xl lg:text-6xl font-headline font-black text-on-surface dark:text-white leading-[1.15] tracking-tighter mb-8 italic uppercase">
             {{ article.TieuDe }}
           </h1>
           
@@ -34,7 +34,7 @@
               <div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant/30">
                 <img :src="`https://ui-avatars.com/api/?name=${article.TacGia || 'Admin'}&background=192540&color=ff8f73`" alt="Avatar">
               </div>
-              <span class="text-white font-bold">{{ article.TacGia || 'Admin' }}</span>
+              <span class="text-on-surface dark:text-white font-bold">{{ article.TacGia || 'Admin' }}</span>
             </div>
             <div class="h-4 w-px bg-outline-variant/30 hidden sm:block"></div>
             <span class="flex items-center gap-2">
@@ -87,7 +87,7 @@
         <section v-if="relatedNews.length > 0" class="max-w-4xl mx-auto mt-24 border-t border-outline-variant/30 pt-16 relative z-10">
           <div class="flex items-center gap-4 mb-8">
             <div class="h-8 w-1.5 bg-primary rounded-full"></div>
-            <h3 class="text-2xl font-headline font-black text-white uppercase italic tracking-wider">Tin tức cùng chuyên mục</h3>
+            <h3 class="text-2xl font-headline font-black text-on-surface dark:text-white uppercase italic tracking-wider">Tin tức cùng chuyên mục</h3>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -101,7 +101,7 @@
                   </div>
                   
                   <div class="p-5 flex flex-col flex-1">
-                      <h4 class="text-white font-headline font-bold text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                      <h4 class="text-on-surface dark:text-white font-headline font-bold text-lg mb-3 line-clamp-2 group-hover:text-primary transition-colors">
                           {{ item.TieuDe }}
                       </h4>
                       
@@ -123,8 +123,8 @@
   
       <div v-else class="text-center py-32">
         <span class="material-symbols-outlined text-7xl text-outline-variant mb-6">article_shortcut</span>
-        <h2 class="text-2xl font-headline font-black text-white uppercase italic tracking-tighter">Bài viết đã chìm vào hư không</h2>
-        <button @click="router.push('/news')" class="mt-8 px-8 py-3 bg-primary text-black font-headline font-black tracking-widest rounded-lg hover:bg-white transition-all uppercase text-sm">
+        <h2 class="text-2xl font-headline font-black text-on-surface dark:text-white uppercase italic tracking-tighter">Bài viết đã chìm vào hư không</h2>
+        <button @click="router.push('/news')" class="mt-8 px-8 py-3 bg-primary text-white dark:text-black font-headline font-black tracking-widest rounded-lg hover:bg-white transition-all uppercase text-sm">
           Quay lại trang tin tức
         </button>
       </div>
@@ -141,7 +141,7 @@
     <button 
       v-show="showScrollTop" 
       @click="scrollToTop" 
-      class="fixed bottom-[100px] right-8 bg-primary text-black hover:bg-white hover:scale-110 transition-all duration-300 w-12 h-12 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,143,115,0.4)] z-50"
+      class="fixed bottom-[100px] right-8 bg-primary text-white dark:text-black hover:bg-white hover:scale-110 transition-all duration-300 w-12 h-12 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,143,115,0.4)] z-50"
       title="Cuộn lên đầu trang"
     >
       <span class="material-symbols-outlined text-[24px]">keyboard_arrow_up</span>
@@ -327,65 +327,66 @@
   .font-headline { font-family: 'Space Grotesk', sans-serif; }
   .font-body { font-family: 'Manrope', sans-serif; }
   
-  /* XỬ LÝ NỘI DUNG TỪ TINYMCE ĐỂ ĐỒNG BỘ DARK THEME */
+  /* XỬ LÝ NỘI DUNG TỪ TINYMCE ĐỂ ĐỒNG BỘ DARK/LIGHT THEME */
   .news-content :deep(p) {
     margin-bottom: 1.75rem;
     line-height: 1.8;
-    color: #c5d1e8; /* text-on-surface-variant */
+    color: rgb(var(--color-on-surface-variant)); 
   }
-  
+
   .news-content :deep(h2), 
   .news-content :deep(h3) {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 800;
-    color: #ffffff;
+    color: rgb(var(--color-on-surface));
     margin-top: 3rem;
     margin-bottom: 1.25rem;
     text-transform: uppercase;
     font-style: italic;
     letter-spacing: -0.025em;
   }
-  
+
   .news-content :deep(h2) { font-size: 2.25rem; }
   .news-content :deep(h3) { font-size: 1.75rem; }
-  
+
   .news-content :deep(img) {
     max-width: 100%;
     height: auto;
     border-radius: 1.5rem;
     margin: 3rem auto;
     display: block;
-    border: 1px solid rgba(255, 143, 115, 0.2);
+    border: 1px solid rgb(var(--color-outline-variant) / 0.5);
     box-shadow: 0 0 30px rgba(255, 143, 115, 0.05);
   }
-  
+
   .news-content :deep(a) {
-    color: #ff8f73; /* primary */
+    color: rgb(var(--color-primary)); 
     text-decoration: none;
     font-weight: 700;
-    border-bottom: 1px solid rgba(255, 143, 115, 0.3);
+    border-bottom: 1px solid rgb(var(--color-primary) / 0.3);
     transition: all 0.3s ease;
   }
-  
+
   .news-content :deep(a:hover) {
-    color: #ffffff;
-    border-bottom-color: #ffffff;
+    color: rgb(var(--color-on-surface));
+    border-bottom-color: rgb(var(--color-on-surface));
   }
-  
+
   .news-content :deep(ul), 
   .news-content :deep(ol) {
     margin-left: 1.5rem;
     margin-bottom: 2rem;
-    color: #c5d1e8;
+    color: rgb(var(--color-on-surface-variant));
   }
-  
+
   .news-content :deep(blockquote) {
-    border-left: 4px solid #ff8f73;
-    background: rgba(25, 37, 64, 0.5);
+    border-left: 4px solid rgb(var(--color-primary));
+    background: rgb(var(--color-surface-container-high));
     padding: 1.5rem 2rem;
     border-radius: 0 1rem 1rem 0;
     margin: 3rem 0;
     font-style: italic;
+    color: rgb(var(--color-on-surface));
   }
 
   .fade-enter-active,
