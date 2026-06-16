@@ -944,22 +944,17 @@
 
                   <div v-if="externalOrderForm.ThuTienNgay" class="flex flex-col gap-4 animate-[fadeIn_0.2s_ease-out] pt-3 border-t border-slate-200/60">
                     
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      <label :class="externalOrderForm.PhuongThucTT === 5 ? 'bg-emerald-100 text-emerald-700 border-emerald-500' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'" class="border rounded-lg p-2 cursor-pointer transition-all flex flex-col items-center gap-1 text-center">
+                    <div class="grid grid-cols-2 gap-3">
+                      <label :class="externalOrderForm.PhuongThucTT === 5 ? 'bg-emerald-100 text-emerald-700 border-emerald-500 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50/30'" class="border rounded-xl p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
                         <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="5" class="hidden">
-                        <span class="text-[10px] font-bold">Tiền mặt</span>
+                        <span class="material-symbols-outlined text-[24px]">payments</span>
+                        <span class="text-xs font-bold uppercase tracking-widest mt-1">Tiền mặt</span>
                       </label>
-                      <label :class="externalOrderForm.PhuongThucTT === 4 ? 'bg-blue-100 text-blue-700 border-blue-500' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'" class="border rounded-lg p-2 cursor-pointer transition-all flex flex-col items-center gap-1 text-center">
+
+                      <label :class="externalOrderForm.PhuongThucTT === 4 ? 'bg-blue-100 text-blue-700 border-blue-500 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/30'" class="border rounded-xl p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
                         <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="4" class="hidden">
-                        <span class="text-[10px] font-bold">Chuyển khoản</span>
-                      </label>
-                      <label :class="externalOrderForm.PhuongThucTT === 1 ? 'bg-pink-100 text-pink-700 border-pink-500' : 'bg-white border-slate-200 text-slate-600 hover:border-pink-300'" class="border rounded-lg p-2 cursor-pointer transition-all flex flex-col items-center gap-1 text-center">
-                        <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="1" class="hidden">
-                        <span class="text-[10px] font-bold">Momo</span>
-                      </label>
-                      <label :class="externalOrderForm.PhuongThucTT === 2 ? 'bg-cyan-100 text-cyan-700 border-cyan-500' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300'" class="border rounded-lg p-2 cursor-pointer transition-all flex flex-col items-center gap-1 text-center">
-                        <input type="radio" v-model="externalOrderForm.PhuongThucTT" :value="2" class="hidden">
-                        <span class="text-[10px] font-bold">Zalo Pay</span>
+                        <span class="material-symbols-outlined text-[24px]">account_balance</span>
+                        <span class="text-xs font-bold uppercase tracking-widest mt-1">Chuyển khoản</span>
                       </label>
                     </div>
 
@@ -1325,33 +1320,26 @@
 
           <div>
               <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">Hình thức thu tiền nốt</label>
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                <label :class="collectionMethod === 5 ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'" class="border rounded-xl p-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                
+                <label :class="collectionMethod === 5 ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-200 bg-white text-slate-500 hover:border-emerald-300 hover:text-emerald-600 hover:bg-emerald-50/30'" class="border rounded-xl p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
                   <input type="radio" v-model="collectionMethod" :value="5" class="hidden">
-                  <span class="material-symbols-outlined text-[20px]">payments</span>
-                  <span class="text-[10px] font-bold">Tiền mặt</span>
+                  <span class="material-symbols-outlined text-[22px]">payments</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider mt-0.5">Tiền mặt</span>
                 </label>
-                <label :class="collectionMethod === 4 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'" class="border rounded-xl p-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
+                
+                <label :class="collectionMethod === 4 ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm' : 'border-slate-200 bg-white text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/30'" class="border rounded-xl p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
                   <input type="radio" v-model="collectionMethod" :value="4" class="hidden">
-                  <span class="material-symbols-outlined text-[20px]">account_balance</span>
-                  <span class="text-[10px] font-bold">Chuyển khoản</span>
-                </label>
-                <label :class="collectionMethod === 1 ? 'border-pink-500 bg-pink-50 text-pink-700' : 'border-slate-200 bg-white text-slate-600 hover:border-pink-300'" class="border rounded-xl p-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
-                  <input type="radio" v-model="collectionMethod" :value="1" class="hidden">
-                  <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
-                  <span class="text-[10px] font-bold">Ví Momo</span>
-                </label>
-                <label :class="collectionMethod === 2 ? 'border-cyan-500 bg-cyan-50 text-cyan-700' : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-300'" class="border rounded-xl p-2.5 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
-                  <input type="radio" v-model="collectionMethod" :value="2" class="hidden">
-                  <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
-                  <span class="text-[10px] font-bold">Zalo Pay</span>
+                  <span class="material-symbols-outlined text-[22px]">account_balance</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider mt-0.5">Chuyển khoản</span>
                 </label>
 
-                <label v-if="alreadyPaidAmount > 0" :class="collectionMethod === 3 ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300'" class="border rounded-xl p-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center">
+                <label v-if="alreadyPaidAmount > 0" :class="collectionMethod === 3 ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-sm' : 'border-slate-200 bg-white text-slate-500 hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50/30'" class="border rounded-xl p-3 cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center sm:col-span-1 col-span-2">
                   <input type="radio" v-model="collectionMethod" :value="3" class="hidden">
-                  <span class="material-symbols-outlined text-[20px]">local_shipping</span>
-                  <span class="text-[10px] font-bold">Thu hộ COD</span>
+                  <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider mt-0.5">Thu hộ COD</span>
                 </label>
+                
               </div>
             </div>
 
