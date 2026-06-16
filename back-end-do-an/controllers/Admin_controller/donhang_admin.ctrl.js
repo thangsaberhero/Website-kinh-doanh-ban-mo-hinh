@@ -14,7 +14,7 @@ const donhang_admin = {
             }
             
             const MaNV = check_nv[0].MaNV;
-            const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note, ThuTienNgay, PhuongThucTT, SoTienDaTra } = req.body;
+            const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note, ThuTienNgay, PhuongThucTT, SoTienDaTra, ChoPhepNoCoc, Note } = req.body;
             // DanhSachSanPham từ FE gửi lên phải có dạng: [{ MaPhanLoai: 1, SoLuong: 2 }, ...]
 
             if (!DanhSachSanPham || !Array.isArray(DanhSachSanPham) || DanhSachSanPham.length === 0) {
@@ -261,6 +261,21 @@ const donhang_admin = {
                         success: false, 
                         message: "Nghiệp vụ lỗi: Đơn hàng tại quầy chỉ hỗ trợ 'Thanh toán trực tiếp' hoặc 'Chuyển khoản ngoài'!" 
                     });
+                }
+
+                if (tienThucThu < tongCocToiThieuYeuCau) {
+                    
+                    if (ChoPhepNoCoc) {
+                        // NẾU CÓ BẢO LÃNH: Cho qua, nhưng đóng dấu ấn hình sự vào Ghi chú
+                        finalNote += `\n [BẢO LÃNH CỌC] Nhân viên NV${MaNV} cho phép nợ cọc. (Quy định: ${tongCocToiThieuYeuCau.toLocaleString('vi-VN')}đ | Thực thu: ${tienThucThu.toLocaleString('vi-VN')}đ).`;
+                    } else {
+                        // NẾU KHÔNG TICK BẢO LÃNH: Chặn đứng như cũ
+                        await connection.rollback();
+                        return res.status(400).json({ 
+                            success: false, 
+                            message: `Số tiền nộp (${tienThucThu.toLocaleString('vi-VN')} đ) chưa đạt mức cọc tối thiểu (${tongCocToiThieuYeuCau.toLocaleString('vi-VN')} đ). Nếu là khách quen, vui lòng tick chọn "Bảo lãnh nợ cọc"!` 
+                        });
+                    }
                 }
 
                 let maDoiSoat = null;

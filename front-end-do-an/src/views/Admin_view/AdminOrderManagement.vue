@@ -970,8 +970,15 @@
                       
                       <p v-if="externalOrderForm.TongCocToiThieu > 0 && externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.TongCocToiThieu" class="text-[11px] text-rose-500 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
                         <span class="material-symbols-outlined text-[14px]">warning</span>
-                        Chưa đạt mức cọc tối thiểu ({{ externalOrderForm.TongCocToiThieu.toLocaleString('vi-VN') }} ₫)!
+                        Chưa đạt cọc tối thiểu ({{ externalOrderForm.TongCocToiThieu.toLocaleString('vi-VN') }} ₫)!
                       </p>
+                      
+                      <label v-if="externalOrderForm.TongCocToiThieu > 0 && externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.TongCocToiThieu" class="flex items-start gap-2 mt-2 cursor-pointer bg-rose-50 p-2.5 rounded-lg border border-rose-200 shadow-sm animate-[fadeIn_0.2s_ease-out]">
+                        <input type="checkbox" v-model="externalOrderForm.ChoPhepNoCoc" class="w-4 h-4 mt-0.5 text-rose-600 rounded border-rose-300 focus:ring-rose-500">
+                        <span class="text-[11px] font-bold text-rose-700 leading-tight">
+                          Dùng quyền nhân viên BẢO LÃNH cho phép khách nợ cọc (Hệ thống sẽ lưu vết).
+                        </span>
+                      </label>
                       <p v-else-if="externalOrderForm.SoTienDaTra > 0 && externalOrderForm.SoTienDaTra < externalOrderForm.ThanhTien" class="text-[11px] text-amber-600 font-bold mt-1.5 flex items-center gap-1 animate-[fadeIn_0.2s_ease-out]">
                         <span class="material-symbols-outlined text-[14px]">info</span>
                         Hệ thống sẽ ghi nhận đây là khoản ĐẶT CỌC.
@@ -2212,7 +2219,8 @@ const exportExcelReport = async () => {
     PhuongThucTT: 5,
     SoTienDaTra: 0,
     MaGG: null,
-    GiamGiaVoucher: 0
+    GiamGiaVoucher: 0,
+    ChoPhepNoCoc: false
   });
 
   const isCartContainsOrder = computed(() => {
@@ -2417,7 +2425,8 @@ const exportExcelReport = async () => {
         Note: "Đơn tạo thủ công tại quầy",
         ThuTienNgay: externalOrderForm.value.ThuTienNgay,
         PhuongThucTT: externalOrderForm.value.PhuongThucTT,
-        SoTienDaTra: externalOrderForm.value.SoTienDaTra
+        SoTienDaTra: externalOrderForm.value.SoTienDaTra,
+        ChoPhepNoCoc: externalOrderForm.value.ChoPhepNoCoc
       };
       const res = await fetch(`${API_BASE_URL}/api/invoice_admin/add`, {
         method: 'POST',
