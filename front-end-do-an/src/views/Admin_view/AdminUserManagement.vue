@@ -135,8 +135,9 @@
                 <option value="Admin">Admin</option>
               </select>
               
-              <select v-model="viewingUser.status" :disabled="viewingUser.id === currentAdminId"
-                    :title="viewingUser.id === currentAdminId ? 'Bạn không thể thay đổi trạng thái của chính mình' : ''"
+              <select v-model="viewingUser.status" 
+                    :disabled="viewingUser.role === 'Admin' || viewingUser.id === currentAdminId"
+                    :title="(viewingUser.role === 'Admin' || viewingUser.id === currentAdminId) ? 'Không thể thay đổi trạng thái của Quản trị viên' : ''"
                     class="border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white shadow-sm cursor-pointer disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
                 <option value="Hoạt động">Hoạt động</option>
                 <option value="Bị khóa">Bị khóa</option>
@@ -1035,6 +1036,12 @@
   };
 
   const toggleLockStatus = async (id) => {
+    const targetUser = users.value.find(u => u.id === id);
+    if (id === currentAdminId || (targetUser && targetUser.role === 'Admin')) {
+      toastStore.showToast("Lỗi phân quyền: Không thể thao tác lên Admin hoặc chính mình!", "error");
+      activeMenuId.value = null;
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/account_admin/lock`, {
         method: 'POST',
@@ -1261,6 +1268,12 @@
 
   // 1. Hàm mở Modal (Gắn vào nút bấm)
   const resetPassword = (id) => {
+    const targetUser = users.value.find(u => u.id === id);
+    if (id === currentAdminId || (targetUser && targetUser.role === 'Admin')) {
+      toastStore.showToast("Lỗi phân quyền: Không thể thao tác lên Admin hoặc chính mình!", "error");
+      activeMenuId.value = null;
+      return;
+    }
     userToResetId.value = id;
     isResetPasswordModalOpen.value = true;
     activeMenuId.value = null; // Đóng menu 3 chấm nếu nó đang mở
