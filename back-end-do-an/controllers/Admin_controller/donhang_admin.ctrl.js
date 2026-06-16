@@ -757,7 +757,27 @@ const donhang_admin = {
                 whereValues.push(searchPattern, searchPattern, searchPattern);
             }
 
-            // ... (Các điều kiện lọc ngày tháng, tiền tệ, trạng thái thanh toán bồ giữ nguyên nhé) ...
+            if (trangthaitt && trangthaitt !== 'all') {
+                if (trangthaitt === 'Đã thanh toán') {
+                    // Dùng LIKE để gom chung cả "Đã thanh toán" và "Đã thanh toán (Thu hộ COD)"
+                    conditions.push("dh.TrangThaiThanhToan LIKE '%Đã thanh toán%'");
+                } else {
+                    conditions.push("dh.TrangThaiThanhToan = ?");
+                    whereValues.push(trangthaitt);
+                }
+            }
+
+            // =========================================================
+            // 🔴 XỬ LÝ LỌC KHOẢNG GIÁ TRỊ ĐƠN HÀNG (MIN - MAX)
+            // =========================================================
+            if (minPrice) {
+                conditions.push("dh.ThanhTien >= ?");
+                whereValues.push(Number(minPrice));
+            }
+            if (maxPrice) {
+                conditions.push("dh.ThanhTien <= ?");
+                whereValues.push(Number(maxPrice));
+            }
 
             // 🔴 LỌC BẰNG CỘT NOTE: Lọc trực tiếp Tag ở mệnh đề WHERE
             if (loaihinhban && loaihinhban !== 'all') {

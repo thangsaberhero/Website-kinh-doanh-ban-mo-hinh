@@ -924,10 +924,10 @@
         </label>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <input type="number" v-model="advancedFilter.minPrice" placeholder="Từ mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-primary outline-none font-medium">
+            <input type="text" v-model="advancedFilter.minPrice" @input="formatFilterPrice('minPrice')" placeholder="Từ mức..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-primary outline-none font-medium">
           </div>
           <div>
-            <input type="number" v-model="advancedFilter.maxPrice" placeholder="Đến mức..." min="0" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-primary outline-none font-medium">
+            <input type="text" v-model="advancedFilter.maxPrice" @input="formatFilterPrice('maxPrice')" placeholder="Đến mức..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:border-primary outline-none font-medium">
           </div>
         </div>
       </div>
@@ -1658,10 +1658,10 @@ const exportExcelReport = async () => {
         params.append('trangthaitt', advancedFilter.value.paymentStatus);
       }
       if (advancedFilter.value.minPrice) {
-        params.append('minPrice', advancedFilter.value.minPrice);
+        params.append('minPrice', String(advancedFilter.value.minPrice).replace(/\D/g, ''));
       }
       if (advancedFilter.value.maxPrice) {
-        params.append('maxPrice', advancedFilter.value.maxPrice);
+        params.append('maxPrice', String(advancedFilter.value.maxPrice).replace(/\D/g, ''));
       }
 
       const queryString = params.toString();
@@ -1823,9 +1823,19 @@ const exportExcelReport = async () => {
     paymentStatus: 'all',
     saleType: 'all',      
     productName: '',       
-    minPrice: null,
-    maxPrice: null
+    minPrice: '', // Đổi từ null sang chuỗi rỗng
+    maxPrice: ''  // Đổi từ null sang chuỗi rỗng
   });
+
+  const formatFilterPrice = (field) => {
+    let val = String(advancedFilter.value[field]).replace(/\D/g, '');
+    
+    if (!val) {
+      advancedFilter.value[field] = '';
+      return;
+    }
+    advancedFilter.value[field] = new Intl.NumberFormat('vi-VN').format(val);
+  };
 
   const applyAdvancedFilter = () => {
     currentPage.value = 1; 
@@ -1946,10 +1956,10 @@ const exportExcelReport = async () => {
         url += `&tensanpham=${encodeURIComponent(advancedFilter.value.productName.trim())}`;
       }
       if (advancedFilter.value.minPrice) {
-        url += `&minPrice=${advancedFilter.value.minPrice}`;
+        url += `&minPrice=${String(advancedFilter.value.minPrice).replace(/\D/g, '')}`;
       }
       if (advancedFilter.value.maxPrice) {
-        url += `&maxPrice=${advancedFilter.value.maxPrice}`;
+        url += `&maxPrice=${String(advancedFilter.value.maxPrice).replace(/\D/g, '')}`;
       }
 
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
@@ -2898,8 +2908,12 @@ const exportExcelReport = async () => {
       if (advancedFilter.value.paymentStatus !== 'all') url += `&trangthaitt=${encodeURIComponent(advancedFilter.value.paymentStatus)}`;
       if (advancedFilter.value.saleType !== 'all') url += `&loaihinhban=${encodeURIComponent(advancedFilter.value.saleType)}`;
       if (advancedFilter.value.productName && advancedFilter.value.productName.trim() !== '') url += `&tensanpham=${encodeURIComponent(advancedFilter.value.productName.trim())}`;
-      if (advancedFilter.value.minPrice) url += `&minPrice=${advancedFilter.value.minPrice}`;
-      if (advancedFilter.value.maxPrice) url += `&maxPrice=${advancedFilter.value.maxPrice}`;
+      if (advancedFilter.value.minPrice) {
+          url += `&minPrice=${String(advancedFilter.value.minPrice).replace(/\D/g, '')}`;
+      }
+      if (advancedFilter.value.maxPrice) {
+          url += `&maxPrice=${String(advancedFilter.value.maxPrice).replace(/\D/g, '')}`;
+      }
 
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(url, { headers: {'Authorization': `Bearer ${token}`} });
