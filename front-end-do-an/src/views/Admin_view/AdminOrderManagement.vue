@@ -113,14 +113,33 @@
 
           <div class="p-6 flex flex-col gap-4 border-b border-slate-100">
             
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-100 border-dashed">
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-4 border-b border-slate-100 border-dashed">
               
-              <div class="relative w-full md:w-96">
+              <div class="relative w-full xl:w-96">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
                 <input type="text" v-model="searchQuery" placeholder="Tìm theo mã đơn, tên, sđt khách hàng..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
               </div>
               
-              <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                <div class="hidden lg:flex items-center p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
+                  <button @click="setQuickDate('today')" :class="filterDate.from === getToday() && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Hôm nay</button>
+                  <button @click="setQuickDate('7days')" :class="filterDate.from === getDaysAgo(7) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">7 Ngày</button>
+                  <button @click="setQuickDate('30days')" :class="filterDate.from === getDaysAgo(30) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">30 Ngày</button>
+                  <button @click="setQuickDate('all')" :class="filterDate.from === '' && filterDate.to === '' ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Tất cả</button>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 shadow-sm w-full md:w-auto">
+                  <span class="material-symbols-outlined text-slate-400 text-[18px]">calendar_today</span>
+                  <input type="date" v-model="filterDate.from" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none w-[110px]">
+                  <span class="text-slate-300">-</span>
+                  <input type="date" v-model="filterDate.to" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none w-[110px]">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 w-full">
+              
+              <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                 <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm hover:border-primary transition-all">
                   <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300 cursor-pointer transition-colors"/>
                   <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn trang này</span>
@@ -137,29 +156,10 @@
 
                 <button v-if="selectedOrders.length > 0" 
                         @click="selectedOrders = []" 
-                        class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-xl transition-all border border-rose-100 shadow-sm animate-[fadeIn_0.2s_ease-out]">
+                        class="flex items-center gap-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2.5 rounded-xl transition-all border border-rose-100 shadow-sm animate-[fadeIn_0.2s_ease-out]">
                   <span class="material-symbols-outlined text-[14px]">clear_all</span>
                   Bỏ chọn tất cả ({{ selectedOrders.length }})
                 </button>
-              </div>
-            </div>
-
-            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 w-full">
-              
-              <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
-                <div class="hidden lg:flex items-center p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
-                  <button @click="setQuickDate('today')" :class="filterDate.from === getToday() && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Hôm nay</button>
-                  <button @click="setQuickDate('7days')" :class="filterDate.from === getDaysAgo(7) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">7 Ngày</button>
-                  <button @click="setQuickDate('30days')" :class="filterDate.from === getDaysAgo(30) && filterDate.to === getToday() ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">30 Ngày</button>
-                  <button @click="setQuickDate('all')" :class="filterDate.from === '' && filterDate.to === '' ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Tất cả</button>
-                </div>
-
-                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 shadow-sm w-full md:w-auto">
-                  <span class="material-symbols-outlined text-slate-400 text-[18px]">calendar_today</span>
-                  <input type="date" v-model="filterDate.from" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none w-[110px]">
-                  <span class="text-slate-300">-</span>
-                  <input type="date" v-model="filterDate.to" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none w-[110px]">
-                </div>
               </div>
 
               <div class="flex items-center gap-3 shrink-0 self-end sm:self-auto">
