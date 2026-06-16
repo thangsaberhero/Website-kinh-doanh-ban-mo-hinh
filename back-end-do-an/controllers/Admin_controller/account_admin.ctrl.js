@@ -535,7 +535,9 @@ const account_admin = {
             const [users] = await db.query(sql, value);
 
             const workbook = new excel.Workbook();
-            const worksheet = workbook.addWorksheet('Danh sách Người dùng');
+            const worksheet = workbook.addWorksheet('Danh sách Người dùng', {
+                pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true }
+            });
 
             worksheet.views = [{ showGridLines: false }];
 
@@ -550,50 +552,80 @@ const account_admin = {
                 { key: 'NgayTao', width: 22 },
             ];
 
-            // Nền trắng Header
-            for (let i = 1; i <= 8; i++) {
+            // Nền trắng Header (Mở rộng vùng trắng cho thoáng)
+            for (let i = 1; i <= 9; i++) {
                 for (let j = 1; j <= 8; j++) {
                     worksheet.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
                 }
             }
 
+            // ==========================================
+            // PHẦN HEADER: Logo trái, Tên cửa hàng bên phải
+            // ==========================================
             try {
                 const path = require('path');
+                const fs = require('fs');
                 const logoPath = path.join(__dirname, '../../public/logo.png'); 
-                const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
-                worksheet.addImage(logoId, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+                if (fs.existsSync(logoPath)) {
+                    const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
+                    worksheet.addImage(logoId, { tl: { col: 0.1, row: 0.2 }, ext: { width: 80, height: 80 } });
+                }
             } catch (err) {}
 
             worksheet.mergeCells('B1:H1');
-            worksheet.getCell('B1').value = 'FIGURECOLLECT';
-            worksheet.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' }, name: 'Space Grotesk' };
-            worksheet.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
+            const shopName = worksheet.getCell('B1');
+            shopName.value = 'FIGURECOLLECT';
+            shopName.font = { size: 22, bold: true, color: { argb: 'FFFF8F73' }, name: 'Space Grotesk' };
+            shopName.alignment = { vertical: 'bottom', horizontal: 'left' };
 
             worksheet.mergeCells('B2:H2');
-            worksheet.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
-            worksheet.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' }; 
-            worksheet.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
+            const slogan = worksheet.getCell('B2');
+            slogan.value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            slogan.font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' }; 
+            slogan.alignment = { vertical: 'top', horizontal: 'left' };
 
             worksheet.mergeCells('A4:H4');
             worksheet.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
 
+            // ==========================================
+            // PHẦN TIÊU ĐỀ BÁO CÁO
+            // ==========================================
             worksheet.mergeCells('A5:H5');
-            worksheet.getCell('A5').value = 'BÁO CÁO DANH SÁCH TÀI KHOẢN HỆ THỐNG';
-            worksheet.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
-            worksheet.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+            const titleCell = worksheet.getCell('A5');
+            titleCell.value = 'BÁO CÁO DANH SÁCH TÀI KHOẢN HỆ THỐNG';
+            titleCell.font = { size: 18, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+            titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
+            const currentTime = new Date().toLocaleString('vi-VN');
             const filterText = (tu_ngay && den_ngay) ? `Từ ${tu_ngay} đến ${den_ngay}` : 'Toàn thời gian';
+            
             worksheet.mergeCells('A6:H6');
-            worksheet.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')} | Kỳ dữ liệu: ${filterText}`;
-            worksheet.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' }, name: 'Manrope' };
-            worksheet.getCell('A6').alignment = { horizontal: 'center' };
+            const dateCell = worksheet.getCell('A6');
+            dateCell.value = `Ngày xuất: ${currentTime}`;
+            dateCell.font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+            dateCell.alignment = { horizontal: 'center' };
 
-            const headerRow = worksheet.getRow(9);
+            worksheet.mergeCells('A7:H7');
+            const filterCell = worksheet.getCell('A7');
+            filterCell.value = `Kỳ dữ liệu: ${filterText}`;
+            filterCell.font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+            filterCell.alignment = { horizontal: 'center' };
+
+            worksheet.mergeCells('A9:H9');
+            const subTitleCell = worksheet.getCell('A9');
+            subTitleCell.value = 'DANH SÁCH TÀI KHOẢN CHI TIẾT';
+            subTitleCell.font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+            subTitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+            // ==========================================
+            // PHẦN BẢNG DỮ LIỆU
+            // ==========================================
+            const headerRow = worksheet.getRow(10);
             headerRow.values = ['Mã TK', 'Họ và Tên', 'Tên Đăng Nhập', 'Email liên hệ', 'Số Điện Thoại', 'Vai Trò', 'Trạng Thái', 'Ngày Đăng Ký'];
             headerRow.height = 25;
             
             headerRow.eachCell((cell) => {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } }; // Giữ nguyên màu cam san hô
                 cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
                 cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 cell.border = {
@@ -602,31 +634,39 @@ const account_admin = {
                 };
             });
 
-            worksheet.autoFilter = 'A9:H9';
+            worksheet.autoFilter = 'A10:H10';
 
-            let currentRow = 10;
+            let currentRow = 11;
             users.forEach((user, index) => {
+                // Tạo tiền tố TK cho đồng bộ form ảnh
+                const maTKFormat = `TK${String(user.MaTK).padStart(4, '0')}`;
+
                 const row = worksheet.addRow({
-                    MaTK: user.MaTK,
+                    MaTK: maTKFormat,
                     HoTen: user.HoTen || 'Chưa cập nhật',
                     TenDN: user.TenDN,
                     Email: user.Email || 'Chưa cập nhật',
                     SDT: user.SDT || 'Chưa cập nhật',
                     TenQuyen: user.TenQuyen,
                     TrangThai: user.Bi_khoa === 1 ? 'Bị khóa' : 'Hoạt động',
-                    NgayTao: user.NgayTao ? new Date(user.NgayTao).toLocaleString('vi-VN') : ''
+                    NgayTao: user.NgayTao ? new Date(user.NgayTao).toLocaleString('vi-VN', { hour12: false }) : ''
                 });
+                
+                row.height = 25;
 
                 const isEven = index % 2 === 0;
+                const rowFillColor = isEven ? 'FFFFFFFF' : 'FFF8F9FA'; // Giữ xen kẽ trắng xám
+
                 row.eachCell((cell, colNum) => {
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isEven ? 'FFFFFFFF' : 'FFF8F9FA' } };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFillColor } };
                     cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
                     cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
                     
                     if([1, 6, 7, 8].includes(colNum)) cell.alignment = { horizontal: 'center', vertical: 'middle' };
                     else cell.alignment = { horizontal: 'left', vertical: 'middle' };
                     
-                    if (colNum === 7 && user.Bi_khoa === 1) cell.font = { size: 10, name: 'Manrope', color: { argb: 'FFEF4444' }, bold: true }; // Màu đỏ nếu bị khóa
+                    // Giữ nguyên logic hiển thị màu đỏ khi tài khoản bị khóa
+                    if (colNum === 7 && user.Bi_khoa === 1) cell.font = { size: 10, name: 'Manrope', color: { argb: 'FFEF4444' }, bold: true }; 
                 });
                 currentRow++;
             });
