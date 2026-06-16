@@ -2178,7 +2178,7 @@ const exportExcelReport = async () => {
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       // LƯU Ý: Sửa lại đường dẫn API này cho khớp với file router.js ở Backend của bạn
-      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/update-info`, { 
+      const response = await fetch(`${API_BASE_URL}/api/invoice_admin/fix`, { 
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
