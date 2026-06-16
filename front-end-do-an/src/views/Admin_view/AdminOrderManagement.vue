@@ -113,13 +113,15 @@
 
           <div class="p-6 flex flex-col gap-4 border-b border-slate-100">
             
-            <div class="flex flex-wrap items-center gap-4 pb-4 border-b border-slate-100 border-dashed">
-              <div class="flex items-center px-4 py-2 border border-slate-200 rounded-xl bg-slate-50 text-xs font-bold text-slate-500 shadow-sm whitespace-nowrap">
-                <span>Hiển thị {{ startItem }} - {{ endItem }} / {{ totalOrders }} đơn hàng</span>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-100 border-dashed">
+              
+              <div class="relative w-full md:w-96">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                <input type="text" v-model="searchQuery" placeholder="Tìm theo mã đơn, tên, sđt khách hàng..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
               </div>
               
-              <div class="flex flex-wrap items-center gap-2">
-                <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-primary transition-all">
+              <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <label class="flex items-center gap-2 cursor-pointer group bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm hover:border-primary transition-all">
                   <input v-model="selectAll" type="checkbox" class="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300 cursor-pointer transition-colors"/>
                   <span class="text-xs font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Chọn trang này</span>
                 </label>
@@ -127,7 +129,7 @@
                 <button v-if="totalOrders > itemsPerPage"
                         @click="selectAllMatchingOrders"
                         :disabled="isFetchingAllIds"
-                        class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-4 py-2 rounded-xl shadow-sm transition-all">
+                        class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm transition-all">
                   <span v-if="isFetchingAllIds" class="material-symbols-outlined text-[14px] text-slate-500 animate-spin">progress_activity</span>
                   <span v-else class="material-symbols-outlined text-[14px] text-slate-500">library_add_check</span>
                   <span class="text-xs font-bold text-slate-600">Chọn toàn bộ {{ totalOrders }} đơn</span>
@@ -152,58 +154,52 @@
                   <button @click="setQuickDate('all')" :class="filterDate.from === '' && filterDate.to === '' ? 'bg-white text-primary shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Tất cả</button>
                 </div>
 
-                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-0.5 shadow-sm w-full md:w-auto">
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1 shadow-sm w-full md:w-auto">
                   <span class="material-symbols-outlined text-slate-400 text-[18px]">calendar_today</span>
-                  <input type="date" v-model="filterDate.from" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5 w-[110px]">
+                  <input type="date" v-model="filterDate.from" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none w-[110px]">
                   <span class="text-slate-300">-</span>
-                  <input type="date" v-model="filterDate.to" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5 w-[110px]">
+                  <input type="date" v-model="filterDate.to" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none w-[110px]">
                 </div>
               </div>
 
-              <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
-                <div class="relative w-full sm:w-60">
-                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
-                  <input type="text" v-model="searchQuery" placeholder="Mã đơn, khách hàng..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium text-slate-700 shadow-sm">
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                  <button @click="isFilterPanelOpen = true" class="w-9 h-9 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm" title="Bộ lọc nâng cao">
-                    <span class="material-symbols-outlined text-[20px]">filter_list</span>
+              <div class="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                <button @click="isFilterPanelOpen = true" class="px-4 py-2 flex items-center justify-center gap-1.5 border border-slate-200 bg-white rounded-xl text-slate-500 hover:text-primary hover:border-primary transition-all shadow-sm font-bold text-xs" title="Bộ lọc nâng cao">
+                  <span class="material-symbols-outlined text-[18px]">filter_list</span> Bộ lọc
+                </button>
+                
+                <div class="relative">
+                  <button 
+                    @click="isSortMenuOpen = !isSortMenuOpen" 
+                    class="px-4 py-2 flex items-center justify-center gap-1.5 border border-slate-200 bg-white rounded-xl text-slate-500 hover:text-primary hover:border-primary transition-all shadow-sm font-bold text-xs"
+                    :class="{ 'border-primary text-primary bg-primary/5': isSortMenuOpen }"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">sort</span> Sắp xếp
                   </button>
-                  <div class="relative">
-                    <button 
-                      @click="isSortMenuOpen = !isSortMenuOpen" 
-                      class="w-9 h-9 flex items-center justify-center border border-slate-200 bg-white rounded-xl text-slate-400 hover:text-primary hover:border-primary transition-all shadow-sm"
-                      :class="{ 'border-primary text-primary bg-primary/5': isSortMenuOpen }"
-                    >
-                      <span class="material-symbols-outlined text-[20px]">sort</span>
-                    </button>
 
-                    <div v-show="isSortMenuOpen" class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 py-2 z-50 animate-[fadeIn_0.2s_ease-out]">
-                      <p class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sắp xếp theo</p>
-                      <button @click="setSort('date_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                        <span class="font-medium text-slate-700 group-hover:text-primary">Mới nhất (Mặc định)</span>
-                        <span v-if="sortBy === 'date_desc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
-                      </button>
-                      <button @click="setSort('date_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                        <span class="font-medium text-slate-700 group-hover:text-primary">Cũ nhất trước</span>
-                        <span v-if="sortBy === 'date_asc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
-                      </button>
-                      <div class="border-t border-slate-50 my-1"></div>
-                      <button @click="setSort('total_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                        <span class="font-medium text-slate-700 group-hover:text-primary">Tổng tiền: Cao đến Thấp</span>
-                        <span v-if="sortBy === 'total_desc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
-                      </button>
-                      <button @click="setSort('total_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
-                        <span class="font-medium text-slate-700 group-hover:text-primary">Tổng tiền: Thấp đến Cao</span>
-                        <span v-if="sortBy === 'total_asc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
-                      </button>
-                    </div>
+                  <div v-show="isSortMenuOpen" class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-100 py-2 z-50 animate-[fadeIn_0.2s_ease-out]">
+                    <p class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sắp xếp theo</p>
+                    <button @click="setSort('date_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Mới nhất (Mặc định)</span>
+                      <span v-if="sortBy === 'date_desc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
+                    </button>
+                    <button @click="setSort('date_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Cũ nhất trước</span>
+                      <span v-if="sortBy === 'date_asc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
+                    </button>
+                    <div class="border-t border-slate-50 my-1"></div>
+                    <button @click="setSort('total_desc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Tổng tiền: Cao đến Thấp</span>
+                      <span v-if="sortBy === 'total_desc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
+                    </button>
+                    <button @click="setSort('total_asc')" class="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between group transition-colors hover:bg-slate-50">
+                      <span class="font-medium text-slate-700 group-hover:text-primary">Tổng tiền: Thấp đến Cao</span>
+                      <span v-if="sortBy === 'total_asc'" class="material-symbols-outlined text-primary text-[18px]">check</span>
+                    </button>
                   </div>
                 </div>
               </div>
-
             </div>
+
           </div>
 
           <div class="overflow-x-auto min-h-[300px]">
@@ -3070,6 +3066,8 @@ const exportExcelReport = async () => {
     } else if (range === 'all') {
       filterDate.value = { from: '', to: getToday() };
     }
+    currentPage.value = 1;
+    fetchOrders();
   };
 
   const scrollToTopCustom = (duration = 1000) => {
