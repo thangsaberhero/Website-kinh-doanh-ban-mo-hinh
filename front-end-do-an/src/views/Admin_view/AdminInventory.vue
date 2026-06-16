@@ -460,31 +460,57 @@
             </table>
           </div>
           
-          <div class="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
-            <p class="text-xs font-bold text-slate-400">Hiển thị {{ (currentPage - 1)*limit + 1 }} - {{Math.min(currentPage * limit, totalProducts)}} của {{ totalProducts }} sản phẩm</p>
-            <div class="flex items-center gap-2">
+          <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30">
+            
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-slate-400">
+                Hiển thị {{ startItem }} - {{ endItem }} của {{ totalProducts }} sản phẩm
+              </span>
+              
+              <div class="h-4 w-px bg-slate-200"></div>
+              
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                <select v-model="itemsPerPage" @change="changeItemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                  <option :value="10">10</option>
+                  <option :value="20">20</option>
+                  <option :value="50">50</option>
+                </select>
+              </div>
+            </div>
+            
+            <div v-if="totalPages > 1" class="flex items-center gap-1.5">
+              <button 
+                @click="changePage(currentPage - 1)" 
+                :disabled="currentPage === 1"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+              >
+                <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+              </button>
+              
+              <template v-for="(p, index) in visiblePages" :key="index">
                 <button 
-                  @click="if(currentPage > 1) { currentPage--; fetchProducts(); }"
-                  :disabled="currentPage === 1"
-                  class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  v-if="p !== '...'"
+                  @click="changePage(p)"
+                  :class="currentPage === p 
+                    ? 'bg-primary text-white shadow-md shadow-primary/20 border-transparent' 
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-primary hover:border-primary'"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold border transition-all"
                 >
-                  <span class="material-symbols-outlined text-sm">chevron_left</span>
+                  {{ p }}
                 </button>
-                
-                <div class="flex items-center gap-1">
-                    <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20">
-                      {{ currentPage }}
-                    </button>
-                    <span class="text-xs font-bold text-slate-400 px-2">/ {{ totalPages }}</span>
-                </div>
-                
-                <button 
-                  @click="if(currentPage < totalPages) { currentPage++; fetchProducts(); }"
-                  :disabled="currentPage === totalPages"
-                  class="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <span class="material-symbols-outlined text-sm">chevron_right</span>
-                </button>
+                <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">
+                  ...
+                </span>
+              </template>
+              
+              <button 
+                @click="changePage(currentPage + 1)" 
+                :disabled="currentPage === totalPages"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+              >
+                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+              </button>
             </div>
           </div>
         </div>
@@ -2067,6 +2093,32 @@
     await fetchProducts();
     checkAndOpenInventoryFromUrl(); 
   });
+
+  // 🔴 THÊM MỚI 1: Thuật toán Phân trang thông minh (Rút gọn dấu ...)
+  const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    
+    if (current <= 3) {
+      return [1, 2, 3, 4, '...', total - 1, total];
+    }
+    
+    if (current >= total - 2) {
+      return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    }
+    
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  });
+
+  // 🔴 THÊM MỚI 2: Hàm xử lý khi đổi số lượng hiển thị (10, 20, 50)
+  const changeItemsPerPage = () => {
+    currentPage.value = 1; // Reset về trang 1
+    fetchProducts(); // Gọi lại API để tải danh sách với limit mới
+  };
 </script>
 <style scoped>
   .custom-scrollbar::-webkit-scrollbar { width: 6px; }
