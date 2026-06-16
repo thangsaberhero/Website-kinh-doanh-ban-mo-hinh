@@ -16,7 +16,7 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-3 md:gap-6">
+      <div class="flex items-center gap-2 md:gap-6">
         <button @click="showMobileSearch = !showMobileSearch" class="lg:hidden hover:text-primary transition-colors p-1">
           <span class="material-symbols-outlined text-[22px]">search</span>
         </button>
@@ -76,7 +76,7 @@
         <div class="flex items-center gap-2 md:gap-4">
           <button 
             @click="toggleTheme" 
-            class="hover:text-primary transition-colors py-2 outline-none"
+            class="hidden md:block hover:text-primary transition-colors py-2 outline-none"
             title="Chuyển đổi giao diện Sáng/Tối"
           >
             <span class="material-symbols-outlined">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
@@ -168,7 +168,7 @@
               leave-from-class="opacity-100 translate-y-0"
               leave-to-class="opacity-0 translate-y-2"
             >
-              <div v-if="showUserMenu" class="absolute top-[120%] right-0 w-60 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50 py-2">
+              <div v-if="showUserMenu" class="absolute top-[120%] right-[-10px] md:right-0 w-60 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50 py-2">
                 <div class="px-4 py-3 border-b border-outline-variant/10 mb-2 bg-surface-container">
                   <p class="text-sm text-on-surface font-bold truncate">{{ authStore.user.username || authStore.user.TenKH || 'Collector' }}</p>
                   <p class="text-xs text-outline truncate">{{ authStore.user.Email || 'collector@figure.com' }}</p>
@@ -216,10 +216,16 @@
       <div v-if="showMobileMenu" class="md:hidden absolute top-full left-0 w-full bg-surface-container-highest border-b border-outline-variant/20 shadow-2xl z-40">
         <div class="flex flex-col p-3 space-y-1">
           <router-link to="/category" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Cửa hàng</router-link>
-          <router-link to="/news" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Tin tức</router-link>          
-          <router-link to="/contact" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Liên hệ</router-link>          
-          <router-link to="/wishlist" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Mô hình yêu thích</router-link>          
+          <router-link to="/news" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Tin tức</router-link>
+          <router-link to="/contact" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Liên hệ</router-link>
+          <router-link to="/wishlist" @click="showMobileMenu = false" active-class="bg-primary/10 text-primary font-bold border-transparent" class="p-3 border-b border-white/5 text-sm font-medium rounded-lg transition-colors">Mô hình yêu thích</router-link>
           <router-link to="/truy-xuat/" @click="showMobileMenu = false" active-class="bg-primary/10 font-bold border-transparent" class="p-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary rounded-lg transition-colors">Truy xuất Blockchain</router-link>
+          
+          <div class="h-px bg-outline-variant/10 my-2 mx-2"></div>
+          <button @click="toggleTheme(); showMobileMenu = false" class="flex items-center justify-between p-3 text-sm font-medium rounded-lg transition-colors text-outline hover:text-white hover:bg-white/5">
+            <span>Giao diện {{ isDark ? 'Tối' : 'Sáng' }}</span>
+            <span class="material-symbols-outlined">{{ isDark ? 'dark_mode' : 'light_mode' }}</span>
+          </button>
         </div>
       </div>
     </transition>
