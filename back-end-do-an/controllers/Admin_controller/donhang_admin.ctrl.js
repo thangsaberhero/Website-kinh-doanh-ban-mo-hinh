@@ -15,13 +15,12 @@ const donhang_admin = {
             
             const MaNV = check_nv[0].MaNV;
             const { DanhSachSanPham, Ten, SDT, DiaChi, MaGG, Note, ThuTienNgay, PhuongThucTT, SoTienDaTra, ChoPhepNoCoc} = req.body;
-            // DanhSachSanPham từ FE gửi lên phải có dạng: [{ MaPhanLoai: 1, SoLuong: 2 }, ...]
 
             if (!DanhSachSanPham || !Array.isArray(DanhSachSanPham) || DanhSachSanPham.length === 0) {
                 return res.status(400).json({ success: false, message: "Danh sách sản phẩm trống!" });
             }
             if (!Ten || !SDT) {
-                return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin!" });
+                return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin Khách hàng!" });
             }
 
             await connection.beginTransaction();
@@ -30,10 +29,11 @@ const donhang_admin = {
             const danhSachYeuCau = new Map(DanhSachSanPham.map(item => [item.MaPhanLoai, parseInt(item.SoLuong)]));
             const listMaPhanLoai = Array.from(danhSachYeuCau.keys());
 
-            // 2. Truy vấn DB lấy GIÁ THẬT và KHUYẾN MÃI của các mã vừa gửi lên
+            // 2. Truy vấn DB lấy GIÁ THẬT, KHUYẾN MÃI và TIỀN CỌC TỐI THIỂU
+            //  ĐÃ SỬA: Bổ sung mh.TienCocToiThieu
             const sql_get_items = `
                 SELECT 
-                    mh.TenMH, mh.GiaNhap, mh.LoaiHinhBan,
+                    mh.TenMH, mh.GiaNhap, mh.LoaiHinhBan, mh.TienCocToiThieu,
                     pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho,
                     km_info.MaKM,
                     COALESCE(km_info.MucGiam, 0) AS MucGiam,
@@ -59,14 +59,13 @@ const donhang_admin = {
             `;
             const [db_items] = await connection.query(sql_get_items, [listMaPhanLoai]);
 
-            // Kiểm tra xem có mã ma nào bị gửi lên không
+            // Kiểm tra xem có mã nào bị gửi lên ảo không
             if (db_items.length !== listMaPhanLoai.length) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Có sản phẩm không tồn tại trong hệ thống!" });
             }
 
             const coHangSan = db_items.some(item => !item.LoaiHinhBan || item.LoaiHinhBan.toLowerCase().includes('có sẵn'));
-            // Chỉ cần chứa chữ "order" là bao trọn cả "Order" và "Pre-order"
             const coHangOrder = db_items.some(item => item.LoaiHinhBan && item.LoaiHinhBan.toLowerCase().includes('order'));
 
             if (coHangSan && coHangOrder) {
@@ -79,13 +78,13 @@ const donhang_admin = {
 
             if (coHangOrder && !DiaChi) {
                 await connection.rollback();
-                return res.status(400).json({ 
-                    success: false, 
-                    message: "Vui lòng nhập đầy đủ thông tin!" });
+                return res.status(400).json({ success: false, message: "Vui lòng nhập địa chỉ giao hàng đối với sản phẩm Order/Pre-order!" });
             }
 
             let TongTienHang = 0;
             let TongTienKhuyenMai = 0;
+            let tongCocToiThieuYeuCau = 0; 
+            
             let arrChiTietDonHang = [];
             let arrUpdateKho = [];
             let arrUpdateKhuyenMai = [];
@@ -101,7 +100,8 @@ const donhang_admin = {
                     const kieuHang = isOrder ? 'Slot Order/Pre-order' : 'Hàng có sẵn';
                     return res.status(400).json({ 
                         success: false, 
-                        message: `Sản phẩm ${item.TenMH} (${item.ChiTietPhanLoai}) chỉ còn ${item.TonKho} ${kieuHang}!` });
+                        message: `Sản phẩm ${item.TenMH} (${item.ChiTietPhanLoai}) chỉ còn ${item.TonKho} ${kieuHang}!` 
+                    });
                 }
 
                 const slSale = item.SoLuongKhuyenMaiConLai > 0 ? Math.min(soLuongYeuCau, item.SoLuongKhuyenMaiConLai) : 0;
@@ -109,6 +109,10 @@ const donhang_admin = {
 
                 TongTienHang += (item.DonGia * soLuongYeuCau);
                 TongTienKhuyenMai += (item.MucGiam * slSale);
+                
+                // Tính dồn tiền cọc tương ứng với số lượng món mua
+                tongCocToiThieuYeuCau += ((item.TienCocToiThieu || 0) * soLuongYeuCau); 
+
                 arrUpdateKho.push([soLuongYeuCau, item.MaPhanLoai]);
 
                 if (slSale > 0) {
@@ -125,7 +129,7 @@ const donhang_admin = {
             let tongTienThanhToan = TongTienHang - TongTienKhuyenMai;
             let soTienGiamVoucher = 0;
 
-            // 4. Xử lý Voucher (Mã giảm giá nội bộ nhân viên áp dụng cho khách)
+            // 4. Xử lý Voucher 
             if (MaGG) {
                 const sql_check_voucher = `SELECT * FROM MaGiamGia WHERE MaGG = ? AND ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1`;
                 const [voucherInfo] = await connection.query(sql_check_voucher, [MaGG]);
@@ -159,15 +163,11 @@ const donhang_admin = {
                     
                     let isHopLeSanPham = true;
                     
-                    // Nếu bảng chi tiết có dữ liệu -> Mã này bị giới hạn chỉ áp dụng cho một số món
                     if (apDungChoPhanLoai.length > 0) {
                         const danhSachChoPhep = apDungChoPhanLoai.map(item => item.MaPhanLoai);
-                        
-                        // listMaPhanLoai là mảng các ID sản phẩm khách ĐANG MUA ở trên
                         const coMonHopLe = listMaPhanLoai.some(ma => danhSachChoPhep.includes(ma));
-                        
                         if (!coMonHopLe) {
-                            isHopLeSanPham = false; // Đánh dấu là không hợp lệ
+                            isHopLeSanPham = false; 
                         }
                     }
                     
@@ -185,51 +185,56 @@ const donhang_admin = {
                     return res.status(400).json({ success: false, message: "Mã voucher không hợp lệ hoặc đã hết hạn!" });
                 }
             }
+            // 5. BẢO MẬT GIAO DỊCH: KIỂM TRA MỨC CỌC
+            let tienThucThu = (ThuTienNgay && Number(SoTienDaTra) > 0) ? Number(SoTienDaTra) : 0;
+            let snapshotTag = '[SẴN]'; 
+            
+            for (let item of db_items) {
+                let loaiHang = (item.LoaiHinhBan || '').toLowerCase();
+                if (loaiHang.includes('pre-order') || loaiHang.includes('pre order')) {
+                    snapshotTag = '[PRE-ORDER]';
+                    break;
+                } else if (loaiHang.includes('order')) {
+                    snapshotTag = '[ORDER]';
+                }
+            }
 
-            // 5. Insert Bảng DonHang
+            let finalNote = (Note && Note.trim() !== '') ? `${snapshotTag} ${Note}` : snapshotTag;
+
+            // Chốt chặn kiểm tra tiền cọc
+            if (tienThucThu < tongCocToiThieuYeuCau) {
+                if (ChoPhepNoCoc) {
+                    finalNote += `\n [BẢO LÃNH CỌC] Nhân viên NV${MaNV} cho phép nợ cọc. (Quy định cọc: ${tongCocToiThieuYeuCau.toLocaleString('vi-VN')}đ | Khách nộp: ${tienThucThu.toLocaleString('vi-VN')}đ).`;
+                } else {
+                    await connection.rollback();
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: `Số tiền nộp (${tienThucThu.toLocaleString('vi-VN')} đ) chưa đạt mức cọc tối thiểu (${tongCocToiThieuYeuCau.toLocaleString('vi-VN')} đ). Nếu đây là khách quen, vui lòng tick chọn "Nhân viên bảo lãnh"!` 
+                    });
+                }
+            }
+
+            let trangThaiThanhToan = 'Chưa thanh toán';
+            if (tienThucThu > 0) {
+                if (tienThucThu >= tongTienThanhToan) {
+                    trangThaiThanhToan = 'Đã thanh toán';
+                } else {
+                    trangThaiThanhToan = 'Đã đặt cọc';
+                }
+            }
+
+            // 6. Insert Bảng DonHang
             const taoMaDonHangHienThi = () => {
                 const date = new Date();
                 const ddmmyy = date.getDate().toString().padStart(2, '0') +
-                            (date.getMonth() + 1).toString().padStart(2, '0') +
-                            date.getFullYear().toString().slice(-2);
-                            
+                             (date.getMonth() + 1).toString().padStart(2, '0') +
+                             date.getFullYear().toString().slice(-2);
                 const randomString = Math.random().toString(36).substring(2, 6).toUpperCase();
                 return `FC${ddmmyy}-${randomString}`; 
             };
             
             const maHienThi = taoMaDonHangHienThi();
 
-            let tienThucThu = Number(SoTienDaTra) || 0;
-            let trangThaiThanhToan = 'Chưa thanh toán';
-            let loaiGiaoDich = 'Thanh toán toàn bộ';
-
-            if (ThuTienNgay && tienThucThu > 0) {
-                if (tienThucThu >= tongTienThanhToan) {
-                    trangThaiThanhToan = 'Đã thanh toán';
-                    loaiGiaoDich = 'Thanh toán toàn bộ';
-                } else {
-                    trangThaiThanhToan = 'Đã đặt cọc';
-                    loaiGiaoDich = 'Đặt cọc';
-                }
-            }
-
-            let snapshotTag = '[SẴN]'; 
-            
-            // Dùng db_items (chứa thông tin lấy từ DB) để check loại hình
-            for (let item of db_items) {
-                let loaiHang = (item.LoaiHinhBan || '').toLowerCase();
-                if (loaiHang.includes('pre-order') || loaiHang.includes('pre order')) {
-                    snapshotTag = '[PRE-ORDER]';
-                    break; // Mức ưu tiên cao nhất -> Thấy là chốt luôn
-                } else if (loaiHang.includes('order')) {
-                    snapshotTag = '[ORDER]';
-                }
-            }
-
-            // Ép Tag vào trước nội dung Ghi chú gốc do Nhân viên nhập
-            const finalNote = (Note && Note.trim() !== '') ? `${snapshotTag} ${Note}` : snapshotTag;
-
-            // 5. Insert Bảng DonHang
             const sql_tao_don = `
                 INSERT INTO DonHang (MaNV, MaDonHangHienThi, TongTien, ThanhTien, NgayLapDon, TrangThaiThanhToan, TenNguoiNhan, SDTNguoiNhan, DiaChiGiao, Note) 
                 VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
@@ -237,14 +242,13 @@ const donhang_admin = {
             const [tao_don] = await connection.query(sql_tao_don, [MaNV, maHienThi, TongTienHang, tongTienThanhToan, trangThaiThanhToan, Ten, SDT, DiaChi, finalNote]);
             const maDH_moi = tao_don.insertId;
 
-            // Ghi nhận bảng thanh toán nếu có đưa tiền (Cọc hoặc Full)
-            if (ThuTienNgay && tienThucThu > 0) {
+            // 7. Ghi nhận bảng thanh toán nếu có nộp tiền
+            if (tienThucThu > 0) {
                 if (!PhuongThucTT) {
                     await connection.rollback();
                     return res.status(400).json({ success: false, message: "Vui lòng chọn phương thức thanh toán!" });
                 }
 
-                // KIỂM TRA MÃ CÓ TỒN TẠI VÀ ĐANG HOẠT ĐỘNG KHÔNG
                 const [check_pttt] = await connection.query(`SELECT MaPT FROM PhuongThucThanhToan WHERE MaPT = ? AND TrangThaiHoatDong = 1`, [PhuongThucTT]);
                 
                 if (check_pttt.length === 0) {
@@ -254,46 +258,29 @@ const donhang_admin = {
 
                 const maPT = check_pttt[0].MaPT;
 
-                // Gỡ bom 2: Sửa || thành &&. Nghiệp vụ: Đơn tại quầy chỉ nhận mã 4 (CK) và 5 (Tiền mặt)
                 if (maPT !== 4 && maPT !== 5) {
                     await connection.rollback();
                     return res.status(400).json({ 
                         success: false, 
-                        message: "Nghiệp vụ lỗi: Đơn hàng tại quầy chỉ hỗ trợ 'Thanh toán trực tiếp' hoặc 'Chuyển khoản ngoài'!" 
+                        message: "Nghiệp vụ lỗi: Đơn hàng tại quầy chỉ hỗ trợ 'Thanh toán Tiền mặt' hoặc 'Chuyển khoản'!" 
                     });
                 }
 
-                if (tienThucThu < tongCocToiThieuYeuCau) {
-                    
-                    if (ChoPhepNoCoc) {
-                        // NẾU CÓ BẢO LÃNH: Cho qua, nhưng đóng dấu ấn hình sự vào Ghi chú
-                        finalNote += `\n [BẢO LÃNH CỌC] Nhân viên NV${MaNV} cho phép nợ cọc. (Quy định: ${tongCocToiThieuYeuCau.toLocaleString('vi-VN')}đ | Thực thu: ${tienThucThu.toLocaleString('vi-VN')}đ).`;
-                    } else {
-                        // NẾU KHÔNG TICK BẢO LÃNH: Chặn đứng như cũ
-                        await connection.rollback();
-                        return res.status(400).json({ 
-                            success: false, 
-                            message: `Số tiền nộp (${tienThucThu.toLocaleString('vi-VN')} đ) chưa đạt mức cọc tối thiểu (${tongCocToiThieuYeuCau.toLocaleString('vi-VN')} đ). Nếu là khách quen, vui lòng tick chọn "Bảo lãnh nợ cọc"!` 
-                        });
-                    }
-                }
-
                 let maDoiSoat = null;
-                
                 if (maPT === 5) {
-                    // Nếu là Tiền mặt -> Tiền nằm trong Két của nhân viên. Gắn mã NV để cuối ca bàn giao.
                     maDoiSoat = `CASH_NV${MaNV}_${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
                 } else if (maPT === 4) {
-                    // Nếu là Chuyển khoản -> Tiền chạy vào Bank công ty. Gắn chữ BANK và Mã đơn để Kế toán tra sao kê.
                     maDoiSoat = `BANK_TRANSFER_${maHienThi}`;
                 }
 
-                // Insert dòng thanh toán kèm Mã đối soát
+                let loaiGiaoDich = tienThucThu >= tongTienThanhToan ? 'Thanh toán toàn bộ' : 'Đặt cọc';
+
                 await connection.query(`
                     INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
                     VALUES (?, ?, NOW(), ?, ?, 'Thành công', ?)
                 `, [maPT, maDH_moi, tienThucThu, loaiGiaoDich, maDoiSoat]);
             }
+            
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 1, NOW())`, [maDH_moi]);
 
             for (let detail of arrChiTietDonHang) {
