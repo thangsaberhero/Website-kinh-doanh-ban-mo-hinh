@@ -247,7 +247,6 @@ const donhang_admin = {
                 // KIỂM TRA MÃ CÓ TỒN TẠI VÀ ĐANG HOẠT ĐỘNG KHÔNG
                 const [check_pttt] = await connection.query(`SELECT MaPT FROM PhuongThucThanhToan WHERE MaPT = ? AND TrangThaiHoatDong = 1`, [PhuongThucTT]);
                 
-                // Gỡ bom 1: Chặn sập API nếu mảng rỗng
                 if (check_pttt.length === 0) {
                     await connection.rollback();
                     return res.status(400).json({ success: false, message: "Phương thức thanh toán không tồn tại hoặc đã bị khóa!" });
@@ -263,6 +262,22 @@ const donhang_admin = {
                         message: "Nghiệp vụ lỗi: Đơn hàng tại quầy chỉ hỗ trợ 'Thanh toán trực tiếp' hoặc 'Chuyển khoản ngoài'!" 
                     });
                 }
+
+                let maDoiSoat = null;
+                
+                if (maPT === 5) {
+                    // Nếu là Tiền mặt -> Tiền nằm trong Két của nhân viên. Gắn mã NV để cuối ca bàn giao.
+                    maDoiSoat = `CASH_NV${MaNV}_${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+                } else if (maPT === 4) {
+                    // Nếu là Chuyển khoản -> Tiền chạy vào Bank công ty. Gắn chữ BANK và Mã đơn để Kế toán tra sao kê.
+                    maDoiSoat = `BANK_TRANSFER_${maHienThi}`;
+                }
+
+                // Insert dòng thanh toán kèm Mã đối soát
+                await connection.query(`
+                    INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
+                    VALUES (?, ?, NOW(), ?, ?, 'Thành công', ?)
+                `, [maPT, maDH_moi, tienThucThu, loaiGiaoDich, maDoiSoat]);
             }
             await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 1, NOW())`, [maDH_moi]);
 
@@ -977,6 +992,9 @@ const donhang_admin = {
         const connection = await db.getConnection();
 
         try {
+            const MaTK = req.user.id;
+            const [check_nv] = await connection.query(`SELECT MaNV FROM NhanVien WHERE MaTK = ?`, [MaTK]);
+            const MaNV = check_nv[0].MaNV;
             const { MaDH, DanhSachTach } = req.body;
 
             if (!DanhSachTach || DanhSachTach.length === 0) {
@@ -1122,9 +1140,10 @@ const donhang_admin = {
 
                     // Insert dòng thanh toán tương đương cho đơn mới
                     if (tienTachDi > 0) {
+                        // 🔴 ĐÃ SỬA: Đủ 7 dấu ? tương ứng với 7 cột
                         await connection.query(`
                             INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac)
-                            VALUES (?, ?, ?, ?, ?, ?)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
                         `, [tx.MaPT, maDHMoi, tx.NgayThanhToan, tienTachDi, `(Phân bổ tách đơn) ${tx.LoaiGiaoDich}`, tx.TrangThaiGiaoDich, tx.MaGiaoDichCuaDoiTac]);
                     }
                 }
@@ -2179,9 +2198,12 @@ const donhang_admin = {
     xac_nhan_thanh_toan: async(req, res) => {
         const connection = await db.getConnection();
         try {
+            const MaTK = req.user.id;
+            const [check_nv] = await connection.query(`SELECT MaNV FROM NhanVien WHERE MaTK = ?`, [MaTK]);
+            const MaNV = check_nv[0].MaNV;
+            
             await connection.beginTransaction();
             const { MaDH, SoTienThu, PhuongThuc } = req.body;
-            const MaTK = req.user.id;
 
             if (!MaDH || SoTienThu === undefined || !PhuongThuc) {
                 await connection.rollback();
@@ -2262,7 +2284,6 @@ const donhang_admin = {
 
             // 🛡️ Bẫy 3: Chống thu "Khống" (Hàng chưa về mà dám nhận Tiền mặt/COD)
             if (isOrderOrPreOrder && dh.TinhTrangGomHang !== 'Đủ hàng') {
-                // Nếu là thu Tiền mặt (5) hoặc COD (3) -> Chặn đứng
                 if (maPhuongThuc === 5 || maPhuongThuc === 3) {
                     await connection.rollback();
                     return res.status(400).json({ 
@@ -2287,7 +2308,6 @@ const donhang_admin = {
             let trangThaiThanhToanMoi = 'Đã đặt cọc';
             let loaiGiaoDich = 'Đặt cọc bổ sung';
 
-            // Nếu tổng tiền tích lũy đã đủ để trả hết hóa đơn
             if (tongTienSauKhiThu >= dh.ThanhTien) {
                 if (maPhuongThuc === 3) {
                     trangThaiThanhToanMoi = 'Đã thanh toán (Thu hộ COD)';
@@ -2299,17 +2319,37 @@ const donhang_admin = {
 
             await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiThanhToanMoi, MaDH]);
 
-            // 4. Lưu vết tất cả các đợt đóng tiền
+            // ==========================================================
+            // 🔴 4. SINH MÃ ĐỐI SOÁT VÀ LƯU VẾT GIAO DỊCH
+            // ==========================================================
+            let maDoiSoat = null;
+            const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase(); // Hậu tố ngẫu nhiên chống trùng lặp khi trả góp nhiều lần
+            
+            if (maPhuongThuc === 5) {
+                // Tiền mặt: Lưu vết nhân viên thu tiền
+                maDoiSoat = `CASH_NV${MaNV}_${randomSuffix}`;
+            } else if (maPhuongThuc === 4) {
+                // Chuyển khoản ngoài: Đánh dấu Bank và Mã đơn
+                maDoiSoat = `BANK_${dh.MaDonHangHienThi}_${randomSuffix}`;
+            } else if (maPhuongThuc === 3) {
+                // COD: Đánh dấu thu hộ
+                maDoiSoat = `COD_${dh.MaDonHangHienThi}_${randomSuffix}`;
+            } else {
+                // Phân loại khác (nếu có)
+                maDoiSoat = `MANUAL_${dh.MaDonHangHienThi}_${randomSuffix}`;
+            }
+
+            // 🔴 ĐÃ SỬA: Thêm cột MaGiaoDichCuaDoiTac và đủ 7 dấu hỏi chấm
             await connection.query(`
-                INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
-                VALUES (?, ?, NOW(), ?, ?, 'Thành công')
-            `, [maPhuongThuc, MaDH, tienThuLanNay, loaiGiaoDich]);
+                INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
+                VALUES (?, ?, NOW(), ?, ?, 'Thành công', ?)
+            `, [maPhuongThuc, MaDH, tienThuLanNay, loaiGiaoDich, maDoiSoat]);
 
             // 5. Ghi Log Hoạt động hệ thống
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            const noiDungLog = `Xác nhận thu tiền đơn #${MaDH} (${dh.MaDonHangHienThi}). Thu thêm: ${tienThuLanNay.toLocaleString('vi-VN')} đ qua phương thức mã [${maPhuongThuc}]`;
+            const noiDungLog = `Xác nhận thu tiền đơn #${MaDH} (${dh.MaDonHangHienThi}). Thu thêm: ${tienThuLanNay.toLocaleString('vi-VN')} đ qua phương thức mã [${maPhuongThuc}]. Mã đối soát: ${maDoiSoat}`;
             
             await connection.query(`
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
@@ -2337,10 +2377,14 @@ const donhang_admin = {
     xac_nhan_hoan_tien: async(req, res) => {
         const connection = await db.getConnection();
         try {
-            await connection.beginTransaction();
-            // 🔴 ĐÃ SỬA: Nhận thêm SoTienHoanTra từ Giao diện (Admin tự nhập)
-            const { MaDH, SoTienHoanTra } = req.body;
             const MaTK = req.user.id;
+            const [check_nv] = await connection.query(`SELECT MaNV FROM NhanVien WHERE MaTK = ?`, [MaTK]);
+            const MaNV = check_nv[0].MaNV;
+            
+            await connection.beginTransaction();
+            
+            // Nhận số tiền hoàn trả từ Giao diện (Admin tự nhập)
+            const { MaDH, SoTienHoanTra } = req.body;
 
             if (!SoTienHoanTra || SoTienHoanTra <= 0) {
                 await connection.rollback();
@@ -2363,11 +2407,11 @@ const donhang_admin = {
                 WHERE MaDH = ? AND TrangThaiGiaoDich = 'Thành công'
             `, [MaDH]);
 
-            // 2. Trích xuất đúng số liệu từ dòng đầu tiên [0] của mảng và ép về kiểu Số (Number)
+            // Trích xuất đúng số liệu từ dòng đầu tiên [0] của mảng và ép về kiểu Số (Number)
             const tienDaNop = Number(check_tien[0].SoTienCoTheHoanTra);
             const tienYeuCauHoan = Number(SoTienHoanTra);
 
-            // 3. So sánh an toàn
+            // So sánh an toàn
             if (tienDaNop < tienYeuCauHoan) {
                 await connection.rollback();
                 return res.status(400).json({ 
@@ -2384,16 +2428,24 @@ const donhang_admin = {
             const trangThaiMoi = 'Đã hoàn tiền';
             await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
 
-            // 🔴 ĐÃ SỬA: Trừ đúng số tiền Kế toán/Admin yêu cầu, không trừ ThanhTien
-            await connection.query(`
-                INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich) 
-                VALUES (4, ?, NOW(), ?, 'Hoàn tiền cho khách', 'Thành công')
-            `, [MaDH, -SoTienHoanTra]);
+            // ==========================================================
+            // 🔴 SINH MÃ ĐỐI SOÁT CHO GIAO DỊCH HOÀN TIỀN
+            // ==========================================================
+            const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+            // Cấu trúc: REFUND_NV[Mã NV]_[Mã Đơn]_[Random] (Ví dụ: REFUND_NV3_FC150626_X9A2)
+            const maDoiSoat = `REFUND_NV${MaNV}_${dh.MaDonHangHienThi}_${randomSuffix}`;
 
+            // Trừ đúng số tiền Kế toán/Admin yêu cầu, ghi nhận dòng tiền âm kèm Mã đối soát
+            await connection.query(`
+                INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
+                VALUES (4, ?, NOW(), ?, 'Hoàn tiền cho khách', 'Thành công', ?)
+            `, [MaDH, -SoTienHoanTra, maDoiSoat]);
+
+            // Ghi Log hệ thống
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            const noiDungLog = `Xác nhận Đã hoàn tiền cho đơn hàng #${MaDH} (${dh.MaDonHangHienThi}). Số tiền hoàn: ${Number(SoTienHoanTra).toLocaleString('vi-VN')} đ`;
+            const noiDungLog = `Xác nhận Đã hoàn tiền cho đơn hàng #${MaDH} (${dh.MaDonHangHienThi}). Số tiền hoàn: ${Number(SoTienHoanTra).toLocaleString('vi-VN')} đ. Mã đối soát: ${maDoiSoat}`;
             await connection.query(`INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) VALUES (?, 'PAYMENT_REFUND', ?, ?, NOW())`, [MaTK, noiDungLog, userIp]);
 
             await connection.commit();
@@ -2408,6 +2460,7 @@ const donhang_admin = {
             if (connection) connection.release();
         }
     },
+    
     liet_ke_giao_dich: async (req, res) => {
         try {
             let page = parseInt(req.query.page) || 1;
