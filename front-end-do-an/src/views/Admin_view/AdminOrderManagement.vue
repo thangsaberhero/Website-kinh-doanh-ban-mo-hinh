@@ -1569,6 +1569,44 @@
         </div>
       </div>
     </div>
+
+    <div v-if="isCODConflictModalOpen" class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col border-t-4 border-amber-400">
+        <div class="px-6 py-5 border-b border-amber-100 bg-amber-50 flex justify-between items-center shrink-0">
+          <h3 class="text-lg font-bold text-amber-700 flex items-center gap-2">
+            <span class="material-symbols-outlined">warning</span>
+            Cảnh báo Xung đột Nghiệp vụ
+          </h3>
+          <button @click="isCODConflictModalOpen = false" class="text-slate-400 hover:text-amber-700 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-slate-600 font-medium leading-relaxed text-center">
+            Đơn hàng này đang có giao dịch <span class="font-bold text-slate-900">Chờ thu hộ (COD)</span> tự động.
+          </p>
+          
+          <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-200/60 flex items-start gap-3">
+            <span class="material-symbols-outlined text-amber-500 mt-0.5">info</span>
+            <p class="text-[12px] text-amber-800 font-medium leading-relaxed">
+              Nếu bạn tiếp tục thu tiền thủ công (VD: Khách vừa chuyển khoản), hệ thống sẽ <span class="font-bold text-rose-600 underline">XÓA BỎ</span> giao dịch COD dự kiến kia để tránh trùng lặp công nợ.
+            </p>
+          </div>
+          
+          <p class="text-sm text-slate-800 font-bold text-center mt-2">
+            Bạn có chắc chắn muốn tiếp tục thu tiền không?
+          </p>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
+          <button @click="isCODConflictModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
+          <button @click="acceptCODConflict" class="px-5 py-2.5 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20 rounded-xl transition-all flex items-center gap-2 active:scale-95">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span> Tiếp tục thu tiền
+          </button>
+        </div>
+      </div>
+    </div>
 </template>
   
 <script setup>
@@ -2531,6 +2569,9 @@ const exportExcelReport = async () => {
 
   // --- QUẢN LÝ MODAL XÁC NHẬN THU TIỀN ---
   const isPaymentConfirmModalOpen = ref(false);
+  const isCODConflictModalOpen = ref(false);
+  const pendingOrderForPayment = ref(null);
+
   const orderToPay = ref(null);
   const amountToCollect = ref(0);
   const collectionMethod = ref(5); // Mặc định thu Tiền mặt
@@ -2543,16 +2584,7 @@ const exportExcelReport = async () => {
     return order.ThanhToan.some(tx => tx.TrangThaiGiaoDich === 'Chờ thanh toán');
   };
 
-  const orderCodeToPay = ref('');
-  const confirmPayment = (order) => {
-    
-    // 🔴 ĐÃ THÊM: Cảnh báo ghi đè COD
-    if (hasPendingCOD(order)) {
-      if (!confirm("⚠️ CẢNH BÁO XUNG ĐỘT NGHIỆP VỤ:\n\nĐơn hàng này đang có giao dịch Chờ thu hộ (COD) tự động. Nếu bạn tiếp tục thu tiền thủ công (VD: Khách vừa chuyển khoản), hệ thống sẽ XÓA BỎ giao dịch COD dự kiến kia.\n\nBạn có chắc chắn muốn thu tiền thủ công không?")) {
-        return; // Hủy thao tác nếu Admin bấm "Cancel"
-      }
-    }
-
+  const proceedToPayment = (order) => {
     orderToPay.value = order;
     orderCodeToPay.value = order.ThongTinGiaoHang?.MaDonHangHienThi;
     
@@ -2568,9 +2600,27 @@ const exportExcelReport = async () => {
     }
     
     suggestedDepositAmount.value = Math.max(0, totalDepositRequired - alreadyPaidAmount.value);
-
     collectionMethod.value = 5; 
     isPaymentConfirmModalOpen.value = true;
+  };
+
+  const orderCodeToPay = ref('');
+  const confirmPayment = (order) => {
+    if (hasPendingCOD(order)) {
+      // Nếu có COD đang treo -> Bật Modal Cảnh Báo
+      pendingOrderForPayment.value = order;
+      isCODConflictModalOpen.value = true;
+    } else {
+      // Nếu an toàn -> Đi thẳng đến Modal Thu tiền
+      proceedToPayment(order);
+    }
+  };
+
+  const acceptCODConflict = () => {
+    isCODConflictModalOpen.value = false;
+    if (pendingOrderForPayment.value) {
+      proceedToPayment(pendingOrderForPayment.value);
+    }
   };
 
   const executeConfirmPayment = async () => {
