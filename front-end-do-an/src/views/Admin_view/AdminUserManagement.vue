@@ -428,18 +428,57 @@
             </table>
           </div>
           
-          <div class="px-8 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
-            <div class="flex items-center gap-2">
-              <button @click="if(currentPage > 1) { currentPage--; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all text-xs font-bold shadow-sm">Trước</button>
+          <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30">
+            
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-slate-400">
+                Hiển thị {{ startItem }} - {{ endItem }} của {{ totalUsersCount }} người dùng
+              </span>
               
-              <div class="flex items-center gap-1">
-                <button class="w-8 h-8 flex items-center justify-center rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20">
-                  {{ currentPage }}
-                </button>
-                <span class="text-xs font-bold text-slate-400 px-2">/ {{ totalPages }}</span>
+              <div class="h-4 w-px bg-slate-200"></div>
+              
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                <select v-model="itemsPerPage" @change="changeItemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                  <option :value="10">10</option>
+                  <option :value="20">20</option>
+                  <option :value="50">50</option>
+                </select>
               </div>
+            </div>
+            
+            <div v-if="totalPages > 1" class="flex items-center gap-1.5">
+              <button 
+                @click="changePage(currentPage - 1)" 
+                :disabled="currentPage === 1"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+              >
+                <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+              </button>
               
-              <button @click="if(currentPage < totalPages) { currentPage++; fetchUsers(); }" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all text-xs font-bold shadow-sm">Tiếp</button>
+              <template v-for="(p, index) in visiblePages" :key="index">
+                <button 
+                  v-if="p !== '...'"
+                  @click="changePage(p)"
+                  :class="currentPage === p 
+                    ? 'bg-primary text-white shadow-md shadow-primary/20 border-transparent' 
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-primary hover:border-primary'"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold border transition-all"
+                >
+                  {{ p }}
+                </button>
+                <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">
+                  ...
+                </span>
+              </template>
+              
+              <button 
+                @click="changePage(currentPage + 1)" 
+                :disabled="currentPage === totalPages"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+              >
+                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+              </button>
             </div>
           </div>
         </div>
@@ -654,6 +693,32 @@
   const currentUser = JSON.parse((localStorage.getItem('user') || sessionStorage.getItem('user')) || '{}');
   const currentAdminId = currentUser.id;
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+  const itemsPerPage = ref(10);
+  const startItem = computed(() => totalUsersCount.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
+  const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalUsersCount.value));
+
+  const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  });
+
+  const changeItemsPerPage = () => {
+    currentPage.value = 1;
+    fetchUsers();
+  };
+
+  const changePage = (page) => {
+    if (page === '...' || page === currentPage.value) return;
+    currentPage.value = page;
+    fetchUsers();
+  };
 
   const searchQuery = ref('');
   let searchTimeout;
