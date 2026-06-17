@@ -311,148 +311,144 @@
       </main>
     </div>
 
-    <div v-if="isAddProductModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <span class="material-symbols-outlined text-emerald-500">add_shopping_cart</span>
-            Thêm sản phẩm vào {{ promoType === 'campaign' ? 'Khuyến mãi' : 'Voucher' }}
-          </h3>
-          <button @click="isAddProductModalOpen = false" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined">close</span></button>
+    <div v-if="isAddProductModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]">
+      <div class="bg-[#1a1d27] border border-slate-700/60 rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[90vh]">
+        
+        <div class="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-[#1e222d] shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <span class="material-symbols-outlined text-emerald-400">add_shopping_cart</span>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white tracking-wide">Thêm sản phẩm vào Khuyến mãi</h3>
+              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Tìm kiếm và thiết lập mức giảm giá cho các mô hình</p>
+            </div>
+          </div>
+          <button @click="isAddProductModalOpen = false" class="text-slate-400 hover:text-rose-400 p-2 rounded-xl hover:bg-slate-800 transition-colors">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
         </div>
-        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4 bg-slate-50/50">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div class="md:col-span-2 relative">
-              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-              <input v-model="searchProductQuery" @input="debounceSearchProduct" type="text" placeholder="Nhập tên mô hình..."
-                    class="w-full border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-emerald-500 focus:ring-1 outline-none">
-            </div>
-            
-            <div>
-              <select v-model="filterCategory" @change="searchProductsWithFilter" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 outline-none bg-white cursor-pointer">
-                <option value="">Tất cả danh mục</option>
-                <option v-for="cat in categories" :key="cat.MaDM" :value="cat.MaDM">{{ cat.TenDM }}</option>
-              </select>
-            </div>
 
-            <div>
-              <select v-model="filterBrand" @change="searchProductsWithFilter" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 outline-none bg-white cursor-pointer">
-                <option value="">Tất cả hãng SX</option>
-                <option v-for="brand in brands" :key="brand.MaHSX" :value="brand.MaHSX">{{ brand.TenHSX }}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col h-[300px]">
-            <div class="flex justify-between items-center px-4 py-3 border-b border-slate-100 bg-slate-50 shrink-0">
-              <span class="text-xs font-bold text-slate-500">Tìm thấy <span class="text-emerald-600">{{ searchedProducts.length }}</span> phân loại</span>
-              <button @click="toggleSelectAll" class="text-xs font-bold text-emerald-500 hover:text-emerald-600 transition-colors bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                {{ selectedProductIds.length === searchedProducts.length && searchedProducts.length > 0 ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
-              </button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
-              <div v-for="prod in searchedProducts" :key="prod.MaPhanLoai"
-                  @click="toggleSelectProduct(prod.MaPhanLoai)"
-                  class="px-3 py-2.5 mb-1 rounded-lg border border-transparent cursor-pointer hover:bg-emerald-50 flex items-center gap-3 transition-all"
-                  :class="selectedProductIds.includes(prod.MaPhanLoai) ? 'bg-emerald-50 border-emerald-200' : ''">
-                
-                <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors shrink-0"
-                    :class="selectedProductIds.includes(prod.MaPhanLoai) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 bg-white'">
-                  <span v-if="selectedProductIds.includes(prod.MaPhanLoai)" class="material-symbols-outlined text-[14px] font-bold">check</span>
-                </div>
-
-                <div class="w-10 h-10 bg-slate-100 rounded-md overflow-hidden shrink-0 border border-slate-200">
-                  <img v-if="prod.AnhDaiDien" :src="prod.AnhDaiDien" class="w-full h-full object-cover"/>
-                  <span v-else class="material-symbols-outlined text-slate-300 flex items-center justify-center h-full">image</span>
-                </div>
-
-                <div class="flex-1 min-w-0">
-                  <p class="font-bold text-slate-800 text-sm truncate" :title="prod.TenMH">{{ prod.TenMH }}</p>
-                  <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-500">
-                      {{ prod.ChiTietPhanLoai || 'Mặc định' }}
-                    </span>
-                    <span class="text-[11px] font-bold text-primary">
-                      {{ formatCurrency(prod.DonGia) }}
-                    </span>
-                    
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded" 
-                          :class="prod.SoLuong > 0 ? 'bg-sky-50 text-sky-600 border border-sky-100' : 'bg-rose-50 text-rose-600 border border-rose-100'">
-                      Tồn kho: {{ prod.SoLuong || 0 }}
-                    </span>
-                  </div>
-                </div>
+        <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+          
+          <div class="flex-1 flex flex-col border-r border-slate-800 bg-[#161923]">
+            <div class="p-5 border-b border-slate-800 space-y-3 shrink-0">
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                <input v-model="searchProductQuery" @input="debounceSearchProduct" type="text" placeholder="Nhập tên nhân vật, series hoặc mã mô hình..." class="w-full bg-[#1e222d] border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all">
+                <span v-if="isSearchingProducts" class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 animate-spin">progress_activity</span>
               </div>
-
-              <div v-if="searchedProducts.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400">
-                <span class="material-symbols-outlined text-4xl mb-2 opacity-50">search_off</span>
-                <p class="text-sm font-medium">Không có sản phẩm nào phù hợp</p>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="selectedProductIds.length > 0 && promoType === 'campaign'" class="p-4 bg-orange-50 rounded-xl border border-orange-100 animate-[fadeIn_0.2s_ease-out]">
-            <h4 class="text-xs font-bold text-orange-600 uppercase tracking-widest mb-3">
-              Cấu hình áp dụng chung cho {{ selectedProductIds.length }} sản phẩm
-            </h4>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">Loại giảm giá</label>
-                <select v-model="addProductForm.LoaiGiamGia" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm outline-none focus:border-orange-400">
-                  <option value="ChietKhau">Phần trăm (%)</option>
-                  <option value="TienMat">Số tiền (đ)</option>
+              
+              <div class="grid grid-cols-2 gap-3">
+                <select v-model="filterCategory" @change="searchProductsWithFilter" class="bg-[#1e222d] border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-emerald-500 cursor-pointer">
+                  <option value="">Tất cả danh mục</option>
+                  <option v-for="dm in categories" :key="dm.MaDM" :value="dm.MaDM">{{ dm.TenDM }}</option>
+                </select>
+                <select v-model="filterBrand" @change="searchProductsWithFilter" class="bg-[#1e222d] border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-emerald-500 cursor-pointer">
+                  <option value="">Tất cả hãng SX</option>
+                  <option v-for="hsx in brands" :key="hsx.MaHSX" :value="hsx.MaHSX">{{ hsx.TenHSX }}</option>
                 </select>
               </div>
-              
-              <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">Mức giảm (*)</label>
-                <input 
-                  v-model="addProductForm.ChietKhau" 
-                  type="number" 
-                  min="0" 
-                  :max="maxAllowedDiscount"
-                  @input="validateDiscountInput" 
-                  class="w-full border border-orange-200 rounded-lg p-2.5 text-sm outline-none focus:border-orange-400 font-bold text-rose-500"
-                >
-                <p class="text-[9px] font-medium text-slate-400 mt-1">
-                  Tối đa: <span class="font-bold text-slate-600">{{ addProductForm.LoaiGiamGia === 'ChietKhau' ? '100%' : formatCurrency(maxAllowedDiscount) }}</span>
-                </p>
-              </div>
-              
-              <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1">Giảm tối đa (đ)</label>
-                <input v-model="addProductForm.GiaTriGiamToiDa" :disabled="addProductForm.LoaiGiamGia === 'TienMat'" type="number" min="0" placeholder="Không giới hạn" class="w-full border border-orange-200 rounded-lg p-2.5 text-sm disabled:bg-orange-50/50 outline-none focus:border-orange-400">
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-5">
+              <div class="flex justify-between items-center mb-4">
+                <span class="text-xs font-bold text-slate-400">Tìm thấy <span class="text-emerald-400">{{ searchedProducts.length }}</span> phân loại</span>
+                <label v-if="searchedProducts.length > 0" class="flex items-center gap-2 cursor-pointer group">
+                  <span class="text-xs font-bold text-slate-400 group-hover:text-emerald-400 transition-colors">Chọn tất cả</span>
+                  <input type="checkbox" v-model="selectAllProducts" class="w-4 h-4 rounded bg-[#1e222d] border-slate-600 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900 cursor-pointer">
+                </label>
               </div>
 
-              <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1" title="Số lượng tối đa được bán với giá KM cho MỖI loại">
-                  SL khuyến mãi / Loại
+              <div class="space-y-2.5">
+                <label v-for="sp in searchedProducts" :key="sp.MaPhanLoai" 
+                      class="flex items-center gap-4 p-3 rounded-xl border transition-all cursor-pointer"
+                      :class="selectedProductIds.includes(sp.MaPhanLoai) ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-[#1e222d] border-slate-700/50 hover:border-slate-600'">
+                  
+                  <input type="checkbox" :value="sp.MaPhanLoai" v-model="selectedProductIds" class="w-5 h-5 rounded bg-slate-800 border-slate-600 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900 ml-1">
+                  
+                  <div class="w-12 h-12 bg-white rounded-lg p-0.5 shrink-0">
+                    <img :src="sp.AnhDaiDien ? (sp.AnhDaiDien.startsWith('http') ? sp.AnhDaiDien : `${API_BASE_URL}/Images_product/${sp.AnhDaiDien}`) : ''" class="w-full h-full object-contain rounded-md" />
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-200 truncate" :title="sp.TenMH">{{ sp.TenMH }}</p>
+                    <div class="flex items-center gap-2 mt-1 flex-wrap">
+                      <span class="text-[10px] font-medium bg-slate-800 text-slate-400 px-2 py-0.5 rounded">PL: {{ sp.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : sp.ChiTietPhanLoai }}</span>
+                      <span class="text-[10px] font-bold text-[#ff8f73]">{{ formatCurrency(sp.DonGia) }}</span>
+                      <span class="text-[10px] text-slate-500 font-medium border-l border-slate-600 pl-2">Kho: <span class="text-slate-300">{{ sp.TonKho }}</span></span>
+                    </div>
+                  </div>
                 </label>
-                <input 
-                  v-model="addProductForm.SoLuongKM" 
-                  type="number" 
-                  min="1" 
-                  placeholder="Toàn bộ kho" 
-                  class="w-full border border-orange-200 rounded-lg p-2.5 text-sm outline-none focus:border-orange-400 font-bold text-orange-600 placeholder:font-normal"
-                >
-                <p class="text-[9px] font-medium text-slate-400 mt-1">
-                  Kho nhiều nhất: <span class="font-bold text-slate-600">{{ maxAvailableStock }} cái</span>
-                </p>
+                
+                <div v-if="searchedProducts.length === 0" class="text-center py-10">
+                  <span class="material-symbols-outlined text-4xl text-slate-700 mb-2">inventory_2</span>
+                  <p class="text-sm text-slate-500 font-medium">Chưa có mô hình nào được tìm thấy.</p>
+                </div>
               </div>
             </div>
-            
-            <p class="text-[10px] text-orange-500 italic mt-3">
-              * Cấu hình này sẽ được áp dụng giống hệt nhau cho tất cả các phân loại bạn đã đánh dấu tick.
-            </p>
           </div>
-        </div>
 
-        <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
-          <button @click="isAddProductModalOpen = false" class="px-6 py-2.5 text-sm font-bold text-slate-500 bg-slate-100 rounded-xl">Hủy</button>
-          <button @click="submitAddProduct" :disabled="selectedProductIds.length === 0" class="px-6 py-2.5 text-sm font-bold text-white bg-emerald-500 rounded-xl disabled:opacity-50">Lưu</button>
+          <div class="w-full lg:w-[340px] xl:w-[400px] bg-[#1a1d27] flex flex-col shrink-0">
+            
+            <div class="p-6 flex-1 overflow-y-auto">
+              <h4 class="text-[11px] font-black text-emerald-500 uppercase tracking-[0.15em] mb-5 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">tune</span> Cấu hình áp dụng chung
+              </h4>
+
+              <div class="space-y-5">
+                <div>
+                  <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Loại giảm giá</label>
+                  <select v-model="addProductForm.LoaiGiamGia" class="w-full bg-[#1e222d] border border-slate-700 text-white rounded-xl p-3 text-sm focus:border-emerald-500 outline-none cursor-pointer">
+                    <option value="TienMat">Số tiền (đ)</option>
+                    <option value="ChietKhau">Phần trăm (%)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Mức giảm (*)</label>
+                  <div class="relative">
+                    <input v-model="addProductForm.ChietKhau" type="number" min="0" class="w-full bg-[#1e222d] border border-slate-700 text-rose-400 font-black rounded-xl p-3 text-sm focus:border-rose-500 outline-none">
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">{{ addProductForm.LoaiGiamGia === 'ChietKhau' ? '%' : '₫' }}</span>
+                  </div>
+                </div>
+
+                <div v-if="addProductForm.LoaiGiamGia === 'ChietKhau'">
+                  <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Giảm tối đa (đ)</label>
+                  <div class="relative">
+                    <input v-model="addProductForm.GiaTriGiamToiDa" type="number" min="0" placeholder="Không giới hạn" class="w-full bg-[#1e222d] border border-slate-700 text-white rounded-xl p-3 text-sm focus:border-emerald-500 outline-none placeholder:text-slate-600">
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">₫</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">SL khuyến mãi / Loại</label>
+                  <input v-model="addProductForm.SoLuongKM" type="number" min="1" placeholder="Mặc định: Toàn bộ kho" class="w-full bg-[#1e222d] border border-slate-700 text-white rounded-xl p-3 text-sm focus:border-emerald-500 outline-none placeholder:text-slate-600">
+                  <p class="text-[10px] text-slate-500 mt-1.5 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">info</span> Giới hạn số lượng được phép bán với giá sale.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 bg-[#161923] border-t border-slate-800 shrink-0">
+              <div class="flex justify-between items-center mb-4">
+                <span class="text-xs text-slate-400 font-medium">Đã chọn:</span>
+                <span class="text-lg font-black text-emerald-400">{{ selectedProductIds.length }}</span>
+              </div>
+              
+              <div class="flex gap-3">
+                <button @click="isAddProductModalOpen = false" class="px-5 py-3 text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors flex-1">
+                  Hủy
+                </button>
+                <button @click="submitAddProducts" 
+                        :disabled="selectedProductIds.length === 0 || isSubmitting"
+                        class="px-5 py-3 text-sm font-bold text-slate-900 bg-emerald-500 hover:bg-emerald-400 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(16,185,129,0.3)] flex-[2] flex justify-center items-center gap-2">
+                  <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                  {{ isSubmitting ? 'Đang lưu...' : 'Lưu & Áp dụng' }}
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
