@@ -186,10 +186,10 @@
               
               <div class="flex items-center gap-2">
                 <span class="text-xs font-medium text-slate-500">Số dòng:</span>
-                <select v-model="pagination.limit" @change="changeItemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                <select v-model="itemsPerPage" @change="changeItemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                  <option :value="5">5</option>
                   <option :value="10">10</option>
                   <option :value="20">20</option>
-                  <option :value="50">50</option>
                 </select>
               </div>
             </div>
@@ -331,6 +331,8 @@
     limit: 5
   });
 
+  const itemsPerPage = ref(5);
+
   const startItem = computed(() => pagination.value.totalItems === 0 ? 0 : (pagination.value.currentPage - 1) * (pagination.value.limit || 10) + 1);
   const endItem = computed(() => Math.min(pagination.value.currentPage * (pagination.value.limit || 10), pagination.value.totalItems));
 
@@ -360,7 +362,7 @@
     isLoading.value = true;
     try {
         // Nối URL với các tham số truy vấn
-        let url = `${API_BASE_URL}/api/news/admin/list?page=${page}&limit=${pagination.value.limit}`;
+        let url = `${API_BASE_URL}/api/news/admin/list?page=${page}&limit=${itemsPerPage.value}`;
         
         if (searchQuery.value) url += `&search=${encodeURIComponent(searchQuery.value)}`;
         if (activeTab.value) url += `&status=${encodeURIComponent(activeTab.value)}`;

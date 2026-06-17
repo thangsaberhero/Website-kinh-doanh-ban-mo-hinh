@@ -103,8 +103,11 @@ const newsController = {
     },
     getAdminNews: async(req, res) =>{
         try{
-            const page = Math.max(parseInt(req.query.page) || 1, 1);
-            const limit = Math.max(parseInt(req.query.limit) || 5, 5);
+            let page = Math.max(parseInt(req.query.page) || 1, 1);
+            let limit = Math.max(parseInt(req.query.limit) || 5, 5);
+            if (limit > 20){
+                limit = 20;
+            }
             const offset = (page - 1) * limit;
             const search = req.query.search || '';
             const status = req.query.status || '';
