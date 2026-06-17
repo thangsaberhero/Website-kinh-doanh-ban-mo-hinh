@@ -446,7 +446,7 @@
                 <button @click="isAddProductModalOpen = false" class="px-5 py-3 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex-1">
                   Hủy
                 </button>
-                <button @click="submitAddProducts" 
+                <button @click="submitAddProduct" 
                         :disabled="selectedProductIds.length === 0 || isSubmitting"
                         class="px-5 py-3 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20 flex-[2] flex justify-center items-center gap-2 active:scale-95 uppercase tracking-wider">
                   <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
@@ -646,6 +646,10 @@
     set: (val) => {
       const numericString = val.toString().replace(/[^\d]/g, '');
       addProductForm.value.ChietKhau = numericString ? Number(numericString) : 0;
+      
+      if (typeof validateDiscountInput === 'function') {
+         validateDiscountInput();
+      }
     }
   });
 
