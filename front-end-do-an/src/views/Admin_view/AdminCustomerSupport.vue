@@ -154,7 +154,7 @@
                 <div class="h-4 w-px bg-slate-200"></div>
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-medium text-slate-500">Số dòng:</span>
-                  <select v-model="itemsPerPageReview" @change="changeLimitReview" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                  <select v-model="itemsPerPageReview" @change="changeLimitReview" class="bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
                     <option :value="10">10</option>
                     <option :value="20">20</option>
                     <option :value="50">50</option>
@@ -267,7 +267,7 @@
               <div class="h-4 w-px bg-slate-200"></div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-medium text-slate-500">Số dòng:</span>
-                <select v-model="itemsPerPageContact" @change="changeLimitContact" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                <select v-model="itemsPerPageContact" @change="changeLimitContact" class="bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
                   <option :value="10">10</option>
                   <option :value="20">20</option>
                   <option :value="50">50</option>
