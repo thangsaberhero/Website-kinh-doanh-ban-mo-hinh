@@ -182,25 +182,6 @@
           <h2 class="font-headline text-2xl text-on-surface dark:text-white font-bold mb-2">Không tìm thấy kho báu!</h2>
           <p class="text-gray-400">Thử đổi từ khóa tìm kiếm hoặc chọn danh mục khác xem sao.</p>
         </div>
-
-        <section class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="md:col-span-2 bg-gradient-to-br from-primary-dim to-secondary-container p-6 md:p-10 rounded-2xl flex flex-col justify-center relative overflow-hidden">
-            <div class="absolute right-0 top-0 w-1/2 h-full opacity-20 pointer-events-none">
-              <span class="material-symbols-outlined text-[20rem] -mr-20 -mt-10 text-white">rocket_launch</span>
-            </div>
-            <h2 class="text-3xl font-headline font-bold text-white mb-4 z-10">GIA NHẬP BIỆT ĐỘI COLLECTOR</h2>
-            <p class="text-white/80 max-w-md mb-8 z-10 font-medium">Đăng ký để nhận thông báo sớm nhất về các đợt Pre-order giới hạn và nhận voucher 100k cho đơn hàng đầu tiên.</p>
-            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-md z-10">
-              <input class="flex-1 bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder:text-white/70 focus:ring-1 focus:ring-white outline-none font-medium" placeholder="Email của bạn..." type="email"/>
-              <button class="bg-white text-primary-dim px-8 py-3 font-bold rounded-lg hover:bg-primary-fixed hover:text-white transition-colors shadow-lg">ĐĂNG KÝ</button>
-            </div>
-          </div>
-          <div class="bg-surface-container p-10 rounded-2xl flex flex-col justify-center border border-outline-variant/30">
-            <span class="material-symbols-outlined text-primary text-5xl mb-6">verified_user</span>
-            <h3 class="text-xl font-headline font-bold mb-2 text-on-surface dark:text-white">Bảo Hành Chính Hãng</h3>
-            <p class="text-sm text-gray-400 font-medium leading-relaxed">Cam kết 100% hàng chính hãng, hỗ trợ bảo hành trọn đời cho các lỗi từ nhà sản xuất.</p>
-          </div>
-        </section>
       </main>
     </div>
   </div>
