@@ -1278,12 +1278,23 @@ const khuyenmai = {
             const keyword = req.query.search || '';
             const maDM = req.query.maDM || '';
             const maHSX = req.query.maHSX || '';
-
             const maKM = req.query.maKM || ''; 
             const maGG = req.query.maGG || '';
 
-            let condition = ["(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?) AND pl.HienThi = 1"];
-            let value = [`%${keyword}%`, `%${keyword}%`];
+            // Đẩy thẳng các điều kiện BẮT BUỘC vào mảng ngay từ đầu
+            // 1. Chỉ lấy hàng "Có sẵn"
+            // 2. Chỉ lấy sản phẩm đang được bật hiển thị
+            let condition = [
+                "mh.LoaiHinhBan = 'Có sẵn'", 
+                "pl.HienThi = 1"
+            ];
+            let value = [];
+
+            // Tìm kiếm theo từ khóa (Tên mô hình hoặc Tên phân loại)
+            if (keyword.trim() !== '') {
+                condition.push("(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?)");
+                value.push(`%${keyword}%`, `%${keyword}%`);
+            }
 
             if (maDM) {
                 condition.push("mh.MaDM = ?");
@@ -1295,17 +1306,19 @@ const khuyenmai = {
                 value.push(maHSX);
             }
 
+            // Loại trừ sản phẩm ĐÃ CÓ trong Khuyến mãi này
             if (maKM) {
                 condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietKhuyenMai WHERE MaKM = ?)`);
                 value.push(maKM);
             }
 
-            // Loại trừ sản phẩm ĐÃ CÓ trong Voucher (Nếu bạn dùng chung API)
+            // Loại trừ sản phẩm ĐÃ CÓ trong Voucher này
             if (maGG) {
                 condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?)`);
                 value.push(maGG);
             }
 
+            // Tự động nối tất cả điều kiện bằng chữ AND (Không sợ bị dư chữ AND hay lỗi cú pháp)
             let whereClause = "WHERE " + condition.join(" AND ");
 
             const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, pl.SoLuong, pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, mh.MaDM, mh.MaHSX
@@ -1313,6 +1326,7 @@ const khuyenmai = {
                         INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
                         ${whereClause}
                         LIMIT 50`;
+                        
             const [data] = await db.query(sql, value);
             
             res.status(200).json({ 

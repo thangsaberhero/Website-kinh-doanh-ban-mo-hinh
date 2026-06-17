@@ -546,6 +546,23 @@
     fetchDetailData();
   };
 
+  const selectAllProducts = computed({
+    get: () => {
+      return searchedProducts.value.length > 0 && 
+             searchedProducts.value.every(p => selectedProductIds.value.includes(p.MaPhanLoai));
+    },
+    set: (value) => {
+      const currentDisplayedIds = searchedProducts.value.map(p => p.MaPhanLoai);
+      
+      if (value) {
+        const newIds = currentDisplayedIds.filter(id => !selectedProductIds.value.includes(id));
+        selectedProductIds.value.push(...newIds);
+      } else {
+        selectedProductIds.value = selectedProductIds.value.filter(id => !currentDisplayedIds.includes(id));
+      }
+    }
+  });
+
   const isAddProductModalOpen = ref(false);
   const searchProductQuery = ref('');
   const searchedProducts = ref([]);
