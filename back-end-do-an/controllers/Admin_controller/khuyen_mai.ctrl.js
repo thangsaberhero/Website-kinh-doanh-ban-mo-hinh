@@ -733,7 +733,7 @@ const khuyenmai = {
                 SELECT kh.MaKH, kh.TenKH, kh.SDT, tk.Email, tk.AnhDaiDien
                 FROM KhachHang kh
                 INNER JOIN TaiKhoan tk on tk.MaTK = kh.MaTK
-                WHERE tk.TrangThaiHoatDong = 1 
+                WHERE tk.BiKhoa = 0
             `;
             let values = [];
 
