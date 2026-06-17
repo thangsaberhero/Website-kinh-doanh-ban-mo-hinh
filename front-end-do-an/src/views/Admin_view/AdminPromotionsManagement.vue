@@ -380,86 +380,128 @@
       </main>
     </div>
   </div>
-  <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl w-full max-w-xl p-6 shadow-2xl animate-[fadeIn_0.2s_ease-out]">
-      <div class="flex justify-between items-center mb-5">
-          <h3 class="text-xl font-bold text-slate-900">
-              {{ currentTypeTab === 'promotion' ? 'Tạo Khuyến Mãi (Tự động)' : 'Tạo Mã Voucher' }}
-          </h3>
-          <button @click="isModalOpen = false" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined">close</span></button>
-      </div>
-
-      <div v-if="currentTypeTab === 'promotion'" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chương trình KM (*)</label>
-          <input v-model="promotionForm.TenKM" type="text" placeholder="VD: Flash Sale Mùa Hè" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 focus:ring-2 outline-none"/>
-        </div>
-      </div>
-
-      <div v-else class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chiến dịch Voucher (*)</label>
-          <input v-model="voucherForm.TenMaGiamGia" type="text" placeholder="VD: Tri ân khách hàng tháng 5" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
+  <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-[fadeIn_0.2s_ease-out] flex flex-col border border-slate-200">
+      
+      <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Mã Code (*)</label>
-            <div class="relative">
-              <input v-model="voucherForm.MaVoucher" type="text" placeholder="VD: MEGA24" 
-                     class="w-full border border-slate-200 rounded-xl pl-3 pr-10 py-3 text-sm font-mono uppercase focus:border-sky-500 outline-none"/>
-              <button @click="generateRandomVoucherCode" title="Tạo mã ngẫu nhiên"
-                      class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg transition-all">
-                <span class="material-symbols-outlined text-[18px]">casino</span>
-              </button>
+            <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight">
+                {{ currentTypeTab === 'promotion' ? 'Thiết lập Khuyến Mãi mới' : 'Tạo Mã Voucher mới' }}
+            </h3>
+            <p class="text-xs text-slate-500 mt-1 font-medium">Vui lòng điền đầy đủ thông tin để cấu hình chương trình.</p>
+          </div>
+          <button @click="isModalOpen = false" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+      </div>
+
+      <div class="p-8 overflow-y-auto custom-scrollbar max-h-[75vh]">
+        
+        <div class="space-y-5 mb-8">
+          <h4 class="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+            <span class="w-2 h-2 bg-primary rounded-full"></span> Thông tin cơ bản
+          </h4>
+          
+          <div v-if="currentTypeTab === 'promotion'">
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Tên chương trình KM (*)</label>
+            <input v-model="promotionForm.TenKM" type="text" placeholder="VD: Flash Sale Mùa Hè rực rỡ" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium bg-slate-50/50 focus:bg-white"/>
+          </div>
+
+          <div v-else class="space-y-5">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Tên chiến dịch Voucher (*)</label>
+              <input v-model="voucherForm.TenMaGiamGia" type="text" placeholder="VD: Tri ân khách hàng thân thiết tháng 6" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-medium bg-slate-50/50 focus:bg-white"/>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Mã Code (*)</label>
+                <div class="relative">
+                  <input v-model="voucherForm.MaVoucher" type="text" placeholder="VD: MEGA24" 
+                         class="w-full border border-slate-200 rounded-2xl pl-4 pr-12 py-3.5 text-sm font-mono font-black uppercase focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none transition-all bg-slate-50/50 focus:bg-white"/>
+                  <button @click="generateRandomVoucherCode" title="Tạo mã ngẫu nhiên"
+                          class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center text-slate-400 hover:text-purple-500 hover:bg-purple-100 rounded-xl transition-all">
+                    <span class="material-symbols-outlined text-[20px]">casino</span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Lượt dùng tối đa</label>
+                <input v-model="voucherForm.SoLuongDungToiDa" type="number" min="1" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-primary outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+              </div>
             </div>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Lượt dùng tối đa</label>
-            <input v-model="voucherForm.SoLuongDungToiDa" type="number" min="1" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
+        </div>
+
+        <div v-if="currentTypeTab === 'voucher'" class="space-y-5 mb-8 pt-8 border-t border-slate-100">
+          <h4 class="text-[11px] font-black text-purple-600 uppercase tracking-[0.2em] flex items-center gap-2">
+            <span class="w-2 h-2 bg-purple-500 rounded-full"></span> Cơ chế giảm giá
+          </h4>
+          
+          <div class="grid grid-cols-2 gap-6">
+            <div class="space-y-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Loại hình giảm</label>
+                <select v-model="voucherForm.LoaiGiamGia" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none cursor-pointer bg-slate-50/50 hover:bg-slate-100 transition-all">
+                  <option value="PhanTram">Giảm theo Phần trăm (%)</option>
+                  <option value="TienMat">Giảm Số tiền cố định (đ)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Mức giảm chiết khấu</label>
+                <div class="relative">
+                    <input v-model="voucherForm.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-black text-rose-500 focus:border-rose-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{{ voucherForm.LoaiGiamGia === 'PhanTram' ? '%' : '₫' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Giá trị đơn tối thiểu</label>
+                <div class="relative">
+                    <input v-model="voucherForm.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-primary outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₫</span>
+                </div>
+              </div>
+              <div v-show="voucherForm.LoaiGiamGia === 'PhanTram'">
+                <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-2">Mức giảm tối đa (CAP)</label>
+                <div class="relative">
+                    <input v-model="voucherForm.GiaTriGiamToiDa" type="number" min="0" placeholder="Bỏ trống = Không giới hạn" class="w-full border border-purple-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none bg-purple-50/30 transition-all placeholder:font-normal placeholder:text-slate-400"/>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 font-bold">₫</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="grid grid-cols-4 gap-4">
-          <div class="col-span-1">
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Loại giảm</label>
-            <select v-model="voucherForm.LoaiGiamGia" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none">
-              <option value="PhanTram">Phần trăm (%)</option>
-              <option value="TienMat">Số tiền (đ)</option>
-            </select>
-          </div>
-          <div class="col-span-1">
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Mức giảm</label>
-            <input v-model="voucherForm.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-          </div>
-          <div class="col-span-1">
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Đơn tối thiểu (đ)</label>
-            <input v-model="voucherForm.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-          </div>
-          <div class="col-span-1" v-show="voucherForm.LoaiGiamGia === 'PhanTram'">
-            <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-1">Giảm tối đa (đ)</label>
-            <input v-model="voucherForm.GiaTriGiamToiDa" type="number" min="0" placeholder="Bỏ trống = Vô hạn" class="w-full border border-purple-200 rounded-xl p-3 text-sm focus:border-purple-500 outline-none bg-purple-50/30"/>
+
+        <div class="space-y-5 pt-8 border-t border-slate-100">
+          <h4 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em] flex items-center gap-2">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Lịch trình áp dụng
+          </h4>
+          
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Thời điểm bắt đầu (*)</label>
+              <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianBD" type="datetime-local" :min="currentDateTimeLocal" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-medium outline-none focus:border-emerald-500 transition-all bg-slate-50/50 focus:bg-white"/>
+              <input v-else v-model="voucherForm.ThoiGianBD" type="datetime-local" :min="currentDateTimeLocal" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-medium outline-none focus:border-emerald-500 transition-all bg-slate-50/50 focus:bg-white"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Thời điểm kết thúc (*)</label>
+              <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianKT" type="datetime-local" :min="promotionForm.ThoiGianBD || currentDateTimeLocal" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-medium outline-none focus:border-rose-500 transition-all bg-slate-50/50 focus:bg-white"/>
+              <input v-else v-model="voucherForm.ThoiGianKT" type="datetime-local" :min="voucherForm.ThoiGianBD || currentDateTimeLocal" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-medium outline-none focus:border-rose-500 transition-all bg-slate-50/50 focus:bg-white"/>
+            </div>
           </div>
         </div>
+
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Thời gian bắt đầu (*)</label>
-          <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianBD" type="datetime-local" :min="currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
-          <input v-else v-model="voucherForm.ThoiGianBD" type="datetime-local" :min="currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Thời gian kết thúc (*)</label>
-          <input v-if="currentTypeTab === 'promotion'" v-model="promotionForm.ThoiGianKT" type="datetime-local" :min="promotionForm.ThoiGianBD || currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
-          <input v-else v-model="voucherForm.ThoiGianKT" type="datetime-local" :min="voucherForm.ThoiGianBD || currentDateTimeLocal" class="w-full border border-slate-200 rounded-xl p-3 text-sm outline-none"/>
-        </div>
-      </div>
-
-      <div class="mt-6 flex justify-end gap-3">
-        <button @click="isModalOpen = false" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-colors">Hủy</button>
+      <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 shrink-0">
+        <button @click="isModalOpen = false" class="px-8 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-2xl transition-all active:scale-95">Hủy bỏ</button>
         <button @click="submitCreateForm"
-          :class="isSubmitting ? 'opacity-50 cursor-wait' : 'hover:bg-[#ff3d00]'"
-          class="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg transition-colors">
-          {{ isSubmitting ? 'Đang tạo...' : 'Xác nhận Tạo' }}
+          :class="isSubmitting ? 'opacity-50 cursor-wait' : 'hover:bg-[#ff3d00] hover:shadow-primary/40'"
+          class="px-10 py-3 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 uppercase tracking-wider text-sm">
+          {{ isSubmitting ? 'Đang xử lý...' : 'Xác nhận Tạo' }}
         </button>
       </div>
     </div>
