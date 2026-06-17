@@ -412,7 +412,7 @@
                 <div>
                   <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Mức giảm (*)</label>
                   <div class="relative">
-                    <input v-model="addProductForm.ChietKhau" type="number" min="0" class="w-full bg-white border border-slate-200 text-rose-600 font-black rounded-xl p-3 text-sm focus:border-rose-500 outline-none shadow-sm">
+                    <input v-model="displayChietKhau" type="text" placeholder="0" class="w-full bg-white border border-slate-200 text-rose-600 font-black rounded-xl p-3 text-sm focus:border-rose-500 outline-none shadow-sm">
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{{ addProductForm.LoaiGiamGia === 'ChietKhau' ? '%' : '₫' }}</span>
                   </div>
                 </div>
@@ -420,7 +420,7 @@
                 <div v-if="addProductForm.LoaiGiamGia === 'ChietKhau'" class="animate-[fadeIn_0.2s_ease-out]">
                   <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Giảm tối đa (đ)</label>
                   <div class="relative">
-                    <input v-model="addProductForm.GiaTriGiamToiDa" type="number" min="0" placeholder="Không giới hạn" class="w-full bg-white border border-slate-200 text-slate-800 font-bold rounded-xl p-3 text-sm focus:border-emerald-500 outline-none placeholder:text-slate-400 placeholder:font-medium shadow-sm">
+                    <input v-model="displayGiaTriGiamToiDa" type="text" placeholder="Không giới hạn" class="w-full bg-white border border-slate-200 text-slate-800 font-bold rounded-xl p-3 text-sm focus:border-emerald-500 outline-none placeholder:text-slate-400 placeholder:font-medium shadow-sm">
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₫</span>
                   </div>
                 </div>
