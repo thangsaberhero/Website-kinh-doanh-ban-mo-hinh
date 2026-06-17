@@ -44,7 +44,7 @@ router.put('/fix_cate/:id',
 );
 router.put('/quick_update/:id', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.cap_nhat_nhanh_phan_loai);
 router.put('/quick_update_selltype/:id', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.cap_nhat_loai_hinh_ban_nhanh);
-router.put('/quick_update_deposit/:id', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.cap_nhat_gia_coc_nhanh);
+router.put('/quick_update_deposit/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.cap_nhat_gia_coc_nhanh);
 router.delete('/delete_cate/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_danh_muc);
 router.delete('/delete_cate_detail/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_chi_tiet_danh_muc);
 

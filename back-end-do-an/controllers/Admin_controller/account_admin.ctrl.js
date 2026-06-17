@@ -104,7 +104,7 @@ const account_admin = {
                     "Nhân sự mới", 
                     `Tài khoản ${roleText} mang tên đăng nhập "@${TenDN}" vừa được cấp vào hệ thống.`, 
                     "HeThong", 
-                    `/admin/users?userId=${MaTK}`
+                    `/admin/users?userId=${ma_tk}`
                 ]);
             }
 

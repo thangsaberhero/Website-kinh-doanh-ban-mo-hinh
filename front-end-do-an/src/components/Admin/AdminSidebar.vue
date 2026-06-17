@@ -20,7 +20,7 @@
 
     <nav ref="navRef" @scroll="handleScroll" class="flex-1 space-y-1 overflow-y-auto overflow-x-visible custom-scrollbar pb-10 relative">
       <div 
-        v-for="(item, index) in mainMenuItems" 
+        v-for="(item, index) in filteredMenuItems" 
         :key="index"
         class="relative"
         @mouseenter="handleMouseEnter($event, item.name)"
@@ -119,7 +119,7 @@
     </nav>
 
     <div class="mt-auto pb-6 border-t border-white/5 pt-4 space-y-1 overflow-x-visible relative">
-      <div class="relative" @mouseenter="handleMouseEnter($event, 'settings')" @mouseleave="hoveredMenu = null">
+      <div v-if="currentRole === 1" class="relative" @mouseenter="handleMouseEnter($event, 'settings')" @mouseleave="hoveredMenu = null">
         <RouterLink 
           to="/admin/settings" 
           class="flex items-center py-3 font-body text-sm font-medium transition-all duration-200 border-l-2 border-transparent text-[#a3aac4] hover:text-white hover:bg-[#141f38]"
@@ -163,8 +163,9 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { RouterLink, useRoute, useRouter } from 'vue-router';
+  import { useAuthStore } from '../../stores/auth';
   import { useLayoutStore } from '../../stores/layout';
   import { useToastStore } from '../../stores/toast';
   import { useSystemStore } from '../../stores/system';
@@ -178,9 +179,11 @@
 
   const route = useRoute();
   const router = useRouter();
+  const authStore = useAuthStore();
   const layoutStore = useLayoutStore();
   const toastStore = useToastStore();
   const systemStore = useSystemStore();
+  const currentRole = Number(authStore.user?.MaQuyen);
 
   const hoveredMenu = ref(null);
   const popupTop = ref(0);
@@ -190,44 +193,64 @@
     { 
       name: 'Quản lý hệ thống', 
       icon: 'admin_panel_settings',
+      roles: [1],
       children: [
-        { name: 'Bảng điều khiển', path: '/admin', icon: 'dashboard' },
-        { name: 'Quản lý người dùng', path: '/admin/users', icon: 'group' } 
+        { name: 'Bảng điều khiển', path: '/admin', icon: 'dashboard', roles: [1] },
+        { name: 'Quản lý người dùng', path: '/admin/users', icon: 'group', roles: [1] } 
       ]
     },
     { 
       name: 'Quản lý danh mục', 
       icon: 'inventory_2',
+      roles: [1, 2],
       children: [
-        { name: 'Quản lý sản phẩm', path: '/admin/inventory', icon: 'box' },
-        { name: 'Danh mục sản phẩm', path: '/admin/categories', icon: 'category' },
-        { name: 'Hãng sản xuất', path: '/admin/manufacturers', icon: 'factory' }
+        { name: 'Quản lý sản phẩm', path: '/admin/inventory', icon: 'box', roles: [1, 2] },
+        { name: 'Danh mục sản phẩm', path: '/admin/categories', icon: 'category', roles: [1] },
+        { name: 'Hãng sản xuất', path: '/admin/manufacturers', icon: 'factory', roles: [1] }
       ]
     },
     { 
       name: 'Quản lý bán hàng', 
       icon: 'shopping_bag',
+      roles: [1, 2],
       children: [
-        { name: 'Quản lý tin tức', path: '/admin/news', icon: 'newspaper' },
-        { name: 'Quản lý đơn hàng', path: '/admin/orders', icon: 'receipt_long' },
-        { name: 'Quản lý thanh toán', path: '/admin/payment', icon: 'payments' },
-        { name: 'Quản lý Blockchain', path: '/admin/blockchain', icon: 'link' } 
+        { name: 'Quản lý tin tức', path: '/admin/news', icon: 'newspaper', roles: [1, 2] },
+        { name: 'Quản lý đơn hàng', path: '/admin/orders', icon: 'receipt_long', roles: [1, 2] },
+        { name: 'Quản lý thanh toán', path: '/admin/payment', icon: 'payments', roles: [1] },
+        { name: 'Quản lý Blockchain', path: '/admin/blockchain', icon: 'link', roles: [1, 2] } 
       ]
     },
     { 
-      name: 'Quản lý hậu mãi, khuyến mãi, tư vấn khách hàng', 
+      name: 'Quản lý hậu mãi, khuyến mãi', 
       icon: 'support_agent',
+      roles: [1, 2],
       children: [
-        { name: 'Quản lý khuyến mãi', path: '/admin/promotion', icon: 'loyalty' },
-        { name: 'Hỗ trợ khách hàng', path: '/admin/support', icon: 'forum' } 
+        { name: 'Quản lý khuyến mãi', path: '/admin/promotion', icon: 'loyalty', roles: [1] },
+        { name: 'Hỗ trợ khách hàng', path: '/admin/support', icon: 'forum', roles: [1, 2] } 
       ]
     },
     { 
       name: 'Báo cáo và thống kê', 
       path: '/admin/report', 
-      icon: 'bar_chart' 
+      icon: 'bar_chart',
+      roles: [1]
     }
   ];
+
+  // Hàm lọc tự động: Chỉ giữ lại những menu mà user có quyền xem
+  const filteredMenuItems = computed(() => {
+    return mainMenuItems
+      .filter(item => item.roles.includes(currentRole))
+      .map(item => {
+        if (item.children) {
+          return {
+            ...item,
+            children: item.children.filter(child => child.roles.includes(currentRole))
+          };
+        }
+        return item;
+      });
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('token');

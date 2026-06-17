@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useToastStore } from '../stores/toast';
 
 import LoginView from '../views/User_view/Login.vue'; 
 import HomeView from '../views/User_view/Home.vue';
@@ -18,8 +19,6 @@ import NewsView from '../views/User_view/NewsView.vue';
 import NewsDetailView from '../views/User_view/NewsDetailView.vue';
 import ContactView from '../views/User_view/ContactView.vue';
 import ForgotPasswordView from '../views/User_view/ForgotPasswordView.vue';
-//Phần thanh toán có thể thay thế bằng payos sau này
-//import checkout from '../views/User_view/MoMoMockView.vue';
 import ProvenanceTracking from '../views/User_view/ProvenanceTracking.vue';
 import SupportView from '../views/User_view/SupportView.vue';
 
@@ -69,48 +68,54 @@ const router = createRouter({
     { path: '/truy-xuat/:serial?', name: 'ProvenanceTracking', component: ProvenanceTracking, meta: { title: 'Truy xuất nguồn gốc | FigureCollect' } },
     
     // --- KHU VỰC ADMIN ---
-    { path: '/admin', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true, title: 'Bảng điều khiển | Admin - FigureCollect' } },
-    { path: '/admin/inventory', name: 'Inventory', component: AdminInventory, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý kho hàng | Admin - FigureCollect' } },
-    { path: '/admin/users', name: 'UserManagement', component: AdminUserManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý người dùng | Admin - FigureCollect' } },
-    { path: '/admin/orders', name: 'OrderManagement', component: AdminOrderManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý đơn hàng | Admin - FigureCollect' } },
-    { path: '/admin/promotion', name: 'PromotionsManagement', component: AdminPromotionsManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý khuyến mãi | Admin - FigureCollect' } },
-    { path: '/admin/news', name: 'NewsManagement', component: AdminNewsManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý tin tức | Admin - FigureCollect' } },
-    { path: '/admin/news/create', name: 'NewsCreate', component: AdminNewsCreate, meta: { requiresAuth: true, requiresAdmin: true, title: 'Viết bài mới | Admin - FigureCollect' } },
-    { path: '/admin/manufacturers', name: 'Manufacturer', component: AdminManufacturer, meta: { requiresAuth: true, requiresAdmin: true, title: 'Hãng sản xuất | Admin - FigureCollect' } },
-    { path: '/admin/categories', name: 'Category', component: AdminCategory, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý danh mục | Admin - FigureCollect' } },
-    { path: '/admin/support', name: 'CustomerSupport', component: AdminCustomerSupport, meta: { requiresAuth: true, requiresAdmin: true, title: 'Hỗ trợ khách hàng | Admin - FigureCollect' } },
-    { path: '/admin/profile', name: 'AdminProfile', component: AdminProfile, meta: { requiresAuth: true, requiresAdmin: true, title: 'Hồ sơ cá nhân | Admin - FigureCollect' } },
-    { path: '/admin/change-password', name: 'AdminChangePassword', component: AdminChangePassword, meta: { requiresAuth: true, requiresAdmin: true, title: 'Đổi mật khẩu | Admin - FigureCollect' } },
-    { path: '/admin/report', name: 'AdminReport', component: AdminReport, meta: { requiresAuth: true, requiresAdmin: true, title: 'Báo cáo thống kê | Admin - FigureCollect' } },
-    { path: '/admin/notifications', name: 'AdminNotifications', component: AdminNotifications, meta: { requiresAuth: true, requiresAdmin: true, title: 'Thông báo hệ thống | Admin - FigureCollect' } },
-    { path: '/admin/blockchain', name: 'AdminBlockchain', component: AdminBlockchain, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý Blockchain | Admin - FigureCollect' } },
-    { path: '/admin/news/edit/:id', name: 'NewsEdit', component: AdminNewsEdit, meta: { requiresAuth: true, requiresAdmin: true } },
-    { path: '/admin/promotion/:type/:id', name: 'AdminPromotionDetail', component: AdminPromotionDetail, meta: { requiresAuth: true, requiresAdmin: true } },
-    { path: '/admin/payment', name: 'AdminPaymentManagement', component: AdminPaymentManagement, meta: { requiresAuth: true, requiresAdmin: true, title: 'Quản lý thanh toán | Admin - FigureCollect' } },
-    { path: '/admin/settings', name: 'AdminSettings', component: AdminSettings, meta: { requiresAuth: true, requiresAdmin: true, title: 'Cài đặt hệ thống | Admin - FigureCollect' } },
-    // { path: '/momo-payment', name: 'MoMoMock', component: checkout, meta: { requiresAuth: true, title: 'Cổng thanh toán MoMo' } },
+    // NHÓM 1: CHỈ DÀNH CHO ADMIN (roles: [1])
+    { path: '/admin', name: 'AdminDashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Bảng điều khiển | Admin - FigureCollect' } },
+    { path: '/admin/users', name: 'UserManagement', component: AdminUserManagement, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Quản lý người dùng | Admin - FigureCollect' } },
+    { path: '/admin/categories', name: 'Category', component: AdminCategory, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Quản lý danh mục | Admin - FigureCollect' } },
+    { path: '/admin/manufacturers', name: 'Manufacturer', component: AdminManufacturer, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Hãng sản xuất | Admin - FigureCollect' } },
+    { path: '/admin/promotion', name: 'PromotionsManagement', component: AdminPromotionsManagement, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Quản lý khuyến mãi | Admin - FigureCollect' } },
+    { path: '/admin/promotion/:type/:id', name: 'AdminPromotionDetail', component: AdminPromotionDetail, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1] } },
+    { path: '/admin/report', name: 'AdminReport', component: AdminReport, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Báo cáo thống kê | Admin - FigureCollect' } },
+    { path: '/admin/payment', name: 'AdminPaymentManagement', component: AdminPaymentManagement, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Quản lý thanh toán | Admin - FigureCollect' } },
+    { path: '/admin/settings', name: 'AdminSettings', component: AdminSettings, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1], title: 'Cài đặt hệ thống | Admin - FigureCollect' } },
+
+    // NHÓM 2: CẢ ADMIN VÀ NHÂN VIÊN ĐỀU VÀO ĐƯỢC (roles: [1, 2])
+    { path: '/admin/inventory', name: 'Inventory', component: AdminInventory, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Quản lý kho hàng | Admin - FigureCollect' } },
+    { path: '/admin/orders', name: 'OrderManagement', component: AdminOrderManagement, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Quản lý đơn hàng | Admin - FigureCollect' } },
+    { path: '/admin/news', name: 'NewsManagement', component: AdminNewsManagement, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Quản lý tin tức | Admin - FigureCollect' } },
+    { path: '/admin/news/create', name: 'NewsCreate', component: AdminNewsCreate, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Viết bài mới | Admin - FigureCollect' } },
+    { path: '/admin/news/edit/:id', name: 'NewsEdit', component: AdminNewsEdit, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2] } },
+    { path: '/admin/support', name: 'CustomerSupport', component: AdminCustomerSupport, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Hỗ trợ khách hàng | Admin - FigureCollect' } },
+    { path: '/admin/profile', name: 'AdminProfile', component: AdminProfile, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Hồ sơ cá nhân | Admin - FigureCollect' } },
+    { path: '/admin/change-password', name: 'AdminChangePassword', component: AdminChangePassword, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Đổi mật khẩu | Admin - FigureCollect' } },
+    { path: '/admin/notifications', name: 'AdminNotifications', component: AdminNotifications, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Thông báo hệ thống | Admin - FigureCollect' } },
+    { path: '/admin/blockchain', name: 'AdminBlockchain', component: AdminBlockchain, meta: { requiresAuth: true, requiresAdmin: true, allowedRoles: [1, 2], title: 'Quản lý Blockchain | Admin - FigureCollect' } },
   ]
 });
 
 router.beforeEach((to, from, next) => {
-  // 1. Kiểm tra xem người dùng có đang cố vào khu vực Admin không
-  const isAdminRoute = to.path.startsWith('/admin');
-  
-  // 2. Lấy thông tin xác thực
   const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
   const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const user = userString ? JSON.parse(userString) : null;
   const userRole = user ? parseInt(user.MaQuyen) : null;
 
+  // Nếu route yêu cầu đăng nhập
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!token) {
-      return next({ name: 'login' }); // Chưa đăng nhập -> Đá ra Login
+      return next({ name: 'login' });
     }
 
-    // Nếu trang đó đặc biệt yêu cầu quyền Admin/Staff
-    if (to.matched.some(record => record.meta.requiresAdmin)) {
-      if (userRole !== 1 && userRole !== 2) {
-        return next({ path: '/' }); // Khách hàng mò vào Admin -> Đá ra Trang chủ
+    // Nếu route có quy định mảng quyền
+    if (to.meta.allowedRoles) {
+      if (!to.meta.allowedRoles.includes(userRole)) {
+        if (userRole !== 1 && userRole !== 2) {
+          return next({ path: '/' }); 
+        }
+        else {
+          const toastStore = useToastStore();
+          toastStore.showToast('Bạn không có quyền truy cập chức năng này!', 'error');
+          return next({ path: '/admin/orders' });
+        }
       }
     }
   }

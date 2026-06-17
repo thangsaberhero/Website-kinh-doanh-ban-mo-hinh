@@ -147,11 +147,11 @@
           </div>
           
           <div class="flex gap-3 w-full xl:w-auto">
-            <button @click="exportExcelReport" class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
+            <button v-if="currentRole === 1"@click="exportExcelReport" class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
               <span class="material-symbols-outlined text-[20px]" :class="{'animate-bounce': isExporting}">file_download</span>
               {{ isExporting ? 'Đang tạo file...' : 'Xuất báo cáo' }}
             </button>
-            <button @click="openAddModal" class="flex-1 xl:flex-none bg-primary hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95 text-sm">
+            <button v-if="currentRole === 1" @click="openAddModal" class="flex-1 xl:flex-none bg-primary hover:bg-[#ff3d00] text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95 text-sm">
               <span class="material-symbols-outlined text-[20px]">add_box</span>
               Thêm sản phẩm
             </button>
@@ -267,8 +267,7 @@
                       @click="product.variants && product.variants.length > 1 ? toggleRow(product.id) : null">
                     
                     <td class="py-4 pl-6 pr-4 align-middle">
-                      <div class="flex items-center gap-3">
-                        
+                      <div class="flex items-center gap-3">                        
                         <div class="w-6 shrink-0 flex items-center justify-center">
                           <button v-if="product.variants && product.variants.length > 1" 
                                   @click.stop="toggleRow(product.id)"
@@ -284,10 +283,10 @@
                           <div class="w-11 h-11 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden shadow-inner shrink-0 p-[1px]">
                             <img :src="product.thumbnailUrl" class="w-full h-full object-cover rounded-md"/>
                           </div>
-                          <div class="flex flex-col">
-                            
-                            <p @click="openEditModal(product)" 
-                              class="font-bold text-sky-600 text-[14px] whitespace-normal line-clamp-2 w-full max-w-[280px] xl:max-w-[360px] leading-snug hover:text-sky-700 hover:underline cursor-pointer transition-colors" 
+                          <div class="flex flex-col">                            
+                            <p @click="currentRole === 1 ? openEditModal(product) : null" 
+                              class="font-bold text-sky-600 text-[14px] whitespace-normal line-clamp-2 w-full max-w-[280px] xl:max-w-[360px] leading-snug transition-colors" 
+                              :class="currentRole === 1 ? 'hover:text-sky-700 hover:underline cursor-pointer' : 'cursor-default'"
                               :title="product.name">
                               {{ product.name }}
                             </p>
@@ -326,11 +325,13 @@
                           <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Cọc:</span>
                           
                           <input type="text" 
-                                  :value="formatCurrency(product.rawMinDeposit)" 
-                                  @input="handleCurrencyInput($event, product, 'rawMinDeposit')"
-                                  @keyup.enter="quickUpdateDeposit(product.id, product.rawMinDeposit)"
-                                  class="w-24 text-right text-xs font-semibold text-slate-700 bg-transparent border-none focus:outline-none focus:ring-0 p-0 transition-colors"
-                                  title="Nhấn Enter để lưu giá cọc">
+                                :value="formatCurrency(product.rawMinDeposit)" 
+                                @input="handleCurrencyInput($event, product, 'rawMinDeposit')"
+                                @keyup.enter="quickUpdateDeposit(product.id, product.rawMinDeposit)"
+                                :readonly="currentRole !== 1" 
+                                class="w-24 text-right text-xs font-semibold bg-transparent border-none focus:outline-none focus:ring-0 p-0 transition-colors"
+                                :class="currentRole !== 1 ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'"
+                                title="Nhấn Enter để lưu giá cọc">
                                  
                           <span class="text-[9px] font-bold text-slate-500">đ</span>
                         </div>
@@ -355,10 +356,12 @@
 
                         <div v-else class="inline-flex items-center justify-end gap-1 group/edit relative">
                           <input type="text" 
-                                v-model="product.sellPrice" 
-                                @click.stop
-                                @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
-                                class="w-28 text-right text-sm font-bold text-slate-900 bg-transparent border rounded-xl border-transparent hover:border-slate-300 focus:border-sky-500 !outline-none !ring-0 transition-colors py-0.5 px-1">
+                                  v-model="product.sellPrice" 
+                                  @click.stop
+                                  @keyup.enter="quickUpdateVariant(product.defaultVariantId, product.sellPrice, product.stock)"
+                                  :readonly="currentRole !== 1"
+                                  class="w-28 text-right text-sm font-bold bg-transparent border rounded-xl !outline-none !ring-0 transition-colors py-0.5 px-1"
+                                  :class="currentRole !== 1 ? 'text-slate-400 border-transparent cursor-not-allowed' : 'text-slate-900 border-transparent hover:border-slate-300 focus:border-sky-500'">
                           <span class="text-xs font-bold text-slate-600">đ</span>
                         </div>
 
@@ -398,7 +401,10 @@
                     
                     <td class="px-6 py-4 align-middle text-center">
                       <div class="flex justify-center items-center gap-3">
-                        <button @click.stop="openEditModal(product)" class="text-slate-400 hover:text-sky-500 transition-colors flex items-center justify-center" title="Sửa thông tin">
+                        <button v-if="currentRole === 1" @click.stop="openEditModal(product)" 
+                                class="text-slate-400 hover:text-sky-500 transition-colors flex items-center justify-center" 
+                                title="Sửa thông tin"
+                        >
                           <span class="material-symbols-outlined text-[20px]">edit</span>
                         </button>
                         <button @click.stop="toggleVisibility(product.id, product.isVisible)" class="text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center" :title="product.isVisible === 1 ? 'Ẩn sản phẩm' : 'Hiển thị sản phẩm'">
@@ -433,9 +439,11 @@
                                 <td class="py-3 px-6 text-right">
                                   <div class="flex items-center justify-end gap-1.5">
                                     <input type="text" 
-                                           v-model="variant.sellPrice" 
-                                           @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
-                                           class="w-32 text-right text-xs font-bold text-sky-600 bg-slate-50/80 border border-slate-200/80 focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-50 focus:outline-none transition-all px-3 py-1.5 rounded-lg font-mono shadow-inner">
+                                            v-model="variant.sellPrice" 
+                                            @keyup.enter="quickUpdateVariant(variant.id, variant.sellPrice, variant.stock)"
+                                            :readonly="currentRole !== 1"
+                                            class="w-32 text-right text-xs font-bold transition-all px-3 py-1.5 rounded-lg font-mono shadow-inner"
+                                            :class="currentRole !== 1 ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' : 'text-sky-600 bg-slate-50/80 border-slate-200/80 focus:border-sky-500 focus:bg-white focus:ring-4 focus:ring-sky-50 focus:outline-none'">
                                     <span class="text-xs font-bold text-sky-600">đ</span>
                                   </div>
                                 </td>
@@ -1105,12 +1113,15 @@
   import { useRouter, useRoute } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
+  import { useAuthStore } from '../../stores/auth';
   import { useToastStore } from "../../stores/toast";
   import { useLayoutStore } from '../../stores/layout';
   import Sortable from 'sortablejs';
   
   const route = useRoute();
   const router = useRouter();
+  const authStore = useAuthStore();
+  const currentRole = Number(authStore.user?.MaQuyen);
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
   const fileInputRef = ref(null);
