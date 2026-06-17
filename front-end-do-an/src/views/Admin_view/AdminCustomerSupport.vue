@@ -388,6 +388,10 @@
   const contacts = ref([]);
   const searchContactQuery = ref('');
   const filterContactStatus = ref('all');
+  const currentPage = ref(1);
+  const totalPages = ref(1);
+  const totalItems = ref(0);
+  const itemsPerPageReview = ref(10); // Thay thế số 5 cứng nhắc
   
   const currentContactPage = ref(1);
   const totalContactPages = ref(1);
@@ -446,7 +450,7 @@
     try {
       const url = new URL(`${API_BASE_URL}/api/reviews/admin/list`);
       url.searchParams.append('page', currentPage.value);
-      url.searchParams.append('limit', itemsPerPage);
+      url.searchParams.append('limit', itemsPerPageReview.value);
       url.searchParams.append('search', searchQuery.value);
       url.searchParams.append('star', filterStar.value);
       url.searchParams.append('unreplied', filterUnreplied.value);
@@ -513,7 +517,7 @@
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const url = new URL(`${API_BASE_URL}/api/contact/admin/list`);
       url.searchParams.append('page', currentContactPage.value);
-      url.searchParams.append('limit', itemsPerPage);
+      url.searchParams.append('limit', itemsPerPageContact.value);
       url.searchParams.append('search', searchContactQuery.value);
       url.searchParams.append('status', filterContactStatus.value);
 
@@ -568,11 +572,6 @@
           fetchAdminContacts();
       }, 500);
   });
-
-  const currentPage = ref(1);
-  const totalPages = ref(1);
-  const totalItems = ref(0);
-  const itemsPerPageReview = ref(10); // Thay thế số 5 cứng nhắc
 
   const startItemReview = computed(() => totalItems.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPageReview.value + 1);
   const endItemReview = computed(() => Math.min(currentPage.value * itemsPerPageReview.value, totalItems.value));
