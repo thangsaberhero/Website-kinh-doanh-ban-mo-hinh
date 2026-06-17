@@ -764,8 +764,8 @@
                 </div>
 
                 <div class="w-full xl:w-96 shrink-0 xl:sticky xl:top-0 space-y-4">
-                  <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white space-y-5">
-                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5">
+                  <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-3 flex items-center gap-1.5">
                       <span class="material-symbols-outlined text-[16px] text-primary">tune</span> Điều khiển lệnh
                     </h4>
                     
