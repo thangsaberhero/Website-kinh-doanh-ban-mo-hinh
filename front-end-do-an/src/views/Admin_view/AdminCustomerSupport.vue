@@ -361,7 +361,7 @@
 </template>
   
 <script setup>
-  import { ref, computed, onMounted, watch } from 'vue';
+  import { ref, computed, onMounted, watch, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
