@@ -150,7 +150,9 @@
 
             <div v-if="totalPages >= 1 && reviews.length > 0" class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl mt-6 border border-slate-200">
               <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-400">Hiển thị {{ startItemReview }} - {{ endItemReview }} của {{ totalItems }} đánh giá</span>
+                <span class="text-xs font-bold text-slate-400">
+                  Hiển thị {{ startItemReview }} - {{ endItemReview }} của {{ totalReviews }} đánh giá
+                </span>
                 <div class="h-4 w-px bg-slate-200"></div>
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-medium text-slate-500">Số dòng:</span>
