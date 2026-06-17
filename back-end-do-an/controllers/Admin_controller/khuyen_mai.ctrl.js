@@ -730,7 +730,7 @@ const khuyenmai = {
             // Câu lệnh SQL cơ bản: Chỉ lấy Mã, Tên, SĐT, Email
             // Vui lòng điều chỉnh lại tên bảng 'KhachHang' và các cột cho khớp với CSDL thực tế của bạn
             let sql = `
-                SELECT MaKH, TenKH, SDT, Email, AnhDaiDien 
+                SELECT MaKH, TenKH, SDT
                 FROM KhachHang 
                 WHERE TrangThaiHoatDong = 1 
             `;
@@ -738,10 +738,9 @@ const khuyenmai = {
 
             // Nếu có nhập từ khóa, tìm kiếm tương đối trên Tên, SĐT hoặc Email
             if (keyword.trim() !== '') {
-                sql += ` AND (MaKH LIKE ? OR TenKH COLLATE utf8mb4_unicode_ci LIKE ? OR SDT LIKE ? OR Email LIKE ?) `;
+                sql += ` AND (MaKH LIKE ? OR TenKH COLLATE utf8mb4_unicode_ci LIKE ? OR SDT LIKE ?) `;
                 const searchStr = `%${keyword}%`;
-                // Đẩy 3 lần biến searchStr tương ứng cho 3 dấu ?
-                values.push(searchStr, searchStr, searchStr, searchStr);
+                values.push(searchStr, searchStr, searchStr);
             }
 
             // Thêm giới hạn kết quả
