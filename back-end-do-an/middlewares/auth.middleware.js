@@ -16,12 +16,9 @@ const auth_middleware = {
         }
     },
 
-    verifyAdmin: (req, res, next) => {
-        // Hàm này bắt buộc phải đứng sau verifyToken trong Route.
-        // Nhờ verifyToken chạy trước, ta đã có biến req.user
-        
+    verifyAdmin: (req, res, next) => {        
         if (req.user && req.user.role === 1) {
-            next(); // Đúng chức vụ, mời vào!
+            next();
         } else {
             return res.status(403).json({ 
                 success: false, 
@@ -42,12 +39,12 @@ const auth_middleware = {
     },
     
     verifyUser: (req, res, next) => {
-        if (req.user && (req.user.role == 1 || req.user.role == 2)) {
+        if (req.user && req.user.role === 3) { 
             next();
         } else {
             return res.status(403).json({ 
                 success: false, 
-                message: "Tài khoản Nhân viên/Admin không được phép sử dụng chức năng này. Vui lòng dùng tài khoản Khách hàng!" 
+                message: "Chức năng này chỉ dành cho tài khoản Khách hàng!" 
             });
         }
     }
