@@ -984,6 +984,7 @@
           };
         });
         totalPages.value = result.pagination.totalPage;
+        totalRecords.value = result.pagination.totalItems;
       }
     } 
     catch (error) {
@@ -1045,6 +1046,7 @@
           };
         });
         totalPages.value = result.pagination.totalPage;
+        totalRecords.value = result.pagination.totalItems;
       }
     } 
     catch (error) {
