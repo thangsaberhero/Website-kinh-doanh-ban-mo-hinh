@@ -496,7 +496,7 @@
               <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Mức giảm chiết khấu</label>
                 <div class="relative">
-                    <input v-model="voucherForm.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-black text-rose-500 focus:border-rose-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                    <input v-model="displayCreateChietKhau" type="text" placeholder="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-black text-rose-500 focus:border-rose-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{{ voucherForm.LoaiGiamGia === 'PhanTram' ? '%' : '₫' }}</span>
                 </div>
               </div>
@@ -506,14 +506,14 @@
               <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Giá trị đơn tối thiểu</label>
                 <div class="relative">
-                    <input v-model="voucherForm.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-primary outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                    <input v-model="displayCreateMucGiaToiThieu" type="text" placeholder="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-primary outline-none bg-slate-50/50 focus:bg-white transition-all"/>
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₫</span>
                 </div>
               </div>
               <div v-show="voucherForm.LoaiGiamGia === 'PhanTram'">
                 <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-2">Mức giảm tối đa (CAP)</label>
                 <div class="relative">
-                    <input v-model="voucherForm.GiaTriGiamToiDa" type="number" min="0" placeholder="Bỏ trống = Không giới hạn" class="w-full border border-purple-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none bg-purple-50/30 transition-all placeholder:font-normal placeholder:text-slate-400"/>
+                    <input v-model="displayCreateGiaTriGiamToiDa" type="text" placeholder="Không giới hạn" class="w-full border border-purple-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none bg-purple-50/30 transition-all placeholder:font-normal placeholder:text-slate-400"/>
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 font-bold">₫</span>
                 </div>
               </div>
@@ -603,7 +603,7 @@
               <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Giá trị đơn tối thiểu (*)</label>
                 <div class="relative">
-                  <input v-model="editingPromo.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-sky-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                  <input v-model="displayEditMucGiaToiThieu" type="text" placeholder="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-sky-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
                   <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₫</span>
                 </div>
               </div>
@@ -679,7 +679,7 @@
               <div>
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Mức giảm chiết khấu (*)</label>
                 <div class="relative">
-                    <input v-model="editingPromo.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-black text-rose-500 focus:border-rose-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                    <input v-model="displayEditChietKhau" type="text" placeholder="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-black text-rose-500 focus:border-rose-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{{ editingPromo.LoaiGiamGia === 'PhanTram' ? '%' : '₫' }}</span>
                 </div>
               </div>
@@ -689,7 +689,7 @@
               <div v-show="editingPromo.LoaiGiamGia === 'PhanTram'">
                 <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-2">Mức giảm tối đa (CAP)</label>
                 <div class="relative">
-                    <input v-model="editingPromo.GiaTriGiamToiDa" type="number" min="0" placeholder="Không giới hạn" class="w-full border border-purple-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none bg-purple-50/30 transition-all placeholder:font-normal"/>
+                    <input v-model="displayEditGiaTriGiamToiDa" type="text" placeholder="Không giới hạn" class="w-full border border-purple-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none bg-purple-50/30 transition-all placeholder:font-normal"/>
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 font-bold">₫</span>
                 </div>
               </div>
@@ -1167,6 +1167,84 @@
     fetchPromotions();
     fetchVouchers(); 
     fetchSecurityLogs(); 
+  });
+
+  // ==================================================
+  // TRẠM TRUNG CHUYỂN TIỀN TỆ - MODAL TẠO MỚI (voucherForm)
+  // ==================================================
+  const displayCreateMucGiaToiThieu = computed({
+    get: () => {
+      const val = voucherForm.value.MucGiaToiThieu;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      voucherForm.value.MucGiaToiThieu = numericString ? Number(numericString) : 0;
+    }
+  });
+
+  const displayCreateChietKhau = computed({
+    get: () => {
+      const val = voucherForm.value.ChietKhau;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      voucherForm.value.ChietKhau = numericString ? Number(numericString) : 0;
+    }
+  });
+
+  const displayCreateGiaTriGiamToiDa = computed({
+    get: () => {
+      const val = voucherForm.value.GiaTriGiamToiDa;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      voucherForm.value.GiaTriGiamToiDa = numericString ? Number(numericString) : null; // null để đẩy xuống DB chuẩn "Không giới hạn"
+    }
+  });
+
+  // ==================================================
+  // TRẠM TRUNG CHUYỂN TIỀN TỆ - MODAL CHỈNH SỬA (editingPromo)
+  // ==================================================
+  const displayEditMucGiaToiThieu = computed({
+    get: () => {
+      const val = editingPromo.value.MucGiaToiThieu;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      editingPromo.value.MucGiaToiThieu = numericString ? Number(numericString) : 0;
+    }
+  });
+
+  const displayEditChietKhau = computed({
+    get: () => {
+      const val = editingPromo.value.ChietKhau;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      editingPromo.value.ChietKhau = numericString ? Number(numericString) : 0;
+    }
+  });
+
+  const displayEditGiaTriGiamToiDa = computed({
+    get: () => {
+      const val = editingPromo.value.GiaTriGiamToiDa;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      editingPromo.value.GiaTriGiamToiDa = numericString ? Number(numericString) : null;
+    }
   });
 
   // Lắng nghe khi chuyển bộ lọc trạng thái
