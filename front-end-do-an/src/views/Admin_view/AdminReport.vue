@@ -34,18 +34,18 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <select v-if="filterMode !== 'custom'" v-model="selectedYear" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-5 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
+            <select v-if="filterMode !== 'custom'" v-model="selectedYear" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl pl-5 pr-10 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
               <option v-for="y in availableYears" :key="y" :value="y">Năm {{ y }}</option>
             </select>
 
-            <select v-if="filterMode === 'quarter'" v-model="selectedQuarter" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
+            <select v-if="filterMode === 'quarter'" v-model="selectedQuarter" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl pl-5 pr-10 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
               <option :value="1">Quý 1 (Tháng 1-3)</option>
               <option :value="2">Quý 2 (Tháng 4-6)</option>
               <option :value="3">Quý 3 (Tháng 7-9)</option>
               <option :value="4">Quý 4 (Tháng 10-12)</option>
             </select>
 
-            <select v-if="filterMode === 'month'" v-model="selectedMonth" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
+            <select v-if="filterMode === 'month'" v-model="selectedMonth" @change="applyTimeFilter" class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl pl-5 pr-10 py-2.5 focus:outline-none focus:border-primary cursor-pointer">
               <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
             </select>
 
