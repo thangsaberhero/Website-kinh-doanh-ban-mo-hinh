@@ -20,7 +20,7 @@
           </div>
           
           <div class="flex gap-3 w-full xl:w-auto">
-            <button @click="exportExcelReport" class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
+            <button v-if="currentRole === 1" @click="exportExcelReport" class="flex-1 xl:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-all text-sm">
               <span class="material-symbols-outlined text-[20px]" :class="{'animate-bounce': isExporting}">file_download</span>
               {{ isExporting ? 'Đang tạo file...' : 'Xuất báo cáo' }}
             </button>
@@ -1639,15 +1639,17 @@
   
 <script setup>
   import { ref, computed, watch } from 'vue';
-  import { useRoute, useRouter } from 'vue-router';
+  import { useRoute } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
   import { onMounted } from 'vue';
+  import { useAuthStore } from '../../stores/auth';
   import { useToastStore } from "../../stores/toast";
   import { useLayoutStore } from '../../stores/layout';
 
   const route = useRoute();
-  const router = useRouter();
+  const authStore = useAuthStore();
+  const currentRole = Number(authStore.user?.MaQuyen);
   const toastStore = useToastStore();
   const layoutStore = useLayoutStore();
 
@@ -2322,7 +2324,6 @@ const exportExcelReport = async () => {
 
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-      // LƯU Ý: Sửa lại đường dẫn API này cho khớp với file router.js ở Backend của bạn
       const response = await fetch(`${API_BASE_URL}/api/invoice_admin/fix`, { 
         method: 'PUT',
         headers: {

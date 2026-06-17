@@ -294,18 +294,22 @@
 
       if (isSuccess) {
         toastStore.showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success', 2500, 'top-right');
-        const userRole = authStore.user?.role || authStore.user?.MaQuyen;
+        const userRole = Number(authStore.user?.role || authStore.user?.MaQuyen);
         
         setTimeout(() => {
-          if (Number(userRole) === 1 || Number(userRole) === 2) {
+          if (userRole === 1) {
             router.push('/admin');
-          } else {
+          } 
+          else if (userRole === 2) {
+            router.push('/admin/orders');
+          } 
+          else {
             const redirectPath = route.query.redirect || '/';
             router.push(redirectPath);
           }
         }, 500);
       } 
-    } 
+    }
     catch (error) {
       console.error("Lỗi khi kết nối API login:", error);
       toastStore.showToast(error.message || "Sai tên đăng nhập hoặc mật khẩu!", 'error', 4000, 'top-right');
@@ -380,8 +384,16 @@
     
     setTimeout(() => {
       const userRole = Number(data.user.MaQuyen); 
-      const redirectPath = (userRole === 1 || userRole === 2) ? '/admin' : (route.query.redirect || '/');
-      router.push(redirectPath);
+      
+      if (userRole === 1) {
+        router.push('/admin'); 
+      } else if (userRole === 2) {
+        router.push('/admin/orders'); 
+      } 
+      else {
+        const redirectPath = route.query.redirect || '/';
+        router.push(redirectPath);
+      }
     }, 500);
   };
 

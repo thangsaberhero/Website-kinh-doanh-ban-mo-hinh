@@ -996,6 +996,7 @@ const product_admin = {
             const MaPhanLoai = req.params.id; 
             const { DonGia, SoLuong } = req.body;
             const MaTK = req.user.id;
+            const userRole = req.user.role;
 
             // 1. Kiểm tra phân loại có tồn tại không
             const [checkPL] = await connection.query(`SELECT MaMoHinh, ChiTietPhanLoai FROM PhanLoai WHERE MaPhanLoai = ?`, [MaPhanLoai]);
@@ -1006,12 +1007,17 @@ const product_admin = {
 
             const { MaMoHinh, ChiTietPhanLoai } = checkPL[0];
 
-            // 2. Cập nhật bảng PhanLoai
-            await connection.query(`UPDATE PhanLoai SET DonGia = ?, SoLuong = ? WHERE MaPhanLoai = ?`, [DonGia, SoLuong, MaPhanLoai]);
-
-            // 3. ĐỒNG BỘ THÔNG MINH: Nếu phân loại này là bản 'Mặc định', phải update luôn giá bán ở bảng MoHinh cha
-            if (ChiTietPhanLoai === 'Mặc định') {
-                await connection.query(`UPDATE MoHinh SET DonGia = ? WHERE MaMoHinh = ?`, [DonGia, MaMoHinh]);
+            if (userRole === 2) {
+                await connection.query(`UPDATE PhanLoai SET SoLuong = ? WHERE MaPhanLoai = ?`, [SoLuong, MaPhanLoai]);
+            } 
+            else {
+                // Admin được update cả Giá và Số lượng
+                await connection.query(`UPDATE PhanLoai SET DonGia = ?, SoLuong = ? WHERE MaPhanLoai = ?`, [DonGia, SoLuong, MaPhanLoai]);
+                
+                // Đồng bộ nếu là bản 'Mặc định'
+                if (ChiTietPhanLoai === 'Mặc định') {
+                    await connection.query(`UPDATE MoHinh SET DonGia = ? WHERE MaMoHinh = ?`, [DonGia, MaMoHinh]);
+                }
             }
 
             // 4. Ghi Log hệ thống
