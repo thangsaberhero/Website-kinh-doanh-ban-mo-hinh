@@ -505,12 +505,11 @@
 
             </div>
 
-            <!-- 🔴 ĐÃ ĐỒNG BỘ: Giao diện ĐIỀU KHIỂN LỆNH Dark Mode giống hệt Quản lý đơn -->
             <div class="w-full xl:w-[320px] shrink-0 xl:sticky xl:top-0 space-y-4">
               
-              <div class="bg-[#1e2330] p-6 rounded-2xl shadow-lg shadow-slate-900/10 text-white flex flex-col h-full border border-slate-700/50">
-                <h4 class="text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-700 pb-3 flex items-center gap-1.5 mb-5">
-                  <span class="material-symbols-outlined text-[16px] text-rose-500">tune</span> ĐIỀU KHIỂN LỆNH
+              <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-100 pb-3 flex items-center gap-1.5 mb-5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">tune</span> ĐIỀU KHIỂN LỆNH
                 </h4>
                 
                 <div class="grid grid-cols-1 gap-3 flex-1">
@@ -519,32 +518,32 @@
                     
                     <button v-if="getSaleType() !== 'Có sẵn' && getFulfillmentStatus() !== 'Đủ hàng' && getCurrentStatusCode() === 1" 
                             @click="toastStore.showToast(`Đơn hàng đang ${getFulfillmentStatus()}. Vui lòng chờ đủ hàng hoặc Tách đơn gửi trước!`, 'warning')" 
-                            class="w-full bg-transparent text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-600 cursor-not-allowed transition-all">
+                            class="w-full bg-slate-100 text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 cursor-not-allowed transition-all">
                       <span class="material-symbols-outlined text-[18px]">lock</span> Khóa: Chờ gom hàng
                     </button>
                     
                     <button v-else 
                             @click="updateStatusValue = getCurrentStatusCode(); isUpdateModalOpen = true" 
-                            class="w-full bg-primary/10 hover:bg-primary/20 text-[#ff7352] border border-primary/30 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                            class="w-full bg-[#ff8f73] hover:bg-[#ff7352] text-white shadow-sm font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
                       <span class="material-symbols-outlined text-[18px]">edit_document</span> Cập nhật trạng thái
                     </button>
                     
                   </template>
 
                   <button @click="handlePrintInvoice(selectedOrder.MaDH)" 
-                          class="w-full bg-transparent hover:bg-slate-700 text-sky-400 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-600 active:scale-95">
-                    <span class="material-symbols-outlined text-[18px]">print</span> In hóa đơn
+                          class="w-full bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-600 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 hover:border-sky-200 shadow-sm active:scale-95">
+                    <span class="material-symbols-outlined text-[18px] text-sky-500">print</span> In hóa đơn
                   </button>
 
                   <button v-if="getCurrentStatusCode() === 1 || getCurrentStatusCode() === 2"
                           @click="cancelOrder(selectedOrder)" 
-                          class="w-full bg-rose-900/30 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-800/50 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                          class="w-full bg-rose-50 hover:bg-rose-500 text-rose-600 hover:text-white border border-rose-200 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn hàng
                   </button>
 
                   <button v-if="getCurrentStatusCode() === 3 || getCurrentStatusCode() === 4"
                           @click="returnOrder(selectedOrder)" 
-                          class="w-full bg-purple-900/30 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-800/50 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                          class="w-full bg-purple-50 hover:bg-purple-500 text-purple-600 hover:text-white border border-purple-200 hover:border-transparent font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">assignment_return</span> Hoàn hàng
                   </button>
                 </div>
