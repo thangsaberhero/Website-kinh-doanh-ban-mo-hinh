@@ -176,7 +176,7 @@
                   title="Thêm/Bỏ yêu thích"
                   :class="['w-12 h-12 md:w-14 md:h-14 rounded-full border-2 flex items-center justify-center transition-all shrink-0',
                             isFavorite
-                            ? 'bg-red-950/50 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:bg-red-950'
+                            ? 'bg-white dark:bg-red-950/50 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:bg-red-950'
                             : 'bg-surface-container-low border-outline-variant/30 text-outline hover:border-primary/50 hover:text-primary']">
                   <span class="material-symbols-outlined font-bold text-3xl">
                     {{ isFavorite ? 'favorite' : 'favorite_border' }}
