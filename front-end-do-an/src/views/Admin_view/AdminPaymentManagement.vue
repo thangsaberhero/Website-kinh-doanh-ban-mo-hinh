@@ -93,6 +93,14 @@
             </div>
 
             <div class="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+              
+              <div class="hidden lg:flex items-center p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
+                <button @click="setQuickDate('today')" :class="filterParams.ngaybatdau === getToday() && filterParams.ngayketthuc === getToday() ? 'bg-white text-emerald-600 shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Hôm nay</button>
+                <button @click="setQuickDate('7days')" :class="filterParams.ngaybatdau === getDaysAgo(7) && filterParams.ngayketthuc === getToday() ? 'bg-white text-emerald-600 shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">7 Ngày</button>
+                <button @click="setQuickDate('30days')" :class="filterParams.ngaybatdau === getDaysAgo(30) && filterParams.ngayketthuc === getToday() ? 'bg-white text-emerald-600 shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">30 Ngày</button>
+                <button @click="setQuickDate('all')" :class="filterParams.ngaybatdau === '' && filterParams.ngayketthuc === getToday() ? 'bg-white text-emerald-600 shadow-sm font-black' : 'text-slate-500 hover:text-slate-800'" class="px-3 py-1.5 text-[10px] uppercase tracking-wider rounded-lg transition-all">Tất cả</button>
+              </div>
+
               <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-0.5 shadow-sm w-full md:w-auto">
                 <span class="material-symbols-outlined text-slate-400 text-[18px]">calendar_today</span>
                 <input type="date" v-model="filterParams.ngaybatdau" class="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 cursor-pointer outline-none py-1.5">
@@ -338,8 +346,8 @@
   });
 
   const filterParams = ref({
-    ngaybatdau: '',
-    ngayketthuc: '',
+    ngaybatdau: getFormattedDate(sevenDaysAgoDate),
+    ngayketthuc: getFormattedDate(todayDate),
     phuongthuc: 'all',
     loai: 'all',
     timkiem: ''
@@ -354,6 +362,47 @@
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleString('vi-VN');
+  };
+
+  const getFormattedDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Tính toán mốc thời gian: Hôm nay và 7 ngày trước
+  const todayDate = new Date();
+  const sevenDaysAgoDate = new Date();
+  sevenDaysAgoDate.setDate(todayDate.getDate() - 7);
+
+  const getToday = () => {
+    const d = new Date();
+    return d.toISOString().slice(0, 10);
+  };
+
+  const getDaysAgo = (days) => {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return d.toISOString().slice(0, 10);
+  };
+
+  // --- HÀM XỬ LÝ KHI BẤM NÚT CHỌN NHANH ---
+  const setQuickDate = (range) => {
+    if (range === 'today') {
+      filterParams.value.ngaybatdau = getToday();
+      filterParams.value.ngayketthuc = getToday();
+    } else if (range === '7days') {
+      filterParams.value.ngaybatdau = getDaysAgo(7);
+      filterParams.value.ngayketthuc = getToday();
+    } else if (range === '30days') {
+      filterParams.value.ngaybatdau = getDaysAgo(30);
+      filterParams.value.ngayketthuc = getToday();
+    } else if (range === 'all') {
+      filterParams.value.ngaybatdau = '';
+      filterParams.value.ngayketthuc = getToday();
+    }
+    // Không cần gọi fetchTransactions() vì watch(filterParams) ở dưới đã tự động bắt sự kiện và gọi API rồi.
   };
 
   const fetchTransactions = async () => {
