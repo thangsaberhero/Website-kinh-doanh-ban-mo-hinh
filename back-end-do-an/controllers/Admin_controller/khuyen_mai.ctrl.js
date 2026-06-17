@@ -859,7 +859,7 @@ const khuyenmai = {
             await connection.rollback();
             console.error("Lỗi khi thao tác sửa thông tin mã giảm giá: ", error);
             res.status(500).json({ success: false, message: "Lỗi hệ thống khi sửa thông tin mã giảm giá!" });
-        } final_MaKH {
+        } finally {
             if (connection) connection.release();
         }
     },
