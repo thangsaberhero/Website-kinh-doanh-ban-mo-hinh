@@ -432,7 +432,7 @@
             </div>
           </div>
 
-          <div class="p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl">
+          <div v-if="currentTypeTab === 'voucher'" class="p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl mb-6">
               <label class="block text-xs font-bold text-indigo-800 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[16px]">person_search</span> Khách hàng áp dụng (Tùy chọn)
               </label>
@@ -470,7 +470,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="text-xs font-bold text-slate-800 truncate">{{ cus.TenKH }}</p>
-                      <p class="text-[10px] text-slate-500 truncate">{{ cus.SDT || cus.Email || 'Chưa cập nhật thông tin liên hệ' }}</p>
+                      <p class="text-[10px] text-slate-500 truncate">{{ cus.SDT || cus.Email || 'Chưa cập nhật thông tin' }}</p>
                     </div>
                     <span class="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded">Chọn</span>
                   </div>

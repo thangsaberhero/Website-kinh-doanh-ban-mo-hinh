@@ -193,7 +193,12 @@
                     </td>
 
                     <td class="py-4 px-6 text-right">
-                      <button @click="openDeleteProductModal(sp)" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all" title="Loại khỏi chiến dịch">
+                      <button 
+                        :disabled="isPromotionLocked" 
+                        @click="openDeleteProductModal(sp)" 
+                        :title="isPromotionLocked ? 'Đã khóa: Không thể xóa khi chương trình đang chạy' : 'Xóa sản phẩm'"
+                        class="w-8 h-8 flex items-center justify-center rounded-xl transition-all"
+                        :class="isPromotionLocked ? 'text-slate-300 cursor-not-allowed bg-slate-50' : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50'">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </td>
@@ -567,6 +572,7 @@
   const searchProductQuery = ref('');
   const searchedProducts = ref([]);
   const selectedProductIds = ref([]);
+  const isSubmitting = ref(false);
   const addProductForm = ref({
     MaPhanLoai: '',
     LoaiGiamGia: 'ChietKhau',
@@ -692,15 +698,6 @@
     searchProductsWithFilter(); 
   };
 
-  const toggleSelectProduct = (MaPhanLoai) => {
-    const index = selectedProductIds.value.indexOf(MaPhanLoai);
-    if (index === -1) {
-      selectedProductIds.value.push(MaPhanLoai); 
-    } else {
-      selectedProductIds.value.splice(index, 1); 
-    }
-  };
-
   const toggleSelectAll = () => {
     if (searchedProducts.value.length === 0) return;
     const currentSearchIds = searchedProducts.value.map(p => p.MaPhanLoai);
@@ -764,7 +761,12 @@
     }
   };
 
-  const openDeleteProductModal = (product) => {
+ const openDeleteProductModal = (product) => {
+    if (isPromotionLocked.value) {
+      toastStore.showToast('Chương trình đang diễn ra, không thể gỡ sản phẩm!', 'error');
+      return;
+    }
+    
     productToDelete.value = product;
     isDeleteProductModalOpen.value = true;
   };
@@ -798,12 +800,12 @@
     }
   };
 
-  const selectProduct = (product) => {
-    selectedProduct.value = product;
-    addProductForm.value.MaPhanLoai = product.MaPhanLoai;
-    searchProductQuery.value = `${product.TenMH} - ${product.TenPhanLoai || ''}`;
-    searchedProducts.value = [];
-  };
+  const isPromotionLocked = computed(() => {
+    if (!detailData.value) return false;
+    const now = new Date();
+    const startDate = new Date(detailData.value.ThoiGianBD);
+    return now >= startDate; 
+  });
 
   const submitAddProduct = async () => {
     if (selectedProductIds.value.length === 0) {
@@ -811,20 +813,25 @@
       return;
     }
 
+    isSubmitting.value = true;
+
     let payload = {};
     if (promoType.value === 'campaign') {
       const chietKhau = Number(addProductForm.value.ChietKhau);
       
       if (chietKhau > maxAllowedDiscount.value) {
          toastStore.showToast(`Mức giảm không được vượt quá ${formatCurrency(maxAllowedDiscount.value)} để tránh giá âm!`, 'error');
+         isSubmitting.value = false;
          return;
       }
       if (isNaN(chietKhau) || chietKhau <= 0) {
         toastStore.showToast('Vui lòng nhập mức giảm giá hợp lệ (>0)', 'error');
+        isSubmitting.value = false;
         return;
       }
       if (addProductForm.value.LoaiGiamGia === 'ChietKhau' && chietKhau > 100) {
         toastStore.showToast('Mức giảm phần trăm không được vượt quá 100%', 'error');
+        isSubmitting.value = false;
         return;
       }
 
@@ -877,6 +884,9 @@
     catch (error) {
       console.error('❌ Lỗi khi gọi API:', error);
       toastStore.showToast('Lỗi kết nối máy chủ', 'error');
+    }
+    finally{
+      isSubmitting.value = false;
     }
   };
 
