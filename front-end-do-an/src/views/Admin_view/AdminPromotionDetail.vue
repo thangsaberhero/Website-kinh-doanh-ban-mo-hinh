@@ -256,53 +256,56 @@
                 {{ isExporting ? 'Đang tạo báo cáo...' : 'Xuất báo cáo Excel' }}
               </button>
             </div>
-            <table class="w-full text-left border-collapse whitespace-nowrap">
-              <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-bold tracking-wider uppercase">
-                <tr>
-                  <th class="py-4 px-6">Mã lịch sử</th>
-                  <th class="py-4 px-6">Khách hàng</th>
-                  <th class="py-4 px-6">Mã đơn hàng</th>
-                  <th class="py-4 px-6">Số tiền đã giảm</th>
-                  <th class="py-4 px-6">Thời gian dùng</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="log in logsList" :key="log.MaLichSu" class="border-b border-slate-100 hover:bg-slate-50/50">
-                  <td class="py-4 px-6 font-mono text-xs text-slate-400">#{{ log.MaLichSu }}</td>
-                  <td class="py-4 px-6 text-sm font-bold text-slate-800">{{ log.TenKH || 'Khách ẩn danh' }}</td>
-                  <td class="py-4 px-6 text-xs text-sky-600 font-bold hover:underline cursor-pointer">ĐH #{{ log.MaDH }}</td>
-                  <td class="py-4 px-6 text-sm font-black text-rose-500">-{{ formatCurrency(log.SoTienDaGiam) }}</td>
-                  <td class="py-4 px-6 text-xs text-slate-500">{{ formatDate(log.ThoiGianSuDung) }}</td>
-                </tr>
-                <tr v-if="logsList.length === 0">
-                  <td colspan="5" class="py-12 text-center text-slate-400 text-sm font-medium">Chưa có khách hàng nào áp dụng chương trình này.</td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/50">
-              <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-400">Hiển thị {{ startItemLog }} - {{ endItemLog }} của {{ paginationLog.totalItems }} lượt dùng</span>
-                <div class="h-4 w-px bg-slate-200"></div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-medium text-slate-500">Số dòng:</span>
-                  <select v-model="paginationLog.limit" @change="changeLimitLog" class="bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
-                    <option :value="10">10</option>
-                    <option :value="20">20</option>
-                    <option :value="50">50</option>
-                  </select>
+            
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+              <table class="w-full text-left border-collapse whitespace-nowrap">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[10px] font-bold tracking-wider uppercase">
+                  <tr>
+                    <th class="py-4 px-6">Mã lịch sử</th>
+                    <th class="py-4 px-6">Khách hàng</th>
+                    <th class="py-4 px-6">Mã đơn hàng</th>
+                    <th class="py-4 px-6">Số tiền đã giảm</th>
+                    <th class="py-4 px-6">Thời gian dùng</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                  <tr v-for="log in logsList" :key="log.MaLichSu" class="transition-colors hover:bg-slate-50/80">
+                    <td class="py-4 px-6 font-mono text-xs text-slate-400">#{{ log.MaLichSu }}</td>
+                    <td class="py-4 px-6 text-sm font-bold text-slate-800">{{ log.TenKH || 'Khách ẩn danh' }}</td>
+                    <td class="py-4 px-6 text-xs text-sky-600 font-bold hover:underline cursor-pointer">ĐH #{{ log.MaDH }}</td>
+                    <td class="py-4 px-6 text-sm font-black text-rose-500">-{{ formatCurrency(log.SoTienDaGiam) }}</td>
+                    <td class="py-4 px-6 text-xs text-slate-500">{{ formatDate(log.ThoiGianSuDung) }}</td>
+                  </tr>
+                  <tr v-if="logsList.length === 0">
+                    <td colspan="5" class="py-12 text-center text-slate-400 text-sm font-medium">Chưa có khách hàng nào áp dụng chương trình này.</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-bold text-slate-400">Hiển thị {{ startItemLog }} - {{ endItemLog }} của {{ paginationLog.totalItems }} lượt dùng</span>
+                  <div class="h-4 w-px bg-slate-200"></div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                    <select v-model="paginationLog.limit" @change="changeLimitLog" class="bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                      <option :value="10">10</option>
+                      <option :value="20">20</option>
+                      <option :value="50">50</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div v-if="paginationLog.totalPage > 1" class="flex items-center gap-1.5">
+                  <button @click="changeLogPage(paginationLog.currentPage - 1)" :disabled="paginationLog.currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
+                  <template v-for="(p, index) in visiblePagesLog" :key="index">
+                    <button v-if="p !== '...'" @click="changeLogPage(p)" :class="paginationLog.currentPage === p ? 'bg-primary text-white border-transparent' : 'bg-white border border-slate-200 text-slate-500 hover:text-primary'" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">{{ p }}</button>
+                    <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">...</span>
+                  </template>
+                  <button @click="changeLogPage(paginationLog.currentPage + 1)" :disabled="paginationLog.currentPage === paginationLog.totalPage" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
                 </div>
               </div>
-              
-              <div v-if="paginationLog.totalPage > 1" class="flex items-center gap-1.5">
-                <button @click="changeLogPage(paginationLog.currentPage - 1)" :disabled="paginationLog.currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
-                <template v-for="(p, index) in visiblePagesLog" :key="index">
-                  <button v-if="p !== '...'" @click="changeLogPage(p)" :class="paginationLog.currentPage === p ? 'bg-primary text-white border-transparent' : 'bg-white border border-slate-200 text-slate-500 hover:text-primary'" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">{{ p }}</button>
-                  <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">...</span>
-                </template>
-                <button @click="changeLogPage(paginationLog.currentPage + 1)" :disabled="paginationLog.currentPage === paginationLog.totalPage" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
-              </div>
             </div>
-          </div>
+            </div>
         </template>
         <div v-else class="text-center text-slate-500 py-12">Không tìm thấy thông tin chương trình.</div>
       </main>
