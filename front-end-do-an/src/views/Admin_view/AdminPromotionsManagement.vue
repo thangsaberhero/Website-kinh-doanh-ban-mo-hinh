@@ -553,89 +553,189 @@
     </div>
   </div>
 
-  <div v-if="isEditPromoModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-[fadeIn_0.2s_ease-out]">
-      <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+  <div v-if="isEditPromoModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-[fadeIn_0.2s_ease-out] flex flex-col border border-slate-200">
+      
+      <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
         <div>
-          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <h3 class="text-xl font-brand font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
             <span class="material-symbols-outlined text-sky-500">edit_square</span> 
-            {{ currentTypeTab === 'promotion' ? 'Chỉnh sửa Khuyến mãi' : 'Chỉnh sửa Voucher' }}
+            {{ currentTypeTab === 'promotion' ? 'Cập nhật Khuyến mãi' : 'Cập nhật Mã Voucher' }}
           </h3>
+          <p class="text-xs text-slate-500 mt-1 font-medium">Thay đổi cấu hình chiến dịch. Các mục có dấu (*) là bắt buộc.</p>
         </div>
-        <button @click="isEditPromoModalOpen = false" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+        <button @click="isEditPromoModalOpen = false" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
-        <template v-if="currentTypeTab === 'promotion'">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chương trình KM (*)</label>
-            <input v-model="editingPromo.TenKM" type="text" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-          </div>
-        </template>
+      <div class="p-8 overflow-y-auto custom-scrollbar max-h-[70vh]">
+        
+        <div class="space-y-5 mb-8">
+          <h4 class="text-[11px] font-black text-sky-600 uppercase tracking-[0.2em] flex items-center gap-2">
+            <span class="w-2 h-2 bg-sky-500 rounded-full"></span> Thông tin cơ bản
+          </h4>
 
-        <template v-else>
-          <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-2">
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Tên chiến dịch Voucher (*)</label>
-              <input v-model="editingPromo.TenMaGiamGia" type="text" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
+          <template v-if="currentTypeTab === 'promotion'">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Tên chương trình KM (*)</label>
+              <input v-model="editingPromo.TenKM" type="text" placeholder="VD: Flash Sale Giáng Sinh" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-medium bg-slate-50/50 focus:bg-white"/>
             </div>
-            <div class="col-span-1">
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Lượt dùng tối đa</label>
-              <input v-model="editingPromo.SoLuongDungToiDa" type="number" min="1" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-            </div>
-          </div>
+          </template>
 
-          <div class="grid grid-cols-4 gap-4">
-            <div class="col-span-1">
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Loại giảm</label>
-              <select v-model="editingPromo.LoaiGiamGia" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none">
-                <option value="PhanTram">Phần trăm (%)</option>
-                <option value="TienMat">Số tiền (đ)</option>
-              </select>
+          <template v-else>
+            <div class="grid grid-cols-3 gap-5">
+              <div class="col-span-2">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Tên chiến dịch Voucher (*)</label>
+                <input v-model="editingPromo.TenMaGiamGia" type="text" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-medium bg-slate-50/50 focus:bg-white"/>
+              </div>
+              <div class="col-span-1">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">SL tối đa (*)</label>
+                <input v-model="editingPromo.SoLuongDungToiDa" type="number" min="1" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-sky-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+              </div>
             </div>
-            <div class="col-span-1">
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Mức giảm</label>
-              <input v-model="editingPromo.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-            </div>
-            <div class="col-span-1">
-              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Đơn tối thiểu</label>
-              <input v-model="editingPromo.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-            </div>
-            
-            <div class="col-span-1" v-show="editingPromo.LoaiGiamGia === 'PhanTram'">
-              <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-1">Giảm tối đa (đ)</label>
-              <input v-model="editingPromo.GiaTriGiamToiDa" type="number" min="0" placeholder="Bỏ trống = Vô hạn" class="w-full border border-purple-200 rounded-xl p-3 text-sm focus:border-purple-500 outline-none bg-purple-50/30"/>
-            </div>
-          </div>
-        </template>
 
-        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Thời gian bắt đầu (*)</label>
-            <input v-model="editingPromo.ThoiGianBD" type="datetime-local" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Thời gian kết thúc (*)</label>
-            <input v-model="editingPromo.ThoiGianKT" type="datetime-local" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-sky-500 outline-none"/>
+            <div class="grid grid-cols-2 gap-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Mã Code (Cố định)</label>
+                <input :value="editingPromo.MaVoucher" type="text" disabled class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-mono font-black uppercase bg-slate-100 text-slate-400 cursor-not-allowed"/>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Giá trị đơn tối thiểu (*)</label>
+                <div class="relative">
+                  <input v-model="editingPromo.MucGiaToiThieu" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-sky-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₫</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl" :class="isEditPromoLocked ? 'opacity-75' : ''">
+              <label class="block text-xs font-bold text-indigo-800 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">person_search</span> Khách hàng áp dụng (Tùy chọn)
+                <span v-if="isEditPromoLocked" class="text-[10px] text-amber-600 font-bold normal-case italic">(Khóa: Mã đã chạy)</span>
+              </label>
+
+              <div v-if="selectedEditCustomer" class="flex items-center justify-between bg-white border border-indigo-200 p-3 rounded-xl shadow-sm">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden border border-indigo-200 shrink-0">
+                    <img v-if="selectedEditCustomer.AnhDaiDien" :src="selectedEditCustomer.AnhDaiDien" class="w-full h-full object-cover"/>
+                    <span v-else class="material-symbols-outlined text-indigo-400">person</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800">{{ selectedEditCustomer.TenKH }}</p>
+                    <p class="text-[10px] text-slate-500 font-medium">Mã KH: {{ selectedEditCustomer.MaKH }} | SĐT: {{ selectedEditCustomer.SDT || 'N/A' }}</p>
+                  </div>
+                </div>
+                <button v-if="!isEditPromoLocked" @click="removeEditCustomer" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Gỡ bỏ">
+                  <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+
+              <div v-else-if="!isEditPromoLocked" class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300">search</span>
+                <input v-model="searchEditCustomerQuery" @input="debounceSearchEditCustomer" type="text" placeholder="Tìm theo Mã KH, Tên, SĐT... Để trống để dùng chung" 
+                       class="w-full border border-indigo-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium bg-white placeholder:text-slate-400"/>
+                
+                <span v-if="isSearchingEditCustomers" class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-indigo-500 animate-spin">progress_activity</span>
+
+                <div v-if="searchedEditCustomers.length > 0" class="absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto custom-scrollbar p-1.5">
+                  <div v-for="cus in searchedEditCustomers" :key="cus.MaKH" 
+                       @click="selectEditCustomer(cus)"
+                       class="flex items-center gap-3 p-2.5 hover:bg-indigo-50 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-indigo-100">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+                      <img v-if="cus.AnhDaiDien" :src="cus.AnhDaiDien" class="w-full h-full object-cover"/>
+                      <span v-else class="material-symbols-outlined text-slate-400 text-[16px]">person</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-bold text-slate-800 truncate">{{ cus.TenKH }}</p>
+                      <p class="text-[10px] text-slate-500 truncate">{{ cus.SDT || cus.Email || 'Chưa cập nhật liên hệ' }}</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded">Chọn</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="text-xs text-slate-400 font-medium italic p-2.5 bg-slate-100 rounded-xl text-center">
+                Mã giảm giá công khai (Không gán đối tượng riêng tư)
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div v-if="currentTypeTab === 'voucher'" class="space-y-5 mb-8 pt-8 border-t border-slate-100">
+          <h4 class="text-[11px] font-black text-purple-600 uppercase tracking-[0.2em] flex items-center gap-2">
+            <span class="w-2 h-2 bg-purple-500 rounded-full"></span> Cơ chế giảm giá
+          </h4>
+          
+          <div class="grid grid-cols-2 gap-6">
+            <div class="space-y-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Loại hình giảm</label>
+                <select v-model="editingPromo.LoaiGiamGia" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none cursor-pointer bg-slate-50/50 hover:bg-slate-100 transition-all">
+                  <option value="PhanTram">Giảm theo Phần trăm (%)</option>
+                  <option value="TienMat">Giảm Số tiền cố định (đ)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Mức giảm chiết khấu (*)</label>
+                <div class="relative">
+                    <input v-model="editingPromo.ChietKhau" type="number" min="0" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-black text-rose-500 focus:border-rose-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">{{ editingPromo.LoaiGiamGia === 'PhanTram' ? '%' : '₫' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-5">
+              <div v-show="editingPromo.LoaiGiamGia === 'PhanTram'">
+                <label class="block text-xs font-bold text-purple-600 uppercase tracking-widest mb-2">Mức giảm tối đa (CAP)</label>
+                <div class="relative">
+                    <input v-model="editingPromo.GiaTriGiamToiDa" type="number" min="0" placeholder="Không giới hạn" class="w-full border border-purple-200 rounded-2xl p-3.5 text-sm font-bold focus:border-purple-500 outline-none bg-purple-50/30 transition-all placeholder:font-normal"/>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 font-bold">₫</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+
+        <div class="space-y-5 pt-8 border-t border-slate-100 mb-6">
+          <h4 class="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em] flex items-center gap-2">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Lịch trình áp dụng
+          </h4>
+          
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">
+                Thời điểm bắt đầu (*) 
+                <span v-if="isEditPromoLocked" class="text-[10px] text-amber-600 font-medium normal-case italic">(Khóa do đang chạy)</span>
+              </label>
+              <input v-model="editingPromo.ThoiGianBD" type="datetime-local" :disabled="isEditPromoLocked" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-medium outline-none focus:border-emerald-500 transition-all bg-slate-50/50 focus:bg-white disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Thời điểm kết thúc (*)</label>
+              <input v-model="editingPromo.ThoiGianKT" type="datetime-local" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-medium outline-none focus:border-rose-500 transition-all bg-slate-50/50 focus:bg-white"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between bg-slate-50/50 p-5 rounded-2xl">
           <div>
-            <label class="block text-sm font-bold text-slate-900">Trạng thái Kích hoạt</label>
-            <p class="text-xs text-slate-500">Bật để cho phép áp dụng, tắt để tạm dừng chiến dịch.</p>
+            <label class="block text-sm font-black text-slate-900">Trạng thái Kích hoạt</label>
+            <p class="text-xs text-slate-500 mt-0.5">Bật để cho phép áp dụng, tắt để tạm dừng chiến dịch ngay lập tức.</p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" v-model="editingPromo.TrangThaiHoatDong" class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            <input type="checkbox" v-model="editingPromo.TrangThaiHoatDong" :true-value="1" :false-value="0" class="sr-only peer">
+            <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
           </label>
         </div>
+
       </div>
-      <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-        <button @click="isEditPromoModalOpen = false" class="px-6 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 bg-slate-100 rounded-xl transition-colors">Hủy bỏ</button>
-        <button @click="submitEditPromo" class="px-6 py-2.5 text-sm font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-lg shadow-sky-500/20 rounded-xl transition-all flex items-center gap-2">
-          <span class="material-symbols-outlined text-[18px]">save</span> Lưu thay đổi
+
+      <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 shrink-0">
+        <button @click="isEditPromoModalOpen = false" class="px-8 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-2xl transition-all active:scale-95">Hủy bỏ</button>
+        <button @click="submitEditPromo" :disabled="isSavingEdit" class="px-10 py-3 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white font-black rounded-2xl shadow-xl shadow-sky-500/20 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-wider text-sm disabled:cursor-wait">
+          <span v-if="isSavingEdit" class="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+          <span v-else class="material-symbols-outlined text-lg">save</span> 
+          {{ isSavingEdit ? 'Đang lưu...' : 'Lưu thay đổi' }}
         </button>
       </div>
     </div>
@@ -1192,6 +1292,60 @@
   
   const isEditPromoModalOpen = ref(false);
   const editingPromo = ref({});
+  // --- STATE TÌM KIẾM KHÁCH HÀNG KHI SỬA VOUCHER ---
+  const searchEditCustomerQuery = ref('');
+  const searchedEditCustomers = ref([]);
+  const isSearchingEditCustomers = ref(false);
+  const selectedEditCustomer = ref(null);
+  const isSavingEdit = ref(false); // Quản lý loading khi lưu sửa
+  let searchEditCustomerTimeout = null;
+
+  // Chốt chặn vàng kiểm tra xem chương trình sửa đã chạy chưa
+  const isEditPromoLocked = computed(() => {
+    if (!editingPromo.value || !editingPromo.value.ThoiGianBD) return false;
+    return new Date(editingPromo.value.ThoiGianBD) <= new Date();
+  });
+
+  const fetchEditCustomers = async () => {
+    if (!searchEditCustomerQuery.value.trim()) {
+      searchedEditCustomers.value = [];
+      return;
+    }
+    isSearchingEditCustomers.value = true;
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/search-customers?keyword=${encodeURIComponent(searchEditCustomerQuery.value)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        searchedEditCustomers.value = data.data;
+      } else {
+        searchedEditCustomers.value = [];
+      }
+    } catch (error) {
+      console.error("Lỗi tìm kiếm khách hàng khi sửa:", error);
+    } finally {
+      isSearchingEditCustomers.value = false;
+    }
+  };
+
+  const debounceSearchEditCustomer = () => {
+    clearTimeout(searchEditCustomerTimeout);
+    searchEditCustomerTimeout = setTimeout(fetchEditCustomers, 500);
+  };
+
+  const selectEditCustomer = (customer) => {
+    selectedEditCustomer.value = customer;
+    editingPromo.value.MaKH = customer.MaKH; // Đồng bộ ID vào form sửa
+    searchEditCustomerQuery.value = '';
+    searchedEditCustomers.value = [];
+  };
+
+  const removeEditCustomer = () => {
+    selectedEditCustomer.value = null;
+    editingPromo.value.MaKH = null;
+  };
 
   const formatDatetimeForInput = (dateString) => {
     if (!dateString) return '';
@@ -1200,7 +1354,12 @@
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
-  const openEditModal = (item) => {
+  const openEditModal = async (item) => {
+    // 1. Reset sạch các trường search khách hàng của modal sửa để tránh bị lưu cache từ lần mở trước
+    searchEditCustomerQuery.value = '';
+    searchedEditCustomers.value = [];
+    selectedEditCustomer.value = null;
+
     if (currentTypeTab.value === 'promotion') {
       editingPromo.value = {
         id: item.id,
@@ -1222,9 +1381,32 @@
         GiaTriGiamToiDa: item.GiaTriGiamToiDa || null,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
-        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? true : false 
+        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? true : false,
+        MaKH: item.MaKH || null // BỔ SUNG: Nạp ID khách hàng vào form
       };
+
+      // 2. BỔ SUNG: Nếu mã giảm giá này có gán riêng cho 1 khách hàng (MaKH != null)
+      if (item.MaKH) {
+        try {
+          const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+          // Tận dụng API tìm kiếm nhanh để lấy profile khách hàng đổ vào Card
+          const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/search-customers?keyword=${item.MaKH}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (res.ok && data.success && data.data.length > 0) {
+            // Lọc đúng khách hàng có mã trùng khớp
+            const found = data.data.find(c => c.MaKH === item.MaKH);
+            if (found) {
+              selectedEditCustomer.value = found; // Hiển thị UI Card Avatar + Tên khách
+            }
+          }
+        } catch (err) {
+          console.error("Lỗi nạp dữ liệu khách hàng cũ vào modal sửa:", err);
+        }
+      }
     }
+    
     isEditPromoModalOpen.value = true;
   };
 

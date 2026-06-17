@@ -779,19 +779,25 @@ const khuyenmai = {
             }
 
             // 2. LẤY THÔNG TIN GỐC TỪ DATABASE (Cột mốc sự thật)
-            const [check] = await connection.query(`SELECT MaGG, ThoiGianBD FROM MaGiamGia WHERE MaGG = ?`, [MaGG]);
+            // BỔ SUNG: Lấy thêm MaKH gốc từ Database để kiểm tra điều kiện khóa
+            const [check] = await connection.query(`SELECT MaGG, ThoiGianBD, MaKH FROM MaGiamGia WHERE MaGG = ?`, [MaGG]);
             if(check.length === 0) {
                 await connection.rollback();
                 return res.status(404).json({ success: false, message: "Không tìm thấy mã giảm giá cần sửa!" });
             }
 
             const db_ThoiGianBD = check[0].ThoiGianBD;
+            const db_MaKH = check[0].MaKH;
             const isStarted = new Date(db_ThoiGianBD) <= new Date();
 
-            // 3. GIẢI QUYẾT XUNG ĐỘT THỜI GIAN BẮT ĐẦU
+            // 3. GIẢI QUYẾT XUNG ĐỘT THỜI GIAN BẮT ĐẦU VÀ MÃ KHÁCH HÀNG
             let final_ThoiGianBD = ThoiGianBD;
+            let final_MaKH = MaKH; // Mặc định nhận giá trị mới từ Frontend truyền lên
+
             if (isStarted) {
-                final_ThoiGianBD = db_ThoiGianBD; // Đã chạy thì ép dùng giờ cũ
+                // CHỐT CHẶN VÀNG: Đã chạy thì ép dùng giờ cũ của DB, đồng thời KHÓA luôn không cho đổi đối tượng khách hàng áp dụng
+                final_ThoiGianBD = db_ThoiGianBD; 
+                final_MaKH = db_MaKH; 
             } else if (!ThoiGianBD) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Vui lòng chọn Thời gian bắt đầu!" });
@@ -824,14 +830,15 @@ const khuyenmai = {
                     LoaiGiamGia = ?, ChietKhau = ?, GiaTriGiamToiDa = ? 
                 WHERE MaGG = ?
             `;
-            // Lưu ý: Sử dụng final_ThoiGianBD và maxDiscount đã được làm sạch
+            
+            // THAY THẾ: Sử dụng biến an toàn final_MaKH đã qua bộ lọc bảo vệ dữ liệu ở trên
             await connection.query(sql_sua_ma_gg, [
                 TenMaGiamGia, maVoucherClean, SoLuongDungToiDa, final_ThoiGianBD, 
-                ThoiGianKT, MaKH || null, MucGiaToiThieu || 0, isVisible, 
+                ThoiGianKT, final_MaKH || null, MucGiaToiThieu || 0, isVisible, 
                 LoaiGiamGia, ChietKhau, maxDiscount, MaGG
             ]);
 
-            // 7. GHI LOG HOẠT ĐỘNG (Bảo mật)
+            // 6. GHI LOG HOẠT ĐỘNG (Bảo mật)
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -852,7 +859,7 @@ const khuyenmai = {
             await connection.rollback();
             console.error("Lỗi khi thao tác sửa thông tin mã giảm giá: ", error);
             res.status(500).json({ success: false, message: "Lỗi hệ thống khi sửa thông tin mã giảm giá!" });
-        } finally {
+        } final_MaKH {
             if (connection) connection.release();
         }
     },
