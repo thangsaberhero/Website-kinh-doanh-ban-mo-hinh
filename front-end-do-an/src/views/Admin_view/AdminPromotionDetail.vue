@@ -616,6 +616,23 @@
   };
 
   const openAddProductModal = () => {
+    if (!detailData.value) return;
+
+    const now = new Date();
+    const startDate = new Date(detailData.value.ThoiGianBD);
+    const endDate = new Date(detailData.value.ThoiGianKT);
+
+    // KIỂM TRA LOGIC: Chỉ cho phép thêm/sửa khi chương trình CHƯA BẮT ĐẦU (Sắp diễn ra)
+    if (now >= startDate) {
+      if (now <= endDate) {
+        toastStore.showToast('Không thể thêm sản phẩm! Chương trình này đang diễn ra.', 'error');
+      } else {
+        toastStore.showToast('Không thể thêm sản phẩm! Chương trình này đã kết thúc.', 'error');
+      }
+      return; // Dừng, không mở modal
+    }
+
+    // Nếu thỏa mãn (chưa tới ngày bắt đầu) -> Mở modal và reset form như cũ
     selectedProductIds.value = []; 
     addProductForm.value = { MaPhanLoai: '', LoaiGiamGia: 'ChietKhau', ChietKhau: 0, GiaTriGiamToiDa: null, SoLuongKM: null };
     searchProductQuery.value = '';
@@ -623,7 +640,7 @@
     filterBrand.value = '';
     isAddProductModalOpen.value = true;
     searchProductsWithFilter(); 
-  }; 
+  };
 
   const toggleSelectProduct = (MaPhanLoai) => {
     const index = selectedProductIds.value.indexOf(MaPhanLoai);
