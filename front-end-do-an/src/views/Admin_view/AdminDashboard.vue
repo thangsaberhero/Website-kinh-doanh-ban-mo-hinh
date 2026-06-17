@@ -1290,7 +1290,9 @@
       
       const a = document.createElement('a');
       a.href = url;
-      a.download = `DoanhThu_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
+      const today = new Date();
+      const dateStr = `${today.getDate().toString().padStart(2, '0')}_${(today.getMonth() + 1).toString().padStart(2, '0')}_${today.getFullYear()}`;
+      a.download = `Bao_Cao_DoanhThu_FigureCollect_${dateStr}.xlsx`;
       document.body.appendChild(a);
       a.click();
       

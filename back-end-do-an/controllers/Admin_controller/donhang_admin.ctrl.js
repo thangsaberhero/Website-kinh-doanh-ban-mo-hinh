@@ -2017,7 +2017,11 @@ const donhang_admin = {
                 db.query(sql_nhatky, values)
             ]);
 
-            const workbook = new ExcelJS.Workbook();
+            const workbook = new ExcelJS.Workbook();           
+            workbook.creator = 'Hệ Thống FIGURECOLLECT';
+            workbook.lastModifiedBy = 'Hệ Thống FIGURECOLLECT';
+            workbook.created = new Date();
+            workbook.modified = new Date();
             const COLOR_PRIMARY = 'FFFF8F73';
             const blackBorder = {
                 top: { style: 'thin', color: { argb: 'FF000000' } },
@@ -2692,7 +2696,11 @@ const donhang_admin = {
 
             const ExcelJS = require('exceljs');
             const path = require('path');
-            const workbook = new ExcelJS.Workbook();
+            const workbook = new ExcelJS.Workbook();            
+            workbook.creator = 'Hệ Thống FIGURECOLLECT';
+            workbook.lastModifiedBy = 'Hệ Thống FIGURECOLLECT';
+            workbook.created = new Date();
+            workbook.modified = new Date();
             const COLOR_PRIMARY = 'FFFF8F73';
             
             const formatDateVN = (dateStr) => {

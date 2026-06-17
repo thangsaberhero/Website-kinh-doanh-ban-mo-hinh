@@ -799,8 +799,9 @@ const thongke = {
             if(NgayKetThuc) { wherecondition.push("dh.NgayLapDon <= ?"); value.push(`${NgayKetThuc} 23:59:59`); }
             let whereClause = wherecondition.length > 0 ? " WHERE " + wherecondition.join(" AND ") : "";
 
+            // Bổ sung dh.MaDonHangHienThi vào SQL
             const sql = `
-                SELECT dh.MaDH, kh.TenKH, dh.NgayLapDon, dh.ThanhTien as TongTien,
+                SELECT dh.MaDH, dh.MaDonHangHienThi, kh.TenKH, dh.NgayLapDon, dh.ThanhTien as TongTien,
                        GROUP_CONCAT(mh.TenMH SEPARATOR ', ') as DanhSachHang
                 FROM DonHang dh
                 INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH
@@ -818,104 +819,127 @@ const thongke = {
             const [donHangs] = await db.query(sql, value);
 
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Báo cáo doanh thu');
+            workbook.creator = 'Hệ Thống FIGURECOLLECT';
+            workbook.lastModifiedBy = 'Hệ Thống FIGURECOLLECT';
+            workbook.created = new Date();
+            workbook.modified = new Date();
+            const COLOR_PRIMARY = 'FFFF8F73';
+            
+            const formatDateVN = (dateStr) => {
+                if (!dateStr) return '';
+                if (dateStr.includes('-')) {
+                    const parts = dateStr.split('-');
+                    if(parts.length === 3 && parts[0].length === 4) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return dateStr;
+            };
 
-            worksheet.views = [{ showGridLines: false }];
+            const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${formatDateVN(NgayBatDau)} đến ${formatDateVN(NgayKetThuc)}` : 'Tất cả thời gian';
 
-            worksheet.columns = [
-                { key: 'MaDH', width: 15 },
+            const ws = workbook.addWorksheet('Báo cáo doanh thu');
+            ws.views = [{ showGridLines: false }];
+            ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true };
+
+            // Cấu hình cột có thêm STT
+            ws.columns = [
+                { key: 'STT', width: 10 },
+                { key: 'MaDH', width: 18 },
                 { key: 'TenKH', width: 30 },
-                { key: 'NgayLapDon', width: 25 },
-                { key: 'DanhSachHang', width: 50 },
+                { key: 'NgayLapDon', width: 22 },
+                { key: 'DanhSachHang', width: 45 },
                 { key: 'TongTien', width: 20 },
             ];
 
+            const endCol = 'F';
+            const maxCol = endCol.charCodeAt(0) - 64; 
             for (let i = 1; i <= 8; i++) {
-                for (let j = 1; j <= 5; j++) {
-                    worksheet.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                for (let j = 1; j <= maxCol; j++) {
+                    ws.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
                 }
             }
 
             try {
+                const path = require('path');
+                const fs = require('fs');
                 const logoPath = path.join(__dirname, '../../public/logo.png'); 
-                const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
-                worksheet.addImage(logoId, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+                if (fs.existsSync(logoPath)) {
+                    const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
+                    ws.addImage(logoId, { tl: { col: 0.1, row: 0.2 }, ext: { width: 70, height: 70 } });
+                }
             } catch (err) { }
 
-            worksheet.mergeCells('B1:E1');
-            worksheet.getCell('B1').value = 'FIGURECOLLECT';
-            worksheet.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' }, name: 'Space Grotesk' };
-            worksheet.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
+            ws.mergeCells(`B1:${endCol}1`);
+            ws.getCell('B1').value = 'FIGURECOLLECT';
+            ws.getCell('B1').font = { size: 22, bold: true, color: { argb: COLOR_PRIMARY }, name: 'Space Grotesk' };
+            ws.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
 
-            worksheet.mergeCells('B2:E2');
-            worksheet.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
-            worksheet.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' }; 
-            worksheet.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
+            ws.mergeCells(`B2:${endCol}2`);
+            ws.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            ws.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' }; 
+            ws.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
 
-            worksheet.mergeCells('A4:E4');
-            worksheet.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
+            ws.mergeCells(`A4:${endCol}4`);
+            ws.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
 
-            worksheet.mergeCells('A5:E5');
-            const titleCell = worksheet.getCell('A5');
+            ws.mergeCells(`A5:${endCol}5`);
+            const titleCell = ws.getCell('A5');
             titleCell.value = 'BÁO CÁO DOANH THU BÁN HÀNG';
-            titleCell.font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+            titleCell.font = { size: 18, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
             titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-            const currentTime = new Date().toLocaleString('vi-VN');
-            const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${NgayBatDau} đến ${NgayKetThuc}` : 'Tất cả';
-            
-            worksheet.mergeCells('A6:E6');
-            worksheet.getCell('A6').value = `Ngày xuất: ${currentTime}`;
-            worksheet.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' }, name: 'Manrope' };
-            worksheet.getCell('A6').alignment = { horizontal: 'center' };
+            ws.mergeCells(`A6:${endCol}6`);
+            ws.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')}`;
+            ws.getCell('A6').font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+            ws.getCell('A6').alignment = { horizontal: 'center' };
 
-            worksheet.mergeCells('A7:E7');
-            worksheet.getCell('A7').value = `Thời gian dữ liệu: ${filterText}`;
-            worksheet.getCell('A7').font = { italic: true, size: 10, color: { argb: 'FF737580' }, name: 'Manrope' };
-            worksheet.getCell('A7').alignment = { horizontal: 'center' };
+            ws.mergeCells(`A7:${endCol}7`);
+            ws.getCell('A7').value = `Kỳ dữ liệu: ${filterText}`;
+            ws.getCell('A7').font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+            ws.getCell('A7').alignment = { horizontal: 'center' };
 
-            const headerRow = worksheet.getRow(9);
-            headerRow.values = ['Mã đơn hàng', 'Khách hàng', 'Ngày mua', 'Chi tiết sản phẩm', 'Tổng tiền (VNĐ)'];
+            const headerRow = ws.getRow(9);
+            headerRow.values = ['STT', 'Mã đơn hàng', 'Khách hàng', 'Ngày mua', 'Chi tiết sản phẩm', 'Tổng tiền (VNĐ)'];
             headerRow.height = 25;
             
             headerRow.eachCell((cell) => {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_PRIMARY } };
                 cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
                 cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                 cell.border = { top: { style: 'thin', color: { argb: 'FFFFFFFF' } }, left: { style: 'thin', color: { argb: 'FFFFFFFF' } }, bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } }, right: { style: 'thin', color: { argb: 'FFFFFFFF' } } };
             });
 
-            worksheet.autoFilter = 'A9:E9';
-
-            let currentRow = 10;
             donHangs.forEach((item, index) => {
-                const row = worksheet.addRow({
-                    MaDH: item.MaDH,
-                    TenKH: item.TenKH,
-                    NgayLapDon: new Date(item.NgayLapDon).toLocaleString('vi-VN'),
-                    DanhSachHang: item.DanhSachHang,
-                    TongTien: item.TongTien
-                });
+                const row = ws.getRow(10 + index);
+                row.values = [
+                    index + 1,
+                    item.MaDonHangHienThi || `#FC-${item.MaDH}`,
+                    item.TenKH || 'Khách vãng lai',
+                    new Date(item.NgayLapDon).toLocaleString('vi-VN'),
+                    item.DanhSachHang,
+                    Number(item.TongTien)
+                ];
+                row.height = 25;
                 
                 const isEven = index % 2 === 0;
                 const rowFillColor = isEven ? 'FFFFFFFF' : 'FFF8F9FA';
 
-                row.eachCell((cell, colNumber) => {
+                // Vá lỗi viền trống
+                row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFillColor } };
                     cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
                     cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
                     
-                    if (colNumber === 1 || colNumber === 3) cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    else if (colNumber === 5) {
+                    if (colNumber === 1 || colNumber === 2 || colNumber === 4) {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    } else if (colNumber === 6) {
                         cell.alignment = { horizontal: 'right', vertical: 'middle' };
-                        cell.font = { size: 10, name: 'Manrope', color: { argb: 'FFFF8F73' }, bold: true };
+                        cell.numFmt = '#,##0';
+                        cell.font = { size: 10, name: 'Manrope', color: { argb: COLOR_PRIMARY }, bold: true };
+                    } else {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
                     }
-                    else cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
                 });
-                currentRow++;
             });
-
-            worksheet.getColumn('TongTien').numFmt = '#,##0';
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `Bao_cao_doanh_thu_${Date.now()}.xlsx`);
@@ -924,7 +948,7 @@ const thongke = {
             res.end();
 
         } catch (error) {
-            console.error("Lỗi xuất Excel:", error);
+            console.error("Lỗi xuất Excel doanh thu:", error);
             res.status(500).json({ message: "Lỗi hệ thống khi tạo file Excel" });
         }
     },
@@ -941,121 +965,162 @@ const thongke = {
 
             const [ [kpiData], [donHangs] ] = await Promise.all([
                 db.query(`SELECT COUNT(DISTINCT dh.MaDH) as TongSoDonHang, IFNULL(SUM(dh.ThanhTien), 0) as TongDoanhThu, IFNULL(SUM(dh.ThanhTien - OrderImportCost.TotalImport), 0) as TongLoiNhuan FROM DonHang dh INNER JOIN (SELECT MaDH, SUM(COALESCE(GiaNhapThucTe, 0) * SoLuong) as TotalImport FROM ChiTietDonHang GROUP BY MaDH) OrderImportCost ON dh.MaDH = OrderImportCost.MaDH INNER JOIN (SELECT MaDH, MaTrangThai FROM ChiTietTrangThai WHERE (MaDH, Thoigian) IN (SELECT MaDH, MAX(Thoigian) FROM ChiTietTrangThai GROUP BY MaDH)) LatestStatus ON dh.MaDH = LatestStatus.MaDH ${whereClause}`, value),
-                db.query(`SELECT dh.MaDH, kh.TenKH, dh.NgayLapDon, dh.ThanhTien as TongTien, GROUP_CONCAT(mh.TenMH SEPARATOR ', ') as DanhSachHang FROM DonHang dh INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH INNER JOIN (SELECT MaDH, MaTrangThai FROM ChiTietTrangThai WHERE (MaDH, Thoigian) IN (SELECT MaDH, MAX(Thoigian) FROM ChiTietTrangThai GROUP BY MaDH)) LatestStatus ON dh.MaDH = LatestStatus.MaDH INNER JOIN ChiTietDonHang ctdh ON dh.MaDH = ctdh.MaDH INNER JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh ${whereClause} GROUP BY dh.MaDH ORDER BY dh.NgayLapDon DESC`, value)
+                db.query(`SELECT dh.MaDH, dh.MaDonHangHienThi, kh.TenKH, dh.NgayLapDon, dh.ThanhTien as TongTien, GROUP_CONCAT(mh.TenMH SEPARATOR ', ') as DanhSachHang FROM DonHang dh INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH INNER JOIN (SELECT MaDH, MaTrangThai FROM ChiTietTrangThai WHERE (MaDH, Thoigian) IN (SELECT MaDH, MAX(Thoigian) FROM ChiTietTrangThai GROUP BY MaDH)) LatestStatus ON dh.MaDH = LatestStatus.MaDH INNER JOIN ChiTietDonHang ctdh ON dh.MaDH = ctdh.MaDH INNER JOIN PhanLoai pl ON ctdh.MaPhanLoai = pl.MaPhanLoai INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh ${whereClause} GROUP BY dh.MaDH ORDER BY dh.NgayLapDon DESC`, value)
             ]);
 
             const workbook = new ExcelJS.Workbook();
-            const ws = workbook.addWorksheet('Báo cáo Nhanh Dashboard');
+            workbook.creator = 'Hệ Thống FIGURECOLLECT';
+            workbook.lastModifiedBy = 'Hệ Thống FIGURECOLLECT';
+            workbook.created = new Date();
+            workbook.modified = new Date();
+            const COLOR_PRIMARY = 'FFFF8F73';
 
+            const formatDateVN = (dateStr) => {
+                if (!dateStr) return '';
+                if (dateStr.includes('-')) {
+                    const parts = dateStr.split('-');
+                    if(parts.length === 3 && parts[0].length === 4) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return dateStr;
+            };
+
+            const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${formatDateVN(NgayBatDau)} đến ${formatDateVN(NgayKetThuc)}` : 'Tất cả thời gian';
+
+            const ws = workbook.addWorksheet('Báo cáo Nhanh Dashboard');
             ws.views = [{ showGridLines: false }];
+            ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true };
+
             ws.columns = [
-                { key: 'MaDH', width: 15 }, { key: 'TenKH', width: 30 },
-                { key: 'NgayLapDon', width: 25 }, { key: 'DanhSachHang', width: 50 },
+                { key: 'STT', width: 10 },
+                { key: 'MaDH', width: 18 },
+                { key: 'TenKH', width: 30 },
+                { key: 'NgayLapDon', width: 22 },
+                { key: 'DanhSachHang', width: 45 },
                 { key: 'TongTien', width: 20 },
             ];
 
-            for (let i = 1; i <= 10; i++) {
-                for (let j = 1; j <= 5; j++) {
+            const endCol = 'F';
+            const maxCol = endCol.charCodeAt(0) - 64; 
+            for (let i = 1; i <= 12; i++) {
+                for (let j = 1; j <= maxCol; j++) {
                     ws.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
                 }
             }
 
             try {
+                const path = require('path');
+                const fs = require('fs');
                 const logoPath = path.join(__dirname, '../../public/logo.png'); 
-                const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
-                ws.addImage(logoId, { tl: { col: 0, row: 0 }, br: { col: 1, row: 3 } });
+                if (fs.existsSync(logoPath)) {
+                    const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
+                    ws.addImage(logoId, { tl: { col: 0.1, row: 0.2 }, ext: { width: 70, height: 70 } });
+                }
             } catch (err) {}
 
+            ws.mergeCells(`B1:${endCol}1`);
             ws.getCell('B1').value = 'FIGURECOLLECT';
-            ws.getCell('B1').font = { size: 16, bold: true, color: { argb: 'FFFF8F73' } };
-            ws.getCell('B2').value = 'Báo cáo trích xuất nhanh từ Dashboard';
-            ws.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' } };
+            ws.getCell('B1').font = { size: 22, bold: true, color: { argb: COLOR_PRIMARY }, name: 'Space Grotesk' };
+            ws.getCell('B1').alignment = { vertical: 'bottom', horizontal: 'left' };
+
+            ws.mergeCells(`B2:${endCol}2`);
+            ws.getCell('B2').value = 'Đơn vị chuyên mô hình Anime & Hobby chính hãng';
+            ws.getCell('B2').font = { size: 11, italic: true, color: { argb: 'FF737580' }, name: 'Manrope' };
+            ws.getCell('B2').alignment = { vertical: 'top', horizontal: 'left' };
             
-            ws.mergeCells('A4:E4');
+            ws.mergeCells(`A4:${endCol}4`);
             ws.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
 
-            ws.mergeCells('A5:E5');
+            ws.mergeCells(`A5:${endCol}5`);
             ws.getCell('A5').value = 'BÁO CÁO NHANH TỔNG QUAN HỆ THỐNG';
-            ws.getCell('A5').font = { size: 16, bold: true, color: { argb: 'FF222532' } };
+            ws.getCell('A5').font = { size: 18, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
             ws.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
 
-            const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${NgayBatDau} đến ${NgayKetThuc}` : 'Tất cả';
-            ws.mergeCells('A6:E6');
-            ws.getCell('A6').value = `Kỳ dữ liệu: ${filterText} | Trích xuất lúc: ${new Date().toLocaleString('vi-VN')}`;
-            ws.getCell('A6').font = { italic: true, size: 10, color: { argb: 'FF737580' } };
+            ws.mergeCells(`A6:${endCol}6`);
+            ws.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')}`;
+            ws.getCell('A6').font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
             ws.getCell('A6').alignment = { horizontal: 'center' };
 
+            ws.mergeCells(`A7:${endCol}7`);
+            ws.getCell('A7').value = `Kỳ dữ liệu: ${filterText}`;
+            ws.getCell('A7').font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+            ws.getCell('A7').alignment = { horizontal: 'center' };
+
+            // Block thẻ KPI
             const kpiTongDoanhThu = kpiData[0]?.TongDoanhThu || 0;
             const kpiTongLoiNhuan = kpiData[0]?.TongLoiNhuan || 0;
             const kpiTongDon = kpiData[0]?.TongSoDonHang || 0;
 
-            ws.getCell('B8').value = 'TỔNG DOANH THU';
-            ws.getCell('B8').font = { size: 9, bold: true, color: { argb: 'FF737580' } };
-            ws.getCell('B9').value = kpiTongDoanhThu;
-            ws.getCell('B9').numFmt = '#,##0" đ"';
-            ws.getCell('B9').font = { size: 14, bold: true, color: { argb: 'FFFF8F73' } };
+            ws.getCell('B9').value = 'TỔNG DOANH THU THỰC TẾ';
+            ws.getCell('B9').font = { size: 10, bold: true, color: { argb: 'FF737580' }, name: 'Manrope' };
+            ws.getCell('B10').value = Number(kpiTongDoanhThu);
+            ws.getCell('B10').numFmt = '#,##0" đ"';
+            ws.getCell('B10').font = { size: 16, bold: true, color: { argb: COLOR_PRIMARY }, name: 'Space Grotesk' };
 
-            ws.getCell('C8').value = 'LỢI NHUẬN RÒNG';
-            ws.getCell('C8').font = { size: 9, bold: true, color: { argb: 'FF737580' } };
-            ws.getCell('C9').value = kpiTongLoiNhuan;
-            ws.getCell('C9').numFmt = '#,##0" đ"';
-            ws.getCell('C9').font = { size: 14, bold: true, color: { argb: 'FF10B981' } };
+            ws.getCell('D9').value = 'LỢI NHUẬN RÒNG';
+            ws.getCell('D9').font = { size: 10, bold: true, color: { argb: 'FF737580' }, name: 'Manrope' };
+            ws.getCell('D10').value = Number(kpiTongLoiNhuan);
+            ws.getCell('D10').numFmt = '#,##0" đ"';
+            ws.getCell('D10').font = { size: 16, bold: true, color: { argb: 'FF10B981' }, name: 'Space Grotesk' };
 
-            ws.getCell('D8').value = 'ĐƠN HOÀN THÀNH';
-            ws.getCell('D8').font = { size: 9, bold: true, color: { argb: 'FF737580' } };
-            ws.getCell('D9').value = kpiTongDon;
-            ws.getCell('D9').numFmt = '#,##0" đơn"';
-            ws.getCell('D9').font = { size: 14, bold: true, color: { argb: 'FF222532' } };
+            ws.getCell('F9').value = 'TỔNG ĐƠN HÀNG';
+            ws.getCell('F9').font = { size: 10, bold: true, color: { argb: 'FF737580' }, name: 'Manrope' };
+            ws.getCell('F10').value = Number(kpiTongDon);
+            ws.getCell('F10').numFmt = '#,##0" đơn"';
+            ws.getCell('F10').font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
 
-            [8, 9].forEach(r => {
-                ['B', 'C', 'D'].forEach(c => {
+            // Merge ô và trang trí cho thẻ KPI
+            [9, 10].forEach(r => {
+                ws.mergeCells(`B${r}:C${r}`);
+                ws.mergeCells(`D${r}:E${r}`);
+                ['B', 'D', 'F'].forEach(c => {
                     ws.getCell(`${c}${r}`).alignment = { horizontal: 'center', vertical: 'middle' };
                     ws.getCell(`${c}${r}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF5F2' } }; 
                 });
             });
 
-            const headerRow = ws.getRow(12);
-            headerRow.values = ['Mã đơn hàng', 'Khách hàng', 'Ngày mua', 'Chi tiết sản phẩm', 'Tổng tiền (VNĐ)'];
+            // Bảng dữ liệu
+            const headerRow = ws.getRow(13);
+            headerRow.values = ['STT', 'Mã đơn hàng', 'Khách hàng', 'Ngày mua', 'Chi tiết sản phẩm', 'Tổng tiền (VNĐ)'];
             headerRow.height = 25;
             
             headerRow.eachCell((cell) => {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF8F73' } };
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_PRIMARY } };
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
                 cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                 cell.border = { top: { style: 'thin', color: { argb: 'FFFFFFFF' } }, left: { style: 'thin', color: { argb: 'FFFFFFFF' } }, bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } }, right: { style: 'thin', color: { argb: 'FFFFFFFF' } } };
             });
 
-            ws.autoFilter = 'A12:E12';
-
-            let currentRow = 13;
             donHangs.forEach((item, index) => {
-                const row = ws.addRow({
-                    MaDH: item.MaDH,
-                    TenKH: item.TenKH,
-                    NgayLapDon: new Date(item.NgayLapDon).toLocaleString('vi-VN'),
-                    DanhSachHang: item.DanhSachHang,
-                    TongTien: item.TongTien
-                });
+                const row = ws.getRow(14 + index);
+                row.values = [
+                    index + 1,
+                    item.MaDonHangHienThi || `#FC-${item.MaDH}`,
+                    item.TenKH || 'Khách vãng lai',
+                    new Date(item.NgayLapDon).toLocaleString('vi-VN'),
+                    item.DanhSachHang,
+                    Number(item.TongTien)
+                ];
+                row.height = 25;
                 
                 const isEven = index % 2 === 0;
                 const rowFillColor = isEven ? 'FFFFFFFF' : 'FFF8F9FA'; 
 
-                row.eachCell((cell, colNumber) => {
+                row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFillColor } };
-                    cell.font = { size: 10, color: { argb: 'FF222532' } };
+                    cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
                     cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
                     
-                    if (colNumber === 1 || colNumber === 3) cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    else if (colNumber === 5) {
+                    if (colNumber === 1 || colNumber === 2 || colNumber === 4) {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    } else if (colNumber === 6) {
                         cell.alignment = { horizontal: 'right', vertical: 'middle' };
-                        cell.font = { size: 10, color: { argb: 'FFFF8F73' }, bold: true };
+                        cell.numFmt = '#,##0';
+                        cell.font = { size: 10, name: 'Manrope', color: { argb: COLOR_PRIMARY }, bold: true };
+                    } else {
+                        cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
                     }
-                    else cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
                 });
-                currentRow++;
             });
-
-            ws.getColumn('TongTien').numFmt = '#,##0';
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `Snapshot_Dashboard_FigureCollect_${Date.now()}.xlsx`);
@@ -1078,18 +1143,24 @@ const thongke = {
                 return res.status(400).json({ message: "Không có loại báo cáo nào được chọn" });
             }
 
+            // --- 1. CHUẨN BỊ ĐIỀU KIỆN TRUY VẤN (WHERE CLAUSE) ---
             let whereSuccess = ["LatestStatus.MaTrangThai = 4"];
+            let whereTimeOnlyArr = [];
             let valueTime = [];
             
             if (NgayBatDau) { 
                 whereSuccess.push("dh.NgayLapDon >= ?"); 
+                whereTimeOnlyArr.push("dh.NgayLapDon >= ?"); 
                 valueTime.push(`${NgayBatDau} 00:00:00`); 
             }
             if (NgayKetThuc) { 
                 whereSuccess.push("dh.NgayLapDon <= ?"); 
+                whereTimeOnlyArr.push("dh.NgayLapDon <= ?");
                 valueTime.push(`${NgayKetThuc} 23:59:59`); 
             }
+            
             let whereClauseSuccess = whereSuccess.length > 0 ? " WHERE " + whereSuccess.join(" AND ") : "";
+            let whereTimeOnly = whereTimeOnlyArr.length > 0 ? " WHERE " + whereTimeOnlyArr.join(" AND ") : "";
 
             const latestStatusJoin = `
                 INNER JOIN (
@@ -1098,13 +1169,14 @@ const thongke = {
                 ) LatestStatus ON dh.MaDH = LatestStatus.MaDH
             `;
 
-            const workbook = new ExcelJS.Workbook();
+            const workbook = new ExcelJS.Workbook();            
+            workbook.creator = 'Hệ Thống FIGURECOLLECT';
+            workbook.lastModifiedBy = 'Hệ Thống FIGURECOLLECT';
+            workbook.created = new Date();
+            workbook.modified = new Date();
             const COLOR_PRIMARY = 'FFFF8F73';
             
-            // ==============================================================
-            // HÀM HỖ TRỢ ĐỊNH DẠNG & SỬA LỖI
-            // ==============================================================
-            // Hàm định dạng ngày tháng chuẩn Việt Nam
+            // --- 2. HÀM HỖ TRỢ ĐỊNH DẠNG (UI/UX EXCEL) ---
             const formatDateVN = (dateStr) => {
                 if (!dateStr) return '';
                 if (dateStr.includes('-')) {
@@ -1114,7 +1186,7 @@ const thongke = {
                 return dateStr;
             };
 
-            const taoHeaderBaoCao = (workbook, ws, titleName, endCol = 'E') => {
+            const taoHeaderBaoCao = (ws, titleName, endCol = 'E') => {
                 ws.views = [{ showGridLines: false }];
                 ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true };
 
@@ -1131,7 +1203,8 @@ const thongke = {
                     const logoPath = path.join(__dirname, '../../public/logo.png'); 
                     if (fs.existsSync(logoPath)) {
                         const logoId = workbook.addImage({ filename: logoPath, extension: 'png' });
-                        ws.addImage(logoId, { tl: { col: 0.1, row: 0.2 }, ext: { width: 75, height: 75 } });
+                        // Chèn logo gọn trong cột A (STT)
+                        ws.addImage(logoId, { tl: { col: 0.1, row: 0.2 }, ext: { width: 70, height: 70 } });
                     }
                 } catch (err) { }
 
@@ -1154,28 +1227,25 @@ const thongke = {
                 titleCell.font = { size: 18, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
                 titleCell.alignment = { horizontal: 'center', vertical: 'middle' }; 
 
-                // Áp dụng format ngày Việt Nam
                 const filterText = (NgayBatDau && NgayKetThuc) ? `Từ ${formatDateVN(NgayBatDau)} đến ${formatDateVN(NgayKetThuc)}` : 'Toàn thời gian';
                 
                 ws.mergeCells(`A6:${endCol}6`);
-                const dateCell = ws.getCell('A6');
-                dateCell.value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')}`;
-                dateCell.font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
-                dateCell.alignment = { horizontal: 'center' };
+                ws.getCell('A6').value = `Ngày xuất: ${new Date().toLocaleString('vi-VN')}`;
+                ws.getCell('A6').font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+                ws.getCell('A6').alignment = { horizontal: 'center' };
 
                 ws.mergeCells(`A7:${endCol}7`);
-                const filterCell = ws.getCell('A7');
-                filterCell.value = `Kỳ dữ liệu: ${filterText}`;
-                filterCell.font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
-                filterCell.alignment = { horizontal: 'center' };
+                ws.getCell('A7').value = `Kỳ dữ liệu: ${filterText}`;
+                ws.getCell('A7').font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
+                ws.getCell('A7').alignment = { horizontal: 'center' };
             };
 
             const dinhDangHeaderBang = (row) => {
                 row.height = 25;
-                row.eachCell((cell) => {
+                row.eachCell({ includeEmpty: true }, (cell) => {
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_PRIMARY } };
                     cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10, name: 'Manrope' };
-                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                     cell.border = { top: { style: 'thin', color: { argb: 'FFFFFFFF' } }, left: { style: 'thin', color: { argb: 'FFFFFFFF' } }, bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } }, right: { style: 'thin', color: { argb: 'FFFFFFFF' } } };
                 });
             };
@@ -1183,7 +1253,7 @@ const thongke = {
             const dinhDangDongDuLieu = (row, index, centerCols = [], rightCols = []) => {
                 const fillStyle = { type: 'pattern', pattern: 'solid', fgColor: { argb: (index % 2 === 0) ? 'FFFFFFFF' : 'FFF8F9FA' } };
                 row.height = 25;
-                row.eachCell((cell, colNum) => {
+                row.eachCell({ includeEmpty: true }, (cell, colNum) => {
                     cell.fill = fillStyle;
                     cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
                     cell.border = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
@@ -1195,154 +1265,457 @@ const thongke = {
             };
 
             // ==============================================================
-            // TRÍCH XUẤT SHEET 1: DOANH THU & TÀI CHÍNH
+            // BÁO CÁO THỐNG KÊ DOANH SỐ BÁN HÀNG
             // ==============================================================
-            if (selectedTypes.includes('doanhthu')) {
-                const [resKPI] = await db.query(`SELECT COUNT(DISTINCT dh.MaDH) as TongSoDonHang, IFNULL(SUM(dh.ThanhTien), 0) as TongDoanhThu, IFNULL(SUM(dh.ThanhTien - OrderImportCost.TotalImport), 0) as TongLoiNhuan FROM DonHang dh INNER JOIN (SELECT MaDH, SUM(COALESCE(GiaNhapThucTe, 0) * SoLuong) as TotalImport FROM ChiTietDonHang GROUP BY MaDH) OrderImportCost ON dh.MaDH = OrderImportCost.MaDH ${latestStatusJoin} ${whereClauseSuccess}`, valueTime);
-                const [resBieuDo] = await db.query(`SELECT DATE_FORMAT(dh.NgayLapDon, '%d/%m/%Y') as Ngay, IFNULL(SUM(dh.ThanhTien), 0) as DoanhThuNgay FROM DonHang dh ${latestStatusJoin} ${whereClauseSuccess} GROUP BY Ngay ORDER BY MAX(dh.NgayLapDon) ASC`, valueTime);
+            if (selectedTypes.includes('doanhso')) {
+                // Truy vấn 1: Doanh thu theo tháng
+                const [resBieuDoThang] = await db.query(`SELECT DATE_FORMAT(dh.NgayLapDon, '%m/%Y') as Thang, COUNT(dh.MaDH) as SoDon, IFNULL(SUM(dh.ThanhTien), 0) as DoanhThuThang FROM DonHang dh ${latestStatusJoin} ${whereClauseSuccess} GROUP BY Thang ORDER BY MAX(dh.NgayLapDon) ASC`, valueTime);
+                
+                // Truy vấn 2: Doanh thu theo ngày
+                const [resBieuDoNgay] = await db.query(`SELECT DATE_FORMAT(dh.NgayLapDon, '%d/%m/%Y') as Ngay, COUNT(dh.MaDH) as SoDon, IFNULL(SUM(dh.ThanhTien), 0) as DoanhThuNgay FROM DonHang dh ${latestStatusJoin} ${whereClauseSuccess} GROUP BY Ngay ORDER BY MAX(dh.NgayLapDon) ASC`, valueTime);
 
-                const ws1 = workbook.addWorksheet('Tổng quan & Tài chính');
-                ws1.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 25 }, { key: 'C', width: 25 }, { key: 'D', width: 22 }];
-                taoHeaderBaoCao(workbook, ws1, 'BÁO CÁO TỔNG QUAN HOẠT ĐỘNG', 'D');
+                // Truy vấn 3: Chi tiết đơn hàng tạo nên doanh thu
+                const [resDonHangChiTiet] = await db.query(`SELECT dh.MaDonHangHienThi, COALESCE(kh.TenKH, dh.TenNguoiNhan) AS KhachHang, dh.NgayLapDon, dh.ThanhTien FROM DonHang dh LEFT JOIN KhachHang kh ON dh.MaKH = kh.MaKH ${latestStatusJoin} ${whereClauseSuccess} ORDER BY dh.NgayLapDon DESC`, valueTime);
 
-                ws1.mergeCells('B9:C9');
-                ws1.getCell('B9').value = 'TỔNG QUAN HIỆU SUẤT TRONG KỲ';
-                ws1.getCell('B9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
-                ws1.getCell('B9').alignment = { horizontal: 'center', vertical: 'middle' };
+                const ws1 = workbook.addWorksheet('Báo cáo doanh số');
+                ws1.columns = [
+                    { key: 'A', width: 10 }, 
+                    { key: 'B', width: 25 }, 
+                    { key: 'C', width: 35 }, 
+                    { key: 'D', width: 25 }, 
+                    { key: 'E', width: 25 }
+                ];
+                taoHeaderBaoCao(ws1, 'BÁO CÁO THỐNG KÊ DOANH SỐ BÁN HÀNG', 'E');
 
-                ws1.getCell('B10').value = 'Tổng đơn hàng hoàn thành:';
-                ws1.getCell('C10').value = Number(resKPI[0]?.TongSoDonHang || 0);
-                ws1.getCell('C10').font = { bold: true, color: { argb: 'FF222532' } };
+                let currentRow = 9;
 
-                ws1.getCell('B11').value = 'Tổng doanh thu thực tế:';
-                ws1.getCell('C11').value = Number(resKPI[0]?.TongDoanhThu || 0);
-                ws1.getCell('C11').numFmt = '#,##0" đ"';
-                ws1.getCell('C11').font = { bold: true, color: { argb: COLOR_PRIMARY } };
+                // --- BẢNG 1: TỔNG HỢP DOANH THU THEO THÁNG ---
+                ws1.mergeCells(`A${currentRow}:E${currentRow}`);
+                ws1.getCell(`A${currentRow}`).value = 'I. TỔNG HỢP DOANH THU THEO THÁNG';
+                ws1.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
 
-                ws1.mergeCells('A13:D13');
-                ws1.getCell('A13').value = 'BẢNG DOANH THU BIẾN ĐỘNG THEO NGÀY';
-                ws1.getCell('A13').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
-                ws1.getCell('A13').alignment = { horizontal: 'center', vertical: 'middle' };
+                const hRowThang = ws1.getRow(currentRow);
+                hRowThang.values = ['STT', 'Tháng', 'Số đơn hoàn thành', 'Tổng doanh thu', 'Ghi chú'];
+                dinhDangHeaderBang(hRowThang);
+                currentRow++;
 
-                const hRow1 = ws1.getRow(14);
-                hRow1.values = ['STT', 'Ngày ghi nhận', 'Doanh thu thu về', 'Ghi chú'];
-                dinhDangHeaderBang(hRow1);
+                resBieuDoThang.forEach((row, i) => {
+                    const r = ws1.getRow(currentRow);
+                    r.values = [i + 1, `Tháng ${row.Thang}`, Number(row.SoDon), Number(row.DoanhThuThang), ''];
+                    dinhDangDongDuLieu(r, i, [1, 2, 3], [4]);
+                    r.getCell(4).numFmt = '#,##0" đ"';
+                    r.getCell(4).font = { bold: true, color: { argb: COLOR_PRIMARY } };
+                    currentRow++;
+                });
 
-                resBieuDo.forEach((row, i) => {
-                    const r = ws1.getRow(15 + i); 
-                    r.values = [i + 1, row.Ngay, Number(row.DoanhThuNgay), ''];
-                    dinhDangDongDuLieu(r, i, [1, 2], [3]);
-                    r.getCell(3).numFmt = '#,##0" đ"';
-                    r.getCell(3).font = { bold: true, color: { argb: COLOR_PRIMARY } };
+                currentRow += 2; // Cách 2 dòng cho thoáng
+
+                // --- BẢNG 2: CHI TIẾT DOANH THU THEO NGÀY ---
+                ws1.mergeCells(`A${currentRow}:E${currentRow}`);
+                ws1.getCell(`A${currentRow}`).value = 'II. CHI TIẾT DOANH THU THEO NGÀY';
+                ws1.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowNgay = ws1.getRow(currentRow);
+                hRowNgay.values = ['STT', 'Ngày ghi nhận', 'Số đơn hoàn thành', 'Doanh thu thu về', 'Ghi chú'];
+                dinhDangHeaderBang(hRowNgay);
+                currentRow++;
+
+                resBieuDoNgay.forEach((row, i) => {
+                    const r = ws1.getRow(currentRow);
+                    r.values = [i + 1, row.Ngay, Number(row.SoDon), Number(row.DoanhThuNgay), ''];
+                    dinhDangDongDuLieu(r, i, [1, 2, 3], [4]);
+                    r.getCell(4).numFmt = '#,##0" đ"';
+                    r.getCell(4).font = { bold: true, color: { argb: COLOR_PRIMARY } };
+                    currentRow++;
+                });
+
+                currentRow += 2; 
+
+                // --- BẢNG 3: DANH SÁCH ĐƠN HÀNG CHI TIẾT ---
+                ws1.mergeCells(`A${currentRow}:E${currentRow}`);
+                ws1.getCell(`A${currentRow}`).value = 'III. DANH SÁCH ĐƠN HÀNG ĐÃ THANH TOÁN (HOÀN THÀNH)';
+                ws1.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowDon = ws1.getRow(currentRow);
+                hRowDon.values = ['STT', 'Mã đơn hàng', 'Khách hàng', 'Ngày mua', 'Tổng tiền (VNĐ)'];
+                dinhDangHeaderBang(hRowDon);
+                currentRow++;
+
+                resDonHangChiTiet.forEach((row, i) => {
+                    const r = ws1.getRow(currentRow);
+                    r.values = [
+                        i + 1, 
+                        row.MaDonHangHienThi, 
+                        row.KhachHang || 'Khách vãng lai', 
+                        new Date(row.NgayLapDon).toLocaleString('vi-VN'), 
+                        Number(row.ThanhTien)
+                    ];
+                    dinhDangDongDuLieu(r, i, [1, 2, 4], [5]);
+                    r.getCell(5).numFmt = '#,##0'; // Ép định dạng phân cách hàng nghìn
+                    currentRow++;
                 });
             }
 
             // ==============================================================
-            // TRÍCH XUẤT SHEET 2: DANH MỤC & THƯƠNG HIỆU
+            // BÁO CÁO THỐNG KÊ HÀNG TỒN KHO
             // ==============================================================
-            if (selectedTypes.includes('sanpham')) {
-                const [resDanhMuc] = await db.query(`SELECT dm.TenDM, IFNULL(SUM(ctdh.SoLuong), 0) as TongSoSP, IFNULL(SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong), 0) as TongLoiNhuan FROM DanhMuc dm INNER JOIN MoHinh mh ON mh.MaDM = dm.MaDM INNER JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh INNER JOIN ChiTietDonHang ctdh ON pl.MaPhanLoai = ctdh.MaPhanLoai INNER JOIN DonHang dh ON dh.MaDH = ctdh.MaDH ${latestStatusJoin} ${whereClauseSuccess} GROUP BY dm.MaDM, dm.TenDM ORDER BY TongSoSP DESC`, valueTime);
-                const [resThuongHieu] = await db.query(`SELECT hsx.TenHSX, IFNULL(SUM(ctdh.SoLuong), 0) as TongSoSP, IFNULL(SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong), 0) as TongLoiNhuan FROM HangSanXuat hsx INNER JOIN MoHinh mh ON mh.MaHSX = hsx.MaHSX INNER JOIN PhanLoai pl ON pl.MaMoHinh = mh.MaMoHinh INNER JOIN ChiTietDonHang ctdh ON pl.MaPhanLoai = ctdh.MaPhanLoai INNER JOIN DonHang dh ON dh.MaDH = ctdh.MaDH ${latestStatusJoin} ${whereClauseSuccess} GROUP BY hsx.MaHSX, hsx.TenHSX ORDER BY TongSoSP DESC`, valueTime);
-
-                const ws2 = workbook.addWorksheet('Danh mục & Thương hiệu');
-                ws2.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 28 }, { key: 'C', width: 15 }, { key: 'D', width: 20 }, { key: 'E', width: 5 }, { key: 'F', width: 12 }, { key: 'G', width: 28 }, { key: 'H', width: 15 }, { key: 'I', width: 20 }];
-                taoHeaderBaoCao(workbook, ws2, 'THỐNG KÊ DANH MỤC & THƯƠNG HIỆU', 'I');
-
-                ws2.mergeCells('A9:D9');
-                ws2.getCell('A9').value = 'CƠ CẤU THEO DANH MỤC';
-                ws2.getCell('A9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+            if (selectedTypes.includes('tonkho')) {
+                // Tồn kho lấy thời gian thực, không áp dụng where time
+                const [resTonKho] = await db.query(`SELECT mh.TenMH, pl.ChiTietPhanLoai, pl.SoLuong, dm.TenDM FROM PhanLoai pl INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh INNER JOIN DanhMuc dm ON mh.MaDM = dm.MaDM ORDER BY pl.SoLuong ASC`);
                 
-                ws2.mergeCells('F9:I9');
-                ws2.getCell('F9').value = 'CƠ CẤU THEO HÃNG SẢN XUẤT';
-                ws2.getCell('F9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                const ws2 = workbook.addWorksheet('Báo cáo tồn kho');
+                ws2.columns = [{ key: 'A', width: 10 }, { key: 'B', width: 45 }, { key: 'C', width: 25 }, { key: 'D', width: 25 }, { key: 'E', width: 18 }];
+                taoHeaderBaoCao(ws2, 'BÁO CÁO THỐNG KÊ HÀNG TỒN KHO', 'E');
 
-                const hRow2 = ws2.getRow(10);
-                hRow2.values = ['STT', 'Tên Danh Mục', 'SL Bán', 'Lợi Nhuận', '', 'STT', 'Thương Hiệu', 'SL Bán', 'Lợi Nhuận'];
+                const hRow2 = ws2.getRow(9);
+                hRow2.values = ['STT', 'Tên Mô Hình', 'Danh Mục', 'Phân Loại', 'Số Lượng Tồn'];
                 dinhDangHeaderBang(hRow2);
                 
-                // Khôi phục lại khoảng trắng chia cách 2 bảng (do lệnh loại bỏ if bên trên)
-                hRow2.getCell(5).fill = { type: 'pattern', pattern: 'none' };
-                hRow2.getCell(5).border = {};
+                resTonKho.forEach((row, i) => {
+                    const r = ws2.getRow(10 + i);
+                    r.values = [i + 1, row.TenMH, row.TenDM, row.ChiTietPhanLoai, Number(row.SoLuong)];
+                    dinhDangDongDuLieu(r, i, [1, 3, 4, 5], []);
+                    
+                    if(row.SoLuong <= 5) r.getCell(5).font = { color: { argb: 'FFEF4444' }, bold: true };
+                });
+            }
 
-                const maxLen = Math.max(resDanhMuc.length, resThuongHieu.length);
-                for (let i = 0; i < maxLen; i++) {
-                    const dm = resDanhMuc[i];
-                    const h = resThuongHieu[i];
-                    const r = ws2.getRow(11 + i);
-                    r.values = [
-                        dm ? i + 1 : '', dm ? dm.TenDM : '', dm ? Number(dm.TongSoSP) : '', dm ? Number(dm.TongLoiNhuan) : '', 
-                        '', // Khoảng cách
-                        h ? i + 1 : '', h ? h.TenHSX : '', h ? Number(h.TongSoSP) : '', h ? Number(h.TongLoiNhuan) : ''
-                    ];
-                    
-                    dinhDangDongDuLieu(r, i, [1, 3, 6, 8], [4, 9]);
-                    if(dm) { r.getCell(3).numFmt = '#,##0'; r.getCell(4).numFmt = '#,##0" đ"'; }
-                    if(h) { r.getCell(8).numFmt = '#,##0'; r.getCell(9).numFmt = '#,##0" đ"'; }
-                    
-                    r.getCell(5).fill = { type: 'pattern', pattern: 'none' };
-                    r.getCell(5).border = {};
+            // ==============================================================
+            // BÁO CÁO THỐNG KÊ CHƯƠNG TRÌNH KHUYẾN MÃI
+            // ==============================================================
+            if (selectedTypes.includes('khuyenmai')) {
+                // Truy vấn 1: Hiệu quả của Khuyến Mãi (Flash Sale, Giảm giá trực tiếp sản phẩm)
+                const sql_km = `
+                    SELECT km.TenKM, COUNT(DISTINCT log.MaDH) as TongDonHang, IFNULL(SUM(log.SoTienDaGiam), 0) as TongTienDaGiam, IFNULL(SUM(LoiNhuan.LoiNhuanGoc) - SUM(log.SoTienDaGiam), 0) as LoiNhuanRong 
+                    FROM KhuyenMai km 
+                    INNER JOIN LogSuDungKhuyenMai log ON km.MaKM = log.MaKM 
+                    INNER JOIN DonHang dh ON dh.MaDH = log.MaDH ${latestStatusJoin} 
+                    INNER JOIN (SELECT ctdh.MaDH, SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong) as LoiNhuanGoc FROM ChiTietDonHang ctdh GROUP BY ctdh.MaDH) as LoiNhuan ON log.MaDH = LoiNhuan.MaDH 
+                    ${whereClauseSuccess} 
+                    GROUP BY km.MaKM, km.TenKM ORDER BY TongDonHang DESC
+                `;
+
+                // Truy vấn 2: Hiệu quả của Mã Giảm Giá (Voucher, Coupon áp dụng cho tổng đơn)
+                const sql_magg = `
+                    SELECT ma.TenMaGiamGia, COUNT(DISTINCT log.MaDH) as TongDonHang, IFNULL(SUM(log.SoTienDaGiam), 0) as TongTienDaGiam, IFNULL(SUM(LoiNhuan.LoiNhuanGoc) - SUM(log.SoTienDaGiam), 0) as LoiNhuanRong 
+                    FROM MaGiamGia ma 
+                    INNER JOIN LogSuDungMaGiamGia log ON ma.MaGG = log.MaGG 
+                    INNER JOIN DonHang dh ON dh.MaDH = log.MaDH ${latestStatusJoin} 
+                    INNER JOIN (SELECT ctdh.MaDH, SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong) as LoiNhuanGoc FROM ChiTietDonHang ctdh GROUP BY ctdh.MaDH) as LoiNhuan ON log.MaDH = LoiNhuan.MaDH 
+                    ${whereClauseSuccess} 
+                    GROUP BY ma.MaGG, ma.TenMaGiamGia ORDER BY TongDonHang DESC
+                `;
+
+                const [[resKhuyenMai], [resMaGiamGia]] = await Promise.all([
+                    db.query(sql_km, valueTime),
+                    db.query(sql_magg, valueTime)
+                ]);
+                
+                const ws3 = workbook.addWorksheet('Báo cáo khuyến mãi');
+                ws3.columns = [
+                    { key: 'A', width: 10 }, 
+                    { key: 'B', width: 45 }, 
+                    { key: 'C', width: 20 }, 
+                    { key: 'D', width: 25 }, 
+                    { key: 'E', width: 25 }
+                ];
+                taoHeaderBaoCao(ws3, 'BÁO CÁO HIỆU QUẢ MARKETING VÀ ƯU ĐÃI', 'E');
+
+                let currentRow = 9;
+
+                // --- BẢNG 1: CHIẾN DỊCH KHUYẾN MÃI (FLASH SALE) ---
+                ws3.mergeCells(`A${currentRow}:E${currentRow}`);
+                ws3.getCell(`A${currentRow}`).value = 'I. HIỆU QUẢ CHIẾN DỊCH GIẢM GIÁ TRỰC TIẾP (FLASH SALE / CAMPAIGN)';
+                ws3.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowKM = ws3.getRow(currentRow);
+                hRowKM.values = ['STT', 'Tên Chiến Dịch Khuyến Mãi', 'Số Đơn Chuyển Đổi', 'Ngân Sách Đã Chi (VNĐ)', 'Lợi Nhuận Ròng (VNĐ)'];
+                dinhDangHeaderBang(hRowKM);
+                currentRow++;
+                
+                if (resKhuyenMai.length > 0) {
+                    resKhuyenMai.forEach((row, i) => {
+                        const r = ws3.getRow(currentRow);
+                        r.values = [i + 1, row.TenKM, Number(row.TongDonHang), Number(row.TongTienDaGiam), Number(row.LoiNhuanRong)];
+                        dinhDangDongDuLieu(r, i, [1, 3], [4, 5]);
+                        r.getCell(4).numFmt = '#,##0" đ"'; 
+                        r.getCell(4).font = { bold: true, color: { argb: 'FFEF4444' } }; // Đỏ (Chi phí)
+                        r.getCell(5).numFmt = '#,##0" đ"';
+                        r.getCell(5).font = { bold: true, color: { argb: 'FF10B981' } }; // Xanh lá (Lợi nhuận)
+                        currentRow++;
+                    });
+                } else {
+                    const r = ws3.getRow(currentRow);
+                    r.values = ['', 'Không có chiến dịch khuyến mãi nào phát sinh trong kỳ', '', '', ''];
+                    ws3.mergeCells(`B${currentRow}:E${currentRow}`);
+                    dinhDangDongDuLieu(r, 1, [], []);
+                    r.getCell(2).font = { italic: true, color: { argb: 'FF737580' } };
+                    r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
+                    currentRow++;
+                }
+
+                currentRow += 3;
+
+                // --- BẢNG 2: MÃ GIẢM GIÁ (VOUCHER) ---
+                ws3.mergeCells(`A${currentRow}:E${currentRow}`);
+                ws3.getCell(`A${currentRow}`).value = 'II. HIỆU QUẢ SỬ DỤNG MÃ GIẢM GIÁ (VOUCHER / COUPON)';
+                ws3.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowMG = ws3.getRow(currentRow);
+                hRowMG.values = ['STT', 'Tên Mã Giảm Giá / Voucher', 'Số Lượt Sử Dụng', 'Ngân Sách Đã Chi (VNĐ)', 'Lợi Nhuận Ròng (VNĐ)'];
+                dinhDangHeaderBang(hRowMG);
+                currentRow++;
+                
+                if (resMaGiamGia.length > 0) {
+                    resMaGiamGia.forEach((row, i) => {
+                        const r = ws3.getRow(currentRow);
+                        r.values = [i + 1, row.TenMaGiamGia, Number(row.TongDonHang), Number(row.TongTienDaGiam), Number(row.LoiNhuanRong)];
+                        dinhDangDongDuLieu(r, i, [1, 3], [4, 5]);
+                        r.getCell(4).numFmt = '#,##0" đ"'; 
+                        r.getCell(4).font = { bold: true, color: { argb: 'FFEF4444' } }; 
+                        r.getCell(5).numFmt = '#,##0" đ"';
+                        r.getCell(5).font = { bold: true, color: { argb: 'FF10B981' } }; 
+                        currentRow++;
+                    });
+                } else {
+                    const r = ws3.getRow(currentRow);
+                    r.values = ['', 'Không có mã giảm giá nào được sử dụng trong kỳ', '', '', ''];
+                    ws3.mergeCells(`B${currentRow}:E${currentRow}`);
+                    dinhDangDongDuLieu(r, 1, [], []);
+                    r.getCell(2).font = { italic: true, color: { argb: 'FF737580' } };
+                    r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
+                    currentRow++;
                 }
             }
 
             // ==============================================================
-            // TRÍCH XUẤT SHEET 3: MARKETING
+            // THỐNG KÊ PHẢN HỒI, ĐÁNH GIÁ KHÁCH HÀNG
             // ==============================================================
-            if (selectedTypes.includes('marketing')) {
-                const [resMaGiamGia] = await db.query(`SELECT ma.TenMaGiamGia, COUNT(DISTINCT log.MaDH) as TongDonHang, IFNULL(SUM(log.SoTienDaGiam), 0) as TongTienDaGiam, IFNULL(SUM(LoiNhuan.LoiNhuanGoc) - SUM(log.SoTienDaGiam), 0) as LoiNhuanRong FROM MaGiamGia ma INNER JOIN LogSuDungMaGiamGia log ON ma.MaGG = log.MaGG INNER JOIN DonHang dh ON dh.MaDH = log.MaDH ${latestStatusJoin} INNER JOIN (SELECT ctdh.MaDH, SUM((ctdh.DonGiaBan - COALESCE(ctdh.GiaNhapThucTe, 0)) * ctdh.SoLuong) as LoiNhuanGoc FROM ChiTietDonHang ctdh GROUP BY ctdh.MaDH) as LoiNhuan ON log.MaDH = LoiNhuan.MaDH ${whereClauseSuccess} GROUP BY ma.MaGG, ma.TenMaGiamGia ORDER BY TongDonHang DESC`, valueTime);
+            if (selectedTypes.includes('danhgia')) {
+                let whereDG = ""; let valuesDG = [];
+                let whereLH = ""; let valuesLH = [];
                 
-                const ws3 = workbook.addWorksheet('Hiệu quả Marketing');
-                ws3.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 35 }, { key: 'C', width: 16 }, { key: 'D', width: 24 }, { key: 'E', width: 24 }];
-                taoHeaderBaoCao(workbook, ws3, 'BÁO CÁO HIỆU QUẢ MARKETING', 'E');
+                if(NgayBatDau) { 
+                    whereDG += " AND dg.ThoiGianDG >= ?"; valuesDG.push(`${NgayBatDau} 00:00:00`); 
+                    whereLH += " AND NgayGui >= ?"; valuesLH.push(`${NgayBatDau} 00:00:00`); 
+                }
+                if(NgayKetThuc) { 
+                    whereDG += " AND dg.ThoiGianDG <= ?"; valuesDG.push(`${NgayKetThuc} 23:59:59`); 
+                    whereLH += " AND NgayGui <= ?"; valuesLH.push(`${NgayKetThuc} 23:59:59`); 
+                }
 
-                ws3.mergeCells('A9:E9');
-                ws3.getCell('A9').value = 'BẢNG CHI TIẾT SỬ DỤNG MÃ GIẢM GIÁ';
-                ws3.getCell('A9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
-                ws3.getCell('A9').alignment = { horizontal: 'center', vertical: 'middle' };
-
-                const hRow3 = ws3.getRow(10);
-                hRow3.values = ['STT', 'Tên mã giảm giá', 'Lượt sử dụng', 'Chi phí giảm giá', 'Lợi nhuận ròng'];
-                dinhDangHeaderBang(hRow3);
+                // Truy vấn 1: Tổng hợp theo số sao
+                const [resSao] = await db.query(`SELECT SoSao, COUNT(*) as SoLuong FROM DanhGia dg WHERE 1=1 ${whereDG} GROUP BY SoSao ORDER BY SoSao DESC`, valuesDG);
                 
-                resMaGiamGia.forEach((row, i) => {
-                    const r = ws3.getRow(11 + i);
-                    r.values = [i + 1, row.TenMaGiamGia, Number(row.TongDonHang), Number(row.TongTienDaGiam), Number(row.LoiNhuanRong)];
-                    dinhDangDongDuLieu(r, i, [1, 3], [4, 5]);
-                    r.getCell(4).numFmt = '#,##0" đ"'; 
-                    r.getCell(5).numFmt = '#,##0" đ"';
-                    r.getCell(5).font = { bold: true, color: { argb: 'FF10B981' } }; 
+                // Truy vấn 2: Thống kê điểm trung bình theo từng sản phẩm (MỚI)
+                const [resSanPham] = await db.query(`SELECT mh.TenMH, ROUND(AVG(dg.SoSao), 1) as DiemTB, COUNT(dg.MaDG) as LuotDanhGia FROM DanhGia dg INNER JOIN MoHinh mh ON dg.MaMH = mh.MaMoHinh WHERE 1=1 ${whereDG} GROUP BY mh.MaMoHinh, mh.TenMH ORDER BY DiemTB DESC, LuotDanhGia DESC`, valuesDG);
+
+                // Truy vấn 3: Chi tiết đánh giá
+                const [resDanhGia] = await db.query(`SELECT kh.TenKH, mh.TenMH, dg.SoSao, dg.NoiDung, dg.ThoiGianDG FROM DanhGia dg INNER JOIN KhachHang kh ON dg.MaKH = kh.MaKH INNER JOIN MoHinh mh ON dg.MaMH = mh.MaMoHinh WHERE 1=1 ${whereDG} ORDER BY dg.ThoiGianDG DESC`, valuesDG);
+                
+                // Truy vấn 4: Chi tiết tin nhắn liên hệ/góp ý
+                const [resLienHe] = await db.query(`SELECT HoTen, SDT, NoiDung, TrangThai, NgayGui FROM LienHe WHERE 1=1 ${whereLH} ORDER BY NgayGui DESC`, valuesLH);
+
+                const ws4 = workbook.addWorksheet('Báo cáo phản hồi');
+                ws4.columns = [
+                    { key: 'A', width: 10 }, 
+                    { key: 'B', width: 25 }, 
+                    { key: 'C', width: 45 }, 
+                    { key: 'D', width: 15 }, 
+                    { key: 'E', width: 50 }, 
+                    { key: 'F', width: 22 }
+                ];
+                taoHeaderBaoCao(ws4, 'THỐNG KÊ PHẢN HỒI VÀ ĐÁNH GIÁ', 'F');
+
+                let currentRow = 9;
+
+                // --- BẢNG 1: TỔNG HỢP THEO SỐ SAO ---
+                ws4.mergeCells(`A${currentRow}:F${currentRow}`);
+                ws4.getCell(`A${currentRow}`).value = 'I. TỔNG HỢP ĐÁNH GIÁ SẢN PHẨM THEO MỨC ĐỘ HÀI LÒNG (SỐ SAO)';
+                ws4.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowSao = ws4.getRow(currentRow);
+                hRowSao.values = ['STT', 'Mức độ', 'Số sao', 'Số lượng đánh giá', '', '']; 
+                dinhDangHeaderBang(hRowSao);
+                ws4.mergeCells(`D${currentRow}:F${currentRow}`); 
+                currentRow++;
+
+                let tongSao = 0; let tongLuot = 0;
+                resSao.forEach((row, i) => {
+                    tongSao += (row.SoSao * row.SoLuong);
+                    tongLuot += row.SoLuong;
+                    
+                    let mucDo = 'Tệ';
+                    if (row.SoSao >= 4) mucDo = 'Tốt';
+                    else if (row.SoSao === 3) mucDo = 'Khá';
+                    
+                    const r = ws4.getRow(currentRow);
+                    r.values = [i + 1, mucDo, `${row.SoSao} Sao`, row.SoLuong, '', ''];
+                    dinhDangDongDuLieu(r, i, [1, 2, 3, 4], []);
+                    ws4.mergeCells(`D${currentRow}:F${currentRow}`);
+                    
+                    if(row.SoSao >= 4) r.getCell(2).font = { bold: true, color: { argb: 'FF10B981' } }; 
+                    else if(row.SoSao <= 2) r.getCell(2).font = { bold: true, color: { argb: 'FFEF4444' } }; 
+                    currentRow++;
+                });
+
+                const diemTB = tongLuot > 0 ? (tongSao / tongLuot).toFixed(1) : 0;
+                ws4.mergeCells(`A${currentRow}:C${currentRow}`);
+                ws4.getCell(`A${currentRow}`).value = 'ĐIỂM ĐÁNH GIÁ TRUNG BÌNH TOÀN HỆ THỐNG';
+                ws4.getCell(`A${currentRow}`).font = { bold: true, color: { argb: 'FF222532' } };
+                ws4.getCell(`A${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+                
+                ws4.mergeCells(`D${currentRow}:F${currentRow}`);
+                ws4.getCell(`D${currentRow}`).value = `${diemTB} / 5.0 Sao`;
+                ws4.getCell(`D${currentRow}`).font = { bold: true, size: 12, color: { argb: COLOR_PRIMARY } };
+                ws4.getCell(`D${currentRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
+                
+                ['A', 'D'].forEach(col => {
+                    ws4.getCell(`${col}${currentRow}`).border = { top: { style: 'thin', color: { argb: 'FF000000' } }, bottom: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } } };
+                });
+                
+                currentRow += 3;
+
+                // --- BẢNG 2: THỐNG KÊ ĐÁNH GIÁ THEO TỪNG SẢN PHẨM ---
+                ws4.mergeCells(`A${currentRow}:F${currentRow}`);
+                ws4.getCell(`A${currentRow}`).value = 'II. BẢNG XẾP HẠNG ĐIỂM ĐÁNH GIÁ THEO TỪNG SẢN PHẨM';
+                ws4.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowSP = ws4.getRow(currentRow);
+                hRowSP.values = ['STT', 'Tên Mô Hình', '', 'Điểm Trung Bình', 'Số Lượt Đánh Giá', '']; 
+                dinhDangHeaderBang(hRowSP);
+                ws4.mergeCells(`B${currentRow}:C${currentRow}`); 
+                ws4.mergeCells(`E${currentRow}:F${currentRow}`); 
+                currentRow++;
+                
+                resSanPham.forEach((row, i) => {
+                    const r = ws4.getRow(currentRow);
+                    r.values = [i + 1, row.TenMH, '', `${row.DiemTB} / 5.0`, row.LuotDanhGia, ''];
+                    dinhDangDongDuLieu(r, i, [1, 4, 5], []);
+                    ws4.mergeCells(`B${currentRow}:C${currentRow}`);
+                    ws4.mergeCells(`E${currentRow}:F${currentRow}`);
+                    
+                    // Highlight màu điểm trung bình
+                    if(row.DiemTB >= 4.0) r.getCell(4).font = { bold: true, color: { argb: 'FF10B981' } }; 
+                    else if(row.DiemTB < 3.0) r.getCell(4).font = { bold: true, color: { argb: 'FFEF4444' } };
+                    currentRow++;
+                });
+
+                currentRow += 3;
+
+                // --- BẢNG 3: CHI TIẾT ĐÁNH GIÁ ---
+                ws4.mergeCells(`A${currentRow}:F${currentRow}`);
+                ws4.getCell(`A${currentRow}`).value = 'III. CHI TIẾT NỘI DUNG ĐÁNH GIÁ';
+                ws4.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowDG = ws4.getRow(currentRow);
+                hRowDG.values = ['STT', 'Khách Hàng', 'Sản Phẩm', 'Số Sao', 'Nội Dung Đánh Giá', 'Thời Gian'];
+                dinhDangHeaderBang(hRowDG);
+                currentRow++;
+                
+                resDanhGia.forEach((row, i) => {
+                    const r = ws4.getRow(currentRow);
+                    r.values = [i + 1, row.TenKH, row.TenMH, `${row.SoSao} Sao`, row.NoiDung, new Date(row.ThoiGianDG).toLocaleString('vi-VN')];
+                    dinhDangDongDuLieu(r, i, [1, 4, 6], []);
+                    currentRow++;
+                });
+
+                currentRow += 3;
+
+                // --- BẢNG 4: DANH SÁCH LIÊN HỆ ---
+                ws4.mergeCells(`A${currentRow}:F${currentRow}`);
+                ws4.getCell(`A${currentRow}`).value = 'IV. DANH SÁCH GÓP Ý & LIÊN HỆ TỪ KHÁCH HÀNG';
+                ws4.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
+                currentRow++;
+
+                const hRowLH = ws4.getRow(currentRow);
+                hRowLH.values = ['STT', 'Người Liên Hệ', 'Số Điện Thoại', 'Tình Trạng', 'Nội Dung Góp Ý / Hỏi Đáp', 'Ngày Gửi'];
+                dinhDangHeaderBang(hRowLH);
+                currentRow++;
+                
+                resLienHe.forEach((row, i) => {
+                    const r = ws4.getRow(currentRow);
+                    const tinhTrang = row.TrangThai === 1 ? 'Đã xử lý' : 'Chưa xử lý';
+                    r.values = [i + 1, row.HoTen, row.SDT || 'Không cung cấp', tinhTrang, row.NoiDung, new Date(row.NgayGui).toLocaleString('vi-VN')];
+                    dinhDangDongDuLieu(r, i, [1, 3, 4, 6], []);
+                    
+                    if (row.TrangThai === 0) r.getCell(4).font = { bold: true, color: { argb: 'FFEF4444' } }; 
+                    else r.getCell(4).font = { bold: true, color: { argb: 'FF10B981' } }; 
+                    currentRow++;
                 });
             }
 
             // ==============================================================
-            // TRÍCH XUẤT SHEET 4: CẢNH BÁO TỒN KHO
+            // BÁO CÁO THỐNG KÊ ĐƠN HÀNG
             // ==============================================================
-            if (selectedTypes.includes('tonkho')) {
-                const [resTonKho] = await db.query(`SELECT mh.TenMH, pl.ChiTietPhanLoai, pl.SoLuong FROM PhanLoai pl INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh WHERE pl.SoLuong <= 5 ORDER BY pl.SoLuong ASC`);
+            if (selectedTypes.includes('donhang')) {
+                // Đếm số lượng đơn hàng theo từng trạng thái
+                const sql_donhang = `
+                    SELECT tt.TenTrangThai, COUNT(DISTINCT dh.MaDH) as SoLuongDon
+                    FROM DonHang dh
+                    INNER JOIN (
+                        SELECT MaDH, MaTrangThai FROM ChiTietTrangThai
+                        WHERE (MaDH, Thoigian) IN (SELECT MaDH, MAX(Thoigian) FROM ChiTietTrangThai GROUP BY MaDH)
+                    ) LatestStatus ON dh.MaDH = LatestStatus.MaDH
+                    INNER JOIN TrangThai tt ON LatestStatus.MaTrangThai = tt.MaTrangThai
+                    ${whereTimeOnly}
+                    GROUP BY tt.TenTrangThai
+                `;
+                const [resTrangThai] = await db.query(sql_donhang, valueTime);
                 
-                const ws4 = workbook.addWorksheet('Cảnh báo Tồn kho');
-                ws4.columns = [{ key: 'A', width: 12 }, { key: 'B', width: 45 }, { key: 'C', width: 25 }, { key: 'D', width: 20 }];
-                taoHeaderBaoCao(workbook, ws4, 'CẢNH BÁO VẬN HÀNH KHO BÃI', 'D');
+                const ws5 = workbook.addWorksheet('Báo cáo đơn hàng');
+                ws5.columns = [{ key: 'A', width: 10 }, { key: 'B', width: 35 }, { key: 'C', width: 25 }, { key: 'D', width: 30 }];
+                taoHeaderBaoCao(ws5, 'BÁO CÁO THỐNG KÊ ĐƠN HÀNG', 'D');
 
-                ws4.mergeCells('A9:D9');
-                ws4.getCell('A9').value = 'DANH SÁCH MÔ HÌNH TỒN KHO THẤP (<= 5)';
-                ws4.getCell('A9').font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
-                ws4.getCell('A9').alignment = { horizontal: 'center', vertical: 'middle' };
-
-                const hRow4 = ws4.getRow(10);
-                hRow4.values = ['STT', 'Tên Mô Hình', 'Chi tiết Phân Loại', 'Số Lượng Tồn'];
-                dinhDangHeaderBang(hRow4);
+                const hRow5 = ws5.getRow(9);
+                hRow5.values = ['STT', 'Trạng Thái Đơn Hàng', 'Số Lượng Đơn', 'Ghi Chú'];
+                dinhDangHeaderBang(hRow5);
                 
-                resTonKho.forEach((row, i) => {
-                    const r = ws4.getRow(11 + i);
-                    r.values = [i + 1, row.TenMH, row.ChiTietPhanLoai, Number(row.SoLuong)];
-                    dinhDangDongDuLieu(r, i, [1, 4], []);
-                    
-                    if(row.SoLuong === 0) r.getCell(4).font = { color: { argb: 'FFEF4444' }, bold: true };
+                resTrangThai.forEach((row, i) => {
+                    const r = ws5.getRow(10 + i);
+                    r.values = [i + 1, row.TenTrangThai, Number(row.SoLuongDon), ''];
+                    dinhDangDongDuLieu(r, i, [1, 3], []);
+                    r.getCell(3).numFmt = '#,##0" đơn"';
+                    r.getCell(3).font = { bold: true, color: { argb: 'FF222532' } }; 
+                });
+            }
+
+            // ==============================================================
+            // BÁO CÁO THỐNG KÊ NHẬT KÝ HOẠT ĐỘNG
+            // ==============================================================
+            if (selectedTypes.includes('nhatky')) {
+                let whereLog = "";
+                let valuesLog = [];
+                if(NgayBatDau) { whereLog += " AND log.ThoiGian >= ?"; valuesLog.push(`${NgayBatDau} 00:00:00`); }
+                if(NgayKetThuc) { whereLog += " AND log.ThoiGian <= ?"; valuesLog.push(`${NgayKetThuc} 23:59:59`); }
+
+                const [resNhatKy] = await db.query(`SELECT tk.TenDN, log.LoaiLog, log.NoiDung, log.ThoiGian FROM LogHoatDongTaiKhoan log LEFT JOIN TaiKhoan tk ON log.MaTK = tk.MaTK WHERE 1=1 ${whereLog} ORDER BY log.ThoiGian DESC`, valuesLog);
+                
+                const ws6 = workbook.addWorksheet('Báo cáo nhật ký');
+                ws6.columns = [{ key: 'A', width: 10 }, { key: 'B', width: 25 }, { key: 'C', width: 30 }, { key: 'D', width: 55 }, { key: 'E', width: 22 }];
+                taoHeaderBaoCao(ws6, 'THỐNG KÊ NHẬT KÝ HOẠT ĐỘNG', 'E');
+
+                const hRow6 = ws6.getRow(9);
+                hRow6.values = ['STT', 'Người Thực Hiện', 'Hành Động / Cờ Log', 'Nội Dung Chi Tiết', 'Thời Gian Ghi Nhận'];
+                dinhDangHeaderBang(hRow6);
+                
+                resNhatKy.forEach((row, i) => {
+                    const r = ws6.getRow(10 + i);
+                    r.values = [i + 1, row.TenDN || 'Hệ thống', row.LoaiLog, row.NoiDung, new Date(row.ThoiGian).toLocaleString('vi-VN')];
+                    dinhDangDongDuLieu(r, i, [1, 2, 3, 5], []);
                 });
             }
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', 'attachment; filename=' + `Bao_Cao_Tuy_Chinh_${Date.now()}.xlsx`);
+            res.setHeader('Content-Disposition', 'attachment; filename=' + `Bao_Cao_Tong_Hop_FigureCollect_${Date.now()}.xlsx`);
 
             await workbook.xlsx.write(res);
             res.end();

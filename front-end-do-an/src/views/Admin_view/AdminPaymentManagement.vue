@@ -458,7 +458,9 @@
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Bao_Cao_Doi_Soat_Tai_Chinh.xlsx`;
+      const today = new Date();
+      const dateStr = `${today.getDate().toString().padStart(2, '0')}_${(today.getMonth() + 1).toString().padStart(2, '0')}_${today.getFullYear()}`;
+      a.download = `Bao_Cao_Doi_Soat_Tai_Chinh_FigureCollect_${dateStr}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
