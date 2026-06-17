@@ -1040,7 +1040,8 @@
             SoLuong: item.SoLuongDungToiDa,
             ThoiGianKT: item.ThoiGianKT,
             status: currentStatus,
-            TrangThaiHoatDong: item.TrangThaiHoatDong
+            TrangThaiHoatDong: item.TrangThaiHoatDong,
+            MaKH: item.MaKH
           };
         });
         totalPages.value = result.pagination.totalPage;
@@ -1452,14 +1453,14 @@
         TenMaGiamGia: item.TenMaGiamGia,
         MaVoucher: item.MaVoucher,
         LoaiGiamGia: item.LoaiGiamGia || 'TienMat',
-        ChietKhau: item.GiamGia,
-        MucGiaToiThieu: item.MucGiaToiThieu,
+        ChietKhau: item.GiamGia ? parseInt(item.GiamGia) : 0,
+        MucGiaToiThieu: item.MucGiaToiThieu ? parseInt(item.MucGiaToiThieu) : 0,
         SoLuongDungToiDa: item.SoLuong,
-        GiaTriGiamToiDa: item.GiaTriGiamToiDa || null,
+        GiaTriGiamToiDa: item.GiaTriGiamToiDa ? parseInt(item.GiaTriGiamToiDa) : null,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
         TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? true : false,
-        MaKH: item.MaKH || null // BỔ SUNG: Nạp ID khách hàng vào form
+        MaKH: item.MaKH || null
       };
 
       // 2. BỔ SUNG: Nếu mã giảm giá này có gán riêng cho 1 khách hàng (MaKH != null)
