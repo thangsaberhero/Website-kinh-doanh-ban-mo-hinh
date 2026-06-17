@@ -345,13 +345,7 @@
     DongTienThuan: 0
   });
 
-  const filterParams = ref({
-    ngaybatdau: getFormattedDate(sevenDaysAgoDate),
-    ngayketthuc: getFormattedDate(todayDate),
-    phuongthuc: 'all',
-    loai: 'all',
-    timkiem: ''
-  });
+  
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -386,6 +380,14 @@
     d.setDate(d.getDate() - days);
     return d.toISOString().slice(0, 10);
   };
+  
+  const filterParams = ref({
+    ngaybatdau: getFormattedDate(sevenDaysAgoDate),
+    ngayketthuc: getFormattedDate(todayDate),
+    phuongthuc: 'all',
+    loai: 'all',
+    timkiem: ''
+  });
 
   // --- HÀM XỬ LÝ KHI BẤM NÚT CHỌN NHANH ---
   const setQuickDate = (range) => {
