@@ -1745,6 +1745,37 @@ const exportExcelReport = async () => {
     }
   };
 
+  // Các hàm hỗ trợ tính toán ngày
+  const getToday = () => {
+    const d = new Date();
+    return d.toISOString().slice(0, 10);
+  };
+  const getDaysAgo = (days) => {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const filterDate = ref({ 
+    from: getDaysAgo(7), 
+    to: getToday() 
+  });
+
+  // Hàm xử lý nút chọn ngày nhanh
+  const setQuickDate = (range) => {
+    if (range === 'today') {
+      filterDate.value = { from: getToday(), to: getToday() };
+    } else if (range === '7days') {
+      filterDate.value = { from: getDaysAgo(7), to: getToday() };
+    } else if (range === '30days') {
+      filterDate.value = { from: getDaysAgo(30), to: getToday() };
+    } else if (range === 'all') {
+      filterDate.value = { from: '', to: getToday() };
+    }
+    currentPage.value = 1;
+    fetchOrders();
+  };
+
   const isReturnModalOpen = ref(false);
   const returnReason = ref('');
   const orderToReturn = ref(null);
@@ -3082,37 +3113,6 @@ const exportExcelReport = async () => {
       console.error("Lỗi khi gọi API tách đơn:", error);
       toastStore.showToast("Lỗi kết nối máy chủ!", "error");
     }
-  };
-
-  // Các hàm hỗ trợ tính toán ngày
-  const getToday = () => {
-    const d = new Date();
-    return d.toISOString().slice(0, 10);
-  };
-  const getDaysAgo = (days) => {
-    const d = new Date();
-    d.setDate(d.getDate() - days);
-    return d.toISOString().slice(0, 10);
-  };
-
-  const filterDate = ref({ 
-    from: getDaysAgo(7), 
-    to: getToday() 
-  });
-
-  // Hàm xử lý nút chọn ngày nhanh
-  const setQuickDate = (range) => {
-    if (range === 'today') {
-      filterDate.value = { from: getToday(), to: getToday() };
-    } else if (range === '7days') {
-      filterDate.value = { from: getDaysAgo(7), to: getToday() };
-    } else if (range === '30days') {
-      filterDate.value = { from: getDaysAgo(30), to: getToday() };
-    } else if (range === 'all') {
-      filterDate.value = { from: '', to: getToday() };
-    }
-    currentPage.value = 1;
-    fetchOrders();
   };
 
   const scrollToTopCustom = (duration = 1000) => {
