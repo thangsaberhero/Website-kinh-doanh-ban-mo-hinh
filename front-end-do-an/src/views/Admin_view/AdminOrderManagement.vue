@@ -932,6 +932,10 @@
             <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Chưa thanh toán</span>
           </label>
           <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="radio" value="Đã đặt cọc" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
+            <span class="text-xs font-bold text-amber-600 group-hover:text-amber-800">Đã đặt cọc</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer group">
             <input type="radio" value="Đã thanh toán" v-model="advancedFilter.paymentStatus" class="w-4 h-4 text-primary focus:ring-primary border-slate-300">
             <span class="text-xs font-bold text-slate-600 group-hover:text-slate-900">Đã thanh toán đủ</span>
           </label>
