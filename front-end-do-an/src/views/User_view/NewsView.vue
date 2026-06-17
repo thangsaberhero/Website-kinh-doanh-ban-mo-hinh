@@ -21,7 +21,7 @@
             {{ heroNews.summary }}
           </p>
           <div>
-            <button @click="router.push(`/news/${heroNews.id}`)" class="px-8 py-3.5 bg-primary text-white dark:text-black font-headline font-black tracking-widest rounded-lg hover:bg-white transition-all neon-glow flex items-center group uppercase text-sm">
+            <button @click="router.push(`/news/${heroNews.id}`)" class="px-8 py-3.5 bg-primary text-white dark:text-black font-headline font-black tracking-widest rounded-lg hover:text-on-surface dark:hover:text-white transition-all neon-glow flex items-center group uppercase text-sm">
               Đọc Bài Viết
               <span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </button>

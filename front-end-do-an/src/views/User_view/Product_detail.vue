@@ -461,7 +461,7 @@
     class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center animate-[fadeIn_0.2s_ease-out]"
     @click.self="closeLightbox">
 
-    <div class="absolute top-0 left-0 right-0 p-6 flex justify-between items-center text-on-surface dark:text-white/70">
+    <div class="absolute top-0 left-0 right-0 p-6 flex justify-between items-center text-white/70">
       <div class="font-headline font-bold tracking-widest text-sm">
         {{ currentIndex + 1 }} / {{ allImages.length }}
       </div>
@@ -473,7 +473,7 @@
     </div>
 
     <button @click="prevImage"
-            class="absolute left-4 md:left-8 p-4 text-on-surface dark:text-white/50 hover:text-primary hover:bg-surface-container dark:bg-white/5 rounded-full transition-all">
+            class="absolute left-4 md:left-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
       <span class="material-symbols-outlined text-5xl">chevron_left</span>
     </button>
 
@@ -486,7 +486,7 @@
     </div>
 
     <button @click="nextImage"
-            class="absolute right-4 md:right-8 p-4 text-on-surface dark:text-white/50 hover:text-primary hover:bg-surface-container dark:bg-white/5 rounded-full transition-all">
+            class="absolute right-4 md:right-8 p-4 text-white/50 hover:text-primary hover:bg-white/5 rounded-full transition-all">
       <span class="material-symbols-outlined text-5xl">chevron_right</span>
     </button>
 

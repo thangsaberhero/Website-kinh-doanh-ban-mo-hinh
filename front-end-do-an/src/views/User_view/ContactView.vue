@@ -125,7 +125,7 @@
                             
                             <div class="pt-6">
                                 <button :disabled="isSubmitting" type="submit" 
-                                        class="w-full sm:w-auto px-10 py-4 bg-primary text-black font-headline font-black text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group">
+                                        class="w-full sm:w-auto px-10 py-4 bg-primary text-black font-headline font-black text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-[#ff6a1a] dark:hover:bg-white transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group">
                                     <span v-if="!isSubmitting && !submitSuccess">GỬI TIN NHẮN</span>
                                     <span v-if="isSubmitting" class="flex items-center gap-2">
                                         <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> ĐANG GỬI...
