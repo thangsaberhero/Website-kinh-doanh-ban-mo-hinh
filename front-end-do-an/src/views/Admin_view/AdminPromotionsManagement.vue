@@ -431,6 +431,52 @@
               </div>
             </div>
           </div>
+
+          <div class="p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl">
+              <label class="block text-xs font-bold text-indigo-800 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">person_search</span> Khách hàng áp dụng (Tùy chọn)
+              </label>
+
+              <div v-if="selectedCustomer" class="flex items-center justify-between bg-white border border-indigo-200 p-3 rounded-xl shadow-sm">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden border border-indigo-200 shrink-0">
+                    <img v-if="selectedCustomer.AnhDaiDien" :src="selectedCustomer.AnhDaiDien" class="w-full h-full object-cover"/>
+                    <span v-else class="material-symbols-outlined text-indigo-400">person</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-800">{{ selectedCustomer.TenKH }}</p>
+                    <p class="text-[10px] text-slate-500 font-medium">Mã KH: {{ selectedCustomer.MaKH }} | SĐT: {{ selectedCustomer.SDT || 'N/A' }}</p>
+                  </div>
+                </div>
+                <button @click="removeCustomer" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Gỡ bỏ">
+                  <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+
+              <div v-else class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300">search</span>
+                <input v-model="searchCustomerQuery" @input="debounceSearchCustomer" type="text" placeholder="Tìm theo Mã KH, Tên, SĐT... Nếu bỏ trống mã sẽ dùng chung." 
+                       class="w-full border border-indigo-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium bg-white placeholder:text-slate-400"/>
+                
+                <span v-if="isSearchingCustomers" class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-indigo-500 animate-spin">progress_activity</span>
+
+                <div v-if="searchedCustomers.length > 0" class="absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto custom-scrollbar p-1.5">
+                  <div v-for="cus in searchedCustomers" :key="cus.MaKH" 
+                       @click="selectCustomer(cus)"
+                       class="flex items-center gap-3 p-2.5 hover:bg-indigo-50 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-indigo-100">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+                      <img v-if="cus.AnhDaiDien" :src="cus.AnhDaiDien" class="w-full h-full object-cover"/>
+                      <span v-else class="material-symbols-outlined text-slate-400 text-[16px]">person</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-bold text-slate-800 truncate">{{ cus.TenKH }}</p>
+                      <p class="text-[10px] text-slate-500 truncate">{{ cus.SDT || cus.Email || 'Chưa cập nhật thông tin liên hệ' }}</p>
+                    </div>
+                    <span class="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded">Chọn</span>
+                  </div>
+                </div>
+              </div>
+            </div>
         </div>
 
         <div v-if="currentTypeTab === 'voucher'" class="space-y-5 mb-8 pt-8 border-t border-slate-100">
@@ -662,6 +708,12 @@
   const promotionsList = ref([]); 
   const vouchersList = ref([]); 
 
+  const searchCustomerQuery = ref('');
+  const searchedCustomers = ref([]);
+  const isSearchingCustomers = ref(false);
+  const selectedCustomer = ref(null);
+  let searchCustomerTimeout = null;
+
   const promotionForm = ref({
     TenKM: '',
     ThoiGianBD: '',
@@ -707,7 +759,8 @@
       GiaTriGiamToiDa: null, 
       SoLuongDungToiDa: 100, 
       ThoiGianBD: '', 
-      ThoiGianKT: '' 
+      ThoiGianKT: '',
+      MaKH_ApDung: null
     };
   };
 
@@ -741,6 +794,47 @@
     if (status === 'Đã lên lịch') return 'bg-amber-50 text-amber-600 border border-amber-200';
     if (status === 'Đã hết hạn') return 'bg-rose-50 text-rose-600 border border-rose-200';
     return 'bg-slate-50 text-slate-500 border border-slate-200';
+  };
+
+  const fetchCustomersForVoucher = async () => {
+    if (!searchCustomerQuery.value.trim()) {
+      searchedCustomers.value = [];
+      return;
+    }
+    isSearchingCustomers.value = true;
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/khuyen_mai_admin/search-customers?keyword=${encodeURIComponent(searchCustomerQuery.value)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        searchedCustomers.value = data.data;
+      } else {
+        searchedCustomers.value = [];
+      }
+    } catch (error) {
+      console.error("Lỗi tìm khách hàng:", error);
+    } finally {
+      isSearchingCustomers.value = false;
+    }
+  };
+
+  const debounceSearchCustomer = () => {
+    clearTimeout(searchCustomerTimeout);
+    searchCustomerTimeout = setTimeout(fetchCustomersForVoucher, 500);
+  };
+
+  const selectCustomer = (customer) => {
+    selectedCustomer.value = customer;
+    voucherForm.value.MaKH_ApDung = customer.MaKH; // Lưu ID vào form để submit
+    searchCustomerQuery.value = '';
+    searchedCustomers.value = [];
+  };
+
+  const removeCustomer = () => {
+    selectedCustomer.value = null;
+    voucherForm.value.MaKH_ApDung = null;
   };
 
   const fetchPromotions = async () => {

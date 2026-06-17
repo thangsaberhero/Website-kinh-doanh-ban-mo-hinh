@@ -7,6 +7,7 @@ router.get('/search/products', authMiddleware.verifyToken, authMiddleware.verify
 router.get('/dashboard/stats', authMiddleware.verifyToken, authMiddleware.verifyAdmin, khuyenmaiController.thong_ke_khuyen_mai);
 router.get('/logs/recent', authMiddleware.verifyToken, authMiddleware.verifyAdmin, khuyenmaiController.lay_nhat_ky_hoat_dong);
 router.get('/logs/all', authMiddleware.verifyToken, authMiddleware.verifyAdmin, khuyenmaiController.lay_tat_ca_log_phan_trang);
+router.get('/search-customers', authMiddleware.verifyToken, authMiddleware.verifyAdmin, khuyenmaiController.tim_kiem_khach_hang_nhanh);
 
 router.get('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, khuyenmaiController.liet_ke_chuong_trinh_khuyen_mai);
 router.get('/:MaKM', authMiddleware.verifyToken, authMiddleware.verifyAdmin, khuyenmaiController.xem_chi_tiet_khuyen_mai);

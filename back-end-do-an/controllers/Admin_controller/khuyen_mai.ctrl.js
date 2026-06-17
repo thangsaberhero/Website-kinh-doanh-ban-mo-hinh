@@ -721,6 +721,50 @@ const khuyenmai = {
         }
     },
 
+    tim_kiem_khach_hang_nhanh: async (req, res) => {
+        try {
+            // Lấy từ khóa tìm kiếm và giới hạn số lượng (tránh trả về quá dài làm lag UI)
+            const keyword = req.query.keyword || '';
+            let limit = parseInt(req.query.limit) || 10; 
+            
+            // Câu lệnh SQL cơ bản: Chỉ lấy Mã, Tên, SĐT, Email
+            // Vui lòng điều chỉnh lại tên bảng 'KhachHang' và các cột cho khớp với CSDL thực tế của bạn
+            let sql = `
+                SELECT MaKH, TenKH, SDT, Email, AnhDaiDien 
+                FROM KhachHang 
+                WHERE TrangThaiHoatDong = 1 
+            `;
+            let values = [];
+
+            // Nếu có nhập từ khóa, tìm kiếm tương đối trên Tên, SĐT hoặc Email
+            if (keyword.trim() !== '') {
+                sql += ` AND (MaKH LIKE ? OR TenKH COLLATE utf8mb4_unicode_ci LIKE ? OR SDT LIKE ? OR Email LIKE ?) `;
+                const searchStr = `%${keyword}%`;
+                // Đẩy 3 lần biến searchStr tương ứng cho 3 dấu ?
+                values.push(searchStr, searchStr, searchStr, searchStr);
+            }
+
+            // Thêm giới hạn kết quả
+            sql += ` LIMIT ?`;
+            values.push(limit);
+
+            // Thực thi truy vấn
+            const [khachHang] = await db.query(sql, values);
+
+            res.status(200).json({
+                success: true,
+                data: khachHang
+            });
+
+        } catch (error) {
+            console.error("Lỗi khi tìm kiếm khách hàng nhanh: ", error);
+            res.status(500).json({ 
+                success: false, 
+                message: "Lỗi truy xuất dữ liệu khách hàng từ hệ thống." 
+            });
+        }
+    }
+
     sua_ma_giam_gia: async(req, res) => {
         const connection = await db.getConnection();
         try {
