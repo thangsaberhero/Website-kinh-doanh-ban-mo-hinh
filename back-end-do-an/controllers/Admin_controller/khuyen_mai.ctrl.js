@@ -763,7 +763,7 @@ const khuyenmai = {
                 message: "Lỗi truy xuất dữ liệu khách hàng từ hệ thống." 
             });
         }
-    }
+    },
 
     sua_ma_giam_gia: async(req, res) => {
         const connection = await db.getConnection();
