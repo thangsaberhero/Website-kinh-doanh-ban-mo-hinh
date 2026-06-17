@@ -1331,9 +1331,8 @@
             ThoiGianBD: voucherForm.value.ThoiGianBD,
             ThoiGianKT: voucherForm.value.ThoiGianKT,
             TrangThaiHoatDong: 1,
-            MaKH: null,
-            GiaTriGiamToiDa: voucherForm.value.LoaiGiamGia === 'PhanTram' && voucherForm.value.GiaTriGiamToiDa ? Number(voucherForm.value.GiaTriGiamToiDa) : null,
-            danhsachchitiet: [] 
+            MaKH: selectedCustomer.value ? selectedCustomer.value.MaKH : null,
+            GiaTriGiamToiDa: voucherForm.value.LoaiGiamGia === 'PhanTram' && voucherForm.value.GiaTriGiamToiDa ? Number(voucherForm.value.GiaTriGiamToiDa) : null
           };
         }
 
@@ -1522,7 +1521,8 @@
             GiaTriGiamToiDa: editingPromo.value.LoaiGiamGia === 'PhanTram' && editingPromo.value.GiaTriGiamToiDa ? Number(editingPromo.value.GiaTriGiamToiDa) : null,
             ThoiGianBD: editingPromo.value.ThoiGianBD,
             ThoiGianKT: editingPromo.value.ThoiGianKT,
-            TrangThaiHoatDong: editingPromo.value.TrangThaiHoatDong ? 1 : 0
+            TrangThaiHoatDong: editingPromo.value.TrangThaiHoatDong ? 1 : 0,
+            MaKH: selectedEditCustomer.value ? selectedEditCustomer.value.MaKH : null
           };
         }
 
