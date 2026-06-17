@@ -1,6 +1,6 @@
 const db = require('../../config/db');
 const bcrypt = require('bcryptjs');
-const excel = require('exceljs');
+const ExcelJS = require('exceljs');
 
 const account_admin = {
     them_tai_khoan: async(req, res) => {
@@ -534,7 +534,11 @@ const account_admin = {
                         order by tk.MaQuyen ASC, tk.NgayTao DESC`;
             const [users] = await db.query(sql, value);
 
-            const workbook = new excel.Workbook();
+            const workbook = new ExcelJS.Workbook();            
+            workbook.creator = 'Hệ Thống FIGURECOLLECT';
+            workbook.lastModifiedBy = 'Hệ Thống FIGURECOLLECT';
+            workbook.created = new Date();
+            workbook.modified = new Date();
             const worksheet = workbook.addWorksheet('Danh sách Người dùng', {
                 pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true }
             });

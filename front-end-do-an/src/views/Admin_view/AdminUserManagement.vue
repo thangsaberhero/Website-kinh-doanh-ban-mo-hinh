@@ -1242,8 +1242,9 @@
       const a = document.createElement('a');
       a.href = url;
       
-      const dateStr = new Date().toISOString().slice(0, 10);
-      a.download = `Bao_Cao_Nguoi_Dung_${dateStr}.xlsx`;
+      const today = new Date();
+      const dateStr = `${today.getDate().toString().padStart(2, '0')}_${(today.getMonth() + 1).toString().padStart(2, '0')}_${today.getFullYear()}`;
+      a.download = `Bao_Cao_Nguoi_Dung_FigureCollect_${dateStr}.xlsx`;
       
       document.body.appendChild(a);
       a.click();

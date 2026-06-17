@@ -526,13 +526,15 @@
 
   // Các state quản lý Modal xuất file
   const isExportModalOpen = ref(false);
-  const selectedReports = ref(['doanhthu', 'sanpham', 'marketing', 'tonkho']);
+  const selectedReports = ref(['doanhso', 'tonkho', 'khuyenmai', 'danhgia', 'donhang', 'nhatky']);
 
   const reportOptions = [
-    { id: 'doanhthu', label: 'Tổng quan & Tài chính', icon: 'payments', desc: 'Bao gồm KPI doanh thu, lợi nhuận và biểu đồ.' },
-    { id: 'sanpham', label: 'Danh mục & Thương hiệu', icon: 'category', desc: 'Sản lượng và cơ cấu sinh lời theo danh mục/hãng.' },
-    { id: 'marketing', label: 'Hiệu quả Marketing', icon: 'campaign', desc: 'Thống kê hiệu quả chiến dịch và mã giảm giá.' },
-    { id: 'tonkho', label: 'Cảnh báo vận hành', icon: 'inventory_2', desc: 'Cảnh báo tồn kho thấp và sản phẩm yêu thích.' }
+    { id: 'doanhso', label: 'Thống kê doanh số bán hàng', icon: 'payments', desc: 'KPI doanh thu, lợi nhuận và biến động dòng tiền.' },
+    { id: 'tonkho', label: 'Thống kê hàng tồn kho', icon: 'inventory_2', desc: 'Chi tiết số lượng tồn kho của các phân loại mô hình.' },
+    { id: 'khuyenmai', label: 'Thống kê chương trình khuyến mãi', icon: 'campaign', desc: 'Lượt sử dụng và chi phí các mã giảm giá/voucher.' },
+    { id: 'danhgia', label: 'Thống kê phản hồi, đánh giá', icon: 'reviews', desc: 'Tổng hợp điểm sao và nhận xét mới nhất từ khách hàng.' },
+    { id: 'donhang', label: 'Thống kê đơn hàng', icon: 'local_shipping', desc: 'Tỷ lệ hoàn thành, hủy đơn và cơ cấu trạng thái xử lý.' },
+    { id: 'nhatky', label: 'Thống kê nhật ký hoạt động', icon: 'history', desc: 'Lịch sử thao tác hệ thống của người quản lý và nhân viên.' }
   ];
 
   const chartType = computed(() => {
@@ -753,7 +755,9 @@
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Bao_Cao_TBC_FigureCollect_${new Date().toISOString().slice(0,10)}.xlsx`;
+      const today = new Date();
+      const dateStr = `${today.getDate().toString().padStart(2, '0')}_${(today.getMonth() + 1).toString().padStart(2, '0')}_${today.getFullYear()}`;
+      a.download = `Bao_Cao_Tong_Hop_FigureCollect_${dateStr}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
