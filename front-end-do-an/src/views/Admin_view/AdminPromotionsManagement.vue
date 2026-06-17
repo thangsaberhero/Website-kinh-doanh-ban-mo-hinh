@@ -266,28 +266,56 @@
                 </tr>
               </tbody>
             </table>            
-            <div v-if="totalPages >= 1 && filteredData.length > 0" class="flex items-center justify-between bg-white p-4 border-t border-slate-100">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden sm:block">
-                Đang hiển thị trang {{ currentPage }} / {{ totalPages }}
-              </p>
-              <div class="flex items-center gap-1.5 ml-auto">
-                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:pointer-events-none">
-                  <span class="material-symbols-outlined text-sm">chevron_left</span>
+            <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30">
+              
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-400">
+                  Hiển thị {{ startItem }} - {{ endItem }} của {{ totalRecords }} mục
+                </span>
+                
+                <div class="h-4 w-px bg-slate-200"></div>
+                
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                  <select v-model="itemsPerPage" @change="changeItemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                    <option :value="10">10</option>
+                    <option :value="20">20</option>
+                    <option :value="50">50</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div v-if="totalPages > 1" class="flex items-center gap-1.5">
+                <button 
+                  @click="changePage(currentPage - 1)" 
+                  :disabled="currentPage === 1"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+                >
+                  <span class="material-symbols-outlined text-[16px]">chevron_left</span>
                 </button>
                 
-                <template v-for="item in visiblePages" :key="item">
-                  <span v-if="item === '...'" class="w-8 h-8 flex items-center justify-center text-slate-400 font-bold tracking-widest">...</span>
-                  <button v-else @click="changePage(item)"
-                          :class="currentPage === item ? 'bg-primary text-white shadow-md shadow-primary/20 border-transparent' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary'"
-                          class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">
-                    {{ item }}
+                <template v-for="(p, index) in visiblePages" :key="index">
+                  <button 
+                    v-if="p !== '...'"
+                    @click="changePage(p)"
+                    :class="currentPage === p 
+                      ? 'bg-primary text-white shadow-md shadow-primary/20 border-transparent' 
+                      : 'bg-white border-slate-200 text-slate-500 hover:text-primary hover:border-primary'"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold border transition-all"
+                  >
+                    {{ p }}
                   </button>
+                  <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">
+                    ...
+                  </span>
                 </template>
-
-                <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:pointer-events-none">
-                  <span class="material-symbols-outlined text-sm">chevron_right</span>
+                
+                <button 
+                  @click="changePage(currentPage + 1)" 
+                  :disabled="currentPage === totalPages"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
+                >
+                  <span class="material-symbols-outlined text-[16px]">chevron_right</span>
                 </button>
               </div>
             </div>
@@ -614,6 +642,8 @@
   const promotions = ref([]);
   const currentPage = ref(1);
   const totalPages = ref(1);
+  const itemsPerPage = ref(10);
+  const totalRecords = ref(0);
 
   // 1. Biến tìm kiếm
   const searchQuery = ref('');
@@ -1217,30 +1247,35 @@
     return baseData;
   });
 
-  const changePage = (page) => {
-    if (page < 1 || page > totalPages.value) return;
-    currentPage.value = page;
-    if (currentTypeTab.value === 'promotion') fetchPromotions();
-    else fetchVouchers();
-  };
+  // 🔴 THÊM MỚI: Thuật toán tính toán và phân trang thông minh
+  const startItem = computed(() => totalRecords.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
+  const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalRecords.value));
 
   const visiblePages = computed(() => {
     const current = currentPage.value;
     const total = totalPages.value;
-    const delta = 2;
+    
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
     
-    const pages = [1];
-    if (current - delta > 2) pages.push('...');
-    
-    const start = Math.max(2, current - delta);
-    const end = Math.min(total - 1, current + delta);
-    for (let i = start; i <= end; i++) pages.push(i);
-    
-    if (current + delta < total - 1) pages.push('...');
-    pages.push(total);
-    return pages;
+    return [1, '...', current - 1, current, current + 1, '...', total];
   });
+
+  const changeItemsPerPage = () => {
+    currentPage.value = 1;
+    if (currentTypeTab.value === 'promotion') fetchPromotions();
+    else fetchVouchers();
+  };
+
+  const changePage = (page) => {
+    if (page === '...' || page === currentPage.value) return;
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      if (currentTypeTab.value === 'promotion') fetchPromotions();
+      else fetchVouchers();
+    }
+  };
 
   const goToDetail = (item) => {
     if (currentTypeTab.value === 'promotion') {

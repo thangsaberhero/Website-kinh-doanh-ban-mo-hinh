@@ -222,9 +222,28 @@
                   </tr>
                 </tbody>
               </table>
-              <div v-if="paginationSP.totalPage > 1" class="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50/50">
-                <button @click="changeSPPage(paginationSP.currentPage - 1)" :disabled="paginationSP.currentPage === 1" class="px-3 py-1.5 text-xs font-bold border rounded-lg bg-white disabled:opacity-50">Trước</button>
-                <button @click="changeSPPage(paginationSP.currentPage + 1)" :disabled="paginationSP.currentPage === paginationSP.totalPage" class="px-3 py-1.5 text-xs font-bold border rounded-lg bg-white disabled:opacity-50">Sau</button>
+              <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/50">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-bold text-slate-400">Hiển thị {{ startItemSP }} - {{ endItemSP }} của {{ paginationSP.totalItems }} sản phẩm</span>
+                  <div class="h-4 w-px bg-slate-200"></div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                    <select v-model="paginationSP.limit" @change="changeLimitSP" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                      <option :value="10">10</option>
+                      <option :value="20">20</option>
+                      <option :value="50">50</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div v-if="paginationSP.totalPage > 1" class="flex items-center gap-1.5">
+                  <button @click="changeSPPage(paginationSP.currentPage - 1)" :disabled="paginationSP.currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
+                  <template v-for="(p, index) in visiblePagesSP" :key="index">
+                    <button v-if="p !== '...'" @click="changeSPPage(p)" :class="paginationSP.currentPage === p ? 'bg-primary text-white border-transparent' : 'bg-white border border-slate-200 text-slate-500 hover:text-primary'" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">{{ p }}</button>
+                    <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">...</span>
+                  </template>
+                  <button @click="changeSPPage(paginationSP.currentPage + 1)" :disabled="paginationSP.currentPage === paginationSP.totalPage" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+                </div>
               </div>
             </div>
           </div>
@@ -260,9 +279,28 @@
                 </tr>
               </tbody>
             </table>
-            <div v-if="paginationLog.totalPage > 1" class="p-4 border-t border-slate-100 flex justify-end gap-2 bg-slate-50/50">
-              <button @click="changeLogPage(paginationLog.currentPage - 1)" :disabled="paginationLog.currentPage === 1" class="px-3 py-1.5 text-xs font-bold border rounded-lg bg-white disabled:opacity-50">Trước</button>
-              <button @click="changeLogPage(paginationLog.currentPage + 1)" :disabled="paginationLog.currentPage === paginationLog.totalPage" class="px-3 py-1.5 text-xs font-bold border rounded-lg bg-white disabled:opacity-50">Sau</button>
+            <div class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/50">
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-400">Hiển thị {{ startItemLog }} - {{ endItemLog }} của {{ paginationLog.totalItems }} lượt dùng</span>
+                <div class="h-4 w-px bg-slate-200"></div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                  <select v-model="paginationLog.limit" @change="changeLimitLog" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                    <option :value="10">10</option>
+                    <option :value="20">20</option>
+                    <option :value="50">50</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div v-if="paginationLog.totalPage > 1" class="flex items-center gap-1.5">
+                <button @click="changeLogPage(paginationLog.currentPage - 1)" :disabled="paginationLog.currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
+                <template v-for="(p, index) in visiblePagesLog" :key="index">
+                  <button v-if="p !== '...'" @click="changeLogPage(p)" :class="paginationLog.currentPage === p ? 'bg-primary text-white border-transparent' : 'bg-white border border-slate-200 text-slate-500 hover:text-primary'" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">{{ p }}</button>
+                  <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">...</span>
+                </template>
+                <button @click="changeLogPage(paginationLog.currentPage + 1)" :disabled="paginationLog.currentPage === paginationLog.totalPage" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
+              </div>
             </div>
           </div>
         </template>
@@ -459,8 +497,48 @@
   const detailData = ref(null);
   const productsList = ref([]);
   const logsList = ref([]);
-  const paginationSP = ref({ currentPage: 1, totalPage: 1 });
-  const paginationLog = ref({ currentPage: 1, totalPage: 1 });
+  const paginationSP = ref({ currentPage: 1, totalPage: 1, totalItems: 0, limit: 10 });
+  
+  const startItemSP = computed(() => paginationSP.value.totalItems === 0 ? 0 : (paginationSP.value.currentPage - 1) * paginationSP.value.limit + 1);
+  const endItemSP = computed(() => Math.min(paginationSP.value.currentPage * paginationSP.value.limit, paginationSP.value.totalItems));
+  const visiblePagesSP = computed(() => {
+    const current = paginationSP.value.currentPage;
+    const total = paginationSP.value.totalPage;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  });
+
+  const changeLimitSP = () => { paginationSP.value.currentPage = 1; fetchDetailData(); };
+  const changeSPPage = (page) => {
+    if (page === '...' || page === paginationSP.value.currentPage) return;
+    paginationSP.value.currentPage = page;
+    fetchDetailData();
+  };
+
+  // ==========================================
+  // 🔴 THUẬT TOÁN PHÂN TRANG: TAB LỊCH SỬ
+  // ==========================================
+  const paginationLog = ref({ currentPage: 1, totalPage: 1, totalItems: 0, limit: 10 });
+
+  const startItemLog = computed(() => paginationLog.value.totalItems === 0 ? 0 : (paginationLog.value.currentPage - 1) * paginationLog.value.limit + 1);
+  const endItemLog = computed(() => Math.min(paginationLog.value.currentPage * paginationLog.value.limit, paginationLog.value.totalItems));
+  const visiblePagesLog = computed(() => {
+    const current = paginationLog.value.currentPage;
+    const total = paginationLog.value.totalPage;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  });
+
+  const changeLimitLog = () => { paginationLog.value.currentPage = 1; fetchDetailData(); };
+  const changeLogPage = (page) => {
+    if (page === '...' || page === paginationLog.value.currentPage) return;
+    paginationLog.value.currentPage = page;
+    fetchDetailData();
+  };
 
   const isAddProductModalOpen = ref(false);
   const searchProductQuery = ref('');
@@ -584,8 +662,8 @@
     isLoading.value = true;
     try {
       const endpoint = promoType.value === 'campaign'
-        ? `${API_BASE_URL}/api/khuyen_mai_admin/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`
-        : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/${promoId}?page_sp=${paginationSP.value.currentPage}&page_log=${paginationLog.value.currentPage}`;
+        ? `${API_BASE_URL}/api/khuyen_mai_admin/${promoId}?page_sp=${paginationSP.value.currentPage}&limit_sp=${paginationSP.value.limit}&page_log=${paginationLog.value.currentPage}&limit_log=${paginationLog.value.limit}`
+        : `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/${promoId}?page_sp=${paginationSP.value.currentPage}&limit_sp=${paginationSP.value.limit}&page_log=${paginationLog.value.currentPage}&limit_log=${paginationLog.value.limit}`;
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${(localStorage.getItem('token') || sessionStorage.getItem('token'))}` }
       });
@@ -599,11 +677,15 @@
         logsList.value = result.data.log || [];
         paginationSP.value = {
           currentPage: result.pagination_sp?.currentPage || 1,
-          totalPage: result.pagination_sp?.totalPage || 1
+          totalPage: result.pagination_sp?.totalPage || 1,
+          totalItems: result.pagination_sp?.totalItems || 0,
+          limit: paginationSP.value.limit
         };
         paginationLog.value = {
           currentPage: result.pagination_log?.currentPage || 1,
-          totalPage: result.pagination_log?.totalPage || 1
+          totalPage: result.pagination_log?.totalPage || 1,
+          totalItems: result.pagination_log?.totalItems || 0,
+          limit: paginationLog.value.limit
         };
       } else {
         console.error('API error:', result.message);
@@ -613,18 +695,6 @@
     } finally {
       isLoading.value = false;
     }
-  };
-
-  // Phân trang
-  const changeSPPage = (page) => {
-    if (page < 1 || page > paginationSP.value.totalPage) return;
-    paginationSP.value.currentPage = page;
-    fetchDetailData();
-  };
-  const changeLogPage = (page) => {
-    if (page < 1 || page > paginationLog.value.totalPage) return;
-    paginationLog.value.currentPage = page;
-    fetchDetailData();
   };
 
   const openDeleteProductModal = (product) => {

@@ -148,28 +148,27 @@
               </div>
             </div>
 
-            <div v-if="reviews.length > 0" class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mt-6">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                Hiển thị trang {{ currentPage }} / {{ totalPages }} (Tổng {{ totalItems }} đánh giá)
-              </p>
-              <div class="flex items-center gap-2">
-                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" 
-                        class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
-                  <span class="material-symbols-outlined text-sm">chevron_left</span>
-                </button>
-                <template v-for="(item, index) in visiblePages" :key="index">
-                  <span v-if="item === '...'" class="w-8 h-8 flex items-center justify-center text-slate-400 font-bold tracking-widest">...</span>
-                  <button v-else 
-                          @click="changePage(item)"
-                          class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm"
-                          :class="currentPage === item ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary'">
-                    {{ item }}
-                  </button>
+            <div v-if="totalPages >= 1 && reviews.length > 0" class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl mt-6 border border-slate-200">
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-400">Hiển thị {{ startItemReview }} - {{ endItemReview }} của {{ totalItems }} đánh giá</span>
+                <div class="h-4 w-px bg-slate-200"></div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                  <select v-model="itemsPerPageReview" @change="changeLimitReview" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                    <option :value="10">10</option>
+                    <option :value="20">20</option>
+                    <option :value="50">50</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div v-if="totalPages > 1" class="flex items-center gap-1.5">
+                <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
+                <template v-for="(p, index) in visiblePages" :key="index">
+                  <button v-if="p !== '...'" @click="changePage(p)" :class="currentPage === p ? 'bg-primary text-white border-transparent shadow-md shadow-primary/20' : 'bg-white border border-slate-200 text-slate-500 hover:text-primary'" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">{{ p }}</button>
+                  <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">...</span>
                 </template>
-                <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
-                        class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
-                  <span class="material-symbols-outlined text-sm">chevron_right</span>
-                </button>
+                <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
               </div>
             </div>
 
@@ -262,28 +261,27 @@
               <p class="text-sm text-slate-500">Thử thay đổi từ khóa hoặc bộ lọc của bạn.</p>
             </div>
           </div>
-          <div v-if="contacts.length > 0" class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mt-6">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-              Hiển thị trang {{ currentContactPage }} / {{ totalContactPages }} (Tổng {{ totalContactItems }} tin nhắn)
-            </p>
-            <div class="flex items-center gap-2">
-              <button @click="changeContactPage(currentContactPage - 1)" :disabled="currentContactPage === 1" 
-                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
-                <span class="material-symbols-outlined text-sm">chevron_left</span>
-              </button>
-              <template v-for="(item, index) in visibleContactPages" :key="index">
-                <span v-if="item === '...'" class="w-8 h-8 flex items-center justify-center text-slate-400 font-bold tracking-widest">...</span>
-                <button v-else 
-                        @click="changeContactPage(item)"
-                        class="w-8 h-8 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm"
-                        :class="currentContactPage === item ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-600 hover:text-primary'">
-                  {{ item }}
-                </button>
+          <div v-if="totalContactPages >= 1 && contacts.length > 0" class="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl mt-6 border border-slate-200">
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-slate-400">Hiển thị {{ startItemContact }} - {{ endItemContact }} của {{ totalContactItems }} tin nhắn</span>
+              <div class="h-4 w-px bg-slate-200"></div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-500">Số dòng:</span>
+                <select v-model="itemsPerPageContact" @change="changeLimitContact" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-primary cursor-pointer shadow-sm">
+                  <option :value="10">10</option>
+                  <option :value="20">20</option>
+                  <option :value="50">50</option>
+                </select>
+              </div>
+            </div>
+            
+            <div v-if="totalContactPages > 1" class="flex items-center gap-1.5">
+              <button @click="changeContactPage(currentContactPage - 1)" :disabled="currentContactPage === 1" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_left</span></button>
+              <template v-for="(p, index) in visibleContactPages" :key="index">
+                <button v-if="p !== '...'" @click="changeContactPage(p)" :class="currentContactPage === p ? 'bg-primary text-white border-transparent shadow-md shadow-primary/20' : 'bg-white border border-slate-200 text-slate-500 hover:text-primary'" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all">{{ p }}</button>
+                <span v-else class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs font-bold cursor-not-allowed">...</span>
               </template>
-              <button @click="changeContactPage(currentContactPage + 1)" :disabled="currentContactPage === totalContactPages"
-                      class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-primary transition-all disabled:opacity-50 disabled:hover:text-slate-500">
-                <span class="material-symbols-outlined text-sm">chevron_right</span>
-              </button>
+              <button @click="changeContactPage(currentContactPage + 1)" :disabled="currentContactPage === totalContactPages" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all disabled:opacity-50"><span class="material-symbols-outlined text-[16px]">chevron_right</span></button>
             </div>
           </div>
         </div>
@@ -381,10 +379,6 @@
   const reviews = ref([]);
   const zoomedImage = ref(null);
 
-  const currentPage = ref(1);
-  const totalPages = ref(1);
-  const totalItems = ref(0);
-  const itemsPerPage = 5;
   const stats = ref({ avg: 0, bad: 0, newThisMonth: 0, replyRateThisMonth: 0 });
   const contactStats = ref({ total: 0, pending: 0, resolved: 0 });
 
@@ -396,6 +390,7 @@
   const currentContactPage = ref(1);
   const totalContactPages = ref(1);
   const totalContactItems = ref(0); 
+  const itemsPerPageContact = ref(10);
 
   const isEmailModalOpen = ref(false);
   const contactToReply = ref(null);
@@ -572,56 +567,52 @@
       }, 500);
   });
 
-  const changePage = (page) => {
-      currentPage.value = page;
-      fetchAdminReviews();
-  };
+  const currentPage = ref(1);
+  const totalPages = ref(1);
+  const totalItems = ref(0);
+  const itemsPerPageReview = ref(10); // Thay thế số 5 cứng nhắc
+
+  const startItemReview = computed(() => totalItems.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPageReview.value + 1);
+  const endItemReview = computed(() => Math.min(currentPage.value * itemsPerPageReview.value, totalItems.value));
   
   const visiblePages = computed(() => {
-      const current = currentPage.value;
-      const total = totalPages.value;
-      const delta = 2; 
-
-      if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-      const pages = [1];
-      if (current - delta > 2) pages.push('...');
-      
-      const start = Math.max(2, current - delta);
-      const end = Math.min(total - 1, current + delta);
-      for (let i = start; i <= end; i++) pages.push(i);
-
-      if (current + delta < total - 1) pages.push('...');
-      pages.push(total);
-
-      return pages;
+    const current = currentPage.value;
+    const total = totalPages.value;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    return [1, '...', current - 1, current, current + 1, '...', total];
   });
 
-  const changeContactPage = (page) => {
-    currentContactPage.value = page;
-    fetchAdminContacts();
+  const changeLimitReview = () => { currentPage.value = 1; fetchAdminReviews(); };
+  const changePage = (page) => {
+    if (page === '...' || page === currentPage.value) return;
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchAdminReviews();
+    }
   };
-  
+
+  const startItemContact = computed(() => totalContactItems.value === 0 ? 0 : (currentContactPage.value - 1) * itemsPerPageContact.value + 1);
+  const endItemContact = computed(() => Math.min(currentContactPage.value * itemsPerPageContact.value, totalContactItems.value));
+
   const visibleContactPages = computed(() => {
     const current = currentContactPage.value;
     const total = totalContactPages.value;
-    const delta = 2; 
-
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-    const pages = [1];
-    if (current - delta > 2) pages.push('...');
-    
-    const start = Math.max(2, current - delta);
-    const end = Math.min(total - 1, current + delta);
-    for (let i = start; i <= end; i++) pages.push(i);
-
-    if (current + delta < total - 1) pages.push('...');
-    pages.push(total);
-
-    return pages;
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    return [1, '...', current - 1, current, current + 1, '...', total];
   });
 
+  const changeLimitContact = () => { currentContactPage.value = 1; fetchAdminContacts(); };
+  const changeContactPage = (page) => {
+    if (page === '...' || page === currentContactPage.value) return;
+    if (page >= 1 && page <= totalContactPages.value) {
+      currentContactPage.value = page;
+      fetchAdminContacts();
+    }
+  };
   const isReplyModalOpen = ref(false);
   const reviewToReply = ref(null);
   const replyContent = ref('');
