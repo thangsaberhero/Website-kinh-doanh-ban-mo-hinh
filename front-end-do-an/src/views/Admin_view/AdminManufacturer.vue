@@ -285,7 +285,7 @@
   const startItem = computed(() => totalBrands.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
   const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalBrands.value));
   const totalPages = ref(1);
-  const totalBrandsCount = ref(0);
+  const totalBrands = ref(0);
   const tongSoHang = ref(0);
   const tongSoSanPham = ref(0);
   const formManufacturer = ref({ id: null, name: '', description: '' });
@@ -379,7 +379,7 @@ const changePage = (page) => {
 
         // Cập nhật thông số phân trang
         totalPages.value = result.pagination.totalPage;
-        totalBrandsCount.value = result.pagination.totalItems;
+        totalBrands.value = result.pagination.totalItems;
       }
     } catch (error) {
       console.error("Lỗi khi tải danh sách hãng:", error);
