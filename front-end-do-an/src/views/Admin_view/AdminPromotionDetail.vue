@@ -331,7 +331,7 @@
 
         <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
           
-          <div class="flex-1 flex flex-col border-r border-slate-100 bg-white">
+          <div class="flex-1 min-w-0 flex flex-col border-r border-slate-100 bg-white">
             <div class="p-5 border-b border-slate-100 space-y-3 shrink-0 bg-white">
               <div class="relative">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -372,11 +372,15 @@
                   </div>
                   
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-slate-800 truncate" :title="sp.TenMH">{{ sp.TenMH }}</p>
-                    <div class="flex items-center gap-2 mt-1 flex-wrap">
-                      <span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">PL: {{ sp.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : sp.ChiTietPhanLoai }}</span>
-                      <span class="text-[11px] font-black text-rose-500">{{ formatCurrency(sp.DonGia) }}</span>
-                      <span class="text-[10px] text-slate-500 font-medium border-l border-slate-300 pl-2">Kho: <span class="font-bold text-slate-700">{{ sp.SoLuong }}</span></span>
+                    <p class="text-sm font-bold text-slate-800 line-clamp-2 leading-tight" :title="sp.TenMH">{{ sp.TenMH }}</p>
+                    
+                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 truncate max-w-[130px]" :title="sp.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : sp.ChiTietPhanLoai">
+                        PL: {{ sp.ChiTietPhanLoai === 'NONE' ? 'Mặc định' : sp.ChiTietPhanLoai }}
+                      </span>
+                      
+                      <span class="text-[11px] font-black text-rose-500 shrink-0">{{ formatCurrency(sp.DonGia) }}</span>
+                      <span class="text-[10px] text-slate-500 font-medium border-l border-slate-300 pl-2 shrink-0">Kho: <span class="font-bold text-slate-700">{{ sp.SoLuong }}</span></span>
                     </div>
                   </div>
                 </label>
