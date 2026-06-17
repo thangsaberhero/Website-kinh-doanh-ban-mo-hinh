@@ -629,7 +629,6 @@
     }
   };
 
-  // Cập nhật lại hàm debounce
   let searchTimeout;
   const debounceSearchProduct = () => {
     clearTimeout(searchTimeout);
@@ -637,6 +636,30 @@
       searchProductsWithFilter();
     }, 500);
   };
+
+  const displayChietKhau = computed({
+    get: () => {
+      const val = addProductForm.value.ChietKhau;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      addProductForm.value.ChietKhau = numericString ? Number(numericString) : 0;
+    }
+  });
+
+  const displayGiaTriGiamToiDa = computed({
+    get: () => {
+      const val = addProductForm.value.GiaTriGiamToiDa;
+      if (val === null || val === undefined || val === '') return '';
+      return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    },
+    set: (val) => {
+      const numericString = val.toString().replace(/[^\d]/g, '');
+      addProductForm.value.GiaTriGiamToiDa = numericString ? Number(numericString) : null;
+    }
+  });
 
   const openAddProductModal = () => {
     if (!detailData.value) return;
