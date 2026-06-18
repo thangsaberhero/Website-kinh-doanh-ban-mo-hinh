@@ -1310,7 +1310,7 @@ const thongke = {
 
                 // --- BẢNG 1: TỔNG HỢP DOANH THU ---
                 ws1.mergeCells(`A${currentRow}:E${currentRow}`);
-                ws1.getCell(`A${currentRow}`).value = 'I. TỔNG HỢP DOANH THU';
+                ws1.getCell(`A${currentRow}`).value = 'I. TỔNG HỢP DOANH THU THEO THÁNG';
                 ws1.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
                 currentRow++;
 
