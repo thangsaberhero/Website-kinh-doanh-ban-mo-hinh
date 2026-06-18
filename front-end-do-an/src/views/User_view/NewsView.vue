@@ -110,9 +110,11 @@
               <p class="text-on-surface-variant text-sm">Chưa có bài viết nào thuộc chuyên mục này.</p>
             </div>
 
-            <div v-if="filteredNews.length > 0 && visibleCount < filteredNews.length" class="mt-12 flex justify-center">
-              <button @click = "loadMore" class="px-10 py-3 border border-outline-variant hover:border-primary text-on-surface dark:text-white hover:text-primary font-headline font-bold text-[11px] tracking-[0.2em] uppercase rounded-lg transition-all">
-                Tải thêm bài viết
+            <div v-if="newsList.length < totalItems" class="flex justify-center mt-12 pb-8">
+              <button @click="loadMore" :disabled="isFetchingMore" 
+                      class="px-8 py-3.5 bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-black font-black uppercase tracking-widest text-xs rounded-xl transition-all shadow-[0_0_15px_rgba(255,61,0,0.15)] hover:shadow-[0_0_25px_rgba(255,61,0,0.35)] active:scale-95 disabled:opacity-50 disabled:cursor-wait flex items-center gap-2">
+                <span v-if="isFetchingMore" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                {{ isFetchingMore ? 'Đang lấy dữ liệu...' : 'Tải thêm bài viết' }}
               </button>
             </div>
           </div>
@@ -166,11 +168,11 @@
   const route = useRoute();
   const router = useRouter();
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-  const heroNews = ref({});         // Khu vực 1: Bài to nhất trên cùng
+       
   const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
   const allArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
   const popularNews = ref([]);      // Khu vực 4: Sidebar Đọc nhiều nhất (Cột phải)
+  const newsList = ref([]);
 
   const categories = ref(['Tất cả']);
   const activeCategory = ref('Tất cả');
@@ -181,13 +183,26 @@
   const visibleCount = ref(itemsPerPage);
   const isLoading = ref(true);
 
+  const currentPage = ref(1);
+  const limit = ref(5);
+  const totalItems = ref(0);
+  const isFetchingMore = ref(false);
+
   const loadMore = () => {
-    visibleCount.value += itemsPerPage;
+    currentPage.value++;
+    fetchNewsData(true);
   };
 
   watch(activeCategory, () => {
     visibleCount.value = itemsPerPage;
   });
+
+  const heroNews = computed(() => {
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
+      return newsList.value[0];
+    }
+    return {};
+  });// Khu vực 1: Bài to nhất trên cùng
 
   const getImageUrl = (image) => {
     if (!image) return 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg';
@@ -208,71 +223,38 @@
     return rawTitle;
   };
   
-  const fetchNewsData = async () => {
-    isLoading.value = true;
+  const fetchNewsData = async (isLoadMore = false) => {
+    if (isLoadMore) isFetchingMore.value = true;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/news`);
-      const data = await response.json();
+      let url = `${API_BASE_URL}/api/news?page=${currentPage.value}&limit=${limit.value}`;
       
-      if (response.ok) {
-        const allCategories = data.latestList.map(item => item.TheLoai);
-        const uniqueCategories = [...new Set(allCategories)];
-        categories.value = ['Tất cả', ...uniqueCategories];
-        
-        const allLatest = data.latestList.map(item => ({
-          id: item.MaTT,
-          title: item.TieuDe,
-          titleHtml: formatTitle(item.TieuDe),
-          summary: item.TomTat,
-          category: item.TheLoai,
-          date: new Date(item.NgayDang).toLocaleDateString('vi-VN'),        
-          readTime: Math.max(1, parseInt(item.ThoiGianDoc) || 1), 
-          image: getImageUrl(item.AnhThumbnail),
-          tags: item.Tags || ''
-        }));
-        // KHU VỰC 1 (HERO): Bốc bài viết MỚI NHẤT (vị trí số 0) để đưa lên Banner to nhất
-        if (allLatest.length > 0) {
-          heroNews.value = allLatest[0];
-        }
-
-        // KHU VỰC 3 (MAIN LIST): Lấy phần còn lại (từ vị trí số 1 trở đi) để đưa xuống danh sách bên dưới, tránh hiển thị trùng bài Banner
-        allArticles.value = allLatest;
-
-        // KHU VỰC 2 (TRENDING): Gắn thẳng vào biến trendingNews
-        trendingNews.value = data.trendingList.map(item => ({
-          id: item.MaTT,
-          title: item.TieuDe,
-          category: item.TheLoai,
-          image: getImageUrl(item.AnhThumbnail)
-        }));
-
-        // KHU VỰC 4 (POPULAR): Gắn vào sidebar Đọc nhiều nhất
-        popularNews.value = data.popularList.map(item => ({
-          id: item.MaTT,
-          title: item.TieuDe,
-          date: new Date(item.NgayDang).toLocaleDateString('vi-VN')
-        }));
-
-        const tagCounts = {}; 
-        data.latestList.forEach(item => {
-          if (item.Tags) {
-            const tagsArray = item.Tags.split(',').map(tag => tag.trim());
-            tagsArray.forEach(tag => {
-              if (tag) {
-                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-              }
-            });
-          }
-        });
-        const sortedTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
-        trendingTags.value = sortedTags.slice(0, 7);
+      if (activeCategory.value && activeCategory.value !== 'Tất cả') {
+        url += `&category=${encodeURIComponent(activeCategory.value)}`;
       }
-    } 
-    catch (error) {
-      console.error("Lỗi khi tải tin tức:", error);
-    }
-    finally {
-      isLoading.value = false; 
+      if (activeTag.value) {
+        url += `&tag=${encodeURIComponent(activeTag.value)}`;
+      }
+
+      const res = await fetch(url);
+      const result = await res.json();
+
+      if (result.success) {
+        if (isLoadMore) {
+          // Bấm tải thêm -> Cầm mảng cũ nối thêm mảng mới vào đuôi
+          newsList.value.push(...result.latestList);
+        } else {
+          // Khởi tạo trang / Đổi bộ lọc -> Ghi đè lại từ đầu
+          newsList.value = result.latestList;
+          // Chỉ lấy Trending và Popular ở trang 1 để tránh lỗi ghi đè rỗng
+          if (result.trendingList && result.trendingList.length > 0) trendingNews.value = result.trendingList;
+          if (result.popularList && result.popularList.length > 0) popularNews.value = result.popularList;
+        }
+        totalItems.value = result.pagination.totalItems;
+      }
+    } catch (error) {
+      console.error("Lỗi tải tin tức:", error);
+    } finally {
+      isFetchingMore.value = false;
     }
   };
 
@@ -292,11 +274,15 @@
   });
 
   watch([activeCategory, activeTag], () => {
-    visibleCount.value = itemsPerPage;
+    currentPage.value = 1;
+    fetchNewsData();
   });
 
   const displayNews = computed(() => {
-    return filteredNews.value.slice(0, visibleCount.value);
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
+      return newsList.value.slice(1); 
+    }
+    return newsList.value;
   });
 
   const scrollToTopCustom = (duration = 1000) => {

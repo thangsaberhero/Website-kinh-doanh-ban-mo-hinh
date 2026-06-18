@@ -2,42 +2,83 @@ const db = require('../../config/db');
 
 const newsController = {
     getAllNews: async (req, res) => {
-        try{
-            const sqlLatest = `SELECT t.MaTT, t.TieuDe, t.TomTat, t.TheLoai, t.Tags, t.NgayDang, t.LuotXem, 
-                                nv.TenNV AS TacGia, 
-                                CEIL((LENGTH(t.NoiDung) - LENGTH(REPLACE(REPLACE(t.NoiDung, '&nbsp;', ' '), ' ', '')) + 1) / 200) AS ThoiGianDoc,
-                                t.AnhThumbnail
-                                FROM TinTuc t
-                                LEFT JOIN NhanVien nv ON t.MaNV = nv.MaNV
-                                WHERE t.TrangThai = 'Đã duyệt'
-                                ORDER BY t.NgayDang DESC`;
-            const sqlTrending = `SELECT t.MaTT, t.TieuDe, t.TheLoai, t.NgayDang, t.LuotXem, t.AnhThumbnail
-                                FROM TinTuc t
-                                WHERE t.TrangThai = 'Đã duyệt' 
-                                AND t.NgayDang >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-                                ORDER BY t.LuotXem DESC
-                                LIMIT 4`;
-            const sqlPopular = `SELECT t.MaTT, t.TieuDe, t.NgayDang, t.LuotXem
-                                FROM TinTuc t
-                                WHERE t.TrangThai = 'Đã duyệt'
-                                ORDER BY t.LuotXem DESC
-                                LIMIT 3`;
-            const [[latestList], [trendingList], [popularList]] = await Promise.all([db.query(sqlLatest), db.query(sqlTrending), db.query(sqlPopular)]);
+        try {
+
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 5; 
+            const offset = (page - 1) * limit;
             
+            const category = req.query.category;
+            const tag = req.query.tag;
+
+
+            let condition = ["t.TrangThai = 'Đã duyệt'"];
+            let values = [];
+
+            if (category && category !== 'Tất cả') {
+                condition.push("t.TheLoai = ?");
+                values.push(category);
+            }
+            if (tag) {
+                condition.push("t.Tags LIKE ?");
+                values.push(`%${tag}%`);
+            }
+
+            let whereClause = condition.join(" AND ");
+
+            const sqlLatest = `SELECT t.MaTT, t.TieuDe, t.TomTat, t.TheLoai, t.Tags, t.NgayDang, t.LuotXem, 
+                               nv.TenNV AS TacGia, 
+                               CEIL((LENGTH(t.NoiDung) - LENGTH(REPLACE(REPLACE(t.NoiDung, '&nbsp;', ' '), ' ', '')) + 1) / 200) AS ThoiGianDoc,
+                               t.AnhThumbnail
+                               FROM TinTuc t
+                               LEFT JOIN NhanVien nv ON t.MaNV = nv.MaNV
+                               WHERE ${whereClause}
+                               ORDER BY t.NgayDang DESC
+                               LIMIT ? OFFSET ?`;
+            
+            const sqlCount = `SELECT COUNT(*) AS total FROM TinTuc t WHERE ${whereClause}`;
+
+            let trendingList = [];
+            let popularList = [];
+
+            if (page === 1) {
+                const sqlTrending = `SELECT t.MaTT, t.TieuDe, t.TheLoai, t.NgayDang, t.LuotXem, t.AnhThumbnail
+                                     FROM TinTuc t
+                                     WHERE t.TrangThai = 'Đã duyệt' 
+                                     AND t.NgayDang >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                                     ORDER BY t.LuotXem DESC LIMIT 4`;
+                                     
+                const sqlPopular = `SELECT t.MaTT, t.TieuDe, t.NgayDang, t.LuotXem
+                                    FROM TinTuc t
+                                    WHERE t.TrangThai = 'Đã duyệt'
+                                    ORDER BY t.LuotXem DESC LIMIT 3`;
+                
+                const [[tList], [pList]] = await Promise.all([db.query(sqlTrending), db.query(sqlPopular)]);
+                trendingList = tList;
+                popularList = pList;
+            }
+
+            const [[latestList], [countResult]] = await Promise.all([
+                db.query(sqlLatest, [...values, limit, offset]),
+                db.query(sqlCount, values)
+            ]);
+
             res.status(200).json({
                 success: true,
                 message: "Tải dữ liệu tin tức thành công",
                 latestList: latestList,
                 trendingList: trendingList,
-                popularList: popularList
-            })
-        } catch(error){
+                popularList: popularList,
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalItems: countResult[0].total,
+                    totalPage: Math.ceil(countResult[0].total / limit)
+                }
+            });
+        } catch (error) {
             console.error("Lỗi API getAllNews: ", error);
-            res.status(500).json({
-                success: false,
-                message: "Lỗi máy chủ nội bộ",
-                error: error.message
-            })
+            res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ", error: error.message });
         }
     },
     getNewsById: async(req, res) =>{
