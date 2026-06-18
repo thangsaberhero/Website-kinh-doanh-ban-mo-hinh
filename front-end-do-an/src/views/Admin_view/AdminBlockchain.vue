@@ -701,6 +701,8 @@ export default {
       this.selectedLocationObject = null;
       this.showSuggestions = false;
 
+      await this.previewModel(model, { clearForm: false });
+
       this.showToast(`Đã nạp mã ${model.MaVach_Serial} vào form xử lý.`, "info");
     },
     formatPrice(value) {
