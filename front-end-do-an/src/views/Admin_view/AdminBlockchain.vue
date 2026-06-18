@@ -453,8 +453,13 @@ export default {
     },
 
     async fetchMohinhFromDB() {
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/blockchain/get-serials`);
+        const response = await axios.get(`${API_BASE_URL}/api/blockchain/get-serials`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
         if (response.data && response.data.success) {
           this.mohinhList = response.data.data || response.data;
 
@@ -708,10 +713,12 @@ export default {
         this.showToast("Vui lòng điền mã vạch và thông tin nhà sản xuất!", "warning");
         return;
       }
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       try {
         const response = await axios.post(`${API_BASE_URL}/api/blockchain/mint`, {
           serialNumber: this.mintForm.serialNumber,
-          manufacturer: this.mintForm.manufacturer
+          manufacturer: this.mintForm.manufacturer,
+          header: { 'Authorization': `Bearer ${token}` }
         });
         if (response.data.success) {
           this.showToast(`Mint Blockchain thành công!\nHash: ${response.data.hash}`, "success", 5000);
@@ -737,11 +744,14 @@ export default {
         return;
       }
 
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+
       try {
         const response = await axios.post(`${API_BASE_URL}/api/blockchain/update`, {
           serialNumber: this.updateForm.serialNumber,
           newStatus: this.updateForm.newStatus,
-          location: this.updateForm.location
+          location: this.updateForm.location,
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.data.success) {
           this.showToast(`Cập nhật vị trí lên Smart Contract thành công!\nHash: ${response.data.hash}`, "success", 5000);
