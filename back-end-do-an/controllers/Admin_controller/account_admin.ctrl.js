@@ -497,7 +497,6 @@ const account_admin = {
     xuat_bao_cao_tai_khoan: async(req, res) => {
         try {
             const {keyword_hoten, keyword_sdt, keyword_diachi, quyen_admin, quyen_nhanvien, quyen_khach, trang_thai, tu_ngay, den_ngay} = req.query;
-            const nguoiThucHien = req.user?.HoTen || req.user?.TenDN || 'Admin';
 
             let condition = [];
             let value = [];
@@ -675,7 +674,15 @@ const account_admin = {
                 currentRow++;
             });
 
-            await db.query(`INSERT INTO LogHoatDongTaiKhoan (NoiDung) VALUES (?)`, [`${nguoiThucHien} đã xuất dữ liệu danh sách ${users.length} tài khoản ra file Excel`]);
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+
+            const maNguoiThucHien = req.user ? req.user.id : null;
+            const noiDungLog = `Xuất dữ liệu danh sách ${users.length} tài khoản ra file Excel`;
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) 
+                VALUES (?, 'ACCOUNT_EXPORT', ?, ?, NOW())
+            `, [maNguoiThucHien, noiDungLog, userIp]);
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + 'Bao_Cao_Nguoi_Dung.xlsx');
