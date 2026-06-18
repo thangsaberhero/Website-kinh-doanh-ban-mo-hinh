@@ -1308,7 +1308,7 @@ const thongke = {
 
                 let currentRow = 9;
 
-                // --- BẢNG 1: TỔNG HỢP DOANH THU THEO THÁNG ---
+                // --- BẢNG 1: TỔNG HỢP DOANH THU ---
                 ws1.mergeCells(`A${currentRow}:E${currentRow}`);
                 ws1.getCell(`A${currentRow}`).value = 'I. TỔNG HỢP DOANH THU THEO THÁNG';
                 ws1.getCell(`A${currentRow}`).font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
@@ -1328,7 +1328,7 @@ const thongke = {
                     currentRow++;
                 });
 
-                currentRow += 2; // Cách 2 dòng cho thoáng
+                currentRow += 2;
 
                 // --- BẢNG 2: CHI TIẾT DOANH THU THEO NGÀY ---
                 ws1.mergeCells(`A${currentRow}:E${currentRow}`);
