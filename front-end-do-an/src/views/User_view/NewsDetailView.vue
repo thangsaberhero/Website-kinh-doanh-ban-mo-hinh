@@ -73,10 +73,10 @@
 
           <div :class="['flex items-center justify-start gap-3 w-full sm:w-auto', articleTags.length === 0 ? 'sm:ml-auto' : '']">
             <span class="text-sm font-headline font-bold text-on-surface-variant uppercase tracking-wider mr-1 sm:mr-2">Chia sẻ:</span>            
-            <button @click="shareFacebook" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1877F2]/10 text-[#1877F2] border border-[#1877F2]/20 hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all" title="Chia sẻ lên Facebook">
+            <button @click="shareFacebook" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1877F2]/10 text-[#1877F2] border border-[#1877F2]/20 hover:bg-[#1877F2] hover:text-white flex items-center justify-center transition-all shrink-0" title="Chia sẻ lên Facebook">
               <span class="material-symbols-outlined text-[16px] sm:text-[18px]">share</span>
             </button>              
-            <button @click="copyLink" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface-container-highest text-on-surface-variant border border-outline-variant/50 hover:bg-primary hover:text-black hover:border-primary flex items-center justify-center transition-all" :title="copied ? 'Đã copy!' : 'Copy Link'">
+            <button @click="copyLink" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-surface-container-highest text-on-surface-variant border border-outline-variant/50 hover:bg-primary hover:text-black hover:border-primary flex items-center justify-center transition-all shrink-0" :title="copied ? 'Đã copy!' : 'Copy Link'">
               <span class="material-symbols-outlined text-[16px] sm:text-[18px]" :class="{'text-emerald-500': copied}">
                 {{ copied ? 'check' : 'link' }}
               </span>

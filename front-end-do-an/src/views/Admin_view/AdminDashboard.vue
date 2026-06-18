@@ -1067,7 +1067,9 @@
       }
 
       // 1. DỮ LIỆU SẢN PHẨM, THƯƠNG HIỆU & DANH MỤC
-      const resSanPham = await fetch(`${API_BASE_URL}/api/thongke/sanpham${query}`);
+      const resSanPham = await fetch(`${API_BASE_URL}/api/thongke/sanpham${query}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const dataSanPham = await resSanPham.json();
       if (dataSanPham.success && dataSanPham.data) {
         // Cập nhật Top Mô hình
