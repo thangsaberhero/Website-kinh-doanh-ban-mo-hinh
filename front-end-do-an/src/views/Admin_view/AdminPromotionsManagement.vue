@@ -571,6 +571,19 @@
 
       <div class="p-8 overflow-y-auto custom-scrollbar max-h-[70vh]">
         
+        <div v-if="isEditPromoLocked && currentTypeTab === 'promotion'" 
+             class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 shadow-sm animate-[fadeIn_0.3s_ease-out]">
+          <span class="material-symbols-outlined text-amber-500 shrink-0 text-[24px]">info</span>
+          <div>
+            <h5 class="text-sm font-bold text-amber-800 mb-0.5">Chương trình đang diễn ra</h5>
+            <p class="text-xs text-amber-700 font-medium leading-relaxed">
+              Thời gian bắt đầu đã qua. Bạn không thể thay đổi 
+              <span class="font-bold underline decoration-amber-300 underline-offset-2">thời gian bắt đầu</span> và 
+              <span class="font-bold underline decoration-amber-300 underline-offset-2">danh sách sản phẩm</span> 
+              áp dụng khuyến mãi để đảm bảo tính minh bạch cho khách hàng.
+            </p>
+          </div>
+        </div>
         <div class="space-y-5 mb-8">
           <h4 class="text-[11px] font-black text-sky-600 uppercase tracking-[0.2em] flex items-center gap-2">
             <span class="w-2 h-2 bg-sky-500 rounded-full"></span> Thông tin cơ bản
