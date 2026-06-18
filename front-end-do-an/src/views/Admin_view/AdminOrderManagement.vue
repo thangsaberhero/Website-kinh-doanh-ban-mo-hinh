@@ -279,7 +279,20 @@
                           {{ getOrderStatusBadge(order.orderStatus).text }}
                         </span>
                         
-                        <div v-if="isSLA_Breached(order)" class="relative group/sla...">...</div>
+                        <div v-if="isSLA_Breached(order)" class="relative group/sla cursor-help flex items-center justify-center">
+                          <span class="material-symbols-outlined text-[16px] text-rose-500 animate-pulse">
+                            timer_off
+                          </span>
+                          
+                          <div class="absolute left-full ml-2 top-1/2 -translate-y-1/2 w-48 bg-slate-800/95 backdrop-blur-sm text-white text-[11px] p-2.5 rounded-xl opacity-0 invisible group-hover/sla:opacity-100 group-hover/sla:visible transition-all z-50 shadow-xl border border-rose-500/30 pointer-events-none whitespace-normal break-words">
+                            <p class="font-bold uppercase tracking-widest mb-1 text-[9px] text-rose-400 flex items-center gap-1 border-b border-slate-600/50 pb-1.5">
+                              <span class="material-symbols-outlined text-[12px]">warning</span> Cảnh báo SLA
+                            </p>
+                            <p class="leading-relaxed text-slate-200 mt-1.5">
+                              Đơn hàng này đã chờ duyệt <span class="font-bold text-white">quá 24 giờ</span>. Cần ưu tiên xử lý ngay!
+                            </p>
+                          </div>
+                        </div>
                       </div>
                       
                       <span v-if="order.saleType !== 'Có sẵn' && order.statusId < 3"

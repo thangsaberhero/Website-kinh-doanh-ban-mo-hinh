@@ -1311,8 +1311,8 @@ const donhang_user = {
                 LEFT JOIN ChiTietMaGiamGia ctgg ON ctgg.MaGG = gg.MaGG
                 
                 WHERE gg.TrangThaiHoatDong = 1 
-                  AND gg.ThoiGianBD <= NOW()  -- SỬA LỖI: Đã đến giờ bắt đầu
-                  AND gg.ThoiGianKT >= NOW()  -- SỬA LỖI: Chưa qua giờ kết thúc
+                  AND gg.ThoiGianBD >= NOW()
+                  AND gg.ThoiGianKT <= NOW()
                   AND gg.SoLuongDungToiDa > gg.SoLuongDaDung
                   
                   -- CHỐT CHẶN 1: Mã áp dụng toàn shop HOẶC áp dụng cho món đang có trong giỏ

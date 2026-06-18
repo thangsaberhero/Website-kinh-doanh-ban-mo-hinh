@@ -718,9 +718,12 @@ export default {
       try {
         const response = await axios.post(`${API_BASE_URL}/api/blockchain/mint`, {
           serialNumber: this.mintForm.serialNumber,
-          manufacturer: this.mintForm.manufacturer,
-          header: { 'Authorization': `Bearer ${token}` }
-        });
+          manufacturer: this.mintForm.manufacturer
+          },
+          {
+            headers: { 'Authorization': `Bearer ${token}` } // Tách riêng ra làm tham số thứ 3
+          }
+        );
         if (response.data.success) {
           this.showToast(`Mint Blockchain thành công!\nHash: ${response.data.hash}`, "success", 5000);
           this.mintForm = { serialNumber: '', manufacturer: '' };
@@ -748,12 +751,16 @@ export default {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
 
       try {
-        const response = await axios.post(`${API_BASE_URL}/api/blockchain/update`, {
-          serialNumber: this.updateForm.serialNumber,
-          newStatus: this.updateForm.newStatus,
-          location: this.updateForm.location,
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await axios.post(`${API_BASE_URL}/api/blockchain/update`, 
+          {
+            serialNumber: this.updateForm.serialNumber,
+            newStatus: this.updateForm.newStatus,
+            location: this.updateForm.location
+          },
+          {
+            headers: { 'Authorization': `Bearer ${token}` } // Tách riêng ra làm tham số thứ 3
+          }
+        );
         if (response.data.success) {
           this.showToast(`Cập nhật vị trí lên Smart Contract thành công!\nHash: ${response.data.hash}`, "success", 5000);
 
