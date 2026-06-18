@@ -300,9 +300,11 @@
     fetchNewsData();
   });
 
+  // Mảng hiển thị ở phần lưới Grid
   const displayNews = computed(() => {
     if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
-      return newsList.value.slice(1); 
+      // XÓA TẠM .slice(1) ĐỂ XEM THỬ
+      return newsList.value; 
     }
     return newsList.value;
   });
