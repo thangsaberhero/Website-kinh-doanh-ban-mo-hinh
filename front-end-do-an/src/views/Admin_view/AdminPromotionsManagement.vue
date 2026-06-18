@@ -1303,8 +1303,8 @@
           url = `${API_BASE_URL}/api/khuyen_mai_admin`;
           payload = {
               TenKM: promotionForm.value.TenKM,
-              ThoiGianBD: promotionForm.value.ThoiGianBD,
-              ThoiGianKT: promotionForm.value.ThoiGianKT,
+              ThoiGianBD: formatDatetimeToUTC(promoForm.value.ThoiGianBD),
+              ThoiGianKT: formatDatetimeToUTC(promoForm.value.ThoiGianKT),
               TrangThaiHoatDong: 1, 
               danhsachchitiet: [] 
           };
@@ -1331,8 +1331,8 @@
             ChietKhau: Number(voucherForm.value.ChietKhau),
             MucGiaToiThieu: Number(voucherForm.value.MucGiaToiThieu),
             SoLuongDungToiDa: Number(voucherForm.value.SoLuongDungToiDa),
-            ThoiGianBD: voucherForm.value.ThoiGianBD,
-            ThoiGianKT: voucherForm.value.ThoiGianKT,
+            ThoiGianBD: formatDatetimeToUTC(voucherForm.value.ThoiGianBD),
+            ThoiGianKT: formatDatetimeToUTC(voucherForm.value.ThoiGianKT),
             TrangThaiHoatDong: 1,
             MaKH: selectedCustomer.value ? selectedCustomer.value.MaKH : null,
             GiaTriGiamToiDa: voucherForm.value.LoaiGiamGia === 'PhanTram' && voucherForm.value.GiaTriGiamToiDa ? Number(voucherForm.value.GiaTriGiamToiDa) : null
@@ -1427,18 +1427,27 @@
     editingPromo.value.MaKH = null;
   };
 
-  const formatDatetimeForInput = (dateString) => {
-    if (!dateString) return '';
+  const formatDatetimeForInput = (utcDateString) => {
+    if (!utcDateString) return '';
+    const d = new Date(utcDateString); 
     
-    const d = new Date(dateString);
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     
-    // Ghép lại đúng chuẩn YYYY-MM-DDTHH:mm cho thẻ input datetime-local
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const formatDatetimeToUTC = (localDateString) => {
+    if (!localDateString) return null;
+    
+    // Tạo đối tượng Date từ giờ Việt Nam trên Form
+    const d = new Date(localDateString);
+    
+    // .toISOString() sẽ tự động trừ đi 7 tiếng và gắn thêm đuôi Z chuẩn quốc tế
+    return d.toISOString(); 
   };
 
   const openEditModal = async (item) => {
@@ -1511,8 +1520,8 @@
           url = `${API_BASE_URL}/api/khuyen_mai_admin/${editingPromo.value.id}`;
           payload = {
             TenKM: editingPromo.value.TenKM,
-            ThoiGianBD: editingPromo.value.ThoiGianBD,
-            ThoiGianKT: editingPromo.value.ThoiGianKT,
+            ThoiGianBD: formatDatetimeToUTC(editingPromo.value.ThoiGianBD),
+          ThoiGianKT: formatDatetimeToUTC(editingPromo.value.ThoiGianKT),
             TrangThaiHoatDong: editingPromo.value.TrangThaiHoatDong ? 1 : 0 
           };
         } 
@@ -1529,8 +1538,8 @@
             MucGiaToiThieu: Number(editingPromo.value.MucGiaToiThieu),
             SoLuongDungToiDa: Number(editingPromo.value.SoLuongDungToiDa),
             GiaTriGiamToiDa: editingPromo.value.LoaiGiamGia === 'PhanTram' && editingPromo.value.GiaTriGiamToiDa ? Number(editingPromo.value.GiaTriGiamToiDa) : null,
-            ThoiGianBD: editingPromo.value.ThoiGianBD,
-            ThoiGianKT: editingPromo.value.ThoiGianKT,
+            ThoiGianBD: formatDatetimeToUTC(editingPromo.value.ThoiGianBD),
+            ThoiGianKT: formatDatetimeToUTC(editingPromo.value.ThoiGianKT),
             TrangThaiHoatDong: editingPromo.value.TrangThaiHoatDong ? 1 : 0,
             MaKH: selectedEditCustomer.value ? selectedEditCustomer.value.MaKH : null
           };
