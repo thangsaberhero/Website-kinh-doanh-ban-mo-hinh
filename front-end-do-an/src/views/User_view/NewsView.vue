@@ -274,11 +274,24 @@
   });
 
   // Mảng hiển thị ở phần lưới Grid
+  // --- ĐIỀU PHỐI HIỂN THỊ TIN TỨC ---
   const displayNews = computed(() => {
+    // Nếu không có bài nào thì trả về mảng rỗng
     if (!newsList.value || newsList.value.length === 0) return [];
-    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
-      return newsList.value.slice(1); 
+    
+    // Đang ở trang chủ (Tất cả) và không lọc Tag
+    if (activeCategory.value === 'Tất cả' && !activeTag.value) {
+      
+      // NẾU CÓ TỪ 2 BÀI TRỞ LÊN: Cắt bài mới nhất đem lên Banner, phần còn lại đưa xuống Lưới
+      if (newsList.value.length > 1) {
+        return newsList.value.slice(1); 
+      }
+      
+      // NẾU CHỈ CÓ 1 BÀI DUY NHẤT: Không cắt nữa, trả về luôn để lấp vào danh sách lưới cho đỡ trống
+      return newsList.value;
     }
+    
+    // Nếu đang lọc theo danh mục/tag cụ thể, hiển thị toàn bộ
     return newsList.value;
   });
 
