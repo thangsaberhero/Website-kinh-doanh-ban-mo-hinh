@@ -799,7 +799,6 @@ const thongke = {
             if(NgayKetThuc) { wherecondition.push("dh.NgayLapDon <= ?"); value.push(`${NgayKetThuc} 23:59:59`); }
             let whereClause = wherecondition.length > 0 ? " WHERE " + wherecondition.join(" AND ") : "";
 
-            // Bổ sung dh.MaDonHangHienThi vào SQL
             const sql = `
                 SELECT dh.MaDH, dh.MaDonHangHienThi, kh.TenKH, dh.NgayLapDon, dh.ThanhTien as TongTien,
                        GROUP_CONCAT(mh.TenMH SEPARATOR ', ') as DanhSachHang
@@ -840,7 +839,6 @@ const thongke = {
             ws.views = [{ showGridLines: false }];
             ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true };
 
-            // Cấu hình cột có thêm STT
             ws.columns = [
                 { key: 'STT', width: 10 },
                 { key: 'MaDH', width: 18 },
@@ -923,7 +921,6 @@ const thongke = {
                 const isEven = index % 2 === 0;
                 const rowFillColor = isEven ? 'FFFFFFFF' : 'FFF8F9FA';
 
-                // Vá lỗi viền trống
                 row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFillColor } };
                     cell.font = { size: 10, name: 'Manrope', color: { argb: 'FF222532' } };
@@ -940,6 +937,18 @@ const thongke = {
                     }
                 });
             });
+
+            const MaTK = req.user?.id || null;
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            
+            const noiDungLog = `Xuất báo cáo doanh thu bán hàng ra file Excel (Tổng ${donHangs.length} đơn hàng).`;
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) 
+                VALUES (?, 'ACCOUNT_EXPORT', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `Bao_cao_doanh_thu_${Date.now()}.xlsx`);
@@ -1045,7 +1054,6 @@ const thongke = {
             ws.getCell('A7').font = { italic: true, size: 11, color: { argb: 'FF737580' }, name: 'Manrope' };
             ws.getCell('A7').alignment = { horizontal: 'center' };
 
-            // Block thẻ KPI
             const kpiTongDoanhThu = kpiData[0]?.TongDoanhThu || 0;
             const kpiTongLoiNhuan = kpiData[0]?.TongLoiNhuan || 0;
             const kpiTongDon = kpiData[0]?.TongSoDonHang || 0;
@@ -1068,7 +1076,6 @@ const thongke = {
             ws.getCell('F10').numFmt = '#,##0" đơn"';
             ws.getCell('F10').font = { size: 16, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
 
-            // Merge ô và trang trí cho thẻ KPI
             [9, 10].forEach(r => {
                 ws.mergeCells(`B${r}:C${r}`);
                 ws.mergeCells(`D${r}:E${r}`);
@@ -1121,6 +1128,18 @@ const thongke = {
                     }
                 });
             });
+
+            const MaTK = req.user?.id || null;
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            
+            const noiDungLog = `Xuất báo cáo nhanh tổng quan hệ thống (Dashboard) ra file Excel.`;
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) 
+                VALUES (?, 'ACCOUNT_EXPORT', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `Snapshot_Dashboard_FigureCollect_${Date.now()}.xlsx`);
@@ -1363,7 +1382,6 @@ const thongke = {
             // BÁO CÁO THỐNG KÊ HÀNG TỒN KHO
             // ==============================================================
             if (selectedTypes.includes('tonkho')) {
-                // Tồn kho lấy thời gian thực, không áp dụng where time
                 const [resTonKho] = await db.query(`SELECT mh.TenMH, pl.ChiTietPhanLoai, pl.SoLuong, dm.TenDM FROM PhanLoai pl INNER JOIN MoHinh mh ON pl.MaMoHinh = mh.MaMoHinh INNER JOIN DanhMuc dm ON mh.MaDM = dm.MaDM ORDER BY pl.SoLuong ASC`);
                 
                 const ws2 = workbook.addWorksheet('Báo cáo tồn kho');
@@ -1713,6 +1731,18 @@ const thongke = {
                     dinhDangDongDuLieu(r, i, [1, 2, 3, 5], []);
                 });
             }
+
+            const MaTK = req.user?.id || null;
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            
+            const noiDungLog = `Xuất báo cáo tùy chỉnh đa luồng ra file Excel. Các module bao gồm: [${selectedTypes.join(', ')}].`;
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) 
+                VALUES (?, 'ACCOUNT_EXPORT', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `Bao_Cao_Tong_Hop_FigureCollect_${Date.now()}.xlsx`);
