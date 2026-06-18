@@ -1456,9 +1456,6 @@
     searchedEditCustomers.value = [];
     selectedEditCustomer.value = null;
 
-    const isVoucher = item.MaVoucher !== undefined || item.MaGG !== undefined || item.LoaiGiamGia !== undefined;
-    currentTypeTab.value = isVoucher ? 'voucher' : 'promotion';
-
     if (currentTypeTab.value === 'promotion') {
       editingPromo.value = {
         id: item.MaKM,
