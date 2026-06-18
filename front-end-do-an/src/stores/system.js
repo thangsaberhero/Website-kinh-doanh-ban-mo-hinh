@@ -1,4 +1,3 @@
-// File: src/stores/system.js
 import { defineStore } from 'pinia';
 
 export const useSystemStore = defineStore('system', {
@@ -16,7 +15,7 @@ export const useSystemStore = defineStore('system', {
       social_youtube: '',
       social_instagram: ''
     },
-    isLoaded: false // Cờ đánh dấu để không gọi API nhiều lần
+    isLoaded: false
   }),
   
   actions: {
@@ -33,7 +32,7 @@ export const useSystemStore = defineStore('system', {
           this.settings = { ...this.settings, ...result.data };
           this.isLoaded = true;
           
-          // 🔥 MAGIC: Tự động đổi Title và Favicon của website
+          // Tự động đổi Title và Favicon của website
           if (this.settings.shop_name) {
             document.title = this.settings.shop_name;
           }

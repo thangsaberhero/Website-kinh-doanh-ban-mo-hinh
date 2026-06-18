@@ -268,14 +268,11 @@
   let bgTimer = null;
 
   onMounted(async () => {
-    // 1. KÍCH HOẠT GỌI API NGAY KHI MỞ TRANG ĐĂNG NHẬP
     await systemStore.fetchSettings();
 
-    // 2. Cài đặt đồng hồ chuyển ảnh mỗi 4 giây
+    // Cài đặt đồng hồ chuyển ảnh mỗi 4 giây
     bgTimer = setInterval(() => {
       const bgArray = systemStore.settings?.login_bg;
-      
-      // ĐÃ SỬA: Chỉ kích hoạt hiệu ứng trượt nếu có từ 2 ảnh trở lên
       if (bgArray && bgArray.length > 1) {
         currentBgIndex.value = (currentBgIndex.value + 1) % bgArray.length;
       }
@@ -446,7 +443,6 @@
     box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
   }
 
-  /* Kỹ thuật CSS Fade cho ảnh cực mượt */
   .fade-enter-active,
   .fade-leave-active {
     transition: opacity 1.5s ease-in-out;
@@ -456,6 +452,6 @@
     opacity: 0;
   }
   .fade-leave-active {
-    position: absolute; /* Quan trọng: giúp 2 ảnh đè lên nhau lúc chuyển đổi */
+    position: absolute;
   }
 </style>

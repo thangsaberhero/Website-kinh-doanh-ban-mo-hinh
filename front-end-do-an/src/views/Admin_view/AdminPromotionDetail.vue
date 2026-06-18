@@ -484,7 +484,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, computed, watch } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
   import AdminHeader from "../../components/Admin/AdminHeader.vue";
@@ -528,9 +528,7 @@
     fetchDetailData();
   };
 
-  // ==========================================
-  // 🔴 THUẬT TOÁN PHÂN TRANG: TAB LỊCH SỬ
-  // ==========================================
+  // THUẬT TOÁN PHÂN TRANG
   const paginationLog = ref({ currentPage: 1, totalPage: 1, totalItems: 0, limit: 10 });
 
   const startItemLog = computed(() => paginationLog.value.totalItems === 0 ? 0 : (paginationLog.value.currentPage - 1) * paginationLog.value.limit + 1);
@@ -685,7 +683,7 @@
       } else {
         toastStore.showToast('Không thể thêm sản phẩm! Chương trình này đã kết thúc.', 'error');
       }
-      return; // Dừng, không mở modal
+      return;
     }
 
     // Nếu thỏa mãn (chưa tới ngày bắt đầu) -> Mở modal và reset form như cũ
@@ -696,20 +694,6 @@
     filterBrand.value = '';
     isAddProductModalOpen.value = true;
     searchProductsWithFilter(); 
-  };
-
-  const toggleSelectAll = () => {
-    if (searchedProducts.value.length === 0) return;
-    const currentSearchIds = searchedProducts.value.map(p => p.MaPhanLoai);
-    const isAllSelected = currentSearchIds.every(id => selectedProductIds.value.includes(id));
-
-    if (isAllSelected) {
-      selectedProductIds.value = selectedProductIds.value.filter(id => !currentSearchIds.includes(id));
-    } 
-    else {
-      const newIds = currentSearchIds.filter(id => !selectedProductIds.value.includes(id));
-      selectedProductIds.value.push(...newIds);
-    }
   };
 
   const formatDate = (dateString) => {

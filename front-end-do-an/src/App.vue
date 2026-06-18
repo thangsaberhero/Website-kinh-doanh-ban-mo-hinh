@@ -30,7 +30,6 @@
   import FooterMinimal from '@/components/FooterMinimal.vue';
   import PhoneRing from '@/components/PhoneRing.vue';
   import Chatbox from '@/components/Chatbot.vue';
-  import ProvenanceTracking from './views/User_view/ProvenanceTracking.vue';
 
   const route = useRoute();
   const authStore = useAuthStore();
@@ -109,7 +108,7 @@
 </script>
 
 <style>
-  /* 1. Ẩn TOÀN BỘ con chuột thật của hệ điều hành */
+  /* Ẩn con chuột thật của hệ điều hành */
   @media (hover: hover) and (pointer: fine) {
     body, body * {
       cursor: none !important;
@@ -122,31 +121,29 @@
     }
   }
 
-  /* 2. Cấu hình khung chứa con chuột giả */
+  /* Cấu hình khung chứa con chuột giả */
   .my-custom-cursor {
     position: fixed;
     top: 0;
     left: 0;
-    width: 32px; /* Chỉnh kích thước tùy theo file GIF của bạn */
+    width: 32px;
     height: 32px;
     background-size: contain;
     background-repeat: no-repeat;
-    pointer-events: none; /* Cực kỳ quan trọng: Để click xuyên qua ảnh này */
-    z-index: 9999; /* Luôn nổi lên trên cùng (Toast hay Chatbot cũng không đè được) */
-    transition: background-image 0.15s ease; /* Hiệu ứng chuyển ảnh mượt mà */
+    pointer-events: none;
+    z-index: 9999; /* Luôn nổi lên trên cùng */
+    transition: background-image 0.15s ease;
     
     
     filter: none !important;
     mix-blend-mode: normal !important;
     -webkit-filter: none !important;
     color-scheme: light only !important;
-    /* Chỉnh tọa độ đầu nhọn của chuột. Thường đầu mũi tên nằm ở góc trái trên cùng (0, 0)
-      Nếu file GIF của bạn có mũi tên nằm ở giữa ảnh, hãy đổi thành margin: -16px 0 0 -16px; */
     margin-top: 0px; 
     margin-left: 0px;
   }
 
-  /* 3. Gắn file GIF tương ứng cho từng trạng thái */
+  /* Gắn file GIF tương ứng cho từng trạng thái */
   .my-custom-cursor.is-normal {
     background-image: url('/cursors/Normal.gif'); /* Đường dẫn file Normal */
   }

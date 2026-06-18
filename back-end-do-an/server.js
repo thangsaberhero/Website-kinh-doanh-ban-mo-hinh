@@ -10,11 +10,10 @@ const db = require('./config/db');
 
 // Middlewares
 app.use(cors());
-app.use(express.json()); // Giúp server đọc được dữ liệu JSON gửi lên
+app.use(express.json());
 
 // Khởi động Server
-const port = process.env.PORT || 3000; 
-// Code của bạn...
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
@@ -45,7 +44,6 @@ app.use('/api/contact', userContactRoutes);
 
 //Lấy đường dẫn ảnh đại diện
 const path = require('path');
-// Cấp quyền cho trình duyệt được phép truy cập vào thư mục public/Images_user
 app.use('/Images_user', express.static(path.join(__dirname, 'public/Images_user')));
 app.use('/Images_news', express.static(path.join(__dirname, 'public/Images_news')));
 app.use('/Images_review', express.static(path.join(__dirname, 'public/Images_review')));
@@ -85,7 +83,7 @@ cron.schedule('* * * * *', async () => {
             for (let don of don_qua_han) {
                 const maDH = don.MaDH;
                 
-                // 🔥 ĐƯA TRANSACTION VÀO TRONG VÒNG LẶP: Hủy lỗi đơn nào thì rollback đơn đó, các đơn khác vẫn an toàn
+                // ĐƯA TRANSACTION VÀO TRONG VÒNG LẶP: Hủy lỗi đơn nào thì rollback đơn đó, các đơn khác vẫn an toàn
                 await connection.beginTransaction(); 
 
                 try {
@@ -147,7 +145,6 @@ cron.schedule('* * * * *', async () => {
     } catch (error) {
         console.error("⚠️ [CRON] Lỗi truy vấn tổng thể:", error);
     } finally {
-        // Chạy xong hết mới thả kết nối Database ra
         connection.release();
     }
 });

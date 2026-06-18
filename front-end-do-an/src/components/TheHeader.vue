@@ -319,7 +319,6 @@
       return anh.startsWith('http') ? anh : `${API_BASE_URL}/Images_user/${anh}`;
     }
     
-    // 2. NẾU USER CHƯA CÓ ẢNH (Tạo ảnh chữ cái nền cam san hô)
     const name = authStore.user?.TenKH || authStore.user?.username || authStore.user?.TenDN || 'Collector';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ff8f73&color=fff&bold=true&size=150`;
   });

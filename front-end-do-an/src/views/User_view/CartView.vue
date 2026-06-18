@@ -367,10 +367,6 @@
     if (pollingInterval) clearInterval(pollingInterval);
   });
 
-
-  // Tính toán giá
-  
-
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
   const addToCart = async (productInfo) => {
@@ -586,7 +582,7 @@
       };
 
       const response = await fetch(`${API_BASE_URL}/api/don_hang/delete`, {
-        method: 'POST', // Đảm bảo Backend của bạn dùng app.post('/delete', ...)
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

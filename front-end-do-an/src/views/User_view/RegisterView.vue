@@ -276,7 +276,6 @@
   let bgTimer = null;
 
   onMounted(async () => {
-    // Kích hoạt gọi API để lấy dữ liệu cài đặt
     await systemStore.fetchSettings();
 
     // Cài đặt đồng hồ chuyển ảnh mỗi 4 giây (chỉ chạy khi mảng có từ 2 ảnh trở lên)
@@ -309,13 +308,12 @@
     }, 1000);
   };
 
-  // Hủy bộ đếm khi rời khỏi trang để tránh rò rỉ bộ nhớ
   onUnmounted(() => {
     if (timerInterval) clearInterval(timerInterval);
     if (bgTimer) clearInterval(bgTimer);
   });
 
-  // BƯỚC 1: Lấy mã OTP
+  // Lấy mã OTP
   const handlePreRegister = async () => {
     if (form.password !== form.confirmPassword) {
       toastStore.showToast('Mật khẩu xác nhận không khớp!', 'warning', 3500, 'top-right');
@@ -359,7 +357,7 @@
     }
   };
 
-  // BƯỚC 2: Xác thực & Tạo tài khoản
+  // Xác thực & Tạo tài khoản
   const handleRegister = async () => {
     if (!otpCode.value || otpCode.value.length !== 6) {
         toastStore.showToast('Vui lòng nhập đủ 6 số OTP!', 'warning', 3000, 'top-right');
@@ -388,9 +386,7 @@
         throw new Error(data.message || 'Lỗi đăng ký từ Server!');
       }
       
-      step.value = 3; // Chuyển sang màn hình "Thành công"
-      
-      // Chờ 3 giây rồi chuyển trang
+      step.value = 3;
       setTimeout(() => {
         router.push('/login');
       }, 3000);
@@ -431,8 +427,7 @@
       otpCode.value = '';
       
       toastStore.showToast('Đã gửi lại mã OTP mới!', 'success', 3000, 'top-right');
-      startTimer(); // Khởi động lại bộ đếm 5 phút
-      
+      startTimer(); // Khởi động lại bộ đếm 5 phút      
     } 
     catch (error) {
       console.error("Lỗi gửi lại mã:", error);
@@ -468,7 +463,6 @@
     box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
   }
 
-  /* Kỹ thuật CSS Fade cho ảnh cực mượt */
   .fade-enter-active,
   .fade-leave-active {
     transition: opacity 1.5s ease-in-out;
@@ -481,7 +475,6 @@
     position: absolute;
   }
 
-  /* CSS cho hiệu ứng chuyển bước (Transition form) */
   .fade-slide-enter-active,
   .fade-slide-leave-active {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

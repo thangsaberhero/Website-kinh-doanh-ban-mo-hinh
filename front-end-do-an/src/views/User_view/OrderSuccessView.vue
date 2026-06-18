@@ -102,8 +102,7 @@
 <script setup>
   import TheHeader from '../../components/TheHeader.vue';
   import { ref, onMounted, computed } from 'vue';
-  import { useRouter, useRoute } from 'vue-router'; 
-  import { useAuthStore } from '../../stores/auth';
+  import { useRouter, useRoute } from 'vue-router';
 
   const router = useRouter();
   const route = useRoute(); 
@@ -156,7 +155,6 @@
 
     // Đề phòng trường hợp Frontend cũ truyền 1 cục Array vào
     const maDH = Array.isArray(rawMaDH) ? rawMaDH[0] : rawMaDH;
-    // orderIdDisplay.value = maDH;
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/don_hang/watch_detail_order/${maDH}`, {
@@ -172,8 +170,7 @@
         orderInfo.value = result.data.ThongTinGiaoHang; 
         orderItems.value = result.data.DanhSachHang;
         totalQty.value = orderItems.value.reduce((sum, item) => sum + item.SoLuong, 0);
-        
-        // 🔥 BỔ SUNG DÒNG NÀY ĐỂ CẬP NHẬT MÃ HIỂN THỊ XỊN
+
         if (orderInfo.value.MaDonHangHienThi) {
           orderIdDisplay.value = orderInfo.value.MaDonHangHienThi;
         }

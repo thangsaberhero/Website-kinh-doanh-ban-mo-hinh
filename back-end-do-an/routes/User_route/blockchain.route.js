@@ -10,7 +10,7 @@ router.get('/get-serials', authMiddleware.verifyToken, authMiddleware.verifyStaf
 
 // Dành cho Web hiển thị cho khách
 router.get('/history/:serialNumber', blockchainController.truyXuatNguonGoc);
-// Tạo mã QR dựa trên Serial (Bổ sung mới)
+// Tạo mã QR dựa trên Serial
 router.get('/generate-qr/:serialNumber', blockchainController.generateProductQR);
 
 module.exports = router;

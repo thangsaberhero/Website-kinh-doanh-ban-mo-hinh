@@ -267,11 +267,6 @@
 </script>
 
 <style scoped>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap');
-
-    .font-headline { font-family: 'Space Grotesk', sans-serif; }
-    .font-body { font-family: 'Manrope', sans-serif; }
-
     .neon-glow {
         text-shadow: 0 0 10px rgba(255, 61, 0, 0.5), 0 0 30px rgba(255, 61, 0, 0.3);
     }

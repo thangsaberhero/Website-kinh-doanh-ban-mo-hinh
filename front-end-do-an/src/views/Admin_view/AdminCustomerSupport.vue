@@ -486,7 +486,7 @@
               variant: item.ChiTietPhanLoai,
               stars: item.SoSao,
               content: item.NoiDung,
-              images: imageArr, // <-- ĐÃ SỬA DÒNG NÀY
+              images: imageArr,
               shopReply: item.PhanHoiShop,
               responderName: item.TenNVPhanHoi,
               status: item.TrangThai
@@ -688,7 +688,6 @@
   const checkTabFromUrl = () => {
     if (route.query.tab === 'contacts') {
       activeTab.value = 'contacts';
-      // Tùy chọn: Xóa tham số URL sau khi chuyển tab để F5 không bị kẹt
       router.replace({ query: {} }); 
     }
   };

@@ -237,14 +237,14 @@
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '../../stores/auth.js';
   import { useToastStore } from '../../stores/toast';
-  import { useSystemStore } from '../../stores/system.js'; // Đã thêm System Store
+  import { useSystemStore } from '../../stores/system.js';
   import TheHeader from '../../components/TheHeader.vue';
   import ProductCard from '../../components/ProductCard.vue';
 
   const router = useRouter();
   const authStore = useAuthStore();
   const toastStore = useToastStore();
-  const systemStore = useSystemStore(); // Khởi tạo Store cấu hình
+  const systemStore = useSystemStore();
 
   const productList = ref([]);
   const productSlider = ref(null);
@@ -290,11 +290,8 @@
     cat.currentIndex = 0; 
   };
 
-  // 🔥 BIẾN MẢNG CỨNG THÀNH COMPUTED TỰ ĐỘNG LẤY TỪ ADMIN
   const heroSlides = computed(() => {
     const banners = systemStore.settings?.home_banner;
-
-    // Dự phòng: Nếu Admin chưa up ảnh nào
     if (!banners || banners.length === 0) {
       return [{
         id: 1, tag: "PREMIUM ARTIFACTS", title: "FIGURE", titleAccent: "COLLECT",
@@ -319,8 +316,6 @@
 
   const currentHeroIndex = ref(0);
   let heroTimer = null;
-
-  // Cập nhật hàm next/prev dùng .value.length
   const nextHeroSlide = () => {
     if(heroSlides.value.length > 0) {
       currentHeroIndex.value = (currentHeroIndex.value + 1) % heroSlides.value.length;
@@ -349,17 +344,11 @@
     requestAnimationFrame(animateScroll);
   };
 
-  // 🔥 ĐÃ GỘP TẤT CẢ VÀO 1 ONMOUNTED DUY NHẤT
   onMounted(async () => {
     scrollToTopCustom();
-
-    // 1. Lấy cấu hình Slider từ CSDL
     await systemStore.fetchSettings();
-
-    // 2. Kích hoạt đồng hồ Slider
     heroTimer = setInterval(nextHeroSlide, 7000); 
 
-    // 3. Tải danh sách Hàng mới cập bến
     try {
       const response = await fetch(`${API_BASE_URL}/api/products?limit=12`);
       const dataJSON = await response.json(); 
@@ -369,8 +358,6 @@
     } catch (error) {
       console.error("Lỗi:", error);
     }
-
-    // 4. Tải Hãng & Danh mục
     await fetchBrands();
     await fetchCategories();
   });
@@ -562,7 +549,6 @@
     }
   }
 
-  /* Hiệu ứng mờ dần (Cross-fade) cực mượt giữa các bức ảnh danh mục */
   .fade-enter-active,
   .fade-leave-active {
     transition: opacity 1s ease-in-out;
@@ -572,7 +558,6 @@
     opacity: 0;
   }
   .fade-leave-active {
-    /* position: absolute giúp ảnh cũ và ảnh mới đè lên nhau trong lúc chuyển đổi */
     position: absolute; 
   }
 </style>

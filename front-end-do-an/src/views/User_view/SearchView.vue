@@ -200,7 +200,7 @@
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const showMobileFilter = ref(false);
 
-  // --- 1. BIẾN QUẢN LÝ DỮ LIỆU & PHÂN TRANG ---
+  //  BIẾN QUẢN LÝ DỮ LIỆU & PHÂN TRANG
   const searchQuery = ref(route.query.q || '');
   const productList = ref([]);
   const categories = ref([]);
@@ -211,7 +211,7 @@
   const totalPages = ref(1);
   const totalItems = ref(0);
 
-  // --- 2. BIẾN BỘ LỌC ---
+  // BIẾN BỘ LỌC
   const selectedCategories = ref([]);
   const selectedSubCategories = ref([]);
   const selectedBrands = ref([]);
@@ -221,7 +221,7 @@
   const availableBrands = ref([]);
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-  // --- 3. HÀM TẢI DỮ LIỆU TỪ API ---
+  // HÀM TẢI DỮ LIỆU TỪ API
   const fetchCategories = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/products/danhmuc`);
@@ -290,7 +290,7 @@
     }
   };
 
-  // --- 4. LOGIC THANH PHÂN TRANG RÚT GỌN (Giống CategoryView) ---
+  // PHÂN TRANG
   const visiblePages = computed(() => {
     const current = currentPage.value;
     const total = totalPages.value;

@@ -640,31 +640,6 @@
     }
   };
 
-  // const filteredReviews = computed(() => {
-  //   if (currentFilter.value === 'all') {
-  //     return reviews.value;
-  //   }
-
-  //   if (currentFilter.value === 'withImage') {
-  //     return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0);
-  //   }
-
-  //   const starLevel = parseInt(currentFilter.value);
-  //   if (!isNaN(starLevel)) {
-  //     return reviews.value.filter(r => r.SoSao === starLevel);
-  //   }
-
-  //   return reviews.value;
-  // });
-
-  // const reviewsWithImageCount = computed(() => {
-  //   return reviews.value.filter(r => r.HinhAnh && r.HinhAnh.length > 0).length;
-  // });
-
-  // const displayedReviews = computed(() => {
-  //   return filteredReviews.value.slice(0, visibleCount.value);
-  // });
-
   const loadMoreReviews = () => {
     currentPageReviews.value++;
     fetchReviews(product.value.MaMoHinh, true);
@@ -676,7 +651,6 @@
 
   const fetchProductDetails = async (id) => {
     try {
-      // Gọi 1 API duy nhất
       const res = await fetch(`${API_BASE_URL}/api/products/${id}`);
       const dataJSON = await res.json();
       if (res.ok) {
@@ -687,9 +661,8 @@
           fetchProductQR(product.value.MaVach_Serial).catch(e => console.error(e));
         }
 
-        // 1. Xử lý danh sách ảnh
+        // Xử lý danh sách ảnh
         let images = [product.value.AnhDaiDien];
-        // Vì Backend đã split(',') sẵn thành mảng, ta chỉ cần nối vào
         if (product.value.DanhSachAnh && product.value.DanhSachAnh.length > 0) {
           images = [...images, ...product.value.DanhSachAnh];
         }
@@ -697,7 +670,7 @@
         displayImages.value = [...allImages.value];
         mainImage.value = allImages.value[0];
 
-        // 2. Tự động lấy danh sách phân loại từ Object trả về
+        // Tự động lấy danh sách phân loại từ Object trả về
         variants.value = product.value.DanhSachPhanLoai || [];
         if (variants.value.length > 0) {
           selectedVariant.value = variants.value[0];
@@ -715,17 +688,18 @@
     isFavorite.value = false;
 
     if (token) {
-        try {
-            const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const favData = await resFav.json();
-            if (resFav.ok && favData.isFavorite) {
-                isFavorite.value = true;
-            }
-        } catch (error) {
-            console.error("Lỗi kiểm tra trạng thái yêu thích:", error);
+      try {
+        const resFav = await fetch(`${API_BASE_URL}/api/products/check_favorite/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const favData = await resFav.json();
+        if (resFav.ok && favData.isFavorite) {
+          isFavorite.value = true;
         }
+      } 
+      catch (error) {
+        console.error("Lỗi kiểm tra trạng thái yêu thích:", error);
+      }
     }
   };
 
@@ -746,24 +720,6 @@
     NoiDung: '',
     HinhAnh: []
   });
-
-  // const reviewStats = computed(() => {
-  //   if (reviews.value.length === 0) return { avg: 0, count: 0, stars: { 5:0, 4:0, 3:0, 2:0, 1:0 } };
-
-  //   let totalStars = 0;
-  //   const starsCount = { 5:0, 4:0, 3:0, 2:0, 1:0 };
-
-  //   reviews.value.forEach(r => {
-  //     totalStars += r.SoSao;
-  //     starsCount[r.SoSao] = (starsCount[r.SoSao] || 0) + 1;
-  //   });
-
-  //   return {
-  //     avg: (totalStars / reviews.value.length).toFixed(1),
-  //     count: reviews.value.length,
-  //     stars: starsCount
-  //   };
-  // });
 
   const fetchReviews = async (maMH, isLoadMore = false) => {
     try {
@@ -855,14 +811,9 @@
     let uploadedImageNames = [];
 
     try {
-      // ==========================================
-      // GIAI ĐOẠN 1: UPLOAD ẢNH (NẾU CÓ)
-      // ==========================================
+      // UPLOAD ẢNH
       if (selectedFiles.value.length > 0) {
         const uploadFormData = new FormData();
-        
-        // LƯU Ý QUAN TRỌNG: Key ở đây phải là 'images' để khớp với:
-        // uploadReview.array('images', 5) ở Router Backend của bạn
         selectedFiles.value.forEach(file => {
           uploadFormData.append('images', file); 
         });
@@ -871,7 +822,6 @@
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
-            // Không set Content-Type khi gửi FormData
           },
           body: uploadFormData
         });
@@ -879,28 +829,26 @@
         const uploadData = await uploadRes.json();
         
         if (uploadRes.ok) {
-          // Lấy mảng tên file do Backend trả về (Ví dụ: ["anh1.jpg", "anh2.jpg"])
           uploadedImageNames = uploadData.images || [];
-        } else {
+        } 
+        else {
           throw new Error(uploadData.message || "Lỗi khi upload hình ảnh!");
         }
       }
 
-      // ==========================================
-      // GIAI ĐOẠN 2: LƯU DỮ LIỆU ĐÁNH GIÁ VÀO DATABASE
-      // ==========================================
+      // LƯU DỮ LIỆU ĐÁNH GIÁ VÀO DATABASE
       const reviewPayload = {
         MaMoHinh: product.value.MaMoHinh,
         MaPhanLoai: (selectedVariant.value && selectedVariant.value.MaPhanLoai) ? selectedVariant.value.MaPhanLoai : null,
         NoiDung: reviewForm.value.NoiDung,
         SoSao: reviewForm.value.SoSao,
-        HinhAnh: uploadedImageNames // Truyền mảng tên ảnh vào đây dưới dạng Text/Array
+        HinhAnh: uploadedImageNames
       };
 
       const createRes = await fetch(`${API_BASE_URL}/api/reviews/create`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // Đã chuyển về gửi JSON
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(reviewPayload)
@@ -971,56 +919,52 @@
     await loadAllData(spId);
   });
 
-  // ================= HÀM MỚI XỬ LÝ KHI BẤM NÚT THẢ TIM ❤️ =================
   const toggleFavorite = async () => {
-      // 1. Bóc tách thông tin đăng nhập
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
-      // 2. Kiểm tra nếu chưa đăng nhập -> đá sang trang Login
       if (!token || !userString) {
-          toastStore.showToast("💖 Bạn cần đăng nhập để thả tim mô hình nhé!", "error");
-          // Ghi nhớ trang hiện tại để login xong thì quay lại đây
-          router.push({ path: '/login', query: { redirect: route.fullPath } });
-          return;
+        toastStore.showToast("💖 Bạn cần đăng nhập để thả tim mô hình nhé!", "error");
+        router.push({ path: '/login', query: { redirect: route.fullPath } });
+        return;
       }
 
       const userObj = JSON.parse(userString);
 
       try {
-          // 3. Gửi payload lên API "Toggle" ở Backend
-          const payload = {
-              MaKH: userObj.MaKH,
-              MaMoHinh: product.value.MaMoHinh
-          };
+        const payload = {
+          MaKH: userObj.MaKH,
+          MaMoHinh: product.value.MaMoHinh
+        };
 
-          const response = await fetch(`${API_BASE_URL}/api/products/add_remove_favorite`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(payload)
-          });
+        const response = await fetch(`${API_BASE_URL}/api/products/add_remove_favorite`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
 
-          const data = await response.json();
+        const data = await response.json();
 
-          if (response.ok) {
-              // 4. Cập nhật UI ngay lập tức dựa trên chữ 'action' từ Backend trả về
-              if (data.action === 'added') {
-                  isFavorite.value = true; // Tô đỏ
-                  toastStore.showToast("💖 " + data.message, "success");
-              } else if (data.action === 'removed') {
-                  isFavorite.value = false; // Bỏ đỏ (rỗng)
-                  toastStore.showToast("💔 " + data.message, "success");
-              }
-          } else {
-              toastStore.showToast("⚠️ Lỗi: " + data.message, "error");
+        if (response.ok) {
+          if (data.action === 'added') {
+            isFavorite.value = true;
+            toastStore.showToast("💖 " + data.message, "success");
+          } 
+          else if (data.action === 'removed') {
+          isFavorite.value = false;
+          toastStore.showToast("💔 " + data.message, "success");
           }
-
-      } catch (error) {
-          console.error("Lỗi khi kết nối API yêu thích:", error);
-          alert("Có lỗi mạng xảy ra, không thể thao tác mục yêu thích!");
+        } 
+        else {
+          toastStore.showToast("⚠️ Lỗi: " + data.message, "error");
+        }
+      } 
+      catch (error) {
+        console.error("Lỗi khi kết nối API yêu thích:", error);
+        alert("Có lỗi mạng xảy ra, không thể thao tác mục yêu thích!");
       }
   };
 
@@ -1081,42 +1025,19 @@
   };
 
   const qrCodeImg = ref('');
-  /*
-  const showQR = async (serial) => {
-      if (!serial) {
-          alert("Sản phẩm này không có mã Serial!");
-          return;
-      }
 
-      console.log("Đang gọi API cho Serial:", serial); // Kiểm tra log ở F12
-      try {
-          // Hãy chắc chắn port 3000 là port Backend của bạn
-          const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${serial}`);
-
-          if (res.data.success) {
-              qrCodeImg.value = res.data.qrCodeData;
-              console.log("Đã nhận dữ liệu QR thành công");
-          } else {
-              alert("Backend trả về lỗi: " + res.data.message);
-          }
-      } catch (err) {
-          console.error("Lỗi kết nối API:", err);
-          alert("Không thể kết nối đến máy chủ Backend!");
-      }
-  };
-  */
   const fetchProductQR = async (serial) => {
-      if (!serial) return; // Nếu không có serial thì bỏ qua
+    if (!serial) return;
 
-      try {
-          const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${serial}`);
-          if (res.data.success) {
-              qrCodeImg.value = res.data.qrCodeData;
-          }
-      } catch (err) {
-          console.error("Lỗi tự động tạo QR:", err);
-          // Không dùng alert ở đây để tránh làm phiền người dùng nếu lỗi mạng nhẹ
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/blockchain/generate-qr/${serial}`);
+      if (res.data.success) {
+        qrCodeImg.value = res.data.qrCodeData;
       }
+    }
+      catch (err) {
+      console.error("Lỗi tự động tạo QR:", err);
+    }
   };
 
   // Thêm hàm tải ảnh QR (để dùng cho nút bấm nếu cần)
