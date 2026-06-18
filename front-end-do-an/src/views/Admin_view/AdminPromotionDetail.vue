@@ -941,13 +941,15 @@
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Bao_Cao_${promoType.value}_${promoId}.xlsx`); 
+      const a = document.createElement('a');
+      a.href = url;
+      const today = new Date();
+      const dateStr = `${today.getDate().toString().padStart(2, '0')}_${(today.getMonth() + 1).toString().padStart(2, '0')}_${today.getFullYear()}`;
+      a.download = `Bao_Cao_${promoType.value}_${promoId}_FigureCollect_${dateStr}.xlsx`;
       
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
       window.URL.revokeObjectURL(url);
       
       toastStore.showToast('Xuất báo cáo Excel thành công!', 'success');
