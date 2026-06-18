@@ -1458,7 +1458,7 @@
 
     if (currentTypeTab.value === 'promotion') {
       editingPromo.value = {
-        id: item.MaKM,
+        id: item.id,
         TenKM: item.TenKM,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
@@ -1467,7 +1467,7 @@
     } 
     else {
       editingPromo.value = {
-        id: item.MaGG,
+        id: item.id,
         TenMaGiamGia: item.TenMaGiamGia,
         MaVoucher: item.MaVoucher,
         LoaiGiamGia: item.LoaiGiamGia || 'TienMat',
