@@ -189,7 +189,12 @@
               <tbody>
                 <tr v-for="item in filteredData" :key="item.id" class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">          
                   <template v-if="currentTypeTab === 'promotion'">
-                    <td class="py-4 px-6 font-semibold text-slate-900 text-sm">{{ item.TenKM }}</td>
+                    <td class="py-4 px-6">
+                      <span @click="goToDetail(item)" 
+                            class="font-semibold text-slate-900 text-sm cursor-pointer hover:text-sky-500 hover:underline underline-offset-2 transition-all">
+                        {{ item.TenKM }}
+                      </span>
+                    </td>
                     <td class="py-4 px-6 text-xs text-slate-500">
                       {{ formatDate(item.ThoiGianBD) }} - <br> {{ formatDate(item.ThoiGianKT) }}
                     </td>
@@ -198,9 +203,13 @@
 
                   <template v-else>
                     <td class="py-4 px-6">
-                      <div class="flex flex-col">
-                        <span class="font-black text-slate-900 tracking-wide text-sm">{{ item.MaVoucher }}</span>
-                        <span class="text-[11px] text-slate-500 font-medium">{{ item.TenMaGiamGia }}</span>
+                      <div @click="goToDetail(item)" class="flex flex-col cursor-pointer group w-fit">
+                        <span class="font-black text-slate-900 tracking-wide text-sm group-hover:text-purple-500 transition-colors">
+                          {{ item.MaVoucher }}
+                        </span>
+                        <span class="text-[11px] text-slate-500 font-medium group-hover:text-purple-400 transition-colors">
+                          {{ item.TenMaGiamGia }}
+                        </span>
                       </div>
                     </td>
 
