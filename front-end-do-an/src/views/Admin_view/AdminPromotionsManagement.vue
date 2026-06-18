@@ -601,7 +601,8 @@
             <p class="text-xs text-amber-700 font-medium leading-relaxed">
               Chiến dịch đã bắt đầu. Hệ thống đã khóa 
               <span class="font-bold underline decoration-amber-300 underline-offset-2">thời gian bắt đầu</span>, 
-              <span class="font-bold underline decoration-amber-300 underline-offset-2">khách hàng áp dụng</span> và 
+              <span class="font-bold underline decoration-amber-300 underline-offset-2">khách hàng áp dụng</span>,
+              <span class="font-bold underline decoration-amber-300 underline-offset-2">số lượng phát hành</span> và
               <span class="font-bold underline decoration-amber-300 underline-offset-2">danh sách sản phẩm</span>
               để tránh gây lỗi cho các đơn hàng đang thanh toán.
             </p>
@@ -638,7 +639,14 @@
               </div>
               <div class="col-span-1">
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">SL tối đa (*)</label>
-                <input v-model="editingPromo.SoLuongDungToiDa" type="number" min="1" class="w-full border border-slate-200 rounded-2xl p-3.5 text-sm font-bold focus:border-sky-500 outline-none bg-slate-50/50 focus:bg-white transition-all"/>
+                <input 
+                  v-model="editingPromo.SoLuongDungToiDa" 
+                  type="number" 
+                  min="1"
+                  :disabled="isEditPromoLocked"
+                  :class="isEditPromoLocked ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200' : 'bg-white text-slate-700 border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary/20'"
+                  class="w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium"
+                >
               </div>
             </div>
 

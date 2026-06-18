@@ -810,7 +810,7 @@ const khuyenmai = {
 
             // 2. LẤY THÔNG TIN GỐC TỪ DATABASE (Cột mốc sự thật)
             // BỔ SUNG: Lấy thêm MaKH gốc từ Database để kiểm tra điều kiện khóa
-            const [check] = await connection.query(`SELECT MaGG, ThoiGianBD, MaKH FROM MaGiamGia WHERE MaGG = ?`, [MaGG]);
+            const [check] = await connection.query(`SELECT MaGG, ThoiGianBD, MaKH, SoLuongDungToiDa FROM MaGiamGia WHERE MaGG = ?`, [MaGG]);
             if(check.length === 0) {
                 await connection.rollback();
                 return res.status(404).json({ success: false, message: "Không tìm thấy mã giảm giá cần sửa!" });
@@ -818,16 +818,19 @@ const khuyenmai = {
 
             const db_ThoiGianBD = check[0].ThoiGianBD;
             const db_MaKH = check[0].MaKH;
+            const db_SoLuongDungToiDa = check[0].SoLuongDungToiDa;
             const isStarted = new Date(db_ThoiGianBD) <= new Date();
 
             // 3. GIẢI QUYẾT XUNG ĐỘT THỜI GIAN BẮT ĐẦU VÀ MÃ KHÁCH HÀNG
             let final_ThoiGianBD = ThoiGianBD;
-            let final_MaKH = MaKH; // Mặc định nhận giá trị mới từ Frontend truyền lên
+            let final_MaKH = MaKH; 
+            let final_SoLuongDungToiDa = SoLuongDungToiDa;
 
             if (isStarted) {
                 // CHỐT CHẶN VÀNG: Đã chạy thì ép dùng giờ cũ của DB, đồng thời KHÓA luôn không cho đổi đối tượng khách hàng áp dụng
                 final_ThoiGianBD = db_ThoiGianBD; 
                 final_MaKH = db_MaKH; 
+                final_SoLuongDungToiDa = db_SoLuongDungToiDa;
             } else {
                 if (!ThoiGianBD) {
                     await connection.rollback();
