@@ -282,6 +282,11 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ tên và thời gian chương trình!" });
             }
 
+            if (new Date(ThoiGianBD) < new Date()) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi: Thời gian bắt đầu không được nằm trong quá khứ!" });
+            }
+
             if (new Date(ThoiGianBD) >= new Date(ThoiGianKT)) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!" });
@@ -353,9 +358,14 @@ const khuyenmai = {
             if (isStarted) {
                 // CHỐT CHẶN VÀNG: Đã chạy rồi thì cấm đổi giờ bắt đầu. Ép dùng lại giờ cũ của DB!
                 final_ThoiGianBD = db_ThoiGianBD; 
-            } else if (!ThoiGianBD) {
-                await connection.rollback();
-                return res.status(400).json({ success: false, message: "Vui lòng chọn Thời gian bắt đầu!" });
+            } else {
+                if (!ThoiGianBD) {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Vui lòng chọn Thời gian bắt đầu!" });
+                } else if (new Date(ThoiGianBD) < new Date()) {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian bắt đầu mới không được phép nằm trong quá khứ!" });
+                }
             }
 
             // 3. KIỂM TRA LOGIC THỜI GIAN MỚI NHẤT
@@ -672,6 +682,11 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ các thông tin bắt buộc!" });
             }
 
+            if (new Date(ThoiGianBD) < new Date()) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "Lỗi: Thời gian bắt đầu không được nằm trong quá khứ!" });
+            }
+
             if (new Date(ThoiGianBD) >= new Date(ThoiGianKT)) {
                 await connection.rollback();
                 return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!" });
@@ -811,9 +826,14 @@ const khuyenmai = {
                 // CHỐT CHẶN VÀNG: Đã chạy thì ép dùng giờ cũ của DB, đồng thời KHÓA luôn không cho đổi đối tượng khách hàng áp dụng
                 final_ThoiGianBD = db_ThoiGianBD; 
                 final_MaKH = db_MaKH; 
-            } else if (!ThoiGianBD) {
-                await connection.rollback();
-                return res.status(400).json({ success: false, message: "Vui lòng chọn Thời gian bắt đầu!" });
+            } else {
+                if (!ThoiGianBD) {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Vui lòng chọn Thời gian bắt đầu!" });
+                } else if (new Date(ThoiGianBD) < new Date()) {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Lỗi: Thời gian bắt đầu mới không được phép nằm trong quá khứ!" });
+                }
             }
 
             if (new Date(final_ThoiGianBD) >= new Date(ThoiGianKT)) {

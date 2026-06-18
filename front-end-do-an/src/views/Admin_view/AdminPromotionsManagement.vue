@@ -584,6 +584,20 @@
             </p>
           </div>
         </div>
+        <div v-if="isEditPromoLocked && currentTypeTab === 'voucher'" 
+             class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 shadow-sm animate-[fadeIn_0.3s_ease-out]">
+          <span class="material-symbols-outlined text-amber-500 shrink-0 text-[24px]">info</span>
+          <div>
+            <h5 class="text-sm font-bold text-amber-800 mb-0.5">Mã giảm giá đang được sử dụng</h5>
+            <p class="text-xs text-amber-700 font-medium leading-relaxed">
+              Chiến dịch đã bắt đầu. Hệ thống đã khóa 
+              <span class="font-bold underline decoration-amber-300 underline-offset-2">thời gian bắt đầu</span>, 
+              <span class="font-bold underline decoration-amber-300 underline-offset-2">khách hàng áp dụng</span> và 
+              <span class="font-bold underline decoration-amber-300 underline-offset-2">danh sách sản phẩm</span>
+              để tránh gây lỗi cho các đơn hàng đang thanh toán.
+            </p>
+          </div>
+        </div>
         <div v-if="isPastStartTimeWarning" 
              class="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 shadow-sm animate-[fadeIn_0.3s_ease-out]">
           <span class="material-symbols-outlined text-rose-500 shrink-0 text-[24px]">error</span>
