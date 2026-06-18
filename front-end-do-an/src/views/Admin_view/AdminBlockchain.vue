@@ -55,10 +55,10 @@
             </div>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100 text-xs uppercase">
+          <div class="overflow-x-auto overflow-y-auto max-h-[400px] custom-scrollbar border-b border-slate-100">
+            <table class="w-full text-left text-sm border-collapse relative">
+              <thead class="sticky top-0 z-10">
+                <tr class="bg-slate-50 text-slate-500 font-semibold text-xs uppercase shadow-sm outline outline-1 outline-slate-100">
                   <th class="p-4">STT</th>
                   <th class="p-4">Mã Serial</th>
                   <th class="p-4">Tên Mô Hình Figure</th>
