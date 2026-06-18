@@ -1519,7 +1519,6 @@
           }
           url = `${API_BASE_URL}/api/khuyen_mai_admin/${editingPromo.value.id}`;
           payload = {
-            id: item.MaKM,
             TenKM: editingPromo.value.TenKM,
             ThoiGianBD: formatDatetimeToUTC(editingPromo.value.ThoiGianBD),
             ThoiGianKT: formatDatetimeToUTC(editingPromo.value.ThoiGianKT),
@@ -1532,7 +1531,6 @@
           }
           url = `${API_BASE_URL}/api/khuyen_mai_admin/vouchers/update/${editingPromo.value.id}`;
           payload = {
-            id: item.MaGG,
             TenMaGiamGia: editingPromo.value.TenMaGiamGia,
             MaVoucher: editingPromo.value.MaVoucher, 
             LoaiGiamGia: editingPromo.value.LoaiGiamGia,
