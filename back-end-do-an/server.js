@@ -63,11 +63,11 @@ cron.schedule('* * * * *', async () => {
     const connection = await db.getConnection();
 
     try {
-        // 1. Tìm đơn hàng: Trạng thái 'Chưa Thanh Toán', quá 15 phút
-        // Dùng lệnh SELECT bình thường, chưa cần Transaction ở đây
+        // 1. TÌM ĐƠN HÀNG: Lấy thêm MaTK để biết đơn này của ai
         const sql_tim_don = `
-            SELECT dh.MaDH 
+            SELECT dh.MaDH, kh.TenKH, kh.MaTK 
             FROM DonHang dh
+            INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH
             WHERE dh.TrangThaiThanhToan = 'Chưa Thanh Toán' 
             AND TIMESTAMPDIFF(MINUTE, dh.NgayLapDon, NOW()) >= 15
             AND dh.MaDH NOT IN (
@@ -79,30 +79,22 @@ cron.schedule('* * * * *', async () => {
         if (don_qua_han.length > 0) {
             console.log(`[CRON] Phát hiện ${don_qua_han.length} đơn hàng quá hạn. Bắt đầu hủy...`);
 
-            // Xử lý từng đơn một cách độc lập
             for (let don of don_qua_han) {
                 const maDH = don.MaDH;
+                const maTK = don.MaTK; // Lấy Mã Tài Khoản
                 
-                // ĐƯA TRANSACTION VÀO TRONG VÒNG LẶP: Hủy lỗi đơn nào thì rollback đơn đó, các đơn khác vẫn an toàn
                 await connection.beginTransaction(); 
 
                 try {
-                    // 2. Cập nhật trạng thái 'Đã hủy' (Cho khớp với IPN) và ghi lý do vào Note
                     await connection.query(
                         `UPDATE DonHang 
                          SET TrangThaiThanhToan = 'Đã hủy', 
                              Note = CONCAT(IFNULL(Note, ''), '\n[Hệ thống] Hủy tự động do quá 15 phút không thanh toán.') 
-                         WHERE MaDH = ?`, 
-                        [maDH]
+                         WHERE MaDH = ?`, [maDH]
                     );
 
-                    // 3. Ghi log trạng thái đơn hàng = 5 (Đã hủy)
-                    await connection.query(
-                        `INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, 
-                        [maDH]
-                    );
+                    await connection.query(`INSERT INTO ChiTietTrangThai (MaDH, MaTrangThai, Thoigian) VALUES (?, 5, NOW())`, [maDH]);
 
-                    // 4. Hoàn lại số lượng tồn kho (Nhả kho)
                     const sql_hoan_kho = `
                         UPDATE PhanLoai pl
                         INNER JOIN ChiTietDonHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
@@ -111,32 +103,59 @@ cron.schedule('* * * * *', async () => {
                     `;
                     await connection.query(sql_hoan_kho, [maDH]);
                     
-                    // 5. HOÀN LẠI FLASH SALE 
                     await connection.query(`
                         UPDATE ChiTietKhuyenMai ctkm
                         INNER JOIN ChiTietDonHang ctdh ON ctkm.MaPhanLoai = ctdh.MaPhanLoai
                         SET ctkm.SoLuongDaDung = ctkm.SoLuongDaDung - ctdh.SoLuong
                         WHERE ctdh.MaDH = ? AND ctdh.LaHangKhuyenMai = 1
                     `, [maDH]);
-
                     await connection.query(`DELETE FROM LogSuDungKhuyenMai WHERE MaDH = ?`, [maDH]);
 
-                    // 6. HOÀN LẠI VOUCHER (MÃ GIẢM GIÁ)
                     await connection.query(`
                         UPDATE MaGiamGia mg
                         INNER JOIN LogSuDungMaGiamGia log ON log.MaGG = mg.MaGG
                         SET mg.SoLuongDaDung = mg.SoLuongDaDung - 1 
                         WHERE log.MaDH = ?
                     `, [maDH]);
-
                     await connection.query(`DELETE FROM LogSuDungMaGiamGia WHERE MaDH = ?`, [maDH]);
 
-                    // Lưu thay đổi cho đơn hàng NÀY
+                    //  LOGIC CHỐNG SPAM
+                    if (maTK) {
+                        // Đếm số đơn bị hệ thống hủy của tài khoản này trong ngày hôm nay
+                        const sql_count_spam = `
+                            SELECT COUNT(*) as SpamCount 
+                            FROM DonHang dh
+                            INNER JOIN KhachHang kh ON dh.MaKH = kh.MaKH
+                            WHERE kh.MaTK = ? 
+                              AND dh.TrangThaiThanhToan = 'Đã hủy'
+                              AND dh.Note LIKE '%[Hệ thống] Hủy tự động do quá 15 phút%'
+                              AND DATE(dh.NgayLapDon) = CURDATE()
+                        `;
+                        const [spamResult] = await connection.query(sql_count_spam, [maTK]);
+                        const spamCount = spamResult[0].SpamCount;
+
+                        // Nếu cố tình spam >= 3 đơn trong 1 ngày -> Khóa tài khoản
+                        if (spamCount >= 3) {
+                            await connection.query(`UPDATE TaiKhoan SET Bi_khoa = 1 WHERE MaTK = ?`, [maTK]);
+                            // console.log(`🚨 [BẢO MẬT] Đã KHÓA tài khoản MaTK: ${maTK} do spam ${spamCount} đơn hàng ảo!`);
+                            
+                            await connection.query(`
+                                INSERT INTO ThongBaoAdmin (TieuDe, NoiDung, LoaiThongBao, DuongDan) 
+                                VALUES (?, ?, ?, ?)
+                            `, [
+                                "Cảnh báo bảo mật: Khóa tài khoản Spam", 
+                                `Hệ thống vừa tự động KHÓA tài khoản của khách hàng "${tenKH}" do phát hiện hành vi cố tình tạo ${spamCount} đơn hàng ảo.`, 
+                                "HeThong", 
+                                `/admin/users?userId=${maTK}`
+                            ]);
+                        }
+                    }
+                    // ==========================================
+
                     await connection.commit();
                     console.log(`✅ Đã tự động hủy thành công đơn FC-${maDH} và hoàn lại kho.`);
 
                 } catch (err_don_hang) {
-                    // Nếu lỗi chỉ Rollback đơn NÀY, vòng lặp vẫn tiếp tục chạy đơn tiếp theo
                     await connection.rollback();
                     console.error(`⚠️ Lỗi khi hủy đơn FC-${maDH}:`, err_don_hang);
                 }
