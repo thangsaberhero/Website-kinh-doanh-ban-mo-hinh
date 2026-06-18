@@ -1989,7 +1989,6 @@ const donhang_admin = {
             
             let whereClause = conditions.length > 0 ? " WHERE " + conditions.join(" AND ") : "";
 
-            // Bổ sung dh.MaDonHangHienThi vào câu truy vấn
             const sql_doanhthu = `
                 SELECT dh.MaDH, dh.MaDonHangHienThi, COALESCE(kh.TenKH, dh.TenNguoiNhan) AS KhachHang, 
                        dh.NgayLapDon, GROUP_CONCAT(mh.TenMH SEPARATOR ', ') AS ChiTietSanPham, dh.ThanhTien
@@ -2051,7 +2050,6 @@ const donhang_admin = {
                     }
                 }
 
-                // Chèn logo ôm trọn cột A (Rộng 10)
                 try {
                     const path = require('path');
                     const logoPath = path.join(__dirname, '../../public/logo.png'); 
@@ -2103,7 +2101,6 @@ const donhang_admin = {
             // SHEET 1: DOANH THU ĐƠN HÀNG
             // ==============================================
             const ws1 = workbook.addWorksheet('Báo cáo doanh thu');
-            // Thêm Cột STT (A) có độ rộng 10 để nhốt logo
             ws1.columns = [
                 { key: 'STT', width: 10 },
                 { key: 'MaDH', width: 20 },
@@ -2129,11 +2126,11 @@ const donhang_admin = {
                 const row = ws1.getRow(10 + index);
                 row.values = [
                     index + 1,
-                    item.MaDonHangHienThi, // Sử dụng Mã hiển thị
+                    item.MaDonHangHienThi,
                     item.KhachHang,
                     new Date(item.NgayLapDon).toLocaleString('vi-VN'),
                     item.ChiTietSanPham,
-                    Number(item.ThanhTien) // Ép kiểu số để Excel nhận diện
+                    Number(item.ThanhTien)
                 ];
                 row.height = 25;
                 row.eachCell((cell, colNum) => {
@@ -2189,6 +2186,18 @@ const donhang_admin = {
                     else cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 });
             });
+
+            const MaTK = req.user?.id || null;
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            
+            const noiDungLog = `Xuất danh sách quản lý ${donHangs.length} đơn hàng ra file Excel.`;
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) 
+                VALUES (?, 'ACCOUNT_EXPORT', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `Bao_Cao_Don_Hang_FigureCollect_${Date.now()}.xlsx`);
@@ -2832,6 +2841,18 @@ const donhang_admin = {
                     }
                 });
             });
+
+            const MaTK = req.user?.id || null;
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            
+            const noiDungLog = `Xuất báo cáo danh sách ${transactions.length} giao dịch tài chính ra file Excel.`;
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) 
+                VALUES (?, 'ACCOUNT_EXPORT', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `Giao_Dich_Thanh_Toan_${Date.now()}.xlsx`);

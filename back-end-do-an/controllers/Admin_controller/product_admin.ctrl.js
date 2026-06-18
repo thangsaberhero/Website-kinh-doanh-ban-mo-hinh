@@ -1862,9 +1862,17 @@ const product_admin = {
                 });
             });
 
-            // ==============================================
-            // TRẢ FILE VỀ CHO FRONTEND
-            // ==============================================
+            const MaTK = req.user?.id || null;
+            let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
+            
+            const noiDungLog = `Xuất dữ liệu toàn bộ kho hàng (Tổng ${tonKhos.length} phân loại sản phẩm) ra file Excel.`;
+            await db.query(`
+                INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian) 
+                VALUES (?, 'ACCOUNT_EXPORT', ?, ?, NOW())
+            `, [MaTK, noiDungLog, userIp]);
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=' + `KhoHang_FigureCollect_${Date.now()}.xlsx`);
 
