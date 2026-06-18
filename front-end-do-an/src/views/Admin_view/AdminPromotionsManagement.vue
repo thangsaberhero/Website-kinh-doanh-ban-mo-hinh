@@ -1458,7 +1458,7 @@
 
     if (currentTypeTab.value === 'promotion') {
       editingPromo.value = {
-        id: item.id,
+        id: item.MaKM,
         TenKM: item.TenKM,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
@@ -1521,7 +1521,7 @@
           payload = {
             TenKM: editingPromo.value.TenKM,
             ThoiGianBD: formatDatetimeToUTC(editingPromo.value.ThoiGianBD),
-          ThoiGianKT: formatDatetimeToUTC(editingPromo.value.ThoiGianKT),
+            ThoiGianKT: formatDatetimeToUTC(editingPromo.value.ThoiGianKT),
             TrangThaiHoatDong: editingPromo.value.TrangThaiHoatDong ? 1 : 0 
           };
         } 
