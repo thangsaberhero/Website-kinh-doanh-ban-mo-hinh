@@ -73,7 +73,7 @@
               </div>
             </div>
 
-            <div v-if="filteredNews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div v-if="displayNews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               <article v-for="post in displayNews" :key="post.id" @click="router.push(`/news/${post.id}`)"
                        class="group flex flex-col cursor-pointer relative mt-4">
                 
@@ -104,7 +104,7 @@
               </article>
             </div>
             
-            <div v-else-if="!isLoading" class="text-center py-20 bg-surface-container rounded-2xl border border-dashed border-outline-variant/50">
+            <div v-else class="text-center py-20 bg-surface-container rounded-2xl border border-dashed border-outline-variant/50">
               <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4">article</span>
               <h3 class="font-headline text-xl font-bold text-on-surface dark:text-white mb-2">Chưa có dữ liệu</h3>
               <p class="text-on-surface-variant text-sm">Chưa có bài viết nào thuộc chuyên mục này.</p>
