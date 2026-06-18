@@ -584,6 +584,17 @@
             </p>
           </div>
         </div>
+        <div v-if="isPastStartTimeWarning" 
+             class="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 shadow-sm animate-[fadeIn_0.3s_ease-out]">
+          <span class="material-symbols-outlined text-rose-500 shrink-0 text-[24px]">error</span>
+          <div>
+            <h5 class="text-sm font-bold text-rose-800 mb-0.5">Thời gian không hợp lệ</h5>
+            <p class="text-xs text-rose-700 font-medium leading-relaxed">
+              Bạn đang chọn thời gian bắt đầu <span class="font-bold underline decoration-rose-300 underline-offset-2">trong quá khứ</span>. 
+              Vui lòng chọn thời gian từ hiện tại trở đi để hệ thống có thể lên lịch kích hoạt tự động.
+            </p>
+          </div>
+        </div>
         <div class="space-y-5 mb-8">
           <h4 class="text-[11px] font-black text-sky-600 uppercase tracking-[0.2em] flex items-center gap-2">
             <span class="w-2 h-2 bg-sky-500 rounded-full"></span> Thông tin cơ bản
@@ -745,7 +756,7 @@
 
       <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 shrink-0">
         <button @click="isEditPromoModalOpen = false" class="px-8 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-2xl transition-all active:scale-95">Hủy bỏ</button>
-        <button @click="submitEditPromo" :disabled="isSavingEdit" class="px-10 py-3 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white font-black rounded-2xl shadow-xl shadow-sky-500/20 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-wider text-sm disabled:cursor-wait">
+        <button @click="submitEditPromo" :disabled="isSavingEdit || isPastStartTimeWarning" class="px-10 py-3 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white font-black rounded-2xl shadow-xl shadow-sky-500/20 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-wider text-sm disabled:cursor-wait">
           <span v-if="isSavingEdit" class="material-symbols-outlined text-lg animate-spin">progress_activity</span>
           <span v-else class="material-symbols-outlined text-lg">save</span> 
           {{ isSavingEdit ? 'Đang lưu...' : 'Lưu thay đổi' }}
@@ -1426,6 +1437,20 @@
     }
   };
 
+  const isPastStartTimeWarning = computed(() => {
+    // 1. Nếu chương trình đã bị khóa (đã chạy) thì bỏ qua
+    if (isEditPromoLocked.value) return false;
+    
+    // 2. Đảm bảo có dữ liệu
+    if (!editingPromo.value || !editingPromo.value.ThoiGianBD) return false;
+    
+    // 3. So sánh: Thời gian đang nhập < Thời gian hiện tại không?
+    const selectedTime = new Date(editingPromo.value.ThoiGianBD);
+    const now = new Date();
+    
+    return selectedTime < now;
+  });
+
   const debounceSearchEditCustomer = () => {
     clearTimeout(searchEditCustomerTimeout);
     searchEditCustomerTimeout = setTimeout(fetchEditCustomers, 500);
@@ -1465,6 +1490,8 @@
     // .toISOString() sẽ tự động trừ đi 7 tiếng và gắn thêm đuôi Z chuẩn quốc tế
     return d.toISOString(); 
   };
+
+  
 
   const openEditModal = async (item) => {
     // 1. Reset sạch các trường search khách hàng của modal sửa để tránh bị lưu cache từ lần mở trước
