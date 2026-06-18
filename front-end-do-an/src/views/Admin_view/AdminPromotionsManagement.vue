@@ -1382,8 +1382,11 @@
 
   // Chốt chặn vàng kiểm tra xem chương trình sửa đã chạy chưa
   const isEditPromoLocked = computed(() => {
-    if (!editingPromo.value || !editingPromo.value.ThoiGianBD) return false;
-    return new Date(editingPromo.value.ThoiGianBD) <= new Date();
+    // Xét điều kiện dựa trên biến thời gian gốc
+    if (!editingPromo.value || !editingPromo.value.originalThoiGianBD) return false;
+    
+    // Nếu chương trình GỐC đã bắt đầu thì mới khóa
+    return new Date(editingPromo.value.originalThoiGianBD) <= new Date();
   });
 
   const fetchEditCustomers = async () => {
@@ -1462,7 +1465,8 @@
         TenKM: item.TenKM,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
-        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? 1 : 0
+        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? 1 : 0,
+        originalThoiGianBD: item.ThoiGianBD
       };
     } 
     else {
@@ -1478,7 +1482,8 @@
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
         TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? 1 : 0,
-        MaKH: item.MaKH || null
+        MaKH: item.MaKH || null,
+        originalThoiGianBD: item.ThoiGianBD
       };
 
       // 2. BỔ SUNG: Nếu mã giảm giá này có gán riêng cho 1 khách hàng (MaKH != null)

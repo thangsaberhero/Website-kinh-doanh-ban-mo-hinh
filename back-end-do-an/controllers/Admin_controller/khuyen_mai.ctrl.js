@@ -289,9 +289,12 @@ const khuyenmai = {
 
             // 2. TẠO CHƯƠNG TRÌNH KHUYẾN MÃI
             const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
-            
+            const mysql_ThoiGianBD = new Date(ThoiGianBD).toISOString().slice(0, 19).replace('T', ' ');
+            const mysql_ThoiGianKT = new Date(ThoiGianKT).toISOString().slice(0, 19).replace('T', ' ');
+
             const sql_them_khuyen_mai = `INSERT INTO KhuyenMai(TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong) VALUES(?, ?, ?, ?)`;
-            const [them_khuyen_mai] = await connection.query(sql_them_khuyen_mai, [TenKM, ThoiGianBD, ThoiGianKT, isVisible]);
+
+            const [them_khuyen_mai] = await connection.query(sql_them_khuyen_mai, [TenKM, mysql_ThoiGianBD, mysql_ThoiGianKT, isVisible]);
             const maKM = them_khuyen_mai.insertId;
 
             // 4. GHI LOG BẢO MẬT (Dùng lại bảng LogHoatDongTaiKhoan chuẩn)
@@ -686,6 +689,9 @@ const khuyenmai = {
             // 3. TẠO MÃ GIẢM GIÁ
             const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
             const maxDiscount = LoaiGiamGia === 'TienMat' ? null : GiaTriGiamToiDa;
+
+            const mysql_ThoiGianBD = new Date(ThoiGianBD).toISOString().slice(0, 19).replace('T', ' ');
+            const mysql_ThoiGianKT = new Date(ThoiGianKT).toISOString().slice(0, 19).replace('T', ' ');
             
             const sql_them_ma_gg = `
                 INSERT INTO MaGiamGia (
@@ -697,7 +703,7 @@ const khuyenmai = {
             
             const [them_ma_gg] = await connection.query(sql_them_ma_gg, [
                 TenMaGiamGia, maVoucherClean, SoLuongDungToiDa, 
-                ThoiGianBD, ThoiGianKT, MaKH || null, MucGiaToiThieu || 0,
+                mysql_ThoiGianBD, mysql_ThoiGianKT, MaKH || null, MucGiaToiThieu || 0,
                 isVisible, LoaiGiamGia, ChietKhau, maxDiscount
             ]);
             
@@ -830,6 +836,9 @@ const khuyenmai = {
             const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
             const maxDiscount = LoaiGiamGia === 'TienMat' ? null : GiaTriGiamToiDa; // Làm sạch dữ liệu
 
+            const mysql_ThoiGianBD = new Date(final_ThoiGianBD).toISOString().slice(0, 19).replace('T', ' ');
+            const mysql_ThoiGianKT = new Date(ThoiGianKT).toISOString().slice(0, 19).replace('T', ' ');
+
             const sql_sua_ma_gg = `
                 UPDATE MaGiamGia SET
                     TenMaGiamGia = ?, MaVoucher = ?, SoLuongDungToiDa = ?, ThoiGianBD = ?,
@@ -837,11 +846,10 @@ const khuyenmai = {
                     LoaiGiamGia = ?, ChietKhau = ?, GiaTriGiamToiDa = ? 
                 WHERE MaGG = ?
             `;
-            
-            // THAY THẾ: Sử dụng biến an toàn final_MaKH đã qua bộ lọc bảo vệ dữ liệu ở trên
+
             await connection.query(sql_sua_ma_gg, [
-                TenMaGiamGia, maVoucherClean, SoLuongDungToiDa, final_ThoiGianBD, 
-                ThoiGianKT, final_MaKH || null, MucGiaToiThieu || 0, isVisible, 
+                TenMaGiamGia, maVoucherClean, SoLuongDungToiDa, mysql_ThoiGianBD, 
+                mysql_ThoiGianKT, final_MaKH || null, MucGiaToiThieu || 0, isVisible, 
                 LoaiGiamGia, ChietKhau, maxDiscount, MaGG
             ]);
 
