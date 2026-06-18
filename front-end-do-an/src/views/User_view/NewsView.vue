@@ -73,7 +73,7 @@
               </div>
             </div>
 
-            <div v-if="displayNews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div v-if="filteredNews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               <article v-for="post in displayNews" :key="post.id" @click="router.push(`/news/${post.id}`)"
                        class="group flex flex-col cursor-pointer relative mt-4">
                 
@@ -104,7 +104,7 @@
               </article>
             </div>
             
-            <div v-else class="text-center py-20 bg-surface-container rounded-2xl border border-dashed border-outline-variant/50">
+            <div v-else-if="!isLoading" class="text-center py-20 bg-surface-container rounded-2xl border border-dashed border-outline-variant/50">
               <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4">article</span>
               <h3 class="font-headline text-xl font-bold text-on-surface dark:text-white mb-2">Chưa có dữ liệu</h3>
               <p class="text-on-surface-variant text-sm">Chưa có bài viết nào thuộc chuyên mục này.</p>
@@ -172,19 +172,34 @@
   const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
   const allArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
   const popularNews = ref([]);      // Khu vực 4: Sidebar Đọc nhiều nhất (Cột phải)
-  const newsList = ref([]); 
+  const newsList = ref([]);
 
   const categories = ref(['Tất cả']);
   const activeCategory = ref('Tất cả');
   const trendingTags = ref([]);
   const activeTag = ref('');
 
+  const itemsPerPage = 6;
+  const visibleCount = ref(itemsPerPage);
   const isLoading = ref(true);
 
   const currentPage = ref(1);
   const limit = ref(5);
   const totalItems = ref(0);
   const isFetchingMore = ref(false);
+
+  
+
+  watch(activeCategory, () => {
+    visibleCount.value = itemsPerPage;
+  });
+
+  const heroNews = computed(() => {
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
+      return newsList.value[0];
+    }
+    return {};
+  });// Khu vực 1: Bài to nhất trên cùng
 
   const getImageUrl = (image) => {
     if (!image) return 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg';
@@ -224,6 +239,7 @@
     if (isLoadMore) isFetchingMore.value = true;
     try {
       let url = `${API_BASE_URL}/api/news?page=${currentPage.value}&limit=${limit.value}`;
+      
       if (activeCategory.value && activeCategory.value !== 'Tất cả') {
         url += `&category=${encodeURIComponent(activeCategory.value)}`;
       }
@@ -235,25 +251,22 @@
       const result = await res.json();
 
       if (result.success) {
-        // Tự động dò tìm dữ liệu dù Backend có bọc trong object 'data' hay không
-        const rawLatest = result.latestList || (result.data && result.data.latestList) || result.data || [];
-        const mappedLatest = rawLatest.map(formatNewsItem);
+        // Chạy dữ liệu qua hàm formatNewsItem trước khi gán
+        const mappedLatest = result.latestList.map(formatNewsItem);
         
         if (isLoadMore) {
           newsList.value.push(...mappedLatest);
         } else {
           newsList.value = mappedLatest;
           
-          const rawTrending = result.trendingList || (result.data && result.data.trendingList) || [];
-          const rawPopular = result.popularList || (result.data && result.data.popularList) || [];
-          
-          if (rawTrending.length > 0) trendingNews.value = rawTrending.map(formatNewsItem);
-          if (rawPopular.length > 0) popularNews.value = rawPopular.map(formatNewsItem);
+          if (result.trendingList && result.trendingList.length > 0) {
+            trendingNews.value = result.trendingList.map(formatNewsItem);
+          }
+          if (result.popularList && result.popularList.length > 0) {
+            popularNews.value = result.popularList.map(formatNewsItem);
+          }
         }
-        
-        // Cập nhật tổng số bài an toàn
-        const paginationObj = result.pagination || (result.data && result.data.pagination) || {};
-        totalItems.value = paginationObj.totalItems || 0;
+        totalItems.value = result.pagination.totalItems;
       }
     } catch (error) {
       console.error("Lỗi tải tin tức:", error);
@@ -262,42 +275,38 @@
     }
   };
 
+  const loadMore = () => {
+    currentPage.value++;
+    fetchNewsData(true);
+  };
+
   // 3. LOGIC LỌC BÀI VIẾT BÊN TRONG MAIN LIST
-  
+  const filteredNews = computed(() => {
+    let result = allArticles.value;  
+    if (activeCategory.value !== 'Tất cả') {
+      result = result.filter(post => post.category === activeCategory.value);
+    }
+    if (activeTag.value) {
+      result = result.filter(post => post.tags && post.tags.includes(activeTag.value));
+    }
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && result.length > 0) {
+      return result.slice(1);
+    }
+    return result;
+  });
 
   watch([activeCategory, activeTag], () => {
     currentPage.value = 1;
     fetchNewsData();
   });
 
-  const loadMore = () => {
-    currentPage.value++;
-    fetchNewsData(true);
-  };
-
-  const heroNews = computed(() => {
-    const list = newsList.value || []; // Lớp khiên 1: Đảm bảo luôn là một mảng
-    if (activeCategory.value === 'Tất cả' && !activeTag.value && list.length > 0) {
-      return list[0];
-    }
-    return {};
-  });
-
-  // Mảng hiển thị ở phần lưới Grid
-  // --- ĐIỀU PHỐI HIỂN THỊ TIN TỨC ---
   const displayNews = computed(() => {
-    const list = newsList.value || []; // Lớp khiên 2: Đảm bảo luôn là một mảng
-    if (list.length === 0) return [];
-    
-    if (activeCategory.value === 'Tất cả' && !activeTag.value) {
-      // Nếu có >1 bài thì cắt bài đầu, nếu chỉ có 1 bài thì đưa vào danh sách luôn
-      if (list.length > 1) {
-        return list.slice(1); 
-      }
-      return list;
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
+      return newsList.value.slice(1); 
     }
-    return list;
+    return newsList.value;
   });
+
   const scrollToTopCustom = (duration = 1000) => {
     const startPosition = window.scrollY;
     const startTime = performance.now();
