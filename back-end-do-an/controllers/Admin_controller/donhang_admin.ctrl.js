@@ -1558,7 +1558,7 @@ const donhang_admin = {
                         <td style="text-align: center; border-bottom: 1px dashed #ccc; padding: 6px 0;">${index + 1}</td>
                         <td style="border-bottom: 1px dashed #ccc; padding: 6px 0;">${tenHienThi}</td>
                         <td style="text-align: center; border-bottom: 1px dashed #ccc; padding: 6px 0;">${item.SoLuong}</td>
-                        <td style="text-align: right; border-bottom: 1px dashed #ccc; padding: 6px 0;">${formatMoney(item.DonGiaGoc)}</td>
+                        <td style="text-align: right; border-bottom: 1px dashed #ccc; padding: 6px 0;">${formatMoney(item.DonGiaBan)}</td>
                         <td style="text-align: right; border-bottom: 1px dashed #ccc; padding: 6px 0;">${formatMoney(thanhTienGoc)}</td>
                     </tr>
                 `;
@@ -1830,7 +1830,7 @@ const donhang_admin = {
                             <td style="text-align: center;">${index + 1}</td>
                             <td>${tenHienThi}</td>
                             <td style="text-align: center;">${item.SoLuong}</td>
-                            <td style="text-align: right;">${formatMoney(item.DonGiaGoc)}</td>
+                            <td style="text-align: right;">${formatMoney(item.DonGiaBan)}</td>
                             <td style="text-align: right;">${formatMoney(thanhTienGoc)}</td>
                         </tr>
                     `;
