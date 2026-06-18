@@ -172,34 +172,19 @@
   const trendingNews = ref([]);     // Khu vực 2: Băng chuyền trượt ngang
   const allArticles = ref([]);     // Khu vực 3: Danh sách bài viết chính (Cột trái)
   const popularNews = ref([]);      // Khu vực 4: Sidebar Đọc nhiều nhất (Cột phải)
-  const newsList = ref([]);
+  const newsList = ref([]); 
 
   const categories = ref(['Tất cả']);
   const activeCategory = ref('Tất cả');
   const trendingTags = ref([]);
   const activeTag = ref('');
 
-  const itemsPerPage = 6;
-  const visibleCount = ref(itemsPerPage);
   const isLoading = ref(true);
 
   const currentPage = ref(1);
   const limit = ref(5);
   const totalItems = ref(0);
   const isFetchingMore = ref(false);
-
-  
-
-  watch(activeCategory, () => {
-    visibleCount.value = itemsPerPage;
-  });
-
-  const heroNews = computed(() => {
-    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
-      return newsList.value[0];
-    }
-    return {};
-  });// Khu vực 1: Bài to nhất trên cùng
 
   const getImageUrl = (image) => {
     if (!image) return 'https://pbs.twimg.com/media/G1hCMJkaoAIsIEi.jpg';
@@ -239,7 +224,6 @@
     if (isLoadMore) isFetchingMore.value = true;
     try {
       let url = `${API_BASE_URL}/api/news?page=${currentPage.value}&limit=${limit.value}`;
-      
       if (activeCategory.value && activeCategory.value !== 'Tất cả') {
         url += `&category=${encodeURIComponent(activeCategory.value)}`;
       }
@@ -251,20 +235,14 @@
       const result = await res.json();
 
       if (result.success) {
-        // Chạy dữ liệu qua hàm formatNewsItem trước khi gán
         const mappedLatest = result.latestList.map(formatNewsItem);
         
         if (isLoadMore) {
           newsList.value.push(...mappedLatest);
         } else {
           newsList.value = mappedLatest;
-          
-          if (result.trendingList && result.trendingList.length > 0) {
-            trendingNews.value = result.trendingList.map(formatNewsItem);
-          }
-          if (result.popularList && result.popularList.length > 0) {
-            popularNews.value = result.popularList.map(formatNewsItem);
-          }
+          if (result.trendingList?.length > 0) trendingNews.value = result.trendingList.map(formatNewsItem);
+          if (result.popularList?.length > 0) popularNews.value = result.popularList.map(formatNewsItem);
         }
         totalItems.value = result.pagination.totalItems;
       }
@@ -275,36 +253,31 @@
     }
   };
 
-  const loadMore = () => {
-    currentPage.value++;
-    fetchNewsData(true);
-  };
-
   // 3. LOGIC LỌC BÀI VIẾT BÊN TRONG MAIN LIST
-  const filteredNews = computed(() => {
-    let result = allArticles.value;  
-    if (activeCategory.value !== 'Tất cả') {
-      result = result.filter(post => post.category === activeCategory.value);
-    }
-    if (activeTag.value) {
-      result = result.filter(post => post.tags && post.tags.includes(activeTag.value));
-    }
-    if (activeCategory.value === 'Tất cả' && !activeTag.value && result.length > 0) {
-      return result.slice(1);
-    }
-    return result;
-  });
+  
 
   watch([activeCategory, activeTag], () => {
     currentPage.value = 1;
     fetchNewsData();
   });
 
+  const loadMore = () => {
+    currentPage.value++;
+    fetchNewsData(true);
+  };
+
+  const heroNews = computed(() => {
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
+      return newsList.value[0];
+    }
+    return {};
+  });
+
   // Mảng hiển thị ở phần lưới Grid
   const displayNews = computed(() => {
+    if (!newsList.value || newsList.value.length === 0) return [];
     if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
-      // XÓA TẠM .slice(1) ĐỂ XEM THỬ
-      return newsList.value; 
+      return newsList.value.slice(1); 
     }
     return newsList.value;
   });
