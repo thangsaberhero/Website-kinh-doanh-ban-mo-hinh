@@ -2161,12 +2161,13 @@ const donhang_admin = {
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF5F2' } };
                 cell.border = blackBorder;
                 
-                if (colNum === 5) {
+                if (colNum <= 5) {
                     cell.alignment = { horizontal: 'right', vertical: 'middle' };
                     cell.font = { bold: true, size: 12, name: 'Manrope', color: { argb: 'FF222532' } };
-                } else if (colNum === 6) {
+                } 
+                else if (colNum === 6) {
                     cell.alignment = { horizontal: 'right', vertical: 'middle' };
-                    cell.font = { bold: true, size: 14, name: 'Manrope', color: { argb: 'FFFF8F73' } }; // Chữ to, màu cam
+                    cell.font = { bold: true, size: 14, name: 'Manrope', color: { argb: 'FFFF8F73' } }; 
                     cell.numFmt = '#,##0';
                 }
             });
@@ -2883,13 +2884,13 @@ const donhang_admin = {
                     bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
                 };
                 
-                if (colNum === 7) {
+                if (colNum <= 7) {
                     cell.alignment = { horizontal: 'right', vertical: 'middle' };
                     cell.font = { bold: true, size: 12, name: 'Manrope', color: { argb: 'FF222532' } };
-                } else if (colNum === 8) {
+                } 
+                 if (colNum === 8) {
                     cell.alignment = { horizontal: 'right', vertical: 'middle' };
                     cell.numFmt = '#,##0';
-                    // Nếu dòng tiền dương -> Màu Xanh. Nếu âm -> Màu Đỏ
                     const colorTien = tongDongTien >= 0 ? 'FF10B981' : 'FFE11D48';
                     cell.font = { bold: true, size: 14, name: 'Manrope', color: { argb: colorTien } };
                 }
