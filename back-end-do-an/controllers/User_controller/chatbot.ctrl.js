@@ -259,7 +259,8 @@ const cleanProductKeyword = (rawText = "") => {
         "bạn", "ban", "anh", "chị", "chi", "em", "admin", "ad", "dạ", "da", "ạ", "của", "cua", "cho", "muốn", "muon",
         "có", "co", "còn", "con", "không", "khong", "ko", "nào", "nao", "và", "va", "với", "voi", "về", "ve", "các", "cac","tài chính", "chất liệu", "chat lieu", "vật liệu", "vat lieu", "làm bằng", "lam bang", "được làm từ", "duoc lam tu",
         "nhé", "nhe", "nha", "nè", "ne", "đi", "di", "thế", "the", "vậy", "vay", "hả", "ha", "đang", "dang","thì","thi","vài", "vai","hợp lý", "hop ly","bây giờ", "bay gio","hiện tại", "hien tai","mua được gì", "mua duoc gi","được gì", "duoc gi","có gì", "co gi","gì", "gi",
-        "mua được", "mua duoc", "được", "duoc", "vừa", "vua", "phù hợp", "phu hop", "dưới", "duoi", "trên", "tren", "khoảng", "khoang", "tầm", "tam", "giá", "gia", "triệu", "trieu", "tr", "k", "ngàn", "nghìn", "ngan", "nghin", "củ", "cu"
+        "mua được", "mua duoc", "được", "duoc", "vừa", "vua", "phù hợp", "phu hop", "dưới", "duoi", "trên", "tren", "khoảng", "khoang", "tầm", "tam", "giá", "gia", "triệu", "trieu", "tr", "k", "ngàn", "nghìn", "ngan", "nghin", "củ", "cu",
+        "trở lên", "tro len", "trở xuống", "tro xuong", "từ", "tu"
     ];
 
     stopWords.sort((a, b) => b.length - a.length).forEach(word => {
@@ -409,6 +410,7 @@ Schema JSON bắt buộc:
 }
 
 Quy tắc:
+- TỰ ĐỘNG SỬA LỖI CHÍNH TẢ: Nếu tên nhân vật/sản phẩm bị gõ sai chính tả (do gõ vội, sai teencode, sai romaji), bạn PHẢI tự động sửa lại cho đúng tên chuẩn quốc tế trước khi lưu vào JSON. (Ví dụ: "lufy" -> "luffy", "zoro" -> "zoro", "mô hinh mikku" -> "miku", "nartuo" -> "naruto").
 - Chỉ được lấy productKeyword từ Câu khách hàng hiện tại, không được lấy từ Dialogflow parameters nếu câu hiện tại không nhắc lại sản phẩm đó.
 - Không đưa các từ giao tiếp như tôi, mình, shop, thì, được, mua được, hợp lý vào productKeyword.
 - Intent này chỉ dùng để TÌM KIẾM SẢN PHẨM THEO CHẤT LIỆU, không dùng để trả lời riêng "sản phẩm này chất liệu gì".
@@ -418,8 +420,8 @@ Quy tắc:
 - Chỉ điền productKeyword khi có tên rõ ràng của nhân vật/sản phẩm/series, ví dụ: miku, luffy, naruto, one piece.
 - Với câu như "tôi có 2 củ", "khoảng 2 triệu", "ngân sách 2tr" => hiểu là maxPrice = 2000000, minPrice = 0.
 - Với "từ 1 triệu đến 2 triệu" => minPrice = 1000000, maxPrice = 2000000.
-- Với "trên 2 triệu" => minPrice = 2000000, maxPrice = null.
-- Với "dưới 2 triệu" => minPrice = 0, maxPrice = 2000000.
+- Với "trên 2 triệu" hoặc "từ 2 triệu trở lên" => minPrice = 2000000, maxPrice = null.
+- Với "dưới 2 triệu" hoặc "từ 2 triệu trở xuống" => minPrice = 0, maxPrice = 2000000.
 - Ví dụ: "tôi có 2 củ thì mua mô hình miku nào là hợp lý" => productKeyword "miku", minPrice 0, maxPrice 2000000.
 - Ví dụ: "có khoảng 5 củ chưa biết mua mô hình gì ta" => productKeyword "", minPrice 0, maxPrice 5000000.
 - Nếu intent là tim_theo_danh_muc và khách nói "nendoroid" thì categoryKeyword = "Nendoroid".
@@ -1034,13 +1036,11 @@ const parsePriceAndKeyword = (text, dfKeyword = "") => {
     } else if (matches.length) {
         const value = toNumber(matches[0]);
 
-        if (/(duoi|nho hon|toi da|max)/.test(normalized)) {
+        if (/(duoi|nho hon|toi da|max|tro xuong)/.test(normalized)) {
             maxPrice = value;
-        } else if (/(tren|lon hon|min)/.test(normalized)) {
+        } else if (/(tren|lon hon|min|tro len)/.test(normalized)) {
             minPrice = value;
         } else if (/(khoang|tam|co|ngan sach|muc gia|gia tam|trong tam)/.test(normalized)) {
-            // Người dùng thường nói "khoảng 2 củ" với ý nghĩa ngân sách tối đa gần 2 triệu.
-            // Để không bỏ sót mẫu 1.2tr hoặc đúng 2tr, tìm từ 0 đến giá người dùng đưa ra.
             minPrice = 0;
             maxPrice = value;
         } else {
@@ -1051,8 +1051,8 @@ const parsePriceAndKeyword = (text, dfKeyword = "") => {
 
     const noPriceText = raw
         .replace(/từ\s*\d+(?:[\.,]\d+)?\s*(triệu|tr|củ|k|ngàn|nghìn|ngan|nghin|cu)(?:\s+(rưỡi|ruoi))?\s*(đến|den|-)\s*\d+(?:[\.,]\d+)?\s*(triệu|tr|củ|k|ngàn|nghìn|ngan|nghin|cu)(?:\s+(rưỡi|ruoi))?/g, " ")
-        .replace(/(dưới|duoi|trên|tren|từ|tu|khoảng|khoang|tầm|tam|cỡ|co|chừng|chung|hơn|hon|nhỏ hơn|nho hon|lớn hơn|lon hon|tối đa|toi da|max|min)\s*\d+(?:[\.,]\d+)?\s*(triệu|tr|củ|k|ngàn|nghìn|ngan|nghin|cu)(?:\s+(rưỡi|ruoi))?/g, " ")
-        .replace(/\d+(?:[\.,]\d+)?\s*(triệu|tr|củ|k|ngàn|nghìn|ngan|nghin|cu)(?:\s+(rưỡi|ruoi))?/g, " ");
+        .replace(/(dưới|duoi|trên|tren|từ|tu|khoảng|khoang|tầm|tam|cỡ|co|chừng|chung|hơn|hon|nhỏ hơn|nho hon|lớn hơn|lon hon|tối đa|toi da|max|min)\s*\d+(?:[\.,]\d+)?\s*(triệu|tr|củ|k|ngàn|nghìn|ngan|nghin|cu)(?:\s+(rưỡi|ruoi))?(?:\s*(trở lên|tro len|trở xuống|tro xuong))?/gi, " ")
+        .replace(/\d+(?:[\.,]\d+)?\s*(triệu|tr|củ|k|ngàn|nghìn|ngan|nghin|cu)(?:\s+(rưỡi|ruoi))?(?:\s*(trở lên|tro len|trở xuống|tro xuong))?/gi, " ");
 
     let keyword = cleanProductKeyword(noPriceText);
     if (!keyword && dfKeyword) keyword = cleanProductKeyword(dfKeyword);
@@ -1084,7 +1084,6 @@ const mergeSlots = (localSlots = {}, aiSlots = {}) => ({
 
 const extractSlotsLocally = (message, intentName, dfResult = {}) => {
     const parsedPrice = PRICE_REGEX.test(message) || intentName === "tu_van_theo_gia"
-        // Với tư vấn theo giá, chỉ tách keyword từ câu hiện tại. Không dùng dfResult.keywords vì có thể dính context cũ như "miku".
         ? parsePriceAndKeyword(message, intentName === "tu_van_theo_gia" ? "" : dfResult.keywords)
         : { minPrice: null, maxPrice: null, keyword: "" };
 
@@ -1208,9 +1207,20 @@ const chatWithAI = async (req, res) => {
             const limitedProducts = Array.isArray(products)
                 ? products.slice(0, CHATBOT_PRODUCT_LIMIT)
                 : [];
+                
+            let finalMessage = botMessage;
+
+            if (products.length >= CHATBOT_PRODUCT_LIMIT && intentName !== "tra_cuu_don_hang" && intentName !== "hoi_danh_gia_san_pham") {
+                const searchKw = aiSlots?.productKeyword || aiSlots?.categoryKeyword || "";
+                const searchLink = searchKw 
+                    ? `/search?q=${encodeURIComponent(searchKw)}` 
+                    : `/category`;
+                    
+                finalMessage += `<br><br>👉 <i>Shop vẫn còn nhiều mẫu khác nữa, bạn có thể <a href="${searchLink}" target="_blank" style="color: #ff7a59; font-weight: bold; text-decoration: underline;">bấm vào đây để xem toàn bộ</a> nhé!</i>`;
+            }
 
             return res.status(200).json({
-                message: compactHtmlResponse(botMessage),
+                message: compactHtmlResponse(finalMessage),
                 products: limitedProducts,
                 sessionId,
                 intent: intentName,
