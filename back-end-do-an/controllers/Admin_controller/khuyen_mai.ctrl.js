@@ -363,13 +363,20 @@ const khuyenmai = {
 
             // 4. CẬP NHẬT THÔNG TIN CHUNG
             const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
+
+            // ✅ THÊM 2 DÒNG NÀY ĐỂ ÉP KIỂU SANG ĐỐI TƯỢNG DATE HOẶC CHUỖI CHUẨN MYSQL
+            // Cách an toàn nhất để loại bỏ chữ T, Z và phần mili-giây:
+            const mysql_ThoiGianBD = new Date(final_ThoiGianBD).toISOString().slice(0, 19).replace('T', ' ');
+            const mysql_ThoiGianKT = new Date(ThoiGianKT).toISOString().slice(0, 19).replace('T', ' ');
+
             const sql_sua_khuyen_mai = `
                 UPDATE KhuyenMai 
                 SET TenKM = ?, ThoiGianBD = ?, ThoiGianKT = ?, TrangThaiHoatDong = ?
                 WHERE MaKM = ?
             `;
-            // Truyền final_ThoiGianBD vào để cập nhật
-            await connection.query(sql_sua_khuyen_mai, [TenKM, final_ThoiGianBD, ThoiGianKT, isVisible, MaKM]);
+
+            // ✅ SỬA LẠI BIẾN TRUYỀN VÀO TRONG MẢNG (Thay vì final_ThoiGianBD và ThoiGianKT)
+            await connection.query(sql_sua_khuyen_mai, [TenKM, mysql_ThoiGianBD, mysql_ThoiGianKT, isVisible, MaKM]);
 
             // 6. GHI LOG HOẠT ĐỘNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
