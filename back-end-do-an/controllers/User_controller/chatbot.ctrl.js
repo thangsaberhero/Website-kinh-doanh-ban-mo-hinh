@@ -420,8 +420,8 @@ Quy tắc:
 - Chỉ điền productKeyword khi có tên rõ ràng của nhân vật/sản phẩm/series, ví dụ: miku, luffy, naruto, one piece.
 - Với câu như "tôi có 2 củ", "khoảng 2 triệu", "ngân sách 2tr" => hiểu là maxPrice = 2000000, minPrice = 0.
 - Với "từ 1 triệu đến 2 triệu" => minPrice = 1000000, maxPrice = 2000000.
-- Với "trên 2 triệu" => minPrice = 2000000, maxPrice = null.
-- Với "dưới 2 triệu" => minPrice = 0, maxPrice = 2000000.
+- Với "trên 2 triệu" hoặc "từ 2 triệu trở lên" => minPrice = 2000000, maxPrice = null.
+- Với "dưới 2 triệu" hoặc "từ 2 triệu trở xuống" => minPrice = 0, maxPrice = 2000000.
 - Ví dụ: "tôi có 2 củ thì mua mô hình miku nào là hợp lý" => productKeyword "miku", minPrice 0, maxPrice 2000000.
 - Ví dụ: "có khoảng 5 củ chưa biết mua mô hình gì ta" => productKeyword "", minPrice 0, maxPrice 5000000.
 - Nếu intent là tim_theo_danh_muc và khách nói "nendoroid" thì categoryKeyword = "Nendoroid".
