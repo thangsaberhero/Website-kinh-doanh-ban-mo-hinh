@@ -233,7 +233,7 @@
                               :style="{ width: getProgressWidth(item) }"></div>
                         </div>
                         <span class="text-[10px] font-bold text-slate-500 tracking-wider">
-                          {{ (!item.SoLuong || item.SoLuong === 0) ? 'Không giới hạn' : `${item.DaDung || 0} / ${item.SoLuong}` }}
+                          {{ (!item.SoLuong || item.SoLuong === 0) ? 'Không giới hạn' : `${item.SoLuongDaDung || 0} / ${item.SoLuong}` }}
                         </span>
                       </div>
                     </td>
@@ -1774,13 +1774,13 @@
   // 1. Tính độ dài thanh Progress Bar (%)
   const getProgressWidth = (item) => {
     if (!item.SoLuong || item.SoLuong === 0) return '100%';
-    const percentage = ((item.DaDung || 0) / item.SoLuong) * 100;
+    const percentage = ((item.SoLuongDaDung || 0) / item.SoLuong) * 100;
     return `${Math.min(percentage, 100)}%`;
   };
   
   // 2. Màu của Progress Bar
   const getProgressBarColor = (item) => {
-    if (item.status === 'Đã hết hạn' || (item.SoLuong && item.DaDung >= item.SoLuong)) return 'bg-rose-500 shadow-[0_0_5px_#f43f5e]';
+    if (item.status === 'Đã hết hạn' || (item.SoLuong && item.SoLuongDaDung >= item.SoLuong)) return 'bg-rose-500 shadow-[0_0_5px_#f43f5e]';
     if (!item.SoLuong || item.SoLuong === 0) return 'bg-purple-500 shadow-[0_0_5px_#a855f7]'; // Voucher vô hạn màu Tím
     return 'bg-primary shadow-[0_0_5px_#ff8f73]'; // Voucher bình thường màu Cam
   };

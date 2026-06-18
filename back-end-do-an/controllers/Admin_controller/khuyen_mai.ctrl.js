@@ -216,6 +216,7 @@ const khuyenmai = {
                 SELECT log.MaLichSu, log.MaKH, COALESCE(kh.TenKH, dh.TenNguoiNhan), 
                 log.MaDH, log.SoTienDaGiam, log.ThoiGianSuDung
                 FROM LogSuDungKhuyenMai log
+                inner join KhuyenMai km on km.MaKM = log.MaKM
                 inner join DonHang dh on dh.MaDH = log.MaDH
                 left join KhachHang kh on kh.MaKH = log.MaKH
                 ${whereClause_log}
@@ -613,6 +614,7 @@ const khuyenmai = {
                 FROM LogSuDungMaGiamGia log
                 left join KhachHang kh on kh.MaKH= log.MaKH
                 inner join DonHang dh on dh.MaDH =log.MaDH
+                inner join MaGiamGia magg on log.MaGG = magg.MaGG
                 ${whereClause_log}
             `;
             
