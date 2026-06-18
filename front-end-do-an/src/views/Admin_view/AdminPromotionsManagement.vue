@@ -117,7 +117,7 @@
         <div class="flex flex-col gap-4 mt-4">
           <div class="flex items-center justify-between">
             <h3 class="font-headline text-lg font-bold text-slate-900 flex items-center gap-2">
-              Danh sách mã giảm giá
+              {{ currentTypeTab === 'promotion' ? 'Danh sách chương trình khuyến mãi' : 'Danh sách mã giảm giá' }}
             </h3>
             <div class="flex items-center gap-3">
               <div class="relative">
