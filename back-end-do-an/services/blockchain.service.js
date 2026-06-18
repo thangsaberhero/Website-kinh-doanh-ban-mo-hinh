@@ -94,8 +94,6 @@ async function getHistoryFromBlockchain(serialNumber) {
     try {
         const cleanSerial = serialNumber.trim(); 
         const historyData = await contract.methods.getProductHistory(cleanSerial).call();
-        
-        console.log("Dữ liệu thô từ Blockchain:", historyData); 
 
         return historyData.map(record => ({
             status: record.status,
