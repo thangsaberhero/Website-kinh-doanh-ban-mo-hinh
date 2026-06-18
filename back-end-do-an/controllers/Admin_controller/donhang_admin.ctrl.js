@@ -2146,6 +2146,30 @@ const donhang_admin = {
                     }
                 });
             });
+            
+            // TỔNG CỘNG DOANH THU
+            let currentRow1 = 10 + donHangs.length;
+            const tongDoanhThu = donHangs.reduce((sum, item) => sum + Number(item.ThanhTien), 0);
+            
+            const rowTotal1 = ws1.getRow(currentRow1);
+            rowTotal1.values = ['TỔNG DOANH THU:', '', '', '', '', tongDoanhThu];
+            rowTotal1.height = 30;
+            
+            ws1.mergeCells(`A${currentRow1}:E${currentRow1}`);
+            
+            rowTotal1.eachCell({ includeEmpty: true }, (cell, colNum) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF5F2' } };
+                cell.border = blackBorder;
+                
+                if (colNum === 5) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                    cell.font = { bold: true, size: 12, name: 'Manrope', color: { argb: 'FF222532' } };
+                } else if (colNum === 6) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                    cell.font = { bold: true, size: 14, name: 'Manrope', color: { argb: 'FFFF8F73' } }; // Chữ to, màu cam
+                    cell.numFmt = '#,##0';
+                }
+            });
 
             // ==============================================
             // SHEET 2: NHẬT KÝ HOẠT ĐỘNG
@@ -2810,7 +2834,7 @@ const donhang_admin = {
                     tx.TenPhuongThuc,
                     tx.MaGiaoDichCuaDoiTac || '[Nội bộ / COD]',
                     tx.LoaiGiaoDich,
-                    Number(tx.SoTienGiaoDich) // Ép kiểu số
+                    Number(tx.SoTienGiaoDich)
                 ];
                 row.height = 25;
                 
@@ -2840,6 +2864,35 @@ const donhang_admin = {
                         cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
                     }
                 });
+            });
+
+            // TỔNG CỘNG DÒNG TIỀN 
+            let currentRow2 = 10 + transactions.length;
+            const tongDongTien = transactions.reduce((sum, item) => sum + Number(item.SoTienGiaoDich), 0);
+            
+            const rowTotal2 = ws.getRow(currentRow2);
+            rowTotal2.values = ['TỔNG DÒNG TIỀN:', '', '', '', '', '', '', tongDongTien];
+            rowTotal2.height = 30;
+            
+            ws.mergeCells(`A${currentRow2}:G${currentRow2}`);
+            
+            rowTotal2.eachCell({ includeEmpty: true }, (cell, colNum) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF5F2' } };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                    bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } }
+                };
+                
+                if (colNum === 7) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                    cell.font = { bold: true, size: 12, name: 'Manrope', color: { argb: 'FF222532' } };
+                } else if (colNum === 8) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                    cell.numFmt = '#,##0';
+                    // Nếu dòng tiền dương -> Màu Xanh. Nếu âm -> Màu Đỏ
+                    const colorTien = tongDongTien >= 0 ? 'FF10B981' : 'FFE11D48';
+                    cell.font = { bold: true, size: 14, name: 'Manrope', color: { argb: colorTien } };
+                }
             });
 
             const MaTK = req.user?.id || null;
