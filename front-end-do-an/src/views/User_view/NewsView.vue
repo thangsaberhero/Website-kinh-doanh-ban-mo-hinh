@@ -188,10 +188,7 @@
   const totalItems = ref(0);
   const isFetchingMore = ref(false);
 
-  const loadMore = () => {
-    currentPage.value++;
-    fetchNewsData(true);
-  };
+  
 
   watch(activeCategory, () => {
     visibleCount.value = itemsPerPage;
@@ -222,7 +219,22 @@
     }
     return rawTitle;
   };
-  
+
+  const formatNewsItem = (item) => ({
+    id: item.MaTT,
+    title: item.TieuDe,
+    excerpt: item.TomTat,
+    category: item.TheLoai,
+    image: item.AnhThumbnail 
+      ? (item.AnhThumbnail.startsWith('http') ? item.AnhThumbnail : `${API_BASE_URL}/Images_news/${item.AnhThumbnail}`) 
+      : 'https://placehold.co/600x400/1a1a1a/ffffff?text=No+Image',
+    date: item.NgayDang ? new Date(item.NgayDang).toLocaleDateString('vi-VN') : '',
+    readTime: item.ThoiGianDoc ? `${item.ThoiGianDoc} phút` : '1 phút',
+    author: item.TacGia || 'FigureCollect',
+    views: item.LuotXem || 0
+  });
+
+  // --- 2. CẬP NHẬT LẠI HÀM FETCH ĐỂ SỬ DỤNG BỘ CHUYỂN ĐỔI ---
   const fetchNewsData = async (isLoadMore = false) => {
     if (isLoadMore) isFetchingMore.value = true;
     try {
@@ -239,15 +251,20 @@
       const result = await res.json();
 
       if (result.success) {
+        // Chạy dữ liệu qua hàm formatNewsItem trước khi gán
+        const mappedLatest = result.latestList.map(formatNewsItem);
+        
         if (isLoadMore) {
-          // Bấm tải thêm -> Cầm mảng cũ nối thêm mảng mới vào đuôi
-          newsList.value.push(...result.latestList);
+          newsList.value.push(...mappedLatest);
         } else {
-          // Khởi tạo trang / Đổi bộ lọc -> Ghi đè lại từ đầu
-          newsList.value = result.latestList;
-          // Chỉ lấy Trending và Popular ở trang 1 để tránh lỗi ghi đè rỗng
-          if (result.trendingList && result.trendingList.length > 0) trendingNews.value = result.trendingList;
-          if (result.popularList && result.popularList.length > 0) popularNews.value = result.popularList;
+          newsList.value = mappedLatest;
+          
+          if (result.trendingList && result.trendingList.length > 0) {
+            trendingNews.value = result.trendingList.map(formatNewsItem);
+          }
+          if (result.popularList && result.popularList.length > 0) {
+            popularNews.value = result.popularList.map(formatNewsItem);
+          }
         }
         totalItems.value = result.pagination.totalItems;
       }
@@ -256,6 +273,11 @@
     } finally {
       isFetchingMore.value = false;
     }
+  };
+
+  const loadMore = () => {
+    currentPage.value++;
+    fetchNewsData(true);
   };
 
   // 3. LOGIC LỌC BÀI VIẾT BÊN TRONG MAIN LIST
