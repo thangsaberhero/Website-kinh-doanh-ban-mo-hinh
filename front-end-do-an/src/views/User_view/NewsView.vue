@@ -235,16 +235,25 @@
       const result = await res.json();
 
       if (result.success) {
-        const mappedLatest = result.latestList.map(formatNewsItem);
+        // Tự động dò tìm dữ liệu dù Backend có bọc trong object 'data' hay không
+        const rawLatest = result.latestList || (result.data && result.data.latestList) || result.data || [];
+        const mappedLatest = rawLatest.map(formatNewsItem);
         
         if (isLoadMore) {
           newsList.value.push(...mappedLatest);
         } else {
           newsList.value = mappedLatest;
-          if (result.trendingList?.length > 0) trendingNews.value = result.trendingList.map(formatNewsItem);
-          if (result.popularList?.length > 0) popularNews.value = result.popularList.map(formatNewsItem);
+          
+          const rawTrending = result.trendingList || (result.data && result.data.trendingList) || [];
+          const rawPopular = result.popularList || (result.data && result.data.popularList) || [];
+          
+          if (rawTrending.length > 0) trendingNews.value = rawTrending.map(formatNewsItem);
+          if (rawPopular.length > 0) popularNews.value = rawPopular.map(formatNewsItem);
         }
-        totalItems.value = result.pagination.totalItems;
+        
+        // Cập nhật tổng số bài an toàn
+        const paginationObj = result.pagination || (result.data && result.data.pagination) || {};
+        totalItems.value = paginationObj.totalItems || 0;
       }
     } catch (error) {
       console.error("Lỗi tải tin tức:", error);
@@ -267,8 +276,9 @@
   };
 
   const heroNews = computed(() => {
-    if (activeCategory.value === 'Tất cả' && !activeTag.value && newsList.value.length > 0) {
-      return newsList.value[0];
+    const list = newsList.value || []; // Lớp khiên 1: Đảm bảo luôn là một mảng
+    if (activeCategory.value === 'Tất cả' && !activeTag.value && list.length > 0) {
+      return list[0];
     }
     return {};
   });
@@ -276,25 +286,18 @@
   // Mảng hiển thị ở phần lưới Grid
   // --- ĐIỀU PHỐI HIỂN THỊ TIN TỨC ---
   const displayNews = computed(() => {
-    // Nếu không có bài nào thì trả về mảng rỗng
-    if (!newsList.value || newsList.value.length === 0) return [];
+    const list = newsList.value || []; // Lớp khiên 2: Đảm bảo luôn là một mảng
+    if (list.length === 0) return [];
     
-    // Đang ở trang chủ (Tất cả) và không lọc Tag
     if (activeCategory.value === 'Tất cả' && !activeTag.value) {
-      
-      // NẾU CÓ TỪ 2 BÀI TRỞ LÊN: Cắt bài mới nhất đem lên Banner, phần còn lại đưa xuống Lưới
-      if (newsList.value.length > 1) {
-        return newsList.value.slice(1); 
+      // Nếu có >1 bài thì cắt bài đầu, nếu chỉ có 1 bài thì đưa vào danh sách luôn
+      if (list.length > 1) {
+        return list.slice(1); 
       }
-      
-      // NẾU CHỈ CÓ 1 BÀI DUY NHẤT: Không cắt nữa, trả về luôn để lấp vào danh sách lưới cho đỡ trống
-      return newsList.value;
+      return list;
     }
-    
-    // Nếu đang lọc theo danh mục/tag cụ thể, hiển thị toàn bộ
-    return newsList.value;
+    return list;
   });
-
   const scrollToTopCustom = (duration = 1000) => {
     const startPosition = window.scrollY;
     const startTime = performance.now();
