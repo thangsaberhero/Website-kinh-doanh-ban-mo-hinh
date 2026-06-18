@@ -1446,7 +1446,7 @@
         TenKM: item.TenKM,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
-        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? true : false
+        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? 1 : 0
       };
     } 
     else {
@@ -1461,7 +1461,7 @@
         GiaTriGiamToiDa: item.GiaTriGiamToiDa ? parseInt(item.GiaTriGiamToiDa) : null,
         ThoiGianBD: formatDatetimeForInput(item.ThoiGianBD),
         ThoiGianKT: formatDatetimeForInput(item.ThoiGianKT),
-        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? true : false,
+        TrangThaiHoatDong: item.TrangThaiHoatDong === 1 ? 1 : 0,
         MaKH: item.MaKH || null
       };
 
