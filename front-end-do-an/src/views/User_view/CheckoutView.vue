@@ -281,11 +281,9 @@
   import TheHeader from '../../components/TheHeader.vue';
   import { ref, reactive, computed, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../../stores/auth';
   import { useToastStore } from '../../stores/toast';
 
   const router = useRouter();
-  const authStore = useAuthStore();
   const toastStore = useToastStore();
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -302,8 +300,6 @@
     address: '',
     note: ''
   });
-
-  // Giữ nguyên summary được Backend trả về cho Flash Sale
   const cartSummary = ref({ subtotal: 0, discount: 0, totalPrice: 0 });
 
   // ===============================================
@@ -343,7 +339,6 @@
 
   // 3. Hàm kiểm tra điều kiện (Đơn tối thiểu)
   const isEligible = (voucher) => {
-    // cartSummary.totalPrice ở đây chính là (Tiền Hàng - Tiền Flash Sale)
     return cartSummary.value.totalPrice >= voucher.MucGiaToiThieu;
   };
 
@@ -377,13 +372,13 @@
     toastStore.showToast("Đã bỏ áp dụng mã giảm giá", "success");
   };
 
-  // 7. Tính số tiền Voucher giảm được (Mô phỏng logic Backend)
+  // 7. Tính số tiền Voucher giảm được
   const voucherDiscountAmount = computed(() => {
     if (!selectedVoucher.value) return 0;
     const v = selectedVoucher.value;
     const currentTotal = cartSummary.value.totalPrice; 
 
-    if (currentTotal < v.MucGiaToiThieu) return 0; // Đề phòng
+    if (currentTotal < v.MucGiaToiThieu) return 0;
 
     if (v.LoaiGiamGia === 'TienMat') {
       return Number(v.ChietKhau);
@@ -411,9 +406,7 @@
   // Hàm định dạng tiền tệ
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-  // ===============================================
   // HÀM TẢI DỮ LIỆU KHI VỪA MỞ TRANG
-  // ===============================================
   const scrollToTopCustom = (duration = 1000) => {
       const startPosition = window.scrollY;
       const startTime = performance.now();
@@ -501,9 +494,7 @@
     }
   });
 
-  // ===============================================
   // XỬ LÝ ĐẶT HÀNG (Gọi API Xác Nhận Đơn Hàng)
-  // ===============================================
   const processCheckout = async () => {
     if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) {
       toastStore.showToast("Vui lòng điền đầy đủ thông tin giao hàng!", "error");
@@ -537,7 +528,6 @@
     }
 
     try {
-      // 🔥 ĐÃ BỔ SUNG TRUYỀN MaGG XUỐNG BACKEND ĐỂ ÁP DỤNG VOUCHER 🔥
       const payload = {
         TenNguoiNhan: shippingInfo.name,
         SDTNguoiNhan: shippingInfo.phone,
@@ -626,7 +616,6 @@
     to { opacity: 1; transform: scaleY(1); }
   }
 
-  /* Modal Animations */
   @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }

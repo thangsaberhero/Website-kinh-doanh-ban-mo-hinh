@@ -394,7 +394,7 @@
     background: rgba(28, 31, 43, 0.4);
     backdrop-filter: blur(16px);
   }
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #464752; border-radius: 10px; }
   .hide-scrollbar::-webkit-scrollbar { display: none; }

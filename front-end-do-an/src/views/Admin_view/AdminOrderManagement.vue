@@ -1986,19 +1986,6 @@ const exportExcelReport = async () => {
     }
   });
   
-  const getCarrierColor = (carrier) => {
-    if (carrier.includes('Giao Hàng')) return 'text-orange-500';
-    if (carrier.includes('Viettel')) return 'text-emerald-600';
-    if (carrier.includes('J&T')) return 'text-rose-600';
-    return 'text-sky-600';
-  };
-  
-  const getPaymentStyle = (status) => {
-    if (status.includes('Đã thanh toán')) return 'bg-emerald-50 text-emerald-600 border-emerald-200';
-    if (status.includes('COD')) return 'bg-amber-50 text-amber-600 border-amber-200';
-    return 'bg-slate-50 text-slate-600 border-slate-200';
-  };
-  
   const activeMenuId = ref(null);
 
   const toggleOrderMenu = (id) => {
@@ -2370,30 +2357,30 @@ const exportExcelReport = async () => {
     toastStore.showToast("Đang tạo hóa đơn, vui lòng đợi giây lát...", "info");
 
     try {
-        const res = await fetch(`${API_BASE_URL}/api/invoice_admin/print/${maDH}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!res.ok) {
-            throw new Error("Không thể tải hóa đơn từ máy chủ");
+      const res = await fetch(`${API_BASE_URL}/api/invoice_admin/print/${maDH}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
         }
+      });
 
-        const htmlInvoice = await res.text();
-        const printWindow = window.open('', '_blank', 'width=800,height=800');
-        
-        if (printWindow) {
-            printWindow.document.open();
-            printWindow.document.write(htmlInvoice);
-            printWindow.document.close();
-        } else {
-            toastStore.showToast("⚠️ Trình duyệt chặn Popup. Hãy cấp quyền mở Popup cho trang web!", "error");
-        }
+      if (!res.ok) {
+        throw new Error("Không thể tải hóa đơn từ máy chủ");
+      }
+
+      const htmlInvoice = await res.text();
+      const printWindow = window.open('', '_blank', 'width=800,height=800');
+      
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(htmlInvoice);
+        printWindow.document.close();
+      } else {
+        toastStore.showToast("⚠️ Trình duyệt chặn Popup. Hãy cấp quyền mở Popup cho trang web!", "error");
+      }
     } catch (error) {
-        console.error("Lỗi khi in hóa đơn:", error);
-        toastStore.showToast("Có lỗi xảy ra khi lấy dữ liệu in!", "error");
+      console.error("Lỗi khi in hóa đơn:", error);
+      toastStore.showToast("Có lỗi xảy ra khi lấy dữ liệu in!", "error");
     }
   };
 
@@ -2525,7 +2512,7 @@ const exportExcelReport = async () => {
         TonKho: variant.TonKho,
         SoLuong: 1,
         TienCocToiThieu: product.TienCocToiThieu || 0,
-        LoaiHinhBan: product.LoaiHinhBan // <-- LƯU VÀO ĐỂ LẦN CLICK SAU CÓ DỮ LIỆU ĐỂ KIỂM TRA
+        LoaiHinhBan: product.LoaiHinhBan
       });
     }
     recalculateOrderTotal();
@@ -2740,11 +2727,7 @@ const exportExcelReport = async () => {
       if (response.ok && result.success) {
         toastStore.showToast("Xác nhận thu tiền thành công!", "success");
         isPaymentConfirmModalOpen.value = false;
-        
-        // 🔴 ĐÃ SỬA: Tự động gọi lại API Chi tiết đơn hàng để load ngay Lịch sử giao dịch mới lên UI
         await viewOrderDetails({ id: orderId });
-        
-        // Làm mới danh sách đơn hàng ở màn hình nền
         fetchOrders(); 
       } 
       else {
@@ -2831,7 +2814,7 @@ const exportExcelReport = async () => {
         },
         body: JSON.stringify({ 
           MaDH: orderToRefund.value,
-          SoTienHoanTra: refundAmount.value // Gửi con số nguyên thủy xuống Backend
+          SoTienHoanTra: refundAmount.value
         })
       });
 

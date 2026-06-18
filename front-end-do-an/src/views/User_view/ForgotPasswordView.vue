@@ -326,7 +326,6 @@
     if (bgTimer) clearInterval(bgTimer);
   });
 
-  // Xử lý Bước 1: Yêu cầu gửi OTP
   const handleRequestOTP = async () => {
     isSubmitting.value = true;
     try {
@@ -381,7 +380,7 @@
     }
   };
 
-  // Xử lý Bước 2: Xác thực OTP và nhận resetToken chứng nhận
+  // Xác thực OTP và nhận resetToken chứng nhận
   const handleVerifyOTP = async () => {
     isSubmitting.value = true;
     try {
@@ -415,7 +414,7 @@
     }
   };
 
-  // Xử lý Bước 3: Đổi mật khẩu
+  // Đổi mật khẩu
   const handleResetPassword = async () => {
     isSubmitting.value = true;
     try {
@@ -478,7 +477,6 @@
     box-shadow: 0 4px 20px -5px rgba(255, 143, 115, 0.3);
   }
 
-  /* Kỹ thuật CSS Fade cho ảnh cực mượt */
   .fade-enter-active,
   .fade-leave-active {
     transition: opacity 1.5s ease-in-out;

@@ -431,7 +431,7 @@
     });
   };
 
-  // --- 1. LẤY TOÀN BỘ CÀI ĐẶT TỪ DB KHI LOAD TRANG ---
+  // --- LẤY TOÀN BỘ CÀI ĐẶT TỪ DB KHI LOAD TRANG ---
   const fetchSettings = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/setting/admin`);
@@ -465,13 +465,12 @@
     }
   };
 
-  // --- 2. CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
+  // --- CẬP NHẬT CÀI ĐẶT VĂN BẢN ---
   const saveTextSettings = async () => {
     isSavingText.value = true;
     const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
     
     try {
-      // Vì API cap_nhat_van_ban nhận từng Key một, ta dùng Promise.all để gọi đồng thời
       const updatePromises = Object.keys(formText.value).map(key => {
         return fetch(`${API_BASE_URL}/api/setting/admin/update_text`, {
           method: 'PUT',
@@ -495,7 +494,7 @@
     }
   };
 
-  // --- 3. XỬ LÝ ẢNH FILE ĐƠN ---
+  // --- XỬ LÝ ẢNH FILE ĐƠN ---
   const handleSingleFile = (event, fieldKey) => {
     const file = event.target.files[0];
     if (file) {
@@ -533,7 +532,7 @@
     }
   };
 
-  // --- 4. XỬ LÝ MẢNG ẢNH BANNER TRANG CHỦ ---
+  // --- XỬ LÝ MẢNG ẢNH BANNER TRANG CHỦ ---
   const handleHomeBannerFiles = (event) => {
     const selectedFiles = Array.from(event.target.files);
     
@@ -582,7 +581,6 @@
     formData.append('oldImages', JSON.stringify(oldUrls));
     
     files.value.login_bg.forEach(file => {
-      // Chú ý: Tên append phải khớp với tên trong uploadLoginSlider.array('login_bg', 5)
       formData.append('login_bg', file); 
     });
 
@@ -635,7 +633,7 @@
         toastStore.showToast("Cập nhật toàn bộ Slider thành công!", "success");
         
         // Làm mới dữ liệu
-        existingBanners.value = formatBanners(result.data); // <--- Sửa dòng này
+        existingBanners.value = formatBanners(result.data);
         files.value.home_banner = [];
         previews.value.home_banner = [];
       } else {

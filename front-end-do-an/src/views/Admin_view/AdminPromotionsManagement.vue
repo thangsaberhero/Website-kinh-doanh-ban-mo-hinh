@@ -880,7 +880,6 @@
     ThoiGianKT: ''
   });
 
-  const promotions = ref([]);
   const currentPage = ref(1);
   const totalPages = ref(1);
   const itemsPerPage = ref(10);
@@ -934,13 +933,6 @@
   const formatCurrency = (money) => {
     if (!money || isNaN(money)) return '0đ';
     return new Intl.NumberFormat('vi-VN').format(money) + 'đ';
-  };
-
-  const getStatusClass = (status) => {
-    if (status === 'Đang chạy') return 'bg-emerald-50 text-emerald-600 border border-emerald-200';
-    if (status === 'Đã lên lịch') return 'bg-amber-50 text-amber-600 border border-amber-200';
-    if (status === 'Đã hết hạn') return 'bg-rose-50 text-rose-600 border border-rose-200';
-    return 'bg-slate-50 text-slate-500 border border-slate-200';
   };
 
   const fetchCustomersForVoucher = async () => {
@@ -1517,7 +1509,7 @@
   
 
   const openEditModal = async (item) => {
-    // 1. Reset sạch các trường search khách hàng của modal sửa để tránh bị lưu cache từ lần mở trước
+    // Reset sạch các trường search khách hàng của modal sửa để tránh bị lưu cache từ lần mở trước
     searchEditCustomerQuery.value = '';
     searchedEditCustomers.value = [];
     selectedEditCustomer.value = null;
@@ -1549,7 +1541,7 @@
         originalThoiGianBD: item.ThoiGianBD
       };
 
-      // 2. BỔ SUNG: Nếu mã giảm giá này có gán riêng cho 1 khách hàng (MaKH != null)
+      // Nếu mã giảm giá này có gán riêng cho 1 khách hàng (MaKH != null)
       if (item.MaKH) {
         try {
           const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -1730,7 +1722,7 @@
     return baseData;
   });
 
-  // 🔴 THÊM MỚI: Thuật toán tính toán và phân trang thông minh
+  // Thuật toán tính toán và phân trang
   const startItem = computed(() => totalRecords.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
   const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalRecords.value));
 

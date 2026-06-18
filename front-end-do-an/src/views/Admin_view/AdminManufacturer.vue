@@ -313,7 +313,7 @@ const changeItemsPerPage = () => {
 const changePage = (page) => {
   if (page === '...' || page === currentPage.value) return;
   currentPage.value = page;
-  fetchManufacturers(); // Hoặc nếu bồ đang dùng watch(currentPage) thì có thể bỏ dòng này đi
+  fetchManufacturers();
 };
 
   const onLogoChange = (event) => {
@@ -373,7 +373,7 @@ const changePage = (page) => {
             name: item.TenHSX,
             products: item.TongSoLuongSanPham || 0,
             description: item.MoTa,
-            logo: imageUrl // Gán URL đã được làm sạch vào đây
+            logo: imageUrl
           };
         });
 
@@ -511,7 +511,6 @@ const changePage = (page) => {
     
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-      // 👉 Sửa URL Xóa ở đây
       const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_brand/${itemToDelete.value.id}`, {
         method: 'DELETE',
         headers: {'Authorization': `Bearer ${token}`}

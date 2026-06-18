@@ -197,18 +197,15 @@
 <script setup>
   import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../../stores/auth';
   import { useToastStore } from '../../stores/toast';
   import TheHeader from '../../components/TheHeader.vue';
   import UserSidebar from '../../components/UserSidebar.vue';
 
   const router = useRouter();
-  const authStore = useAuthStore();
   const toastStore = useToastStore();
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const activeTab = ref('Tất cả');
-  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
   const orders = ref([]);
 
   const showPaymentModal = ref(false);

@@ -1177,7 +1177,7 @@
 
   const filterCategories = ref([]);       
   const detailCategories = ref([]);   
-// Các tùy chọn cố định cho Form
+
   const saleTypeOptions = ['Có sẵn', 'Order', 'Pre-order'];
   const statusOptions = ['Đã phát hành', 'Chưa phát hành'];
   const summary = ref({
@@ -1189,7 +1189,7 @@
 
   const formatCurrency = (value) => {
     if (value === null || value === undefined || value === '') return '';
-    const strVal = String(value).replace(/\D/g, ''); // Bóc tách chỉ lấy số
+    const strVal = String(value).replace(/\D/g, '');
     if (!strVal) return '';
     return parseInt(strVal, 10).toLocaleString('vi-VN'); 
   };
@@ -1200,7 +1200,7 @@
     return parseInt(String(value).replace(/\D/g, ''), 10) || 0;
   };
 
-  // 3. HÀM CHỐNG LỖI NHẢY SỐ (MỚI)
+  // 3. HÀM CHỐNG LỖI NHẢY SỐ
   const handleCurrencyInput = (event, obj, field) => {
     // Lấy số nguyên gốc từ phím người dùng vừa gõ
     const rawValue = parseCurrency(event.target.value);
@@ -1227,7 +1227,6 @@
   };
 
   // 2. Hàm lấy danh sách Danh mục con khi chọn danh mục lớn
-  // Giả sử API của bạn nhận MaDM để trả về các danh mục con tương ứng
   const fetchDetailCategories = async (MaDM) => {
     if (!MaDM) {
       detailCategories.value = [];
@@ -1283,7 +1282,6 @@
 
       if (result.success) {
         // Mapping dữ liệu từ Database vào UI
-        // LƯU Ý: Bạn hãy sửa các tên cột (TenMH, TenThuongHieu...) cho khớp đúng với SQL của bạn nhé!
         products.value = result.data.map(item => {
           return {
             id: item.MaMoHinh, 
@@ -1304,7 +1302,6 @@
             //Thông tin raw
             rawMinDeposit: parseInt(item.TienCocToiThieu) || 0,
             rawSellPrice: parseInt(item.DonGia) || 0,
-            // (Ngày tháng có đuôi T17:00:00Z nên phải dùng split để lấy đúng định dạng yyyy-mm-dd)
             releaseDate: item.NgayPhatHanh ? item.NgayPhatHanh.split('T')[0] : '',
             // Format tiền tệ cho đẹp
             minDeposit: Number(item.TienCocToiThieu || 0).toLocaleString('vi-VN'),
@@ -1316,7 +1313,7 @@
             variants: (item.DS_PhanLoai || []).map(v => ({
               id: v.id,
               name: v.name,
-              sellPrice: Number(v.sellPrice || 0).toLocaleString('vi-VN'), // Thêm dòng này là hết lỗi!
+              sellPrice: Number(v.sellPrice || 0).toLocaleString('vi-VN'),
               stock: v.stock
             })),
             thumbnailUrl: (item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) 
@@ -1341,14 +1338,7 @@
     currentPage.value = 1;
     fetchProducts();
   });
-  
-  const handleToggleSidebar = () => {
-    if (window.innerWidth < 768) isMobileMenuOpen.value = !isMobileMenuOpen.value;
-    else isSidebarCollapsed.value = !isSidebarCollapsed.value;
-  };
-  const closeAllMenus = () => {};
-  
-  
+    
   const getBrandColor = (brand) => {
     switch (brand.toLowerCase()) {
       case 'bandai': return 'bg-orange-50 text-orange-600 border-orange-100';
@@ -1364,9 +1354,9 @@
   const newProduct = ref({
       name: '', brand: '', category: '', detailCategory: '',
       material: '', scale: '',
-      characterName: '', // THÊM MỚI: Tên nhân vật
-      series: '',        // THÊM MỚI: Series/Anime
-      barcode: '',       // THÊM MỚI: Mã vạch
+      characterName: '',
+      series: '',
+      barcode: '',
       status: 'Chưa phát hành',
       selltype: 'Có sẵn',
       releaseDate: null,
@@ -1374,7 +1364,6 @@
       isVisible: 0,
       minDeposit: 0, costPrice: 0, basePrice: 0, baseStock: 0,
       thumbnailUrl: '', thumbnailFile: null, galleryUrls: [], galleryFiles: [],
-      // Mảng chứa các phân loại
       variants: []
   });
 
@@ -1401,12 +1390,6 @@
     if (fileInputRef.value) fileInputRef.value.value = '';
   }
 
-  const removeThumbnail = () => {
-    newProduct.value.thumbnailFile = null;
-    newProduct.value.thumbnailUrl = '';
-    if(fileInputRef.value) fileInputRef.value.value = '';
-  }
-
   const triggerGalleryInput = () => {
     if (galleryInputRef.value) galleryInputRef.value.click();
   };
@@ -1428,7 +1411,7 @@
   
   const modalDetailCategories = ref([]);
 
-  // Lắng nghe: Khi người dùng chọn/đổi Danh mục chính trong Modal
+  // Khi người dùng chọn/đổi Danh mục chính trong Modal
   watch(() => newProduct.value.category, async (newMaDM) => {
     // 1. Reset lại danh mục con đang chọn
     newProduct.value.detailCategory = ''; 
@@ -1438,8 +1421,7 @@
       modalDetailCategories.value = [];
       return;
     }
-    
-    // 3. Gọi API lấy danh mục con dựa vào MaDM (Dùng chuẩn Params /:MaDM đã sửa trước đó)
+
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       const response = await fetch(`${API_BASE_URL}/api/product_admin/getdetailvariant/${newMaDM}`,{
@@ -1505,8 +1487,6 @@
       formData.append('TienCocToiThieu', newProduct.value.minDeposit);
       formData.append('DonGia', newProduct.value.basePrice);
       formData.append('SoLuong', newProduct.value.baseStock);
-      
-      // 👉 Ép kiểu mảng phân loại thành chuỗi JSON để gửi qua HTTP
       formData.append('DanhSachPhanLoai', JSON.stringify(newProduct.value.variants));
 
       //Xử lý ảnh
@@ -1528,7 +1508,7 @@
           headers: {
             'Authorization': `Bearer ${token}` 
           },
-          body: formData // Fetch tự động set header multipart/form-data
+          body: formData
         });
         
         const result = await response.json();
@@ -1655,7 +1635,7 @@
                 const newIndex = evt.newIndex;
                 
                 if (oldIndex !== newIndex) {
-                  // MẸO QUAN TRỌNG: Trả DOM về vị trí cũ để tránh Vue bị loạn nhịp
+                  // Trả DOM về vị trí cũ để tránh Vue bị loạn nhịp
                   const itemEl = evt.item;
                   evt.from.insertBefore(itemEl, evt.from.children[oldIndex > newIndex ? oldIndex + 1 : oldIndex]);
                   
@@ -1675,23 +1655,19 @@
     isEditModalOpen.value = true;
   };
 
-  const addEditVariant = () => {
-    editingProduct.value.variants.push({ name: '', sellPrice: 0, stock: 0 });
-  };
-
   // =====================================================
   // LOGIC: XÓA PHÂN LOẠI VỚI CUSTOM MODAL
   // =====================================================
   const isDeleteVariantModalOpen = ref(false); // Trạng thái đóng/mở Modal xóa
   const variantToDelete = ref({ index: null, id: null }); // Lưu tạm vị trí cần xóa
 
-  // Hàm 1: Mở Modal và ghi nhớ mục tiêu
+  // Mở Modal và ghi nhớ mục tiêu
   const confirmRemoveVariant = (index, variantId) => {
     variantToDelete.value = { index, id: variantId };
     isDeleteVariantModalOpen.value = true;
   };
 
-  // Hàm 2: Thực thi lệnh xóa khi user bấm "Xóa ngay" trong Modal
+  // Thực thi lệnh xóa khi user bấm "Xóa ngay" trong Modal
   const executeRemoveVariant = () => {
     const { index, id } = variantToDelete.value;
     
@@ -1767,7 +1743,6 @@
     const removedItem = editingProduct.value.galleryItems.splice(index, 1)[0];
     
     if (removedItem.type === 'old') {
-      // 🔴 ĐÃ SỬA: Dùng trực tiếp removedItem.id
       if(!editingProduct.value.deletedOldImages) editingProduct.value.deletedOldImages = [];
       editingProduct.value.deletedOldImages.push(removedItem.id);
     }
@@ -1822,7 +1797,6 @@
     if (editingProduct.value.galleryItems && editingProduct.value.galleryItems.length > 0) {
       editingProduct.value.galleryItems.forEach(item => {
         if (item.type === 'old') {
-          // 🔴 ĐÃ SỬA: Dùng trực tiếp item.id (chứa link gốc từ DB), không dùng split('/').pop() nữa!
           finalGalleryOrder.push(item.id); 
         } else if (item.type === 'new') {
           formData.append('BoSuuTapAnhMoi', item.file);
@@ -1863,7 +1837,6 @@
   };
 
   // --- HÀM ẨN/HIỆN NHANH SẢN PHẨM ---
-  // --- HÀM ẨN/HIỆN SẢN PHẨM NHANH ---
   const toggleVisibility = async (productId, currentStatus) => {
     try {
       const newStatus = currentStatus === 1 ? 0 : 1;
@@ -1912,7 +1885,7 @@
     minprice.value = null;
     maxprice.value = null;
     sortBy.value = 'newest';
-    activeFilter.value = 'all'; // Đặt lại cả bộ lọc Hãng SX bên ngoài
+    activeFilter.value = 'all';
     
     currentPage.value = 1;
     fetchProducts();
@@ -1925,8 +1898,6 @@
     isExporting.value = true;
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-      
-      // Chú ý: Đảm bảo đường dẫn này khớp với route Backend của bạn
       const url = `${API_BASE_URL}/api/product_admin/export-excel`;
 
       const response = await fetch(url, {
@@ -1938,7 +1909,6 @@
         throw new Error("Lỗi khi tải file từ Server");
       }
 
-      // Xử lý tải file Blob
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
       
@@ -2109,7 +2079,7 @@
     checkAndOpenInventoryFromUrl(); 
   });
 
-  // 🔴 THÊM MỚI 1: Thuật toán Phân trang thông minh (Rút gọn dấu ...)
+  // Thuật toán Phân trang
   const visiblePages = computed(() => {
     const current = currentPage.value;
     const total = totalPages.value;
@@ -2129,12 +2099,13 @@
     return [1, '...', current - 1, current, current + 1, '...', total];
   });
 
-  // 🔴 THÊM MỚI 2: Hàm xử lý khi đổi số lượng hiển thị (10, 20, 50)
+  // Hàm xử lý khi đổi số lượng hiển thị (10, 20, 50)
   const changeItemsPerPage = () => {
     currentPage.value = 1; // Reset về trang 1
     fetchProducts(); // Gọi lại API để tải danh sách với limit mới
   };
 </script>
+
 <style scoped>
   .custom-scrollbar::-webkit-scrollbar { width: 6px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

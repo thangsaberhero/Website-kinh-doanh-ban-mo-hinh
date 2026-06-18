@@ -298,311 +298,307 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
-import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
-import AdminHeader from "../../components/Admin/AdminHeader.vue";
-import { useToastStore } from "../../stores/toast";
-import { useLayoutStore } from '../../stores/layout';
+  import { ref, onMounted, watch, computed } from 'vue';
+  import AdminSideBar from "../../components/Admin/AdminSidebar.vue";
+  import AdminHeader from "../../components/Admin/AdminHeader.vue";
+  import { useToastStore } from "../../stores/toast";
+  import { useLayoutStore } from '../../stores/layout';
 
-const toastStore = useToastStore();
-const layoutStore = useLayoutStore();
+  const toastStore = useToastStore();
+  const layoutStore = useLayoutStore();
 
-const categories = ref([]);
+  const categories = ref([]);
 
-// Các biến thống kê (Đã sửa lại thành Nổi bật / Tiêu chuẩn)
-const totalCats = ref(0);
-const featuredCats = ref(0); 
-const standardCats = ref(0);
+  // Các biến thống kê
+  const totalCats = ref(0);
+  const featuredCats = ref(0); 
+  const standardCats = ref(0);
 
-const searchQuery = ref('');
-const currentPage = ref(1);
-const itemsPerPage = ref(10); 
-const totalPages = ref(1);
+  const searchQuery = ref('');
+  const currentPage = ref(1);
+  const itemsPerPage = ref(10); 
+  const totalPages = ref(1);
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-// 🔴 THÊM MỚI: Thuật toán tính toán và phân trang thông minh
-const startItem = computed(() => totalCats.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
-const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalCats.value));
+  // Thuật toán tính toán và phân trang
+  const startItem = computed(() => totalCats.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1);
+  const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalCats.value));
 
-const visiblePages = computed(() => {
-  const current = currentPage.value;
-  const total = totalPages.value;
-  
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
-  if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
-  
-  return [1, '...', current - 1, current, current + 1, '...', total];
-});
+  const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
+    if (current >= total - 2) return [1, 2, '...', total - 3, total - 2, total - 1, total];
+    
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  });
 
-const changeItemsPerPage = () => {
-  currentPage.value = 1;
-  fetchCategories();
-};
-
-const changePage = (page) => {
-  if (page === '...' || page === currentPage.value) return;
-  currentPage.value = page;
-  // Ghi chú: Việc gọi API fetchCategories() đã được tự động xử lý bởi hàm watch(currentPage) có sẵn bên dưới của bồ
-};
-
-const fetchCategories = async () => {
-  try {
-    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-    let url = `${API_BASE_URL}/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
-    if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
-    const response = await fetch(url,
-      {headers: {'Authorization': `Bearer ${token}`}}
-    );
-    const result = await response.json();
-
-    if (result.success) {
-      categories.value = result.data.map(item => ({
-        id: item.MaDM,
-        name: item.TenDM,
-        description: item.MoTa || 'Chưa có mô tả',
-        count: item.TongSoLuongDanhMucCon || 0,
-        
-        // Đón dữ liệu Ảnh và Công tắc Nổi bật
-        images: item.DanhSachAnh || [],
-        isFeatured: item.DanhMucNoiBat === 1 ? true : false,
-
-        details: item.DanhSachDanhMucCon ? item.DanhSachDanhMucCon.map(sub => ({
-           id: sub.MaChiTietDM,
-           name: sub.TenChiTietDM,
-           description: sub.MoTa || ''
-        })) : []
-      }));
-      
-      totalPages.value = result.pagination.totalPage;
-      totalCats.value = result.pagination.totalCates;
-      
-      // Tính toán Nổi bật / Tiêu chuẩn
-      featuredCats.value = categories.value.filter(c => c.isFeatured).length;
-      standardCats.value = totalCats.value - featuredCats.value;
-    }
-  } catch (error) {
-    console.error("Lỗi tải danh mục:", error);
-  }
-};
-
-const scrollToTopCustom = (duration = 1000) => {
-  const startPosition = window.scrollY;
-  const startTime = performance.now();
-
-  const animateScroll = (currentTime) => {
-    const timeElapsed = currentTime - startTime;
-    let progress = Math.min(timeElapsed / duration, 1);
-    const easeProgress = 1 - Math.pow(1 - progress, 3);
-    window.scrollTo(0, startPosition * (1 - easeProgress));
-    if (timeElapsed < duration) {
-      requestAnimationFrame(animateScroll);
-    }
-  };
-  requestAnimationFrame(animateScroll);
-};
-
-onMounted(() => {
-  scrollToTopCustom();
-  fetchCategories();
-});
-
-let searchTimeout;
-watch(searchQuery, () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
+  const changeItemsPerPage = () => {
     currentPage.value = 1;
     fetchCategories();
-  }, 500); 
-});
-
-watch(currentPage, () => {
-  fetchCategories();
-});
-
-// LOGIC CRUD VÀ UPLOAD FILE
-const isModalOpen = ref(false);
-const isEditMode = ref(false);
-const editingId = ref(null);
-const newDetail = ref({ name: '', desc: '' });
-
-// Quản lý file ảnh upload
-const selectedFiles = ref([]);
-const selectedFileUrls = ref([]);
-
-const formCategory = ref({ 
-  name: '', 
-  description: '', 
-  details: [],
-  isFeatured: false,
-  images: []
-});
-
-const handleFileSelect = (event) => {
-  const files = Array.from(event.target.files);
-  if (files.length > 3) {
-    toastStore.showToast("Chỉ được chọn tối đa 3 ảnh!", "error");
-    event.target.value = ''; // Reset input
-    return;
-  }
-  
-  selectedFiles.value = files;
-  
-  // Xóa preview cũ tránh rò rỉ bộ nhớ
-  selectedFileUrls.value.forEach(url => URL.revokeObjectURL(url));
-  selectedFileUrls.value = files.map(file => URL.createObjectURL(file));
-};
-
-const openAddModal = () => {
-  isEditMode.value = false;
-  editingId.value = null;
-  selectedFiles.value = [];
-  selectedFileUrls.value = [];
-  formCategory.value = { name: '', description: '', details: [], isFeatured: false, images: [] };
-  isModalOpen.value = true;
-};
-
-const openEditModal = (cat) => {
-  isEditMode.value = true;
-  editingId.value = cat.id;
-  selectedFiles.value = [];
-  selectedFileUrls.value = [];
-  formCategory.value = { 
-    ...cat,
-    details: cat.details ? [...cat.details] : [] 
   };
-  isModalOpen.value = true;
-};
 
-// CẬP NHẬT LOGIC LƯU SANG FORMDATA
-const saveCategory = async () => {
-  if (!formCategory.value.name.trim()) {
-    toastStore.showToast("Vui lòng nhập tên danh mục!", "error");
-    return;
-  }
+  const changePage = (page) => {
+    if (page === '...' || page === currentPage.value) return;
+    currentPage.value = page;
+  };
 
-  // Sử dụng FormData thay vì JSON.stringify
-  const payload = new FormData();
-  payload.append('TenDM', formCategory.value.name);
-  payload.append('MoTa', formCategory.value.description || '');
-  payload.append('DanhMucNoiBat', formCategory.value.isFeatured ? 1 : 0);
-  payload.append('ChiTiet', JSON.stringify(formCategory.value.details));
-
-  // Đính kèm các file ảnh (Gắn đúng tên 'DanhSachAnh' như trong Router backend)
-  if (selectedFiles.value.length > 0) {
-    selectedFiles.value.forEach(file => {
-      payload.append('DanhSachAnh', file);
-    });
-  }
-
-  try {
-    let url = `${API_BASE_URL}/api/product_admin/add_cate`; 
-    let method = 'POST';
-
-    if (isEditMode.value) {
-      url = `${API_BASE_URL}/api/product_admin/fix_cate/${editingId.value}`;
-      method = 'PUT';
-    }
-
-    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-    const response = await fetch(url, {
-      method: method,
-      headers: { 
-        'Authorization': `Bearer ${token}` 
-        // LƯU Ý: Tuyệt đối không set 'Content-Type': 'application/json' ở đây
-        // Trình duyệt sẽ tự động nhận diện FormData và set boundary chuẩn
-      },
-      body: payload
-    });
-
-    const result = await response.json();
-
-    if (response.ok || result.success) {
-      toastStore.showToast(result.message || "Lưu danh mục thành công!", "success");
-      isModalOpen.value = false;
-      fetchCategories(); 
-    } else {
-      toastStore.showToast(result.message || "Lỗi khi lưu danh mục!", "error");
-    }
-  } catch (error) {
-    console.error("Lỗi khi lưu:", error);
-    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
-  }
-};
-
-const isDeleteModalOpen = ref(false);
-const itemToDelete = ref(null);
-const confirmDelete = (cat) => {
-  itemToDelete.value = cat;
-  isDeleteModalOpen.value = true;
-};
-
-const executeDelete = async () => {
-  if (!itemToDelete.value) return;
-  try {
-    const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-    const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_cate/${itemToDelete.value.id}`, {
-      method: 'DELETE',
-      headers: {'Authorization': `Bearer ${token}`}
-    });
-    const result = await response.json();
-
-    if (response.ok || result.success) {
-      toastStore.showToast(result.message || "Đã xóa danh mục!", "success");
-      isDeleteModalOpen.value = false;
-      fetchCategories();
-    } else {
-      toastStore.showToast(result.message || "Không thể xóa danh mục này!", "error");
-    }
-  } catch (error) {
-    toastStore.showToast("Lỗi kết nối máy chủ!", "error");
-  } finally {
-    itemToDelete.value = null;
-  }
-};
-
-const addDetail = () => {
-  if (!newDetail.value.name.trim()) return;
-  if (!formCategory.value.details) formCategory.value.details = [];
-  formCategory.value.details.push({
-    name: newDetail.value.name.trim(),
-    description: newDetail.value.desc.trim()
-  });
-  newDetail.value = { name: '', desc: '' };
-};
-
-const removeDetail = async (index) => {
-  const detailItem = formCategory.value.details[index];
-  if (!detailItem.id) {
-    formCategory.value.details.splice(index, 1);
-    return;
-  }
-  if (confirm(`Bạn có chắc chắn muốn xóa phân loại "${detailItem.name}" không?`)) {
+  const fetchCategories = async () => {
     try {
       const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
-      const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_cate_detail/${detailItem.id}`, {
+      let url = `${API_BASE_URL}/api/product_admin/get_all_cate?page=${currentPage.value}&limit=${itemsPerPage.value}`;
+      if (searchQuery.value) url += `&keyword=${encodeURIComponent(searchQuery.value)}`;
+      const response = await fetch(url,
+        {headers: {'Authorization': `Bearer ${token}`}}
+      );
+      const result = await response.json();
+
+      if (result.success) {
+        categories.value = result.data.map(item => ({
+          id: item.MaDM,
+          name: item.TenDM,
+          description: item.MoTa || 'Chưa có mô tả',
+          count: item.TongSoLuongDanhMucCon || 0,
+          
+          // Đón dữ liệu Ảnh và Công tắc Nổi bật
+          images: item.DanhSachAnh || [],
+          isFeatured: item.DanhMucNoiBat === 1 ? true : false,
+
+          details: item.DanhSachDanhMucCon ? item.DanhSachDanhMucCon.map(sub => ({
+            id: sub.MaChiTietDM,
+            name: sub.TenChiTietDM,
+            description: sub.MoTa || ''
+          })) : []
+        }));
+        
+        totalPages.value = result.pagination.totalPage;
+        totalCats.value = result.pagination.totalCates;
+        
+        // Tính toán Nổi bật / Tiêu chuẩn
+        featuredCats.value = categories.value.filter(c => c.isFeatured).length;
+        standardCats.value = totalCats.value - featuredCats.value;
+      }
+    } catch (error) {
+      console.error("Lỗi tải danh mục:", error);
+    }
+  };
+
+  const scrollToTopCustom = (duration = 1000) => {
+    const startPosition = window.scrollY;
+    const startTime = performance.now();
+
+    const animateScroll = (currentTime) => {
+      const timeElapsed = currentTime - startTime;
+      let progress = Math.min(timeElapsed / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      window.scrollTo(0, startPosition * (1 - easeProgress));
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animateScroll);
+      }
+    };
+    requestAnimationFrame(animateScroll);
+  };
+
+  onMounted(() => {
+    scrollToTopCustom();
+    fetchCategories();
+  });
+
+  let searchTimeout;
+  watch(searchQuery, () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentPage.value = 1;
+      fetchCategories();
+    }, 500); 
+  });
+
+  watch(currentPage, () => {
+    fetchCategories();
+  });
+
+  // LOGIC CRUD VÀ UPLOAD FILE
+  const isModalOpen = ref(false);
+  const isEditMode = ref(false);
+  const editingId = ref(null);
+  const newDetail = ref({ name: '', desc: '' });
+
+  // Quản lý file ảnh upload
+  const selectedFiles = ref([]);
+  const selectedFileUrls = ref([]);
+
+  const formCategory = ref({ 
+    name: '', 
+    description: '', 
+    details: [],
+    isFeatured: false,
+    images: []
+  });
+
+  const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length > 3) {
+      toastStore.showToast("Chỉ được chọn tối đa 3 ảnh!", "error");
+      event.target.value = ''; // Reset input
+      return;
+    }
+    
+    selectedFiles.value = files;
+    
+    // Xóa preview cũ tránh rò rỉ bộ nhớ
+    selectedFileUrls.value.forEach(url => URL.revokeObjectURL(url));
+    selectedFileUrls.value = files.map(file => URL.createObjectURL(file));
+  };
+
+  const openAddModal = () => {
+    isEditMode.value = false;
+    editingId.value = null;
+    selectedFiles.value = [];
+    selectedFileUrls.value = [];
+    formCategory.value = { name: '', description: '', details: [], isFeatured: false, images: [] };
+    isModalOpen.value = true;
+  };
+
+  const openEditModal = (cat) => {
+    isEditMode.value = true;
+    editingId.value = cat.id;
+    selectedFiles.value = [];
+    selectedFileUrls.value = [];
+    formCategory.value = { 
+      ...cat,
+      details: cat.details ? [...cat.details] : [] 
+    };
+    isModalOpen.value = true;
+  };
+
+  // CẬP NHẬT LOGIC LƯU SANG FORMDATA
+  const saveCategory = async () => {
+    if (!formCategory.value.name.trim()) {
+      toastStore.showToast("Vui lòng nhập tên danh mục!", "error");
+      return;
+    }
+
+    const payload = new FormData();
+    payload.append('TenDM', formCategory.value.name);
+    payload.append('MoTa', formCategory.value.description || '');
+    payload.append('DanhMucNoiBat', formCategory.value.isFeatured ? 1 : 0);
+    payload.append('ChiTiet', JSON.stringify(formCategory.value.details));
+
+    // Đính kèm các file ảnh
+    if (selectedFiles.value.length > 0) {
+      selectedFiles.value.forEach(file => {
+        payload.append('DanhSachAnh', file);
+      });
+    }
+
+    try {
+      let url = `${API_BASE_URL}/api/product_admin/add_cate`; 
+      let method = 'POST';
+
+      if (isEditMode.value) {
+        url = `${API_BASE_URL}/api/product_admin/fix_cate/${editingId.value}`;
+        method = 'PUT';
+      }
+
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const response = await fetch(url, {
+        method: method,
+        headers: { 
+          'Authorization': `Bearer ${token}`
+        },
+        body: payload
+      });
+
+      const result = await response.json();
+
+      if (response.ok || result.success) {
+        toastStore.showToast(result.message || "Lưu danh mục thành công!", "success");
+        isModalOpen.value = false;
+        fetchCategories(); 
+      } else {
+        toastStore.showToast(result.message || "Lỗi khi lưu danh mục!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu:", error);
+      toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    }
+  };
+
+  const isDeleteModalOpen = ref(false);
+  const itemToDelete = ref(null);
+  const confirmDelete = (cat) => {
+    itemToDelete.value = cat;
+    isDeleteModalOpen.value = true;
+  };
+
+  const executeDelete = async () => {
+    if (!itemToDelete.value) return;
+    try {
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+      const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_cate/${itemToDelete.value.id}`, {
         method: 'DELETE',
         headers: {'Authorization': `Bearer ${token}`}
       });
       const result = await response.json();
+
       if (response.ok || result.success) {
-        formCategory.value.details.splice(index, 1);
-        toastStore.showToast("Đã xóa chi tiết danh mục!", "success");
-        fetchCategories(); 
+        toastStore.showToast(result.message || "Đã xóa danh mục!", "success");
+        isDeleteModalOpen.value = false;
+        fetchCategories();
       } else {
-        toastStore.showToast(result.message || "Không thể xóa phân loại này!", "error");
+        toastStore.showToast(result.message || "Không thể xóa danh mục này!", "error");
       }
     } catch (error) {
       toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+    } finally {
+      itemToDelete.value = null;
     }
-  }
-};
+  };
+
+  const addDetail = () => {
+    if (!newDetail.value.name.trim()) return;
+    if (!formCategory.value.details) formCategory.value.details = [];
+    formCategory.value.details.push({
+      name: newDetail.value.name.trim(),
+      description: newDetail.value.desc.trim()
+    });
+    newDetail.value = { name: '', desc: '' };
+  };
+
+  const removeDetail = async (index) => {
+    const detailItem = formCategory.value.details[index];
+    if (!detailItem.id) {
+      formCategory.value.details.splice(index, 1);
+      return;
+    }
+    if (confirm(`Bạn có chắc chắn muốn xóa phân loại "${detailItem.name}" không?`)) {
+      try {
+        const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
+        const response = await fetch(`${API_BASE_URL}/api/product_admin/delete_cate_detail/${detailItem.id}`, {
+          method: 'DELETE',
+          headers: {'Authorization': `Bearer ${token}`}
+        });
+        const result = await response.json();
+        if (response.ok || result.success) {
+          formCategory.value.details.splice(index, 1);
+          toastStore.showToast("Đã xóa chi tiết danh mục!", "success");
+          fetchCategories(); 
+        } else {
+          toastStore.showToast(result.message || "Không thể xóa phân loại này!", "error");
+        }
+      } catch (error) {
+        toastStore.showToast("Lỗi kết nối máy chủ!", "error");
+      }
+    }
+  };
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>

@@ -127,13 +127,11 @@
 <script setup>
   import { ref, onMounted , onUnmounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../../stores/auth';
   import { useToastStore } from '../../stores/toast';
   import TheHeader from '../../components/TheHeader.vue';
   import UserSidebar from '../../components/UserSidebar.vue';
 
   const router = useRouter();
-  const authStore = useAuthStore();
   const toastStore = useToastStore();
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -141,7 +139,6 @@
 
   const wishlistItems = ref([]); 
   const isLoading = ref(true);
-  const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
   const currentPage = ref(1);
   const totalPages = ref(1);
@@ -163,38 +160,37 @@
       const userString = (localStorage.getItem('user') || sessionStorage.getItem('user'));
 
       if (!token || !userString) {
-          router.push('/login');
-          return;
+        router.push('/login');
+        return;
       }
-
-      const userObj = JSON.parse(userString);
 
       try {
         if (!isBackgroundLoad) {
           isLoading.value = true;
         }
         const response = await fetch(`${API_BASE_URL}/api/products/list_favorite?page=${currentPage.value}&limit=8`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
 
         const dataJSON = await response.json();
 
         if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem('token');
-            router.push('/login');
-            return;
+          localStorage.removeItem('token');
+          router.push('/login');
+          return;
         }
 
         if (response.ok) {
-            wishlistItems.value = dataJSON.data || [];
-            if (dataJSON.pagination) {
-              currentPage.value = dataJSON.pagination.currentPage;
-              totalPages.value = dataJSON.pagination.totalPage;
-            }
-        } else {
-            console.error("Lỗi:", dataJSON.message);
+          wishlistItems.value = dataJSON.data || [];
+          if (dataJSON.pagination) {
+            currentPage.value = dataJSON.pagination.currentPage;
+            totalPages.value = dataJSON.pagination.totalPage;
+          }
+        } 
+        else {
+          console.error("Lỗi:", dataJSON.message);
         }
       } 
       catch (error) {
@@ -215,25 +211,24 @@
 
     try {
       const payload = {
-          MaKH: userObj.MaKH,
-          MaMoHinh: maMoHinh
+        MaKH: userObj.MaKH,
+        MaMoHinh: maMoHinh
       };
 
       const response = await fetch(`${API_BASE_URL}/api/products/add_remove_favorite`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` 
-          },
-          body: JSON.stringify(payload) 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify(payload) 
       });
 
       const data = await response.json();
 
       if (response.ok && data.action === 'removed') {
-          // Lọc sản phẩm ra khỏi mảng để giao diện tự cập nhật (Hiệu ứng Transition)
-          wishlistItems.value = wishlistItems.value.filter(item => item.MaMoHinh !== maMoHinh);
-          toastStore.showToast("💔 Đã xóa khỏi danh sách yêu thích", "success");
+        wishlistItems.value = wishlistItems.value.filter(item => item.MaMoHinh !== maMoHinh);
+        toastStore.showToast("💔 Đã xóa khỏi danh sách yêu thích", "success");
       }
     } 
     catch (error) {
@@ -267,7 +262,7 @@
     scrollToTopCustom();
     fetchWishlist(); // Tải lần đầu
     pollingInterval = setInterval(() => {
-      fetchWishlist(true); // Tải ngầm
+      fetchWishlist(true);
     }, 5000);
   });
 
@@ -296,7 +291,7 @@
 
   const getActionText = (soLuong, status) => {
     if (soLuong === 0) return 'Đã hết hàng';
-    return 'Xem chi tiết'; // Chuyển nút Mua ở đây thành Xem chi tiết để an toàn khi chọn variant
+    return 'Xem chi tiết';
   };
 
   const getActionIcon = (soLuong, status) => {
@@ -311,7 +306,6 @@
 </script>
 
 <style scoped>
-
   .gallery-image-mask {
     mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);

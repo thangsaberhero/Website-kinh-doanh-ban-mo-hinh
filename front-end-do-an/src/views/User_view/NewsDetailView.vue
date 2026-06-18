@@ -322,12 +322,6 @@
 </script>
     
 <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap');
-  
-  .font-headline { font-family: 'Space Grotesk', sans-serif; }
-  .font-body { font-family: 'Manrope', sans-serif; }
-  
-  /* XỬ LÝ NỘI DUNG TỪ TINYMCE ĐỂ ĐỒNG BỘ DARK/LIGHT THEME */
   .news-content :deep(p) {
     margin-bottom: 1.75rem;
     line-height: 1.8;

@@ -561,7 +561,7 @@ export default {
     },
 
     async renderMap(history) {
-      // 🌟 FIX CHÍNH: Bộ lọc thông minh loại bỏ hoàn toàn các chặng mang tính chất khởi tạo/metadata kĩ thuật
+      // Bộ lọc thông minh loại bỏ hoàn toàn các chặng mang tính chất khởi tạo/metadata kĩ thuật
       const validHistory = history.filter(record => {
         if (!record.location || record.location.trim() === "") return false;
 

@@ -182,35 +182,34 @@
         
         // Nếu là xóa 1 cái
         if (confirmType.value === 'delete_single') {
-        const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin/delete/${targetId.value}`, {
+          const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin/delete/${targetId.value}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
+          });
+          if (res.ok) {
             toastStore.showToast("Đã xóa thông báo", "success");
-        }
+          }
         } 
         // Nếu là dọn dẹp tất cả
         else if (confirmType.value === 'delete_all') {
-        const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin/delete-read`, {
+          const res = await fetch(`${API_BASE_URL}/api/thong_bao_admin/delete-read`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
-        });
-        const result = await res.json();
-        if (res.ok && result.success) {
+          });
+          const result = await res.json();
+          if (res.ok && result.success) {
             toastStore.showToast(result.message, "success");
             pagination.value.currentPage = 1; 
-        }
+          }
         }
         
         fetchNotificationsFull();
-        isConfirmModalOpen.value = false;
-        
+        isConfirmModalOpen.value = false;        
     } 
     catch (error) {
-        console.error(error);
-        toastStore.showToast("Lỗi kết nối máy chủ", "error");
-        isConfirmModalOpen.value = false;
+      console.error(error);
+      toastStore.showToast("Lỗi kết nối máy chủ", "error");
+      isConfirmModalOpen.value = false;
     }
   };
   

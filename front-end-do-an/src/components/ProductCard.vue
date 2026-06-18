@@ -97,16 +97,13 @@
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
   };
   const getImageUrl = (imagePath) => {
-  // 1. Nếu không có ảnh -> trả về ảnh trống hoặc bỏ qua để @error HTML tự lo
   if (!imagePath) return 'https://server.wallpaperalchemy.com/storage/wallpapers/353/evernight-honkai-star-rail-4k-wallpaper.jpg';
-  
-  // 2. Nếu là ảnh mới up lên Cloudinary (bắt đầu bằng http hoặc https) -> Trả về nguyên link
+
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
   
-  // 3. Nếu là ảnh cũ lưu ở Render (chỉ là tên file) -> Nối với API_BASE_URL
-  const cleanPath = imagePath.replace(/^public\//, ''); // Đề phòng DB lưu dính chữ public/
+  const cleanPath = imagePath.replace(/^public\//, '');
   return `${API_BASE_URL}/Images_product/${cleanPath}`;
 };
   </script>

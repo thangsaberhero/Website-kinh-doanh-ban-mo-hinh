@@ -233,7 +233,6 @@
     const total = totalPages.value;
     const delta = 1; // Số lượng nút hiển thị ở hai bên trang hiện tại
     
-    // Nếu tổng số trang ít (từ 5 trang trở xuống) -> Hiện tất cả, không cần dấu ...
     if (total <= 5) {
       let pages = [];
       for (let i = 1; i <= total; i++) pages.push(i);
@@ -276,13 +275,11 @@
   };
 
   const goToCategory = (id) => {
-    // LUÔN LUÔN xóa danh mục con trước khi chuyển đổi danh mục cha
     subCategoryId.value = ''; 
 
     if (id) {
       if (categoryId.value == id) {
         // Nếu bấm lại vào chính danh mục đang xem
-        // Do subCategoryId vừa bị xóa ở trên -> Watcher mảng của bạn sẽ tự động gọi lại API!
       } else {
         // Chuyển sang danh mục cha KHÁC
         router.push(`/category/${id}`);
@@ -345,8 +342,8 @@
 
   // Xử lý khi bấm danh mục con
   const selectSubCategory = (maDM, maCTDM) => {
-    subCategoryId.value = maCTDM; // Lưu lại mã thằng con
-    fetchProducts(maDM, maCTDM);  // Gọi API lấy sản phẩm của thằng con
+    subCategoryId.value = maCTDM;
+    fetchProducts(maDM, maCTDM);
   };
 
   // Có thể lấy theo Cha hoặc theo Con
@@ -364,16 +361,6 @@
       if(maxPrice.value < 20000000){
         url += `&gia=${maxPrice.value}`
       }
-      
-      // let apiUrl = `${API_BASE_URL}/api/products`; // Mặc định lấy tất cả
-
-      // if (maCTDM) {
-      //   // Nếu bấm vào thằng con -> Gọi API lọc theo Chi Tiết Danh Mục
-      //   apiUrl = `${API_BASE_URL}/api/products/chitietdm/${maCTDM}/products`;
-      // } else if (maDM) {
-      //   // Nếu chỉ bấm thằng cha -> Gọi API lọc theo Danh Mục gốc
-      //   apiUrl = `${API_BASE_URL}/api/products/danhmuc/${maDM}/products`;
-      // }
         
       const response = await fetch(url);
       const result = await response.json();
@@ -389,7 +376,6 @@
     }
   };
 
-  // 5. Cập nhật Watcher: Khi bấm sang Danh mục cha khác, phải Reset thằng con
   watch([categoryId, subCategoryId, selectedBrands, sortBy, limit], () => {
     currentPage.value = 1;
     fetchProducts();
@@ -492,12 +478,8 @@
 
   watch(() => route.params.id, (newId) => {
     categoryId.value = newId || '';
-    subCategoryId.value = ''; // <-- THÊM: Dọn dẹp bộ lọc khi khách bấm nút Back/Forward trên trình duyệt
+    subCategoryId.value = ''; 
     searchQuery.value = ''; 
-
-    // Bạn HÃY XÓA dòng `fetchProducts(newId);` cũ ở đây đi nhé!
-    // Vì bạn đã có `watch([categoryId, subCategoryId...])` ở bên trên rồi, 
-    // giữ lại dòng này sẽ khiến web gọi API 2 lần liên tiếp gây tốn tài nguyên.
   });
 
   watch(() => route.query.brand, (newBrand) => {

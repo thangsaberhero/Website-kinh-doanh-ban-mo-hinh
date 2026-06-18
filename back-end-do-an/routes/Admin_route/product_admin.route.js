@@ -5,11 +5,6 @@ const product_Controller = require('../../controllers/Admin_controller/product_a
 const { uploadProduct, uploadBrand, uploadCategory } = require('../../middlewares/upload.js');
 const authMiddleware = require('../../middlewares/auth.middleware.js');
 
-// ==========================================
-// NHÓM POST: 
-// ==========================================
-
-// 1. Sửa từ upload.fields thành uploadProduct.fields
 router.post('/add_product', uploadProduct.fields([
     { name: 'AnhDaiDien', maxCount: 1 },
     { name: 'BoSuuTapAnh', maxCount: 10 }
@@ -26,7 +21,6 @@ router.post('/add_cate',
 );
 router.post('/add_product_variant', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.them_phan_loai_cho_san_pham);
 
-// 2. Sửa từ upload.fields thành uploadProduct.fields
 router.put('/fix_info/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, uploadProduct.fields([
     { name: 'AnhDaiDien', maxCount: 1 },
     { name: 'BoSuuTapAnhMoi', maxCount: 10 }
@@ -48,9 +42,6 @@ router.put('/quick_update_deposit/:id', authMiddleware.verifyToken, authMiddlewa
 router.delete('/delete_cate/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_danh_muc);
 router.delete('/delete_cate_detail/:id', authMiddleware.verifyToken, authMiddleware.verifyAdmin, product_Controller.xoa_chi_tiet_danh_muc);
 
-// ==========================================
-// NHÓM GET: 
-// ==========================================
 router.get('/', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.liet_ke_mat_hang);
 router.get('/get_brand', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.get_brand);
 router.get('/get_all_brand', authMiddleware.verifyToken, authMiddleware.verifyStaff, product_Controller.liet_ke_brand);
