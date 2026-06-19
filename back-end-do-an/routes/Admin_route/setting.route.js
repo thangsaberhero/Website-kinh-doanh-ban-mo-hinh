@@ -48,6 +48,7 @@ router.put('/update_home_banner',
     authMiddleware.verifyToken, 
     authMiddleware.verifyAdmin, 
     uploadHomeSlider.array('home_banner', 5), 
+    setting_Controller.cap_nhat_mang_file
 );
 router.get('/payment-methods', authMiddleware.verifyToken, authMiddleware.verifyAdmin, setting_Controller.lay_phuong_thuc_thanh_toan);
 router.put('/payment-methods/toggle', authMiddleware.verifyToken, authMiddleware.verifyAdmin, setting_Controller.toggle_phuong_thuc);
