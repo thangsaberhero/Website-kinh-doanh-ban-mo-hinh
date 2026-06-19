@@ -753,6 +753,13 @@ const product_admin = {
                 await connection.rollback();
                 return res.status(404).json({ success: false, message: "Sản phẩm không tồn tại hoặc đã bị xóa khỏi hệ thống!" });
             }
+
+            let finalTrangThai = TrangThai;
+            if (LoaiHinhBan === 'Pre-order') {
+                finalTrangThai = 'Chưa phát hành';
+            } else if (LoaiHinhBan === 'Order' || LoaiHinhBan === 'Có sẵn') {
+                finalTrangThai = 'Đã phát hành';
+            }
             
             // Giữ lại tên cũ để xài cho phần Ghi Log hệ thống ở cuối cùng
             const tenMhCu = spHienTai[0].TenMH;
@@ -820,7 +827,7 @@ const product_admin = {
             
             const [updateSp] = await connection.query(sql_sua_tt_san_pham, [
                 TenMH, MaHSX, MaDM, MaChiTietDM || null, TenNhanVat || null, Series || null, ChatLieu, 
-                DonGia, TrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh || null, 
+                DonGia, finalTrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh || null, 
                 LoaiHinhBan, TienCocToiThieu || 0, isVisible, MaVach_Serial, MaMH
             ]);
 
@@ -1056,27 +1063,44 @@ const product_admin = {
             const { LoaiHinhBan } = req.body;
             const MaTK = req.user.id;
 
-            // 1. Cập nhật bảng Mô Hình
-            await connection.query(`UPDATE MoHinh SET LoaiHinhBan = ? WHERE MaMoHinh = ?`, [LoaiHinhBan, MaMH]);
+            // TỰ ĐỘNG ĐIỀU CHỈNH TRẠNG THÁI (Bảo vệ dữ liệu)
+            let finalTrangThai = 'Đã phát hành'; // Mặc định
+            if (LoaiHinhBan === 'Pre-order') {
+                finalTrangThai = 'Chưa phát hành';
+            } else if (LoaiHinhBan === 'Order' || LoaiHinhBan === 'Có sẵn') {
+                finalTrangThai = 'Đã phát hành';
+            }
+
+            // 1. Cập nhật bảng Mô Hình (Cập nhật cả Loại hình bán VÀ Trạng thái)
+            await connection.query(
+                `UPDATE MoHinh SET LoaiHinhBan = ?, TrangThai = ? WHERE MaMoHinh = ?`, 
+                [LoaiHinhBan, finalTrangThai, MaMH]
+            );
 
             // 2. Lấy tên để ghi log (Bảo mật theo dõi nhân viên)
             const [kiem_tra] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMH]);
             const tenMHStr = kiem_tra.length > 0 ? kiem_tra[0].TenMH : 'Không xác định';
+            
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            // 3. Ghi Log
+            // 3. Ghi Log chi tiết hơn
             await connection.query(`
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'UPDATE_SELLTYPE', ?, ?, NOW())
-            `, [MaTK, `Đổi loại hình bán thành [${LoaiHinhBan}] cho SP #${MaMH}: "${tenMHStr}"`, userIp]);
+            `, [MaTK, `Đổi Loại hình bán [${LoaiHinhBan}] và Trạng thái [${finalTrangThai}] cho SP #${MaMH}: "${tenMHStr}"`, userIp]);
 
-            res.status(200).json({ success: true, message: 'Cập nhật thành công!' });
+            // Trả về cả newStatus để Frontend tự cập nhật không cần reload trang
+            res.status(200).json({ 
+                success: true, 
+                message: 'Cập nhật thành công!',
+                newStatus: finalTrangThai 
+            });
         } catch (error) {
             console.error("Lỗi cập nhật loại hình bán: ", error);
             res.status(500).json({ success: false, message: 'Lỗi server!' });
         } finally {
-            connection.release();
+            if (connection) connection.release();
         }
     },
 

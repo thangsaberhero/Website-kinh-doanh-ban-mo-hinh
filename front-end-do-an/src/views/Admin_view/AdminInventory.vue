@@ -745,13 +745,16 @@
                 
                 <div>
                   <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
-                  <div class="relative">
-                    <select v-model="newProduct.status" 
-                            disabled
-                            class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 cursor-not-allowed outline-none font-bold appearance-none">
-                      <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
-                    </select>
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[16px]">lock</span>
+                  <div class="relative flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 h-[38px] shadow-inner">
+                    <span class="w-2 h-2 rounded-full mr-2 shadow-sm"
+                          :class="newProduct.status === 'Đã phát hành' ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+                    
+                    <span class="text-sm font-bold"
+                          :class="newProduct.status === 'Đã phát hành' ? 'text-emerald-700' : 'text-amber-700'">
+                      {{ newProduct.status || 'Chưa xác định' }}
+                    </span>
+                    
+                    <span class="material-symbols-outlined absolute right-3 text-slate-400 text-[16px]">lock</span>
                   </div>
                   <p class="text-[9px] text-slate-400 mt-1.5 italic">* Tự động theo Loại hình bán</p>
                 </div>
@@ -1039,13 +1042,16 @@
                 
                 <div>
                   <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
-                  <div class="relative">
-                    <select v-model="editingProduct.status" 
-                            disabled
-                            class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 cursor-not-allowed outline-none font-bold appearance-none">
-                      <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
-                    </select>
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[16px]">lock</span>
+                  <div class="relative flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 h-[38px] shadow-inner">
+                    <span class="w-2 h-2 rounded-full mr-2 shadow-sm"
+                          :class="editingProduct.status === 'Đã phát hành' ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+                    
+                    <span class="text-sm font-bold"
+                          :class="editingProduct.status === 'Đã phát hành' ? 'text-emerald-700' : 'text-amber-700'">
+                      {{ editingProduct.status || 'Chưa xác định' }}
+                    </span>
+                    
+                    <span class="material-symbols-outlined absolute right-3 text-slate-400 text-[16px]">lock</span>
                   </div>
                   <p class="text-[9px] text-slate-400 mt-1.5 italic">* Tự động theo Loại hình bán</p>
                 </div>
@@ -2019,6 +2025,10 @@
 
       if (response.ok && result.success) {
         toastStore.showToast("Đã cập nhật loại hình bán!", "success");
+        const productIndex = products.value.findIndex(p => p.id === productId);
+        if (productIndex !== -1 && result.newStatus) {
+            products.value[productIndex].status = result.newStatus;
+        }
       } else {
         toastStore.showToast(result.message || "Lỗi khi cập nhật!", "error");
       }
