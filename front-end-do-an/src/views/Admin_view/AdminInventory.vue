@@ -745,9 +745,15 @@
                 
                 <div>
                   <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
-                  <select v-model="newProduct.status" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-primary outline-none transition-colors">
-                    <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
-                  </select>
+                  <div class="relative">
+                    <select v-model="newProduct.status" 
+                            disabled
+                            class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 cursor-not-allowed outline-none font-bold appearance-none">
+                      <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[16px]">lock</span>
+                  </div>
+                  <p class="text-[9px] text-slate-400 mt-1.5 italic">* Tự động theo Loại hình bán</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -1033,9 +1039,15 @@
                 
                 <div>
                   <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
-                  <select v-model="editingProduct.status" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-sky-400 outline-none transition-colors">
-                    <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
-                  </select>
+                  <div class="relative">
+                    <select v-model="editingProduct.status" 
+                            disabled
+                            class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 cursor-not-allowed outline-none font-bold appearance-none">
+                      <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[16px]">lock</span>
+                  </div>
+                  <p class="text-[9px] text-slate-400 mt-1.5 italic">* Tự động theo Loại hình bán</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -1258,6 +1270,7 @@
     }, 500);
   });
 
+
   //Liệt kê thông tin sản phẩm
   const fetchProducts = async () => {
     isLoading.value = true;
@@ -1438,11 +1451,20 @@
     }
   });
 
-  watch(() => form.value.LoaiHinhBan, (newVal) => {
+  watch(() => newProduct.value.saleType, (newVal) => {
     if (newVal === 'Pre-order') {
-      form.value.TrangThai = 'Chưa phát hành';
+      newProduct.value.status = 'Chưa phát hành';
     } else if (newVal === 'Order' || newVal === 'Có sẵn') {
-      form.value.TrangThai = 'Đã phát hành';
+      newProduct.value.status = 'Đã phát hành';
+    }
+  });
+
+  // Lắng nghe cho Modal Chỉnh sửa
+  watch(() => editingProduct.value.saleType, (newVal) => {
+    if (newVal === 'Pre-order') {
+      editingProduct.value.status = 'Chưa phát hành';
+    } else if (newVal === 'Order' || newVal === 'Có sẵn') {
+      editingProduct.value.status = 'Đã phát hành';
     }
   });
 
