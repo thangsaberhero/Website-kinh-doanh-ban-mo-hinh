@@ -1093,18 +1093,18 @@ const khuyenmai = {
                 INNER JOIN KhuyenMai km ON ct.MaKM = km.MaKM
                 WHERE ct.MaPhanLoai IN (${placeholders})
                 AND ct.MaKM != ? 
-                AND km.TrangThaiHoatDong = 1
-                AND (km.ThoiGianBD <= ? AND km.ThoiGianKT >= ?)
+                AND km.ThoiGianKT >= NOW() --Chỉ cho 1 sp thuộc 1 ct khuyến mãi trong một thời gian
             `;
             
-            const [overlaps] = await connection.query(sqlCheckOverlap, [...DanhSachMaPhanLoai, MaKM, ThoiGianKT, ThoiGianBD]);
+            const [overlaps] = await connection.query(sqlCheckOverlap, [...DanhSachMaPhanLoai, MaKM]);
 
             if (overlaps.length > 0) {
                 await connection.rollback();
                 const duplicateIds = [...new Set(overlaps.map(o => o.MaPhanLoai))];
+                const tenKMDangVuong = overlaps[0].TenKM;
                 return res.status(400).json({ 
                     success: false, 
-                    message: `Có ${duplicateIds.length} sản phẩm đang tham gia chiến dịch khác trong cùng khung giờ.`,
+                    message: `Có ${duplicateIds.length} sản phẩm đang bị vướng ở chiến dịch đang/sắp diễn ra ("${tenKMDangVuong}"). Vui lòng bỏ chọn!`,
                     duplicates: duplicateIds 
                 });
             }
@@ -1364,6 +1364,15 @@ const khuyenmai = {
                 condition.push(`pl.MaPhanLoai NOT IN (SELECT MaPhanLoai FROM ChiTietMaGiamGia WHERE MaGG = ?)`);
                 value.push(maGG);
             }
+
+            condition.push(`
+                pl.MaPhanLoai NOT IN (
+                    SELECT ct.MaPhanLoai 
+                    FROM ChiTietKhuyenMai ct 
+                    INNER JOIN KhuyenMai km ON ct.MaKM = km.MaKM 
+                    WHERE km.ThoiGianKT >= NOW()
+                )
+            `);
 
             // Tự động nối tất cả điều kiện bằng chữ AND (Không sợ bị dư chữ AND hay lỗi cú pháp)
             let whereClause = "WHERE " + condition.join(" AND ");
