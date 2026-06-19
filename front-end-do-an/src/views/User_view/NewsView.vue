@@ -83,7 +83,20 @@
               </div>
             </div>
 
-            <div v-if="filteredNews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div v-for="i in 6" :key="i" class="flex flex-col relative mt-4 animate-pulse">
+                <div class="relative w-full aspect-video md:aspect-[4/3] rounded-2xl bg-outline-variant/20 mb-4 dark:bg-surface-variant"></div>
+                
+                <div class="absolute top-2 -left-1.5 w-12 h-14 bg-outline-variant/30 rounded-br-2xl z-10 dark:bg-outline-variant/20"></div>
+                
+                <div class="flex flex-col px-1 gap-3 mt-1">
+                  <div class="h-5 bg-outline-variant/20 rounded-md w-full dark:bg-surface-variant"></div>
+                  <div class="h-5 bg-outline-variant/20 rounded-md w-3/4 dark:bg-surface-variant"></div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="filteredNews.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               <article v-for="post in displayNews" :key="post.id" @click="router.push(`/news/${post.id}`)"
                        class="group flex flex-col cursor-pointer relative mt-4">
                 
@@ -134,13 +147,25 @@
                 Đọc Nhiều Nhất
               </h4>
               <div class="space-y-6">
-                <div v-for="(post, index) in popularNews" :key="post.id" @click="router.push(`/news/${post.id}`)" class="flex gap-4 group cursor-pointer">
-                  <span class="text-4xl font-headline font-black text-outline dark:text-outline-variant/50 group-hover:text-primary/30 transition-colors">0{{ index + 1 }}</span>
-                  <div>
-                    <h5 class="font-headline font-bold text-sm text-on-surface dark:text-white group-hover:text-primary transition-colors leading-snug mb-1 line-clamp-2">{{ post.title }}</h5>
-                    <span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">{{ post.date }}</span>
+                <template v-if="isLoading">
+                  <div v-for="i in 3" :key="'skeleton-'+i" class="flex gap-4 animate-pulse">
+                    <div class="w-10 h-10 bg-outline-variant/20 rounded-md shrink-0"></div>
+                    <div class="flex flex-col gap-2 w-full pt-1">
+                      <div class="h-4 bg-outline-variant/20 rounded w-full"></div>
+                      <div class="h-3 bg-outline-variant/20 rounded w-1/2"></div>
+                    </div>
                   </div>
-                </div>
+                </template>
+
+                <template v-else>
+                  <div v-for="(post, index) in popularNews" :key="post.id" @click="router.push(`/news/${post.id}`)" class="flex gap-4 group cursor-pointer">
+                    <span class="text-4xl font-headline font-black text-outline dark:text-outline-variant/50 group-hover:text-primary/30 transition-colors">0{{ index + 1 }}</span>
+                    <div>
+                      <h5 class="font-headline font-bold text-sm text-on-surface dark:text-white group-hover:text-primary transition-colors leading-snug mb-1 line-clamp-2">{{ post.title }}</h5>
+                      <span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">{{ post.date }}</span>
+                    </div>
+                  </div>
+                </template>                
               </div>
             </div>
 

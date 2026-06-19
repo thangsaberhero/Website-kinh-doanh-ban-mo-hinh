@@ -194,7 +194,7 @@
               </div>
             </div>
             
-            <div v-if="pagination.totalPage > 1" class="flex items-center gap-1.5">
+            <div v-if="pagination.totalPages > 1" class="flex items-center gap-1.5">
               <button 
                 @click="changePage(pagination.currentPage - 1)" 
                 :disabled="pagination.currentPage === 1"
@@ -221,7 +221,7 @@
               
               <button 
                 @click="changePage(pagination.currentPage + 1)" 
-                :disabled="pagination.currentPage === pagination.totalPage"
+                :disabled="pagination.currentPage === pagination.totalPages"
                 class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:hover:border-slate-200 disabled:hover:text-slate-400"
               >
                 <span class="material-symbols-outlined text-[16px]">chevron_right</span>
@@ -338,7 +338,7 @@
 
   const visiblePages = computed(() => {
     const current = pagination.value.currentPage;
-    const total = pagination.value.totalPage;
+    const total = pagination.value.totalPages;
     
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
     if (current <= 3) return [1, 2, 3, 4, '...', total - 1, total];
