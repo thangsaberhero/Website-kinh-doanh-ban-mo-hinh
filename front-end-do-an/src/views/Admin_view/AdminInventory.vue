@@ -1281,7 +1281,7 @@
   const fetchProducts = async () => {
     isLoading.value = true;
     try {
-      const token = (localStorage.getItem('token') || sessionStorage.getItem('token')); // Lấy thẻ
+      const token = (localStorage.getItem('token') || sessionStorage.getItem('token'));
       let url = `${API_BASE_URL}/api/product_admin?page=${currentPage.value}&limit=${itemsPerPage.value}`;
       if (searchQuery.value.trim() !== '') {
         url += `&keyword=${encodeURIComponent(searchQuery.value.trim())}`;
@@ -1340,7 +1340,7 @@
           };
         });
         totalProducts.value = result.pagination?.totalItems || result.data.length; 
-        totalPages.value = result.pagination.totalPages;
+        totalPages.value = result.pagination.totalPage;
         currentPage.value = result.pagination?.currentPage;
         summary.value = result.summary || { TongSanPham: 0, SapHetHang: 0, HetHang: 0, DangCoSan: 0 };
       }
