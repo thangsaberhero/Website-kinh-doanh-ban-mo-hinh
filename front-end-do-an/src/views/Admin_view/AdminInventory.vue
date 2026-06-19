@@ -1340,7 +1340,7 @@
           };
         });
         totalProducts.value = result.pagination?.totalItems || result.data.length; 
-        totalPages.value = result.pagination.totalPage;
+        totalPages.value = result.pagination.totalPages;
         currentPage.value = result.pagination?.currentPage;
         summary.value = result.summary || { TongSanPham: 0, SapHetHang: 0, HetHang: 0, DangCoSan: 0 };
       }
@@ -2142,6 +2142,14 @@
   const changeItemsPerPage = () => {
     currentPage.value = 1; // Reset về trang 1
     fetchProducts(); // Gọi lại API để tải danh sách với limit mới
+  };
+
+  const changePage = (page) => {
+    if (page === '...' || page === currentPage.value) return;
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      fetchProducts();
+    }
   };
 </script>
 

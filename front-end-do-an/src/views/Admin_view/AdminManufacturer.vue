@@ -425,11 +425,6 @@ const changePage = (page) => {
     }, 500); // Đợi gõ xong 0.5s mới tìm
   });
 
-  // Lắng nghe khi bấm chuyển trang
-  watch(currentPage, () => {
-    fetchManufacturers();
-  });
-
   const isModalOpen = ref(false);
   const isEditMode = ref(false);
   const editingId = ref(null);
