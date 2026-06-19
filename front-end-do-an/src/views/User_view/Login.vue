@@ -19,7 +19,7 @@
         <img 
           v-else
           class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale blur-sm" 
-          src = "/default_login_bg.png"
+          src = "/default_login_bg.jpg"
         />
       </transition>
     </div>
@@ -41,7 +41,7 @@
               <img 
                 v-else 
                 class="absolute inset-0 w-full h-full object-cover" 
-                src="/default_login_bg.png"
+                src="/default_login_bg.jpg"
               />
             </transition>
             <!-- Lớp phủ cho dễ đọc chữ -->
