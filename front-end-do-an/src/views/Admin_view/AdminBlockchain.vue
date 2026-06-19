@@ -484,6 +484,7 @@ export default {
     async handleRowClick(product) {
       // Click vào dòng thường: chỉ xem Live Tracking Preview,
       // đồng thời xóa dữ liệu cũ đang nằm trong các ô textbox xử lý.
+      this.clearProcessingForms();
       await this.previewModel(product, { clearForm: false });
     },
 
