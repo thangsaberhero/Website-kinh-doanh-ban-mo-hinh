@@ -722,66 +722,66 @@
               </div>
             </div>
 
-            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 space-y-5 text-white">
-              <h4 class="text-sm font-bold flex items-center gap-2 border-b border-slate-700 pb-3 text-white">
-                <span class="material-symbols-outlined text-emerald-400 text-[18px]">monetization_on</span> Cài đặt Bán hàng
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+              <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <span class="material-symbols-outlined text-emerald-500 text-[18px]">monetization_on</span> Cài đặt Bán hàng
               </h4>
               
-              <div class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
-                <span class="text-xs font-bold text-slate-300">Hiển thị trên Web</span>
+              <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-700">Hiển thị trên Web</span>
                 <label class="flex items-center cursor-pointer relative">
                   <input type="checkbox" v-model="newProduct.isVisible" :true-value="1" :false-value="0" class="sr-only peer">
-                  <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                 </label>
               </div>
 
               <div class="space-y-4">
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Loại hình bán</label>
-                  <select v-model="newProduct.saleType" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Loại hình bán</label>
+                  <select v-model="newProduct.saleType" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-primary outline-none transition-colors">
                     <option v-for="type in saleTypeOptions" :key="type" :value="type">{{ type }}</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Trạng thái phát hành</label>
-                  <select v-model="newProduct.status" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
+                  <select v-model="newProduct.status" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-primary outline-none transition-colors">
                     <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
                   </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Ngày phát hành</label>
-                    <input v-model="newProduct.releaseDate" type="date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none [color-scheme:dark]">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Ngày phát hành</label>
+                    <!-- Đã bỏ [color-scheme:dark] -->
+                    <input v-model="newProduct.releaseDate" type="date" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-primary outline-none transition-colors">
                   </div>
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Tiền cọc (VNĐ)</label>
-                    <input type="text" :value="formatCurrency(newProduct.minDeposit)" @input="handleCurrencyInput($event, newProduct, 'minDeposit')" placeholder="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-primary outline-none font-mono text-right">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tiền cọc (VNĐ)</label>
+                    <input type="text" :value="formatCurrency(newProduct.minDeposit)" @input="handleCurrencyInput($event, newProduct, 'minDeposit')" placeholder="0" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-primary outline-none font-mono text-right transition-colors">
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-700">
+                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
                   <div class="col-span-2">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Mã Serial / Mã vạch</label>
-                    <input v-model="newProduct.barcode" type="text" placeholder="Quét mã hộp..." class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-sky-300 font-mono focus:border-sky-400 outline-none tracking-wider">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Mã Serial / Mã vạch</label>
+                    <input v-model="newProduct.barcode" type="text" placeholder="Quét mã hộp..." class="w-full bg-sky-50/50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-sky-600 font-bold font-mono focus:border-sky-400 outline-none tracking-wider transition-colors">
                   </div>
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Giá nhập (VNĐ)</label>
-                    <input type="text" :value="formatCurrency(newProduct.costPrice)" @input="handleCurrencyInput($event, newProduct, 'costPrice')" placeholder="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold text-emerald-400 focus:border-emerald-400 outline-none font-mono text-right">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá nhập (VNĐ)</label>
+                    <input type="text" :value="formatCurrency(newProduct.costPrice)" @input="handleCurrencyInput($event, newProduct, 'costPrice')" placeholder="0" class="w-full bg-emerald-50/50 border border-emerald-200 rounded-lg px-3 py-2 text-sm font-bold text-emerald-600 focus:border-emerald-400 outline-none font-mono text-right transition-colors">
                   </div>
                   <div>
                     <label class="block text-[10px] font-bold text-primary uppercase mb-1.5">Giá bán gốc (VNĐ)</label>
-                    <input type="text" :value="formatCurrency(newProduct.basePrice)" @input="handleCurrencyInput($event, newProduct, 'basePrice')" placeholder="0" class="w-full bg-primary/10 border border-primary/50 rounded-lg px-3 py-2 text-sm font-bold text-primary focus:border-primary outline-none font-mono text-right shadow-inner">
+                    <input type="text" :value="formatCurrency(newProduct.basePrice)" @input="handleCurrencyInput($event, newProduct, 'basePrice')" placeholder="0" class="w-full bg-rose-50/50 border border-rose-200 rounded-lg px-3 py-2 text-sm font-bold text-primary focus:border-primary outline-none font-mono text-right transition-colors shadow-sm">
                   </div>
                   <div class="col-span-2">
                     <label class="block text-[10px] font-bold text-primary uppercase mb-1.5">Tồn kho mặc định (Bản gốc)</label>
-                    <input v-model.number="newProduct.baseStock" type="number" placeholder="0" class="w-full bg-primary/10 border border-primary/50 rounded-lg px-3 py-2 text-sm font-bold text-primary focus:border-primary outline-none text-center shadow-inner">
+                    <input v-model.number="newProduct.baseStock" type="number" placeholder="0" class="w-full bg-rose-50/50 border border-rose-200 rounded-lg px-3 py-2 text-sm font-bold text-primary focus:border-primary outline-none text-center transition-colors shadow-sm">
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -1010,66 +1010,65 @@
               </div>
             </div>
 
-            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg shadow-slate-900/10 space-y-5 text-white">
-              <h4 class="text-sm font-bold flex items-center gap-2 border-b border-slate-700 pb-3 text-white">
-                <span class="material-symbols-outlined text-emerald-400 text-[18px]">monetization_on</span> Cài đặt Bán hàng
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+              <h4 class="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <span class="material-symbols-outlined text-emerald-500 text-[18px]">monetization_on</span> Cài đặt Bán hàng
               </h4>
               
-              <div class="flex items-center justify-between bg-slate-900/50 p-3 rounded-xl border border-slate-700">
-                <span class="text-xs font-bold text-slate-300">Hiển thị trên Web</span>
+              <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-700">Hiển thị trên Web</span>
                 <label class="flex items-center cursor-pointer relative">
                   <input type="checkbox" v-model="editingProduct.isVisible" :true-value="1" :false-value="0" class="sr-only peer">
-                  <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                 </label>
               </div>
 
               <div class="space-y-4">
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Loại hình bán</label>
-                  <select v-model="editingProduct.saleType" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-400 outline-none">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Loại hình bán</label>
+                  <select v-model="editingProduct.saleType" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-sky-400 outline-none transition-colors">
                     <option v-for="type in saleTypeOptions" :key="type" :value="type">{{ type }}</option>
                   </select>
                 </div>
                 
                 <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Trạng thái phát hành</label>
-                  <select v-model="editingProduct.status" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-400 outline-none">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Trạng thái phát hành</label>
+                  <select v-model="editingProduct.status" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-sky-400 outline-none transition-colors">
                     <option v-for="st in statusOptions" :key="st" :value="st">{{ st }}</option>
                   </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Ngày phát hành</label>
-                    <input v-model="editingProduct.releaseDate" type="date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-400 outline-none [color-scheme:dark]">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Ngày phát hành</label>
+                    <input v-model="editingProduct.releaseDate" type="date" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-sky-400 outline-none transition-colors">
                   </div>
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Tiền cọc (VNĐ)</label>
-                    <input type="text" :value="formatCurrency(editingProduct.minDeposit)" @input="handleCurrencyInput($event, editingProduct, 'minDeposit')" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-purple-400 outline-none font-mono text-right">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tiền cọc (VNĐ)</label>
+                    <input type="text" :value="formatCurrency(editingProduct.minDeposit)" @input="handleCurrencyInput($event, editingProduct, 'minDeposit')" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:border-sky-400 outline-none font-mono text-right transition-colors">
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-700">
+                <div class="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
                   <div class="col-span-2">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Mã Serial / Mã vạch</label>
-                    <input v-model="editingProduct.barcode" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-sky-300 font-mono focus:border-sky-400 outline-none tracking-wider">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Mã Serial / Mã vạch</label>
+                    <input v-model="editingProduct.barcode" type="text" class="w-full bg-sky-50/50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-sky-600 font-bold font-mono focus:border-sky-400 outline-none tracking-wider transition-colors">
                   </div>
                   <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Giá nhập (VNĐ)</label>
-                    <input type="text" :value="formatCurrency(editingProduct.costPrice)" @input="handleCurrencyInput($event, editingProduct, 'costPrice')" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm font-bold text-emerald-400 focus:border-emerald-400 outline-none font-mono text-right">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Giá nhập (VNĐ)</label>
+                    <input type="text" :value="formatCurrency(editingProduct.costPrice)" @input="handleCurrencyInput($event, editingProduct, 'costPrice')" class="w-full bg-emerald-50/50 border border-emerald-200 rounded-lg px-3 py-2 text-sm font-bold text-emerald-600 focus:border-emerald-400 outline-none font-mono text-right transition-colors">
                   </div>
                   <div>
-                    <label class="block text-[10px] font-bold text-amber-400 uppercase mb-1.5">Giá bán gốc (VNĐ)</label>
-                    <input type="text" :value="formatCurrency(editingProduct.basePrice)" @input="handleCurrencyInput($event, editingProduct, 'basePrice')" class="w-full bg-amber-500/20 border border-amber-500/50 rounded-lg px-3 py-2 text-sm font-bold text-amber-400 focus:border-amber-400 outline-none font-mono text-right shadow-inner">
+                    <label class="block text-[10px] font-bold text-amber-500 uppercase mb-1.5">Giá bán gốc (VNĐ)</label>
+                    <input type="text" :value="formatCurrency(editingProduct.basePrice)" @input="handleCurrencyInput($event, editingProduct, 'basePrice')" class="w-full bg-amber-50/50 border border-amber-200 rounded-lg px-3 py-2 text-sm font-bold text-amber-600 focus:border-amber-400 outline-none font-mono text-right transition-colors shadow-sm">
                   </div>
                   <div class="col-span-2">
-                    <label class="block text-[10px] font-bold text-amber-400 uppercase mb-1.5">Tồn kho mặc định (Bản gốc)</label>
-                    <input v-model.number="editingProduct.baseStock" type="number" class="w-full bg-amber-500/20 border border-amber-500/50 rounded-lg px-3 py-2 text-sm font-bold text-amber-400 focus:border-amber-400 outline-none text-center shadow-inner">
+                    <label class="block text-[10px] font-bold text-amber-500 uppercase mb-1.5">Tồn kho mặc định (Bản gốc)</label>
+                    <input v-model.number="editingProduct.baseStock" type="number" class="w-full bg-amber-50/50 border border-amber-200 rounded-lg px-3 py-2 text-sm font-bold text-amber-600 focus:border-amber-400 outline-none text-center transition-colors shadow-sm">
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
