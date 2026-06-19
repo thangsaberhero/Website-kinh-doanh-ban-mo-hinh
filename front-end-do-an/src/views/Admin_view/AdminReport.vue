@@ -52,11 +52,11 @@
             <div v-if="filterMode === 'custom'" class="flex items-center gap-2 animate-fade-in">
               <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200">
                 <span class="text-xs font-bold text-slate-400 uppercase">Từ</span>
-                <input type="date" v-model="startDate" @change="handleDateChange" class="text-sm font-semibold text-slate-700 focus:outline-none"/>
+                <input type="date" v-model="startDate" @change="handleCustomDateChange" class="text-sm font-semibold text-slate-700 focus:outline-none"/>
               </div>
               <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-200">
                 <span class="text-xs font-bold text-slate-400 uppercase">Đến</span>
-                <input type="date" v-model="endDate" @change="handleDateChange" class="text-sm font-semibold text-slate-700 focus:outline-none"/>
+                <input type="date" v-model="endDate" @change="handleCustomDateChange" class="text-sm font-semibold text-slate-700 focus:outline-none"/>
               </div>
             </div>
           </div>
@@ -215,7 +215,7 @@
                   <tr v-for="item in inventoryWarnings" :key="item.MaPhanLoai" class="hover:bg-slate-50/80 transition-colors">
                     <td class="p-3">
                       <div class="flex items-center gap-3">
-                        <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : '${API_BASE_URL}/Images_product/' + item.AnhDaiDien" class="w-10 h-10 rounded object-cover border border-slate-200 shadow-sm" alt="IMG">
+                        <img :src="(item.AnhDaiDien && item.AnhDaiDien.startsWith('http')) ? item.AnhDaiDien : `${API_BASE_URL}/Images_product/` + item.AnhDaiDien" class="w-10 h-10 rounded object-cover border border-slate-200 shadow-sm" alt="IMG">
                         <p class="font-bold text-slate-900 text-xs line-clamp-2 max-w-[200px]" :title="item.TenMH">{{ item.TenMH }}</p>
                       </div>
                     </td>
@@ -356,11 +356,25 @@
         </section>
 
         <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-[fadeIn_0.2s_ease-out]" :class="{ 'opacity-50 pointer-events-none': isLoading }">
-          <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50">
-            <h4 class="text-lg font-brand font-bold text-slate-900">Hiệu Quả Chiến Dịch Ưu Đãi</h4>
-            <p class="text-xs text-slate-500 mt-1 font-medium">Bóc tách doanh thu, số tiền thất thoát và lợi nhuận ròng thu về từ mã giảm giá.</p>
+          <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h4 class="text-lg font-brand font-bold text-slate-900">Hiệu Quả Chiến Dịch Ưu Đãi</h4>
+              <p class="text-xs text-slate-500 mt-1 font-medium">Bóc tách doanh thu, số tiền thất thoát và lợi nhuận ròng thu về.</p>
+            </div>
+            
+            <div class="flex bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+              <button @click="activePromoTab = 'campaign'" 
+                      :class="{'bg-emerald-50 text-emerald-600 font-bold shadow-sm': activePromoTab === 'campaign', 'text-slate-500 hover:bg-slate-50 font-medium': activePromoTab !== 'campaign'}" 
+                      class="px-4 py-1.5 text-xs rounded-md transition-all">
+                Chương Trình Khuyến Mãi
+              </button>
+              <button @click="activePromoTab = 'voucher'" 
+                      :class="{'bg-emerald-50 text-emerald-600 font-bold shadow-sm': activePromoTab === 'voucher', 'text-slate-500 hover:bg-slate-50 font-medium': activePromoTab !== 'voucher'}" 
+                      class="px-4 py-1.5 text-xs rounded-md transition-all">
+                Mã Giảm Giá
+              </button>
+            </div>
           </div>
-          
           <div class="overflow-x-auto min-h-[200px] custom-scrollbar">
             <table class="w-full text-left border-collapse whitespace-nowrap">
               <thead class="bg-slate-50 border-b border-slate-100">
@@ -372,9 +386,9 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
-                <tr v-for="promo in marketingData" :key="promo.MaGG" class="hover:bg-slate-50/80 transition-colors group">
+                <tr v-for="promo in activeMarketingData" :key="promo.MaGG || promo.MaKM" class="hover:bg-slate-50/80 transition-colors group">
                   <td class="px-8 py-4">
-                    <p class="font-bold text-slate-900 text-sm">{{ promo.TenMaGiamGia }}</p>
+                    <p class="font-bold text-slate-900 text-sm">{{ promo.TenMaGiamGia || promo.TenKM }}</p>
                   </td>
                   <td class="px-8 py-4 text-center">
                     <span class="text-sm font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md">{{ promo.TongDonHang }}</span>
@@ -384,12 +398,13 @@
                   </td>
                   <td class="px-8 py-4 text-right font-bold text-emerald-500 text-sm">{{ formatPrice(promo.LoiNhuanRong) }}</td>
                 </tr>
-                <tr v-if="marketingData.length === 0">
+                
+                <tr v-if="activeMarketingData.length === 0">
                   <td colspan="4" class="px-8 py-10 text-center">
                     <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
                         <span class="material-symbols-outlined text-3xl text-slate-300">loyalty</span>
                     </div>
-                    <p class="text-sm text-slate-500 font-medium">Không có dữ liệu ghi nhận chiến dịch marketing nào trong kỳ này.</p>
+                    <p class="text-sm text-slate-500 font-medium">Không có dữ liệu {{ activePromoTab === 'voucher' ? 'mã giảm giá' : 'chương trình khuyến mãi' }} nào trong kỳ này.</p>
                   </td>
                 </tr>
               </tbody>
@@ -466,7 +481,15 @@
 
   const metrics = ref({ totalRevenue: 0, totalProfit: 0, totalOrders: 0 });
   const productData = ref({ categories: [], brands: [] });
-  const marketingData = ref([]);
+
+  // Các biến quản lý dữ liệu Marketing
+  const marketingVouchers = ref([]); 
+  const marketingCampaigns = ref([]);
+  const activePromoTab = ref('campaign');
+  const activeMarketingData = computed(() => {
+    return activePromoTab.value === 'campaign' ? marketingCampaigns.value : marketingVouchers.value;
+  });
+
   const filterMode = ref('month'); 
   
   const currentYearObj = new Date().getFullYear();
@@ -661,7 +684,8 @@
       const resPromo = await fetch(`${API_BASE_URL}/api/thongke/khuyenmai${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
       const dataPromo = await resPromo.json();
       if (dataPromo.success && dataPromo.data) {
-        marketingData.value = dataPromo.data.topmagg || [];
+        marketingCampaigns.value = dataPromo.data.topkm || [];
+        marketingVouchers.value = dataPromo.data.topmagg || [];
       }
 
       const resChart = await fetch(`${API_BASE_URL}/api/thongke/bieudo${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
