@@ -19,7 +19,7 @@
         <img 
           v-else
           class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale blur-sm" 
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK5I8y1D8C2v9X2FdoYJCWYMINyNspI_dq1venZsysS-XWxigu40_RSmx6oq5mY2QkBUj9dtnNKZlbIhR3VmMOGV5bIW7mFyaFVR5XPox9LMswJYph81spiStN4f4M-G0U1MkdLSCniqgh0z5PlRsNWA-_xVoVGVj87uVEYqHcfzbq4TG3ojkO8f5ukSL2je7mtgsEzyWrlw4Q4y39Inq2PErpIa7IP4lJKNM2ARjrstjOp0ZawegoLRzestaMUdnBALjIPL_-E1o"
+          src="/default_login_bg.jpg"
         />
       </transition>
     </div>
@@ -41,7 +41,7 @@
               <img 
                 v-else 
                 class="absolute inset-0 w-full h-full object-cover" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK5I8y1D8C2v9X2FdoYJCWYMINyNspI_dq1venZsysS-XWxigu40_RSmx6oq5mY2QkBUj9dtnNKZlbIhR3VmMOGV5bIW7mFyaFVR5XPox9LMswJYph81spiStN4f4M-G0U1MkdLSCniqgh0z5PlRsNWA-_xVoVGVj87uVEYqHcfzbq4TG3ojkO8f5ukSL2je7mtgsEzyWrlw4Q4y39Inq2PErpIa7IP4lJKNM2ARjrstjOp0ZawegoLRzestaMUdnBALjIPL_-E1o"
+                src="/default_login_bg.jpg"
               />
             </transition>
             <!-- Lớp phủ cho dễ đọc chữ -->
