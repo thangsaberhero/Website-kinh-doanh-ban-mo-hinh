@@ -19,7 +19,7 @@
         <img 
           v-else
           class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale blur-sm" 
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKf1uyglHyXkQBW-2-LahZoQyoz3Qi3nEZzvwq-FOxvD4Z-gNtdOuPxD7tvMCzMyg-ui0V4E1CJsK-fSHvdn2NeuSORcQ_wLq9bmAMrgcjodXeDo1JuGE9ldHXfE4AXEqLYvYvaKdQZaoowZ8aa8tfHWqvpsXH34aojQsfdcsBxkC6MhnXsCT-bE2yCsF1BXnZ5HRgL2ACyTGYkNkShodcqRdg_ltBu17--OpduokAyeAl2yeNcoCUSpTxwGJDbESYOUZKqKBaZASm"
+          src = "/default_login_bg.png"
         />
       </transition>
     </div>
