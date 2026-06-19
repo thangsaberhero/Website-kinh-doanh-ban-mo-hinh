@@ -1,10 +1,10 @@
 const db = require('../../config/db'); // Import DB của bạn
-const blockchainService = require('../../services/blockchain.service'); // Trỏ đúng thư mục services mới
+const blockchainService = require('../../services/blockchain.service');
 const { Web3 } = require('web3'); // Import thư viện Web3
 const QRCode = require('qrcode'); 
 
 // =====================================================================
-// 🚀 ĐOẠN CODE KIỂM TRA KẾT NỐI BLOCKCHAIN SEPOLIA
+// KIỂM TRA KẾT NỐI BLOCKCHAIN SEPOLIA
 // =====================================================================
 const web3 = new Web3('https://ethereum-sepolia-rpc.publicnode.com');
 
@@ -31,11 +31,10 @@ checkBlockchainConnection();
 
 
 // =====================================================================
-// 🌟 TỐI ƯU: API lấy toàn bộ mô hình phục vụ Frontend (Thanh tìm kiếm)
+// API lấy toàn bộ mô hình phục vụ Frontend (Thanh tìm kiếm)
 // =====================================================================
 const getValidSerials = async (req, res) => {
     try {
-        // CHỈNH SỬA: Đã đồng bộ chữ hoa chữ thường tên bảng 'MoHinh' chuẩn CSDL
         const query = `
             SELECT mh.*, hsx.TenHSX 
             FROM MoHinh mh
@@ -60,7 +59,7 @@ const getValidSerials = async (req, res) => {
 
 
 // =====================================================================
-// 🌟 TỐI ƯU: Lấy chi tiết lịch sử (Cứu hộ luồng dữ liệu khi chưa Mint)
+// Lấy chi tiết lịch sử (Cứu hộ luồng dữ liệu khi chưa Mint)
 // =====================================================================
 const truyXuatNguonGoc = async (req, res) => {
     try {
@@ -106,7 +105,7 @@ const truyXuatNguonGoc = async (req, res) => {
 
 
 // =====================================================================
-// 🌟 TỐI ƯU: Đã bổ sung cập nhật SQL khi Mint thành công
+// Cập nhật SQL khi Mint thành công
 // =====================================================================
 const mintProduct = async (req, res) => {
     try {
@@ -116,7 +115,7 @@ const mintProduct = async (req, res) => {
         // 1. Tương tác nạp khối định danh lên mạng Sepolia
         const receipt = await blockchainService.mintProductOnBlockchain(serialNumber, manufacturer);
         
-        // 2. BỔ SUNG: Cập nhật trạng thái cột Is_Minted = 1 trực tiếp vào SQL
+        // 2. Cập nhật trạng thái cột Is_Minted = 1 trực tiếp vào SQL
         const updateQuery = "UPDATE MoHinh SET Is_Minted = 1 WHERE MaVach_Serial = ?";
         await db.query(updateQuery, [serialNumber]);
 

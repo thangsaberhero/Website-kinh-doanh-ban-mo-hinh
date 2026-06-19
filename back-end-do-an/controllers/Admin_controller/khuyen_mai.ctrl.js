@@ -8,7 +8,7 @@ const khuyenmai = {
             let limit = parseInt(req.query.limit) || 10;
             if (!page || isNaN(page) || page < 1) page = 1;
             if (!limit || isNaN(limit) || limit < 1) limit = 10;
-            if (limit > 50) limit = 50; // Nên nới lỏng ra để Admin dễ xem trên màn hình lớn
+            if (limit > 50) limit = 50;
 
             const offset = (page - 1) * limit;
 
@@ -18,12 +18,10 @@ const khuyenmai = {
             let value = [];
 
             if (keyword) {
-                // Chỉ định rõ bảng km.TenKM để tránh lỗi Ambiguous nếu sau này JOIN nhiều bảng
                 condition.push("km.TenKM COLLATE utf8mb4_unicode_ci LIKE ?"); 
                 value.push(`%${keyword}%`);
             }
 
-            // ĐÃ TỐI ƯU LOGIC: Kết hợp cả thời gian VÀ cờ bật/tắt (TrangThaiHoatDong)
             if (trangthai) {
                 if (trangthai === 'DangChay') {
                     condition.push("km.ThoiGianBD <= NOW() AND km.ThoiGianKT >= NOW() AND km.TrangThaiHoatDong = 1");
@@ -53,7 +51,6 @@ const khuyenmai = {
             const totalItems = countResult[0].total;
             const totalPage = Math.ceil(totalItems / limit);
             
-            // Xóa ThoiGianBD DESC đi vì MaKM tự tăng đã bao hàm thời gian rồi, tránh MySQL phải sort 2 lần
             const sql_ds = `
                 ${sql_core}
                 ORDER BY km.MaKM DESC 
@@ -63,7 +60,7 @@ const khuyenmai = {
             const sql_params = [...value, limit, offset];
             const [chuongtrinh] = await db.query(sql_ds, sql_params);
 
-            // TÍNH NĂNG MỚI: Thống kê số lượng từng trạng thái để Frontend vẽ Tab/Badge
+            // Thống kê số lượng từng trạng thái để Frontend vẽ Tab/Badge
             const sql_summary = `
                 SELECT 
                     SUM(CASE WHEN ThoiGianBD <= NOW() AND ThoiGianKT >= NOW() AND TrangThaiHoatDong = 1 THEN 1 ELSE 0 END) AS DangChay,
@@ -79,7 +76,7 @@ const khuyenmai = {
                 success: true,
                 message: "Lấy thông tin danh sách chương trình khuyến mãi thành công!",
                 data: chuongtrinh,
-                summary: summaryResult[0], // Trả thêm cục này về cho Frontend
+                summary: summaryResult[0],
                 pagination: {
                     currentPage: page,
                     limit: limit,
@@ -275,7 +272,7 @@ const khuyenmai = {
         try {
             await connection.beginTransaction();
             const { TenKM, ThoiGianBD, ThoiGianKT, TrangThaiHoatDong} = req.body;
-            const MaTK = req.user.id; // Lấy ID thực tế từ Token thay vì lấy tên
+            const MaTK = req.user.id;
 
             // 1. VALIDATION BẮT BUỘC
             if (!TenKM || !ThoiGianBD || !ThoiGianKT) {
@@ -303,7 +300,7 @@ const khuyenmai = {
             const [them_khuyen_mai] = await connection.query(sql_them_khuyen_mai, [TenKM, mysql_ThoiGianBD, mysql_ThoiGianKT, isVisible]);
             const maKM = them_khuyen_mai.insertId;
 
-            // 4. GHI LOG BẢO MẬT (Dùng lại bảng LogHoatDongTaiKhoan chuẩn)
+            // 4. GHI LOG BẢO MẬT
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -342,7 +339,7 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ Tên và Thời gian kết thúc!" });
             }
 
-            // 1. LẤY THÔNG TIN KM HIỆN TẠI TỪ DATABASE (Cột mốc sự thật)
+            // 1. LẤY THÔNG TIN KM HIỆN TẠI TỪ DATABASE
             const [check] = await connection.query(`SELECT MaKM, ThoiGianBD FROM KhuyenMai WHERE MaKM = ?`, [MaKM]);
             if (check.length === 0) {
                 await connection.rollback();
@@ -357,7 +354,7 @@ const khuyenmai = {
             let final_ThoiGianBD = ThoiGianBD;
 
             if (isStarted) {
-                // CHỐT CHẶN VÀNG: Đã chạy rồi thì cấm đổi giờ bắt đầu. Ép dùng lại giờ cũ của DB!
+                // Đã chạy rồi thì cấm đổi giờ bắt đầu. Ép dùng lại giờ cũ của DB
                 final_ThoiGianBD = db_ThoiGianBD; 
             } else {
                 if (!ThoiGianBD) {
@@ -378,8 +375,6 @@ const khuyenmai = {
             // 4. CẬP NHẬT THÔNG TIN CHUNG
             const isVisible = (TrangThaiHoatDong === 1 || TrangThaiHoatDong === '1' || TrangThaiHoatDong === true) ? 1 : 0;
 
-            // ✅ THÊM 2 DÒNG NÀY ĐỂ ÉP KIỂU SANG ĐỐI TƯỢNG DATE HOẶC CHUỖI CHUẨN MYSQL
-            // Cách an toàn nhất để loại bỏ chữ T, Z và phần mili-giây:
             const mysql_ThoiGianBD = new Date(final_ThoiGianBD).toISOString().slice(0, 19).replace('T', ' ');
             const mysql_ThoiGianKT = new Date(ThoiGianKT).toISOString().slice(0, 19).replace('T', ' ');
 
@@ -389,7 +384,6 @@ const khuyenmai = {
                 WHERE MaKM = ?
             `;
 
-            // ✅ SỬA LẠI BIẾN TRUYỀN VÀO TRONG MẢNG (Thay vì final_ThoiGianBD và ThoiGianKT)
             await connection.query(sql_sua_khuyen_mai, [TenKM, mysql_ThoiGianBD, mysql_ThoiGianKT, isVisible, MaKM]);
 
             // 6. GHI LOG HOẠT ĐỘNG
@@ -694,8 +688,8 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: "Lỗi logic: Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!" });
             }
 
-            // 2. KIỂM TRA TRÙNG LẶP MÃ VOUCHER (CHỐT CHẶN QUAN TRỌNG)
-            const maVoucherClean = MaVoucher.trim().toUpperCase(); // Tự động xóa khoảng trắng và viết hoa
+            // 2. KIỂM TRA TRÙNG LẶP MÃ VOUCHER
+            const maVoucherClean = MaVoucher.trim().toUpperCase();
             const [checkMa] = await connection.query(`SELECT MaGG FROM MaGiamGia WHERE MaVoucher = ?`, [maVoucherClean]);
             
             if (checkMa.length > 0) {
@@ -808,8 +802,7 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ các thông tin bắt buộc!" });
             }
 
-            // 2. LẤY THÔNG TIN GỐC TỪ DATABASE (Cột mốc sự thật)
-            // BỔ SUNG: Lấy thêm MaKH gốc từ Database để kiểm tra điều kiện khóa
+            // 2. LẤY THÔNG TIN GỐC TỪ DATABASE
             const [check] = await connection.query(`SELECT MaGG, ThoiGianBD, MaKH, SoLuongDungToiDa FROM MaGiamGia WHERE MaGG = ?`, [MaGG]);
             if(check.length === 0) {
                 await connection.rollback();
@@ -821,13 +814,12 @@ const khuyenmai = {
             const db_SoLuongDungToiDa = check[0].SoLuongDungToiDa;
             const isStarted = new Date(db_ThoiGianBD) <= new Date();
 
-            // 3. GIẢI QUYẾT XUNG ĐỘT THỜI GIAN BẮT ĐẦU VÀ MÃ KHÁCH HÀNG
             let final_ThoiGianBD = ThoiGianBD;
             let final_MaKH = MaKH; 
             let final_SoLuongDungToiDa = SoLuongDungToiDa;
 
             if (isStarted) {
-                // CHỐT CHẶN VÀNG: Đã chạy thì ép dùng giờ cũ của DB, đồng thời KHÓA luôn không cho đổi đối tượng khách hàng áp dụng
+                //  Đã chạy thì ép dùng giờ cũ của DB, đồng thời KHÓA luôn không cho đổi đối tượng khách hàng áp dụng
                 final_ThoiGianBD = db_ThoiGianBD; 
                 final_MaKH = db_MaKH; 
                 final_SoLuongDungToiDa = db_SoLuongDungToiDa;
@@ -878,7 +870,7 @@ const khuyenmai = {
                 LoaiGiamGia, ChietKhau, maxDiscount, MaGG
             ]);
 
-            // 6. GHI LOG HOẠT ĐỘNG (Bảo mật)
+            // 6. GHI LOG HOẠT ĐỘNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -931,10 +923,8 @@ const khuyenmai = {
             // TRƯỜNG HỢP 1: SOFT DELETE (VÔ HIỆU HÓA)
             // =====================================
             if (logs.length > 0) {
-                // Giữ nguyên TrangThaiHoatDong theo đúng thiết kế bảng KhuyenMai của bạn
                 await connection.query('UPDATE KhuyenMai SET TrangThaiHoatDong = 0 WHERE MaKM = ?', [MaKM]);
 
-                // BỔ SUNG: Ghi nhận hoạt động vô hiệu hóa vào hệ thống log tập trung
                 noiDungLog = `Hủy kích hoạt chiến dịch khuyến mãi #${MaKM} ("${tenKhuyenMaiStr}") do đã phát sinh lịch sử mua hàng.`;
                 await connection.query(`
                     INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
@@ -952,7 +942,6 @@ const khuyenmai = {
             // =====================================
             // TRƯỜNG HỢP 2: HARD DELETE (XÓA VĨNH VIỄN)
             // =====================================
-            // Xóa chi tiết các sản phẩm áp dụng trước để tránh lỗi ràng buộc khóa ngoại (Foreign Key Constraint)
             await connection.query('DELETE FROM ChiTietKhuyenMai WHERE MaKM = ?', [MaKM]);
             await connection.query('DELETE FROM KhuyenMai WHERE MaKM = ?', [MaKM]);
 
@@ -1009,10 +998,8 @@ const khuyenmai = {
             // TRƯỜNG HỢP 1: SOFT DELETE (VÔ HIỆU HÓA)
             // =====================================
             if (logs.length > 0) {
-                // FIX LỖI SẬP: Đổi TrangThaiHoatDong thành TrangThai
                 await connection.query('UPDATE MaGiamGia SET TrangThaiHoatDong = 0 WHERE MaGG = ?', [MaGG]);
 
-                // BỔ SUNG GHI LOG KHI XÓA MỀM
                 noiDungLog = `Hủy kích hoạt mã giảm giá #${MaGG} ("${maVoucherStr}") do đã có người sử dụng.`;
                 await connection.query(`
                     INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
@@ -1144,7 +1131,7 @@ const khuyenmai = {
 
                 const tenSpLoi = `${item.TenMH} - ${item.ChiTietPhanLoai || 'Mặc định'}`;
 
-                // CHỐT CHẶN 1: Tuyệt đối không cho phép giá bán âm hoặc bằng 0
+                // Tuyệt đối không cho phép giá bán âm hoặc bằng 0
                 if (giaSauGiam <= 0) {
                     await connection.rollback();
                     return res.status(400).json({ 
@@ -1153,8 +1140,7 @@ const khuyenmai = {
                     });
                 }
 
-                // CHỐT CHẶN 2: Cảnh báo bán lỗ (Giá sau giảm < Giá nhập)
-                // Lưu ý: Nếu muốn cho phép xả kho, bạn có thể truyền thêm 1 biến cờ (flag) từ req.body như 'ChoPhepBanLo' để bỏ qua vòng if này.
+                // Cảnh báo bán lỗ (Giá sau giảm < Giá nhập)
                 if (giaSauGiam < item.GiaNhap) {
                     await connection.rollback();
                     return res.status(400).json({ 
@@ -1263,7 +1249,6 @@ const khuyenmai = {
                 return res.status(400).json({ success: false, message: 'Không thể thêm sản phẩm! Mã giảm giá này đã bắt đầu có hiệu lực.' });
             }
 
-            // TỐI ƯU SIÊU TỐC: Bỏ vòng lặp for, dùng INSERT IGNORE Bulk giống hệt Khuyến Mãi
             const values = DanhSachMaPhanLoai.map(MaPhanLoai => [MaGG, MaPhanLoai]);
             const sql_insert = `INSERT IGNORE INTO ChiTietMaGiamGia (MaGG, MaPhanLoai) VALUES ?`;
             const [result] = await connection.query(sql_insert, [values]);
@@ -1328,9 +1313,6 @@ const khuyenmai = {
             const maKM = req.query.maKM || ''; 
             const maGG = req.query.maGG || '';
 
-            // Đẩy thẳng các điều kiện BẮT BUỘC vào mảng ngay từ đầu
-            // 1. Chỉ lấy hàng "Có sẵn"
-            // 2. Chỉ lấy sản phẩm đang được bật hiển thị
             let condition = [
                 "mh.LoaiHinhBan = 'Có sẵn'", 
                 "pl.HienThi = 1"
@@ -1374,7 +1356,6 @@ const khuyenmai = {
                 )
             `);
 
-            // Tự động nối tất cả điều kiện bằng chữ AND (Không sợ bị dư chữ AND hay lỗi cú pháp)
             let whereClause = "WHERE " + condition.join(" AND ");
 
             const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, pl.SoLuong, pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, mh.MaDM, mh.MaHSX
@@ -1410,7 +1391,6 @@ const khuyenmai = {
             `;
             const [stat_km] = await db.query(sql_km);
 
-            // FIX: Sửa TrangThaiHoatDong thành TrangThai, thêm điều kiện SoLuongDaDung
             const sql_gg = `
                 SELECT 
                     (SELECT COUNT(*) FROM MaGiamGia) as Total,

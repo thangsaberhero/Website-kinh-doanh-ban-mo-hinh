@@ -16,12 +16,10 @@ const product_admin = {
             // Xử lý biến DanhMucNoiBat (Đảm bảo giá trị luôn là 1 hoặc 0)
             const isNoiBat = (DanhMucNoiBat == 1 || DanhMucNoiBat === 'true') ? 1 : 0;
 
-            // 2. XỬ LÝ MẢNG ẢNH TỪ MULTER (CỰC KỲ QUAN TRỌNG)
-            // Nếu có up ảnh thì req.files sẽ là mảng chứa các file, nếu không có thì gán mảng rỗng []
+            // 2. XỬ LÝ MẢNG ẢNH TỪ MULTER 
             const uploadedFiles = req.files || [];
             
             // Map qua mảng file để lấy đường dẫn (path/url). 
-            // Lưu ý: Nếu bạn dùng Cloudinary, đường dẫn thường nằm ở file.path
             const arrUrlAnh = uploadedFiles.map(file => file.path || file.secure_url || file.url);
             
             // Ép mảng URL thành chuỗi JSON (VD: '["url1", "url2"]') để lưu vào cột TEXT
@@ -42,13 +40,10 @@ const product_admin = {
                 return res.status(400).json({ success: false, message: "Đã tồn tại danh mục này!" });
             }
             
-            // 5. THÊM DANH MỤC CHA (ĐÃ UPDATE CÂU SQL)
-            // Thêm DanhSachAnh và DanhMucNoiBat vào câu lệnh INSERT
             const sql_insert_dm = `INSERT INTO DanhMuc(TenDM, MoTa, DanhSachAnh, DanhMucNoiBat) VALUES (?, ?, ?, ?)`;
             const [result_dm] = await connection.query(sql_insert_dm, [TenDM, MoTa, jsonDanhSachAnh, isNoiBat]);
             const ma_DM_moi = result_dm.insertId;
 
-            // 6. THÊM DANH MỤC CON (TỐI ƯU BULK INSERT)
             if (ChiTiet && ChiTiet !== 'undefined') {
                 const cates = typeof ChiTiet === 'string' ? JSON.parse(ChiTiet) : ChiTiet;
                 
@@ -134,15 +129,13 @@ const product_admin = {
                 queryParams.push(jsonDanhSachAnh);      // Nhét giá trị ảnh vào mảng tham số
             }
             
-            // Cuối cùng mới đẩy MaDM vào mảng tham số để dùng cho WHERE
             queryParams.push(MaDM); 
 
             // 3. CẬP NHẬT DANH MỤC CHA
-            // SQL sẽ tự động co giãn tùy thuộc vào việc updateImageQuery có nội dung hay không
             const sql = `UPDATE DanhMuc SET TenDM=?, MoTa=?, DanhMucNoiBat=? ${updateImageQuery} WHERE MaDM=?`;
             await connection.query(sql, queryParams);
 
-            // 4. CẬP NHẬT DANH MỤC CON (Giữ nguyên logic của bạn)
+            // 4. CẬP NHẬT DANH MỤC CON
             if(ChiTiet && ChiTiet !== 'undefined') {
                 const cates = typeof ChiTiet === 'string' ? JSON.parse(ChiTiet) : ChiTiet;
                 const sql_sua_chi_tiet = `UPDATE ChiTietDanhMuc SET TenChiTietDM = ?, MoTa = ? WHERE MaChiTietDM = ?`;
@@ -174,7 +167,7 @@ const product_admin = {
         }
         catch (error) {
             await connection.rollback();
-            console.error("Lỗi khi sửa danh mục: ", error); // Đã fix thông báo console
+            console.error("Lỗi khi sửa danh mục: ", error);
             res.status(500).json({ success: false, message: "Lỗi server khi cập nhật danh mục!"});
         }
         finally{
@@ -561,14 +554,13 @@ const product_admin = {
                 finalTrangThai = 'Đã phát hành';
             }
 
-            // 1. KIỂM TRA TRÙNG LẶP (TÊN VÀ SERIAL)
             // 1. CHUẨN HÓA VÀ KIỂM TRA TRÙNG LẶP
             let sanitizedSerial = MaVach_Serial;
             if (!sanitizedSerial || sanitizedSerial.trim() === '' || sanitizedSerial === 'null') {
                 sanitizedSerial = null;
             }
 
-            // Kiểm tra trùng lặp Tên sản phẩm (Bắt buộc)
+            // Kiểm tra trùng lặp Tên sản phẩm
             const [checkName] = await connection.query(`SELECT MaMoHinh FROM MoHinh WHERE TenMH = ?`, [TenMH]);
             if (checkName.length > 0) {
                 await connection.rollback();
@@ -630,7 +622,7 @@ const product_admin = {
             }
             const ma_san_pham_moi = them_san_pham.insertId;
 
-            // 5. THÊM BỘ SƯU TẬP ẢNH (DÙNG BULK INSERT)
+            // 5. THÊM BỘ SƯU TẬP ẢNH
             if (danhSachAnhPhu.length > 0) {
                 const sql_them_anh = `INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES ?`;
                 const valuesAnh = danhSachAnhPhu.map(filename => [filename, ma_san_pham_moi]);
@@ -665,7 +657,6 @@ const product_admin = {
                     });
 
                 if (danhSachLuuPhanLoai.length > 0) {
-                    // Cú pháp đúng cho Bulk Insert: VALUES ?
                     const sql_them_phan_loai_bulk = `INSERT INTO PhanLoai (ChiTietPhanLoai, SoLuong, MaMoHinh, DonGia, HienThi) VALUES ?`;
                     const [resultPhanLoai] = await connection.query(sql_them_phan_loai_bulk, [danhSachLuuPhanLoai]);
                     
@@ -696,7 +687,6 @@ const product_admin = {
             console.error("Lỗi khi thêm sản phẩm mới: ", error);
             res.status(500).json({ 
                 success: false, 
-                // Trả về thẳng lỗi mà mình đã throw ra để dễ debug
                 message: error.message || "Lỗi server khi thao tác thêm sản phẩm!" 
             });
         } finally {
@@ -777,7 +767,6 @@ const product_admin = {
                 finalTrangThai = 'Đã phát hành';
             }
             
-            // Giữ lại tên cũ để xài cho phần Ghi Log hệ thống ở cuối cùng
             const tenMhCu = spHienTai[0].TenMH;
 
             // =======================================================
@@ -902,14 +891,12 @@ const product_admin = {
                             }
                         } catch (err) {
                             console.error("[Cloudinary Error] Không thể xóa ảnh: ", err);
-                            // Không throw error để tránh làm sập luồng lưu dữ liệu chính
                         }
                     }
                 }
             }
 
             // . XÓA TOÀN BỘ DATA ẢNH PHỤ HIỆN TẠI TRONG SQL
-            // (Yên tâm, ảnh vật lý trong máy vẫn còn, ta chỉ reset dữ liệu nối bảng)
             await connection.query(`DELETE FROM AnhMoHinh WHERE MaMoHinh = ?`, [MaMH]);
 
             // . INSERT LẠI TỪ ĐẦU THEO ĐÚNG THỨ TỰ
@@ -919,22 +906,19 @@ const product_admin = {
                 // Trộn lẫn tên ảnh cũ và tên ảnh mới theo đúng vị trí kéo thả
                 const valuesAnh = thuTuBoSuuTap.map(item => {
                     if (item.startsWith('NEW_FILE_')) {
-                        // Rút ảnh mới ra xài
                         const tenAnhMoi = danhSachAnhMoi[newFileIndex];
                         newFileIndex++;
                         return [tenAnhMoi, MaMH];
                     } else {
-                        // Tên ảnh cũ
                         return [item, MaMH]; 
                     }
                 });
 
-                // Cú pháp Bulk Insert thần thánh của MySQL
                 const sql_them_anh = `INSERT INTO AnhMoHinh (LinkAnh, MaMoHinh) VALUES ?`;
                 await connection.query(sql_them_anh, [valuesAnh]);
             }
 
-            // 8. XỬ LÝ PHÂN LOẠI MỞ RỘNG (SỬA ĐỒNG LOẠT VÀ THÊM MỚI BULK INSERT)
+            // 8. XỬ LÝ PHÂN LOẠI MỞ RỘNG
             if (parsedPhanLoai.length > 0) {
                 const sql_sua_phan_loai = `UPDATE PhanLoai SET ChiTietPhanLoai=?, DonGia=?, SoLuong=?, HienThi=? WHERE MaPhanLoai=?`;
                 const variantsToInsert = [];
@@ -945,12 +929,10 @@ const product_admin = {
                         const variantVisibility = (isVisible === 0) ? 0 : (variant.isVisible !== undefined ? Number(variant.isVisible) : 1);
                         
                         if (variant.id) {
-                            // Đẩy vào mảng Promise để chạy song song siêu tốc
                             updatePromises.push(connection.query(sql_sua_phan_loai, [
                                 variant.name.trim(), variant.sellPrice || DonGia, variant.stock || 0, variantVisibility, variant.id
                             ]));
                         } else {
-                            // Gom vào mảng để Bulk Insert 1 lần
                             variantsToInsert.push([
                                 variant.name.trim(), variant.stock || 0, MaMH, variant.sellPrice || DonGia, variantVisibility
                             ]);
@@ -966,7 +948,7 @@ const product_admin = {
                         [variantsToInsert]
                     );
                 }
-            } // <--- Đã chuẩn hóa dấu đóng ngoặc ở đây (Xóa bỏ dấu ngoặc thừa)
+            }
 
             // XỬ LÝ XÓA PHÂN LOẠI ĐƯỢC YÊU CẦU
             const phanLoaiCanXoa = (req.body.PhanLoaiCanXoa && req.body.PhanLoaiCanXoa !== 'undefined') 
@@ -984,7 +966,6 @@ const product_admin = {
                         }
 
                     } catch (error) {
-                        // Bắt chính xác mã lỗi 1451: Ràng buộc khóa ngoại (Đã có trong ChiTietDonHang hoặc ChiTietKhuyenMai)
                         if (error.errno === 1451) {
                             // Bước 2: Tự động chuyển sang xóa mềm để bảo vệ dữ liệu thống kê
                             await connection.query('UPDATE PhanLoai SET HienThi = 0 WHERE MaPhanLoai = ?', [id]);
@@ -1111,7 +1092,6 @@ const product_admin = {
                 VALUES (?, 'UPDATE_SELLTYPE', ?, ?, NOW())
             `, [MaTK, `Đổi Loại hình bán [${LoaiHinhBan}] và Trạng thái [${finalTrangThai}] cho SP #${MaMH}: "${tenMHStr}"`, userIp]);
 
-            // Trả về cả newStatus để Frontend tự cập nhật không cần reload trang
             res.status(200).json({ 
                 success: true, 
                 message: 'Cập nhật thành công!',
@@ -1229,7 +1209,7 @@ const product_admin = {
             const [kiem_tra] = await connection.query(`SELECT TenMH FROM MoHinh WHERE MaMoHinh = ?`, [MaMH]);
             if (kiem_tra.length === 0) {
                 await connection.rollback();
-                return res.status(404).json({ // FIX LỖI SẬP: Đã thêm 404
+                return res.status(404).json({
                     success: false,
                     message: "Không tìm thấy sản phẩm cần ẩn/hiện!"
                 });
@@ -1416,11 +1396,9 @@ const product_admin = {
                 ${havingClause}`;
 
 
-            // Việc này BẮT BUỘC để Frontend biết có tổng cộng bao nhiêu trang
             const sql_count = `SELECT COUNT(*) AS total FROM (${sql_core}) as temptable`;
             const [countResult] = await db.query(sql_count,value);
             const totalItems = countResult[0].total;
-            //Làm tròn lên
             const totalPage = Math.ceil(totalItems/limit);
             
             const sql_ds = `${sql_core}
@@ -1441,7 +1419,6 @@ const product_admin = {
                     const defaultVar = spVariants.find(v => v.ChiTietPhanLoai === 'Mặc định');
                     p.defaultVariantId = defaultVar ? defaultVar.MaPhanLoai : null;
                     
-                    // KHÔNG DÙNG .filter(v => v.ChiTietPhanLoai !== 'Mặc định') nữa bồ nhé
                     p.DS_PhanLoai = spVariants.map(v => ({ 
                         id: v.MaPhanLoai, 
                         name: v.ChiTietPhanLoai, 
@@ -1547,7 +1524,6 @@ const product_admin = {
 
     liet_ke_brand: async(req, res) => {
         try {
-            // Tối ưu cách viết ép kiểu và giới hạn giá trị phân trang
             const page = Math.max(parseInt(req.query.page) || 1, 1);
             let limit = parseInt(req.query.limit) || 10;
             if (limit < 1) limit = 10;
@@ -1582,13 +1558,11 @@ const product_admin = {
             const sql_ds = `${sql_core} ${filter} LIMIT ? OFFSET ?`;
             const sql_params = [...value, limit, offset];
 
-            // TỐI ƯU HIỆU NĂNG: Chạy đếm tổng và lấy danh sách cùng một lúc
             const [[countResult], [brands]] = await Promise.all([
                 db.query(sql_count, value),
                 db.query(sql_ds, sql_params)
             ]);
 
-            // ĐỒNG BỘ FRONTEND: Dùng chung key totalItems
             const totalItems = countResult[0].total; 
             const totalPage = Math.ceil(totalItems / limit);
 
@@ -1599,7 +1573,7 @@ const product_admin = {
                 pagination: {
                     currentPage: page,
                     limit: limit,
-                    totalItems: totalItems, // Đã đổi thành totalItems
+                    totalItems: totalItems,
                     totalPage: totalPage
                 }
             });
@@ -1618,7 +1592,7 @@ const product_admin = {
             // 1. Đếm tổng số hãng sản xuất
             const [brandCount] = await db.query('SELECT COUNT(*) as total FROM HangSanXuat');
 
-            // 2. Tính tổng số lượng tất cả sản phẩm trong kho (Gom từ bảng Phanloai)
+            // 2. Tính tổng số lượng tất cả sản phẩm trong kho
             const [productCount] = await db.query('SELECT COUNT(*) as total FROM MoHinh');
 
             res.status(200).json({
@@ -1639,14 +1613,12 @@ const product_admin = {
             const isGetAll = req.query.getAll === 'true';
 
             if (isGetAll) {
-                // 🔥 SỬA: Lấy thêm DanhSachAnh và DanhMucNoiBat
                 const [cates] = await db.query(`SELECT MaDM, TenDM, MoTa, DanhSachAnh, DanhMucNoiBat FROM DanhMuc ORDER BY TenDM ASC`);
                 const [subCates] = await db.query(`SELECT MaChiTietDM, TenChiTietDM, MaDM FROM ChiTietDanhMuc`);
                 
                 // Gộp danh mục con và ÉP KIỂU MẢNG ẢNH
                 const finalCates = cates.map(cate => ({
                     ...cate,
-                    // 🔥 THÊM: Ép chuỗi TEXT thành mảng Array để Vue.js dễ render
                     DanhSachAnh: cate.DanhSachAnh ? JSON.parse(cate.DanhSachAnh) : [],
                     DanhSachDanhMucCon: subCates.filter(sub => sub.MaDM === cate.MaDM)
                 }));
@@ -1674,7 +1646,6 @@ const product_admin = {
                 filter = "ORDER BY dm.TenDM DESC";
             }
     
-            // 🔥 SỬA: Bổ sung dm.DanhSachAnh và dm.DanhMucNoiBat vào câu SELECT core
             const sql_core = `SELECT dm.MaDM, dm.TenDM, dm.MoTa, dm.DanhSachAnh, dm.DanhMucNoiBat,
                                 (
                                     SELECT count(*)
@@ -1713,7 +1684,6 @@ const product_admin = {
                 finalCates = cates.map(cate => {
                     return {
                         ...cate,
-                        // 🔥 THÊM: Ép chuỗi TEXT thành mảng Array (Bắt lỗi rỗng)
                         DanhSachAnh: cate.DanhSachAnh ? JSON.parse(cate.DanhSachAnh) : [],
                         DanhSachDanhMucCon: subCates.filter(sub => sub.MaDM === cate.MaDM)
                     };

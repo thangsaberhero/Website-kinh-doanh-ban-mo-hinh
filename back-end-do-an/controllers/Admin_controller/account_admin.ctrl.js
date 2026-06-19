@@ -284,7 +284,6 @@ const account_admin = {
             const { MaTK } = req.body;
             const MaNguoiThucHien = parseInt(req.user.id);
             
-            // Lưu ý: Ở các file trước bạn dùng req.user.MaQuyen, hãy đảm bảo tính đồng bộ của biến này từ middleware nhé
             const QuyenNguoiThucHien = parseInt(req.user.MaQuyen || req.user.role);
 
             // 1. CHẶN TỰ KHÓA CHÍNH MÌNH
@@ -297,7 +296,6 @@ const account_admin = {
             }
     
             // 2. KIỂM TRA TỒN TẠI VÀ CHUẨN BỊ LOGIC
-            // FIX LỖI: Chọn đúng tên cột Bi_khoa
             const [check_tk] = await connection.query(`SELECT MaQuyen, TenDN, Bi_khoa FROM TaiKhoan WHERE MaTK = ?`, [MaTK]);
             if (check_tk.length === 0) {
                 await connection.rollback();
@@ -306,9 +304,9 @@ const account_admin = {
             
             const targetRole = check_tk[0].MaQuyen;
             const targetName = check_tk[0].TenDN;
-            const trangThaiHienTai = check_tk[0].Bi_khoa; // FIX LỖI: Dùng đúng biến check_tk
+            const trangThaiHienTai = check_tk[0].Bi_khoa;
             
-            // 3. CHẶN LEO THANG ĐẶC QUYỀN (ANTI-MUTINY)
+            // 3. CHẶN LEO THANG ĐẶC QUYỀN
             if (QuyenNguoiThucHien === 1 && targetRole === 1 && parseInt(MaTK) !== MaNguoiThucHien) {
                 await connection.rollback();
                 return res.status(403).json({ 
@@ -318,14 +316,12 @@ const account_admin = {
             }
 
             // 4. THỰC HIỆN CẬP NHẬT
-            // FIX LỖI: Dùng connection.query để giữ Transaction
             await connection.query(`UPDATE TaiKhoan SET Bi_khoa = 1 - Bi_khoa WHERE MaTK = ?`, [MaTK]);
             
             // 5. GHI LOG ĐỒNG BỘ
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
-            // Tái sử dụng logic cực hay của bạn
             const hanhDong = trangThaiHienTai === 1 ? 'Mở khóa' : 'Khóa';
             const noiDungLog = `${hanhDong} tài khoản #${MaTK}: "@${targetName}"`;
             
@@ -344,7 +340,7 @@ const account_admin = {
             });
         }
         catch (error) {
-            await connection.rollback(); // FIX LỖI: Bổ sung rollback khi gặp lỗi
+            await connection.rollback();
             console.error("Lỗi khi khoá tài khoản: ", error);
             res.status(500).json({ 
                 success: false,
@@ -352,7 +348,6 @@ const account_admin = {
             });
         }
         finally {
-            // FIX LỖI: Bổ sung giải phóng kết nối
             if (connection) connection.release(); 
         }
     },
@@ -407,7 +402,6 @@ const account_admin = {
                 condition.push("tk.Bi_khoa = 1");
             }
 
-            // TỐI ƯU 1: Viết SARGable query để tận dụng Index của MySQL
             if (tu_ngay) {
                 condition.push("tk.NgayTao >= ?");
                 value.push(`${tu_ngay} 00:00:00`); 
@@ -440,7 +434,6 @@ const account_admin = {
             `;
             const sql_params = [...value, limit, offset];
 
-            // TỐI ƯU 2: Promise.all chạy đa luồng
             const [[countResult], [ds]] = await Promise.all([
                 db.query(sql_count, value),
                 db.query(sql_ds, sql_params)
@@ -555,16 +548,14 @@ const account_admin = {
                 { key: 'NgayTao', width: 22 },
             ];
 
-            // Nền trắng Header (Mở rộng vùng trắng cho thoáng)
+            // Nền trắng Header
             for (let i = 1; i <= 9; i++) {
                 for (let j = 1; j <= 8; j++) {
                     worksheet.getCell(i, j).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
                 }
             }
 
-            // ==========================================
             // PHẦN HEADER: Logo trái, Tên cửa hàng bên phải
-            // ==========================================
             try {
                 const path = require('path');
                 const fs = require('fs');
@@ -590,9 +581,7 @@ const account_admin = {
             worksheet.mergeCells('A4:H4');
             worksheet.getCell('A4').border = { bottom: { style: 'medium', color: { argb: 'FFFFC3C2' } } };
 
-            // ==========================================
             // PHẦN TIÊU ĐỀ BÁO CÁO
-            // ==========================================
             worksheet.mergeCells('A5:H5');
             const titleCell = worksheet.getCell('A5');
             titleCell.value = 'BÁO CÁO DANH SÁCH TÀI KHOẢN HỆ THỐNG';
@@ -620,9 +609,7 @@ const account_admin = {
             subTitleCell.font = { size: 12, bold: true, color: { argb: 'FF222532' }, name: 'Space Grotesk' };
             subTitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-            // ==========================================
             // PHẦN BẢNG DỮ LIỆU
-            // ==========================================
             const headerRow = worksheet.getRow(10);
             headerRow.values = ['Mã TK', 'Họ và Tên', 'Tên Đăng Nhập', 'Email liên hệ', 'Số Điện Thoại', 'Vai Trò', 'Trạng Thái', 'Ngày Đăng Ký'];
             headerRow.height = 25;
@@ -779,8 +766,6 @@ const account_admin = {
     },
     lay_nhat_ky_hoat_dong: async(req, res) => {
         try {
-            // TỐI ƯU 1: Chỉ lấy log liên quan đến tài khoản/bảo mật
-            // TỐI ƯU 2: JOIN để lấy Tên người thực hiện
             const sql = `
                 SELECT log.*, tk.TenDN AS NguoiThucHien
                 FROM LogHoatDongTaiKhoan log
@@ -823,7 +808,6 @@ const account_admin = {
                 LIMIT ? OFFSET ?
             `;
 
-            // TỐI ƯU 3: Chạy song song (Promise.all)
             const [[countResult], [logs]] = await Promise.all([
                 db.query(sql_count),
                 db.query(sql_ds, [limit, offset])

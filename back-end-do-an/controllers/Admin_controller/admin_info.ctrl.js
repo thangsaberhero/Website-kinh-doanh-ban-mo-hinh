@@ -32,7 +32,7 @@ const admin_info_ctrl = {
             const { email, TenNV, DiaChi, SDT, isAvatarRemoved } = req.body;
             const MaTK = req.user.id; 
             
-            // 1. LẤY LINK ẢNH TỪ CLOUDINARY (Giải quyết triệt để lỗi không lưu được ảnh)
+            // 1. LẤY LINK ẢNH TỪ CLOUDINARY
             let newFileName = null;
             if (req.file) {
                 newFileName = req.file.path || req.file.secure_url || req.file.url || req.file.filename;
@@ -47,13 +47,12 @@ const admin_info_ctrl = {
                 });
             }
 
-            // HÀM PHỤ TRỢ: Xóa ảnh cũ cục bộ an toàn (Bỏ qua nếu là link Cloud)
+            // Xóa ảnh cũ cục bộ an toàn (Bỏ qua nếu là link Cloud)
             const handleRemoveOldLocalImage = (oldFileName) => {
                 try {
                     if (oldFileName && oldFileName !== '' && !oldFileName.startsWith('http')) {
                         const fs = require('fs');
                         const path = require('path');
-                        // Lùi 2 cấp (..) để về đúng thư mục gốc chứa public
                         const oldFilePath = path.join(__dirname, '..', '..', 'public', 'Images_user', oldFileName);
                         if (fs.existsSync(oldFilePath)) {
                             fs.unlinkSync(oldFilePath);
@@ -67,7 +66,6 @@ const admin_info_ctrl = {
             // 2. NẾU CÓ UP ẢNH MỚI
             if (newFileName) {
                 const sql_lay_anh_cu = 'SELECT AnhDaiDien FROM TaiKhoan WHERE MaTK = ?';
-                // Đã sửa lại thành connection.query để đảm bảo Transaction
                 const [result_anh_cu] = await connection.query(sql_lay_anh_cu, [MaTK]);
                 
                 if (result_anh_cu.length > 0 && result_anh_cu[0].AnhDaiDien) {

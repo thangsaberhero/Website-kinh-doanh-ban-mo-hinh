@@ -30,7 +30,6 @@ const donhang_admin = {
             const listMaPhanLoai = Array.from(danhSachYeuCau.keys());
 
             // 2. Truy vấn DB lấy GIÁ THẬT, KHUYẾN MÃI và TIỀN CỌC TỐI THIỂU
-            //  ĐÃ SỬA: Bổ sung mh.TienCocToiThieu
             const sql_get_items = `
                 SELECT 
                     mh.TenMH, mh.GiaNhap, mh.LoaiHinhBan, mh.TienCocToiThieu,
@@ -361,23 +360,20 @@ const donhang_admin = {
         try {
             const keyword = req.query.keyword || '';
 
-            // BỔ SUNG: pl.SoLuong > 0 (Chỉ lấy hàng còn tồn kho) và mh.HienThi = 1
             let condition = ["(mh.TenMH COLLATE utf8mb4_unicode_ci LIKE ? OR pl.ChiTietPhanLoai COLLATE utf8mb4_unicode_ci LIKE ?) AND pl.HienThi = 1 AND mh.HienThi = 1 AND pl.SoLuong > 0"];
             let value = [`%${keyword}%`, `%${keyword}%`];
 
             let whereClause = "WHERE " + condition.join(" AND ");
 
-            // Đổi pl.SoLuong AS TonKho để khớp với Frontend
             const sql = `SELECT mh.MaMoHinh, mh.TenMH, mh.AnhDaiDien, mh.MaDM, mh.MaHSX, mh.TienCocToiThieu, mh.LoaiHinhBan,
                                 pl.MaPhanLoai, pl.ChiTietPhanLoai, pl.DonGia, pl.SoLuong AS TonKho
                         FROM MoHinh mh
                         INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
                         ${whereClause}
-                        LIMIT 100`; // Nới rộng limit một chút vì sau khi gom nhóm số lượng sẽ ít đi
+                        LIMIT 100`;
             
             const [flatData] = await db.query(sql, value);
             
-            // TUYỆT CHIÊU GOM NHÓM: Biến dữ liệu phẳng thành cấu trúc lồng nhau (Nested)
             const groupedData = flatData.reduce((acc, row) => {
                 // Tìm xem mô hình này đã có trong mảng kết quả chưa
                 let model = acc.find(m => m.MaMoHinh === row.MaMoHinh);
@@ -390,12 +386,11 @@ const donhang_admin = {
                         AnhDaiDien: row.AnhDaiDien,
                         TienCocToiThieu: row.TienCocToiThieu,
                         LoaiHinhBan: row.LoaiHinhBan,
-                        PhanLoai: [] // Tạo mảng rỗng để chứa các phân loại
+                        PhanLoai: []
                     };
                     acc.push(model);
                 }
                 
-                // Nhét phân loại vào bụng mô hình
                 model.PhanLoai.push({
                     MaPhanLoai: row.MaPhanLoai,
                     ChiTietPhanLoai: row.ChiTietPhanLoai,
@@ -458,7 +453,7 @@ const donhang_admin = {
         try {
             await connection.beginTransaction();
             const { MaDH, LyDoHuy } = req.body;
-            const MaTK = req.user.id; // Lấy từ Token để xác thực
+            const MaTK = req.user.id;
 
             // 1. Kiểm tra đơn hàng có tồn tại và CÓ PHẢI CỦA NGƯỜI NÀY KHÔNG
             const sql_kiemtra_tt = `
@@ -784,7 +779,7 @@ const donhang_admin = {
                 whereValues.push(Number(maxPrice));
             }
 
-            // 🔴 LỌC BẰNG CỘT NOTE: Lọc trực tiếp Tag ở mệnh đề WHERE
+            // LỌC BẰNG CỘT NOTE: Lọc trực tiếp Tag ở mệnh đề WHERE
             if (loaihinhban && loaihinhban !== 'all') {
                 if (loaihinhban === 'order') {
                     conditions.push("(dh.Note LIKE '[PRE-ORDER]%' OR dh.Note LIKE '[ORDER]%')");
@@ -811,14 +806,14 @@ const donhang_admin = {
                 dh.NgayLapDon, dh.TongTien, dh.TenNguoiNhan, dh.SDTNguoiNhan, dh.HangVanChuyen, dh.MaVanDon,
                 dh.ThanhTien, dh.TrangThaiThanhToan,
                 
-                -- 🔴 ẢO THUẬT 1: Sinh ra cột LoaiHinhBan từ Tag trong Note
+                -- Sinh ra cột LoaiHinhBan từ Tag trong Note
                 CASE
                     WHEN dh.Note LIKE '[PRE-ORDER]%' THEN 'Pre-order'
                     WHEN dh.Note LIKE '[ORDER]%' THEN 'Order'
                     ELSE 'Có sẵn'
                 END AS LoaiHinhBan,
 
-                -- 🔴 ẢO THUẬT 2: Trả lại cột Note sạch sẽ
+                -- Trả lại cột Note sạch sẽ
                 CASE
                     WHEN dh.Note LIKE '[PRE-ORDER] %' THEN TRIM(SUBSTRING(dh.Note, 13))
                     WHEN dh.Note LIKE '[PRE-ORDER]' THEN ''
@@ -829,7 +824,7 @@ const donhang_admin = {
                     ELSE dh.Note
                 END AS Note,
 
-                -- 🔴 ẢO THUẬT 3: RADAR DÒ TÌM TÌNH TRẠNG GOM HÀNG THỰC TẾ
+                -- TÌNH TRẠNG GOM HÀNG THỰC TẾ
                 (
                     SELECT 
                         CASE 
@@ -1064,9 +1059,7 @@ const donhang_admin = {
             const hangGiuLai = chiTietDon.filter(item => !DanhSachTach.includes(item.MaPhanLoai));
             const hangTachDi = chiTietDon.filter(item => DanhSachTach.includes(item.MaPhanLoai));
 
-            // ==========================================
-            // 🔴 CHỐT CHẶN BẢO MẬT: CHỐNG TRỘN LẪN HÀNG HÓA KHI TÁCH
-            // ==========================================
+            // CHỐNG TRỘN LẪN HÀNG HÓA KHI TÁCH
             const checkMixHang = (arr) => {
                 const coHangSan = arr.some(i => !i.LoaiHinhBan || i.LoaiHinhBan.toLowerCase().includes('sẵn'));
                 const coHangOrder = arr.some(i => i.LoaiHinhBan && i.LoaiHinhBan.toLowerCase().includes('order'));
@@ -1077,9 +1070,7 @@ const donhang_admin = {
                 throw new Error("Không thể gộp chung sản phẩm Có sẵn và Order vào cùng 1 đơn tách. Vui lòng chỉ tick chọn các sản phẩm cùng loại hình!");
             }
 
-            // ==========================================
-            // 🔴 HÀM RADAR: DÒ TÌM TAG CHUẨN XÁC DỰA TRÊN SẢN PHẨM BÊN TRONG
-            // ==========================================
+            // DÒ TÌM TAG CHUẨN XÁC DỰA TRÊN SẢN PHẨM BÊN TRONG
             const getTagByItems = (arr) => {
                 let tag = '[SẴN]';
                 for (let item of arr) {
@@ -1153,9 +1144,7 @@ const donhang_admin = {
                 WHERE MaDH = ?
             `, [tongTienGiuLai, thanhTienGiuLai, noteDonGoc, MaDH]);
 
-            // ==========================================
-            // 🔴 6. KẾ TOÁN VÀO VIỆC: BỔ CỦI DÒNG TIỀN THEO BẢN CHẤT
-            // ==========================================
+            // DÒNG TIỀN THEO BẢN CHẤT
             const [lichSuThanhToan] = await connection.query(`SELECT * FROM ThanhToan WHERE MaDH = ? AND TrangThaiGiaoDich = 'Thành công'`, [MaDH]);
 
             if (lichSuThanhToan.length > 0) {
@@ -1178,7 +1167,6 @@ const donhang_admin = {
 
                     // Insert dòng thanh toán tương đương cho đơn mới
                     if (tienTachDi > 0) {
-                        // 🔴 ĐÃ SỬA: Đủ 7 dấu ? tương ứng với 7 cột
                         await connection.query(`
                             INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac)
                             VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -1247,10 +1235,8 @@ const donhang_admin = {
             const noteDonHang = trangthai[0].Note || '';
             const tinhTrangGomHang = trangthai[0].TinhTrangGomHang;
 
-            // Giả sử bồ đã lấy được biến TrangThai (Trạng thái mới gửi lên) và MaDH
-            // =========================================================
-            // 🔴 AUTO-COD: TỰ ĐỘNG CHỐT TIỀN KHI SHIPPER GIAO THÀNH CÔNG
-            // =========================================================
+
+            // AUTO-COD: TỰ ĐỘNG CHỐT TIỀN KHI SHIPPER GIAO THÀNH CÔNG
             if (Number(TrangThai) === 4) { // Trạng thái 4 là "Đã giao"
                 
                 // 1. Tìm xem đơn này có đang nợ tiền COD không
@@ -1304,9 +1290,7 @@ const donhang_admin = {
 
             const trangThaiMoi = TrangThai ? parseInt(TrangThai) : (matrangthai + 1);
 
-            // =======================================================
-            // 🔴 CHỐT CHẶN 1: Chống đi lùi trạng thái
-            // =======================================================
+            // Chống đi lùi trạng thái
             if (trangThaiMoi <= matrangthai) {
                 await connection.rollback();
                 return res.status(400).json({
@@ -1315,9 +1299,7 @@ const donhang_admin = {
                 });
             }
 
-            // =======================================================
-            // 🔴 CHỐT CHẶN 2: Logic bảo vệ hàng Order/Pre-order
-            // =======================================================
+            // Logic bảo vệ hàng Order/Pre-order
             const isOrderOrPreOrder = noteDonHang.startsWith('[PRE-ORDER]') || noteDonHang.startsWith('[ORDER]');
             
             if (isOrderOrPreOrder) {
@@ -1334,9 +1316,7 @@ const donhang_admin = {
                 }
             }
 
-            // =======================================================
-            // 🔴 CHỐT CHẶN 3: Kiểm tra vận đơn khi chuyển sang Giao hàng
-            // =======================================================
+            //  Kiểm tra vận đơn khi chuyển sang Giao hàng
             if (trangThaiMoi === 3) {
                 if (!MaVanDon || !HangVanChuyen || MaVanDon.trim() === '') {
                     await connection.rollback();
@@ -1458,9 +1438,7 @@ const donhang_admin = {
                 `/admin/orders?viewOrderId=${MaDH}`
             ]);
 
-            // =========================================================
-            // 🔴 ĐÃ SỬA: KIỂM TRA XEM KHÁCH ĐÃ NỘP ĐỒNG NÀO VÀO HỆ THỐNG CHƯA
-            // =========================================================
+            // KIỂM TRA XEM KHÁCH ĐÃ NỘP TIỀN VÀO HỆ THỐNG CHƯA
             const sql_kiem_tra_tien = `SELECT SUM(SoTienGiaoDich) as TongTienDaNop FROM ThanhToan WHERE MaDH = ? AND TrangThaiGiaoDich = 'Thành công'`;
             const [tien_da_nop] = await connection.query(sql_kiem_tra_tien, [MaDH]);
             
@@ -1567,7 +1545,6 @@ const donhang_admin = {
             const tongGiamVoucher = (dh.TongTien - tongTienGiamCacMon) - dh.ThanhTien;
             const tongGiamGiaThucTe = Math.max(0, tongTienGiamCacMon + (tongGiamVoucher > 0 ? tongGiamVoucher : 0));
 
-            // Đoạn mã HTML hoàn chỉnh chuẩn form hóa đơn k80 hoặc A5 thị trường
             const htmlInvoice = `
             <!DOCTYPE html>
             <html>
@@ -1733,7 +1710,7 @@ const donhang_admin = {
                 console.log("Không thể đọc file logo cho hóa đơn in hàng loạt:", error.message);
             }
 
-            // 2. TẠO KHUNG HTML TỔNG VÀ CSS INLINE (Đã bao gồm css page-break)
+            // 2. TẠO KHUNG HTML TỔNG VÀ CSS INLINE
             let combinedHtml = `
             <!DOCTYPE html>
             <html lang="vi">
@@ -1927,7 +1904,7 @@ const donhang_admin = {
                         </p>
                     </div>
                 `;
-            } // Hết vòng lặp
+            }
 
             // Đóng chuỗi HTML và tự động bật hộp thoại in
             combinedHtml += `
@@ -2386,11 +2363,11 @@ const donhang_admin = {
             const daTraTruocDo = Number(paid_res[0].DaTra) || 0;
 
             // ==========================================================
-            // 🔴 CHỐT CHẶN BẢO MẬT TẦNG BACKEND (SECURITY GATES)
+            // CHỐT CHẶN BẢO MẬT TẦNG BACKEND
             // ==========================================================
             const isOrderOrPreOrder = dh.Note && (dh.Note.startsWith('[PRE-ORDER]') || dh.Note.startsWith('[ORDER]'));
             
-            // 🛡️ Bẫy 1: Chống thu COD khi chưa cọc (Logic gốc của bồ)
+            //  Chống thu COD khi chưa cọc
             if (maPhuongThuc === 3 && daTraTruocDo === 0) {
                 await connection.rollback();
                 return res.status(400).json({ 
@@ -2399,7 +2376,7 @@ const donhang_admin = {
                 });
             }
 
-            // 🛡️ Bẫy 2: Chống thu COD "Ảo" (Hàng chưa đi mà dám thu COD)
+            // Chống thu COD "Ảo" (Hàng chưa đi mà dám thu COD)
             if (maPhuongThuc === 3 && dh.TrangThaiHienTai < 3) {
                 await connection.rollback();
                 return res.status(400).json({ 
@@ -2408,7 +2385,7 @@ const donhang_admin = {
                 });
             }
 
-            // 🛡️ Bẫy 3: Chống thu "Khống" (Hàng chưa về mà dám nhận Tiền mặt/COD)
+            // Chống thu "Khống" (Hàng chưa về mà dám nhận Tiền mặt/COD)
             if (isOrderOrPreOrder && dh.TinhTrangGomHang !== 'Đủ hàng') {
                 if (maPhuongThuc === 5 || maPhuongThuc === 3) {
                     await connection.rollback();
@@ -2449,9 +2426,7 @@ const donhang_admin = {
 
             await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiThanhToanMoi, MaDH]);
 
-            // ==========================================================
-            // 🔴 4. SINH MÃ ĐỐI SOÁT VÀ LƯU VẾT GIAO DỊCH
-            // ==========================================================
+            // 4. SINH MÃ ĐỐI SOÁT VÀ LƯU VẾT GIAO DỊCH
             let maDoiSoat = null;
             const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase(); // Hậu tố ngẫu nhiên chống trùng lặp khi trả góp nhiều lần
             
@@ -2469,7 +2444,6 @@ const donhang_admin = {
                 maDoiSoat = `MANUAL_${dh.MaDonHangHienThi}_${randomSuffix}`;
             }
 
-            // 🔴 ĐÃ SỬA: Thêm cột MaGiaoDichCuaDoiTac và đủ 7 dấu hỏi chấm
             await connection.query(`
                 INSERT INTO ThanhToan (MaPT, MaDH, NgayThanhToan, SoTienGiaoDich, LoaiGiaoDich, TrangThaiGiaoDich, MaGiaoDichCuaDoiTac) 
                 VALUES (?, ?, NOW(), ?, ?, 'Thành công', ?)
@@ -2558,9 +2532,7 @@ const donhang_admin = {
             const trangThaiMoi = 'Đã hoàn tiền';
             await connection.query(`UPDATE DonHang SET TrangThaiThanhToan = ? WHERE MaDH = ?`, [trangThaiMoi, MaDH]);
 
-            // ==========================================================
-            // 🔴 SINH MÃ ĐỐI SOÁT CHO GIAO DỊCH HOÀN TIỀN
-            // ==========================================================
+            // SINH MÃ ĐỐI SOÁT CHO GIAO DỊCH HOÀN TIỀN
             const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
             // Cấu trúc: REFUND_NV[Mã NV]_[Mã Đơn]_[Random] (Ví dụ: REFUND_NV3_FC150626_X9A2)
             const maDoiSoat = `REFUND_NV${MaNV}_${dh.MaDonHangHienThi}_${randomSuffix}`;
@@ -2752,7 +2724,6 @@ const donhang_admin = {
             ws.views = [{ showGridLines: false }];
             ws.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true };
 
-            // Thêm Cột STT để cố định logo
             ws.columns = [
                 { key: 'STT', width: 10 },
                 { key: 'NgayThanhToan', width: 22 },

@@ -32,7 +32,6 @@ const reviewController = {
 
             const countSql = `SELECT COUNT(*) as total FROM DanhGia dg INNER JOIN KhachHang kh ON kh.MaKH = dg.MaKH WHERE ${whereClause}`;
             
-            // 🔴 ĐÃ SỬA: Nhúng thẳng ${limit} và ${offset} vào chuỗi SQL để chống lỗi ER_PARSE_ERROR
             const dataSql = `
                 SELECT dg.*, kh.TenKH, tk.AnhDaiDien, pl.ChiTietPhanLoai
                 FROM DanhGia dg
@@ -59,7 +58,6 @@ const reviewController = {
                 WHERE dg.MaMH = ? AND dg.TrangThai = 1
             `;
 
-            // 🔴 ĐÃ SỬA: Truyền params giống nhau cho countSql và dataSql (Vì đã tháo limit/offset ra khỏi mảng)
             const [[countResult], [result], [statsResult]] = await Promise.all([
                 db.query(countSql, params),
                 db.query(dataSql, params), 
@@ -105,7 +103,6 @@ const reviewController = {
             });
         }
 
-        // 🔴 BỔ SUNG: Validation dữ liệu đầu vào trước khi mở kết nối Database
         const { MaMoHinh, MaPhanLoai, NoiDung, SoSao, HinhAnh } = req.body;
         
         if (!MaMoHinh || !NoiDung || !SoSao) {
@@ -134,10 +131,7 @@ const reviewController = {
                 return res.status(400).json({ success: false, message: "Lỗi: Bạn đã đánh giá sản phẩm này rồi!" });
             }
 
-            // =========================================================
-            // LỚP LỌC 2: KIỂM TRA ĐÃ MUA VÀ NHẬN HÀNG THÀNH CÔNG CHƯA?
-            // (Thêm MaMoHinh và Trạng Thái = 4)
-            // =========================================================
+            // KIỂM TRA ĐÃ MUA VÀ NHẬN HÀNG THÀNH CÔNG CHƯA?
             const sqlCheckPurchase = `
                 SELECT dh.MaDH 
                 FROM DonHang dh
@@ -209,7 +203,7 @@ const reviewController = {
             const { MaMoHinh } = req.query;
 
             // =========================================================
-            // LỚP LỌC 1: KIỂM TRA KHÁCH HÀNG ĐÃ ĐÁNH GIÁ SẢN PHẨM NÀY CHƯA?
+            // KIỂM TRA KHÁCH HÀNG ĐÃ ĐÁNH GIÁ SẢN PHẨM NÀY CHƯA?
             // =========================================================
             const sqlCheckReview = `SELECT MaDG FROM DanhGia WHERE MaKH = ? AND MaMH = ? LIMIT 1`;
             const [existingReview] = await db.query(sqlCheckReview, [MaKH, MaMoHinh]);
@@ -223,7 +217,7 @@ const reviewController = {
             }
 
             // =========================================================
-            // LỚP LỌC 2: NẾU CHƯA ĐÁNH GIÁ -> KIỂM TRA ĐÃ MUA & NHẬN HÀNG CHƯA?
+            // NẾU CHƯA ĐÁNH GIÁ -> KIỂM TRA ĐÃ MUA & NHẬN HÀNG CHƯA?
             // =========================================================
             const sqlCheckPurchase = `SELECT dh.MaDH
                                       FROM DonHang dh

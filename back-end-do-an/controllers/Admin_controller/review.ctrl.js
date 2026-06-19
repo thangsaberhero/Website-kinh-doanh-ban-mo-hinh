@@ -32,7 +32,6 @@ const adminReviewController = {
 
             const whereClause = whereConditions.join(" AND ");
 
-            // 1. CHUẨN BỊ 3 CÂU QUERY
             const countSql = `
                 SELECT COUNT(*) as total 
                 FROM DanhGia dg 
@@ -54,7 +53,6 @@ const adminReviewController = {
                 LIMIT ? OFFSET ?
             `;
 
-            // TỐI ƯU SARGable: Dùng DATE_FORMAT để tính toán ngày đầu tháng hiện tại
             const statsSql = `
                 SELECT 
                     ROUND(AVG(SoSao), 1) as avgRating,
@@ -64,7 +62,6 @@ const adminReviewController = {
                 FROM DanhGia
             `;
 
-            // 2. TỐI ƯU HIỆU NĂNG: Chạy 3 luồng song song (Ép xung x3 tốc độ)
             const [[countResult], [result], [statsResult]] = await Promise.all([
                 db.query(countSql, params),
                 db.query(dataSql, [...params, limit, offset]),
@@ -74,7 +71,7 @@ const adminReviewController = {
             const totalItems = countResult[0].total;
             const totalPages = Math.ceil(totalItems / limit);
 
-            // 3. XỬ LÝ ẢNH
+            // XỬ LÝ ẢNH
             const processedReviews = result.map(item => {
                 let parsedImages = [];
                 if (item.HinhAnh && item.HinhAnh !== '[]' && item.HinhAnh !== 'null') {
@@ -119,7 +116,6 @@ const adminReviewController = {
 
             // 2. LẤY MÃ NHÂN VIÊN THỰC HIỆN
             const MaTK = req.user.id; 
-            // FIX LỖI: Chuyển db.query thành connection.query
             const [nv] = await connection.query('SELECT MaNV FROM NhanVien WHERE MaTK = ?', [MaTK]);
             const MaNV = nv.length > 0 ? nv[0].MaNV : null;
 
@@ -132,22 +128,18 @@ const adminReviewController = {
                 WHERE MaDG = ?
             `;
             const nvUpdate = PhanHoiShop ? MaNV : null;
-            // FIX LỖI: Chuyển db.query thành connection.query
             await connection.query(sql, [TrangThai, PhanHoiShop, nvUpdate, MaDG]);
             
             // 4. GHI LOG HOẠT ĐỘNG
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
             
-            // FIX LỖI: Sửa lại nội dung log cho chuẩn nghiệp vụ
             const noiDungLog = `Kiểm duyệt / Phản hồi đánh giá #${MaDG}`;
-            // FIX LỖI: Chuyển db.query thành connection.query
             await connection.query(`
                 INSERT INTO LogHoatDongTaiKhoan (MaTK, LoaiLog, NoiDung, IPAddress, ThoiGian)
                 VALUES (?, 'REVIEW_UPDATE', ?, ?, NOW())
             `, [MaTK, noiDungLog, userIp]);
 
-            // FIX LỖI: Bổ sung lệnh commit để lưu dữ liệu
             await connection.commit();
 
             res.status(200).json({

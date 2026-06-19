@@ -1,4 +1,4 @@
-const db = require('../../config/db.js'); // Đảm bảo đường dẫn tới file db của bạn đúng
+const db = require('../../config/db.js');
 
 const setting_Controller = {
     // 1. LẤY TOÀN BỘ CÀI ĐẶT (API Public dùng cho mọi trang)

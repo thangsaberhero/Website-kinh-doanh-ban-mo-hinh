@@ -21,7 +21,7 @@ const donhang_user = {
             const MaTK = req.user.id;
 
             // ==========================================
-            // CHỐT CHẶN BẢO MẬT 1: KIỂM TRA ĐẦU VÀO TỪ API
+            // KIỂM TRA ĐẦU VÀO TỪ API
             // ==========================================
             if (!MaPhanLoai || !soluong || isNaN(soluong) || parseInt(soluong) <= 0) {
                 await connection.rollback();
@@ -45,7 +45,7 @@ const donhang_user = {
             const maGH = result_giohang[0].MaGH;
 
             // ==========================================
-            // CHỐT CHẶN BẢO MẬT 2: KIỂM TRA SẢN PHẨM & TỒN KHO 
+            // KIỂM TRA SẢN PHẨM & TỒN KHO 
             // ==========================================
             const sql_kiemtra_kho = `SELECT pl.SoLuong AS TonKho, mh.LoaiHinhBan
                 FROM PhanLoai pl
@@ -69,7 +69,7 @@ const donhang_user = {
             }
 
             // ==========================================
-            // CHỐT CHẶN BẢO MẬT 3: CHỐNG LẪN LỘN LOẠI HÌNH BÁN
+            // CHỐNG LẪN LỘN LOẠI HÌNH BÁN
             // ==========================================
             // Lấy ra loại hình bán của các món đang nằm sẵn trong giỏ
             const sql_check_cart_type = `
@@ -216,7 +216,6 @@ const donhang_user = {
                 [so_luong_chot, MaPhanLoai, maGH]
             );
 
-            // FIX: Chặn lỗi cập nhật "Bóng ma" (Món đồ chưa từng được thêm vào giỏ)
             if (updateResult.affectedRows === 0) {
                 await connection.rollback();
                 return res.status(404).json({ 
@@ -228,7 +227,7 @@ const donhang_user = {
             await connection.commit();
             res.status(200).json({
                 success: true,
-                message: thongBao, // Trả thông báo động cho mượt
+                message: thongBao,
                 MaGioHangCuaKhach: maGH,
                 SoLuongMoi: so_luong_chot // Trả về số lượng chốt để Frontend tự render lại ô Input nếu cần
             });
@@ -414,7 +413,7 @@ const donhang_user = {
                 INNER JOIN PhanLoai pl ON mh.MaMoHinh = pl.MaMoHinh
                 INNER JOIN ChiTietGioHang ct ON pl.MaPhanLoai = ct.MaPhanLoai
                 
-                -- TUYỆT CHIÊU: GOM LOGIC KHUYẾN MÃI VÀO 1 BẢNG ẢO (LEFT JOIN)
+                -- GOM LOGIC KHUYẾN MÃI VÀO 1 BẢNG ẢO
                 LEFT JOIN (
                     SELECT 
                         ctkm.MaPhanLoai,
@@ -618,7 +617,7 @@ const donhang_user = {
 
             let TongTienHang = 0;
             let TongTienKhuyenMai = 0;
-            let TongCocBatBuoc = 0; // 🔴 ĐÃ SỬA: Biến lưu tổng cọc của cả đơn
+            let TongCocBatBuoc = 0;
 
             let arrChiTietDonHang = [];
             let arrUpdateKho = [];
@@ -638,8 +637,7 @@ const donhang_user = {
                 
                 TongTienHang += (item.DonGia * item.SoLuong);
                 TongTienKhuyenMai += (item.MucGiam * slSale);
-                TongCocBatBuoc += (item.TienCocToiThieu * item.SoLuong); // 🔴 ĐÃ SỬA: Tính dồn cọc
-
+                TongCocBatBuoc += (item.TienCocToiThieu * item.SoLuong); 
                 arrUpdateKho.push([item.SoLuong, item.MaPhanLoai]);
 
                 if(slSale > 0){
@@ -654,7 +652,6 @@ const donhang_user = {
                 }
             }
 
-            // 🔴 ĐÃ SỬA: CHỐT CHẶN BẢO MẬT (Chống Hacker sửa payload)
             if (paymentMethod === 'cod' && TongCocBatBuoc > 0) {
                 await connection.rollback();
                 return res.status(400).json({ 
@@ -747,7 +744,7 @@ const donhang_user = {
                 let loaiHang = (item.LoaiHinhBan || '').toLowerCase();
                 if (loaiHang.includes('pre-order') || loaiHang.includes('pre order')) {
                     snapshotTag = '[PRE-ORDER]';
-                    break; // Mức ưu tiên cao nhất -> Thấy là chốt luôn
+                    break;
                 } else if (loaiHang.includes('order')) {
                     snapshotTag = '[ORDER]';
                 }
@@ -851,7 +848,7 @@ const donhang_user = {
             ]);
 
             // =======================================================
-            // 🔴 ĐÃ SỬA: LƯU LỊCH SỬ GIAO DỊCH NẾU LÀ COD
+            // LƯU LỊCH SỬ GIAO DỊCH NẾU LÀ COD
             // =======================================================
             if (paymentMethod === 'cod') {
                 await connection.query(`
@@ -1099,7 +1096,7 @@ const donhang_user = {
             const maHienThi = don_hang[0].MaDonHangHienThi;
             const trangThaiThanhToan = don_hang[0].TrangThaiThanhToan;
 
-            // 2. NGHIỆP VỤ 1: Chỉ được hủy khi đơn đang "Chờ duyệt"
+            // 2. Chỉ được hủy khi đơn đang "Chờ duyệt"
             if(currentStatus !== 1){
                 await connection.rollback();
                 return res.status(400).json({
@@ -1108,7 +1105,7 @@ const donhang_user = {
                 });
             }
 
-            // 🔥 NGHIỆP VỤ 2 (CHỐT CHẶN MẤT TIỀN): Không cho tự hủy nếu đã nạp tiền
+            // Không cho tự hủy nếu đã nạp tiền
             if(trangThaiThanhToan === 'Đã thanh toán' || trangThaiThanhToan === 'Đã cọc') {
                 await connection.rollback();
                 return res.status(400).json({
@@ -1117,7 +1114,6 @@ const donhang_user = {
                 });
             }
 
-            // 🔥 BỔ SUNG: Cập nhật thẳng vào bảng DonHang để Vue.js đọc được
             await connection.query(`
                 UPDATE DonHang 
                 SET TrangThaiThanhToan = 'Đã hủy', 
@@ -1144,7 +1140,7 @@ const donhang_user = {
                 `, [item.TongSoLuong, item.MaPhanLoai]);
             }
 
-            // 6. TỐI ƯU HÓA: HOÀN TRẢ KHUYẾN MÃI (Dùng chung logic đỉnh cao của Cronjob)
+            // 6. HOÀN TRẢ KHUYẾN MÃI
             await connection.query(`
                 UPDATE ChiTietKhuyenMai ctkm
                 INNER JOIN ChiTietDonHang ctdh ON ctkm.MaPhanLoai = ctdh.MaPhanLoai
@@ -1214,7 +1210,7 @@ const donhang_user = {
                 return res.status(400).json({ success: false, message: "Thông tin không được để trống!" });
             }
 
-            // 🛡️ NÂNG CẤP 1: Validate Số điện thoại chuẩn Việt Nam
+            // Validate Số điện thoại chuẩn Việt Nam
             const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
             if (!phoneRegex.test(sdt)) {
                 await connection.rollback();
@@ -1249,7 +1245,7 @@ const donhang_user = {
                 });
             }
 
-            // 🔥 NÂNG CẤP 2: Cập nhật địa chỉ & Tự động ghi chú thêm vào cột Note
+            // Cập nhật địa chỉ & Tự động ghi chú thêm vào cột Note
             const sql_update = `
                 UPDATE DonHang 
                 SET TenNguoiNhan = ?, 
@@ -1260,7 +1256,7 @@ const donhang_user = {
             `;
             await connection.query(sql_update, [hoten, sdt, diachi, MaDH]);
 
-            // 🔥 NÂNG CẤP 3: Bắn thông báo cho Admin & Ghi Log
+            // Bắn thông báo cho Admin & Ghi Log
             let userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             if (userIp === '::1' || userIp === '::ffff:127.0.0.1') userIp = '127.0.0.1';
 
@@ -1297,7 +1293,6 @@ const donhang_user = {
         try{
             const MaTK = req.user.id;
             
-            // CẦN TRUYỀN [MaTK, MaTK] VÌ TRONG CÂU SQL SỬ DỤNG ? Ở 2 VỊ TRÍ
             const sql_lay_ds = `
                 SELECT DISTINCT 
                     gg.MaGG, 
@@ -1336,7 +1331,6 @@ const donhang_user = {
                   )
             `;
             
-            // Nhớ truyền MaTK 2 lần cho 2 dấu chấm hỏi (?) ở trên
             const [ds] = await db.query(sql_lay_ds, [MaTK, MaTK]);
             
             res.status(200).json({
@@ -1404,7 +1398,6 @@ const donhang_user = {
                 maHienThi = result_tong[0].MaDonHangHienThi || MaDH.toString();
 
             } else if (HinhThuc === 'Thanh toán phần còn lại') {
-                // 🔴 MỚI: Truy vấn Tổng tiền và Trừ đi Số tiền đã trả
                 const sql_tinh_tien = `
                     SELECT dh.ThanhTien, dh.MaDonHangHienThi, COALESCE(SUM(tt.SoTienGiaoDich), 0) AS TongDaThu
                     FROM DonHang dh
@@ -1458,7 +1451,6 @@ const donhang_user = {
             
             const amountNum = Math.max(1000, Number(soTienCanThanhToan)); 
             
-            // 🔴 ĐÃ SỬA: Phân loại 3 cờ (full, remaining, deposit) truyền qua extraData
             let safeHinhThuc = 'deposit';
             if (HinhThuc === 'Thanh toán toàn bộ') safeHinhThuc = 'full';
             if (HinhThuc === 'Thanh toán phần còn lại') safeHinhThuc = 'remaining';
@@ -1537,7 +1529,6 @@ const donhang_user = {
             if (resultCode === 0) {
                 const trangThaiHienTai = don_hang[0].TrangThaiThanhToan;
 
-                // 🔴 ĐÃ SỬA: Đọc 3 loại cờ truyền về
                 const decodedExtraData = Buffer.from(extraData, 'base64').toString('utf8');
                 let hinhThuc = 'Cọc một phần';
                 if (decodedExtraData === 'full') hinhThuc = 'Thanh toán toàn bộ';
@@ -1548,7 +1539,6 @@ const donhang_user = {
                     trangThaiMoi = 'Đã thanh toán';
                 }
 
-                // 🔴 VÁ LỖI IDEMPOTENCY: Chống trùng lặp THÔNG MINH
                 // Đã thanh toán full thì ko nhận thêm hook gì nữa
                 if (trangThaiHienTai === 'Đã thanh toán') {
                     await connection.rollback();
@@ -1664,7 +1654,6 @@ const donhang_user = {
             const transID = Math.floor(Math.random() * 1000000);
             const app_trans_id = `${prefixDate}_${MaDH}_${transID}`; 
             
-            // 🔴 ĐÃ SỬA: Đóng gói cờ hinhThuc vào embed_data
             let safeHinhThuc = 'deposit';
             if (HinhThuc === 'Thanh toán toàn bộ') safeHinhThuc = 'full';
             if (HinhThuc === 'Thanh toán phần còn lại') safeHinhThuc = 'remaining';
@@ -1755,7 +1744,6 @@ const donhang_user = {
             const embed_data = JSON.parse(dataJson.embed_data); 
             const maDH_Goc = embed_data.maDH_Goc;
             
-            // 🔴 ĐÃ SỬA: Đọc 3 loại cờ
             let hinhThuc = 'Cọc một phần';
             if (embed_data.hinhThuc === 'full') hinhThuc = 'Thanh toán toàn bộ';
             else if (embed_data.hinhThuc === 'remaining') hinhThuc = 'Thanh toán phần còn lại';
@@ -1777,7 +1765,6 @@ const donhang_user = {
                     trangThaiMoi = 'Đã thanh toán';
                 }
 
-                // 🔴 VÁ LỖI IDEMPOTENCY ZALOPAY
                 let isIdempotentOK = true;
                 if (trangThaiHienTai === 'Đã thanh toán') {
                     isIdempotentOK = false;

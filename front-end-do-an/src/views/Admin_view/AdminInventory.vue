@@ -1465,16 +1465,6 @@
     }
   });
 
-  // Lắng nghe cho Modal Chỉnh sửa
-  watch(() => editingProduct.value.saleType, (newVal) => {
-    if (newVal === 'Pre-order') {
-      editingProduct.value.status = 'Chưa phát hành';
-    } else if (newVal === 'Order' || newVal === 'Có sẵn') {
-      editingProduct.value.status = 'Đã phát hành';
-    }
-  });
-
-
   const openAddModal = () => {
     newProduct.value = {
       name: '', brand: '', category: '', variant: '', material: '', scale: '',
@@ -1571,6 +1561,15 @@
   });
   const editFileInputRef = ref(null);
   const editGalleryInputRef = ref(null); 
+
+  // Lắng nghe cho Modal Chỉnh sửa
+  watch(() => editingProduct.value.saleType, (newVal) => {
+    if (newVal === 'Pre-order') {
+      editingProduct.value.status = 'Chưa phát hành';
+    } else if (newVal === 'Order' || newVal === 'Có sẵn') {
+      editingProduct.value.status = 'Đã phát hành';
+    }
+  });
 
   const openEditModal = async (product) => {
     
