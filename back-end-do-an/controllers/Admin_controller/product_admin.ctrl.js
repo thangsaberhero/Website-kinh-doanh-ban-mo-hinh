@@ -562,10 +562,26 @@ const product_admin = {
             }
 
             // 1. KIỂM TRA TRÙNG LẶP (TÊN VÀ SERIAL)
-            const [so_sanh_trung_lap] = await connection.query(`SELECT MaMoHinh FROM MoHinh WHERE TenMH = ? OR MaVach_Serial = ?`, [TenMH, MaVach_Serial]);
-            if (so_sanh_trung_lap.length > 0) {
+            // 1. CHUẨN HÓA VÀ KIỂM TRA TRÙNG LẶP
+            let sanitizedSerial = MaVach_Serial;
+            if (!sanitizedSerial || sanitizedSerial.trim() === '' || sanitizedSerial === 'null') {
+                sanitizedSerial = null;
+            }
+
+            // Kiểm tra trùng lặp Tên sản phẩm (Bắt buộc)
+            const [checkName] = await connection.query(`SELECT MaMoHinh FROM MoHinh WHERE TenMH = ?`, [TenMH]);
+            if (checkName.length > 0) {
                 await connection.rollback();
-                return res.status(400).json({ success: false, message: "Đã có sản phẩm trùng tên hoặc mã vạch serial!" });
+                return res.status(400).json({ success: false, message: "Đã có sản phẩm trùng tên!" });
+            }
+
+            // Kiểm tra trùng lặp Serial (Chỉ kiểm tra nếu có nhập)
+            if (sanitizedSerial !== null) {
+                const [checkSerial] = await connection.query(`SELECT MaMoHinh FROM MoHinh WHERE MaVach_Serial = ?`, [sanitizedSerial]);
+                if (checkSerial.length > 0) {
+                    await connection.rollback();
+                    return res.status(400).json({ success: false, message: "Mã vạch/Serial này đã tồn tại!" });
+                }
             }
 
             // 2. PARSE JSON VÀ KIỂM TRA TRÙNG TÊN PHÂN LOẠI
@@ -606,7 +622,7 @@ const product_admin = {
             const isVisible = HienThi !== 'undefined' ? HienThi : 0;
             const [them_san_pham] = await connection.query(sql_them_san_pham, [
                 TenMH, MaHSX, MaDM, MaChiTietDM || null, TenNhanVat, Series, ChatLieu, GiaNhap, DonGia, finalTrangThai, 
-                ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, tenAnhDaiDien, MaVach_Serial
+                ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, tenAnhDaiDien, sanitizedSerial
             ]);
             
             if (them_san_pham.affectedRows === 0) {
@@ -779,13 +795,18 @@ const product_admin = {
             // =======================================================
             // 1. KIỂM TRA TRÙNG LẶP (ĐÃ FIX LỖI MÃ VẠCH RỖNG)
             // =======================================================
+            let sanitizedSerial = MaVach_Serial;
+            if (!sanitizedSerial || sanitizedSerial.trim() === '' || sanitizedSerial === 'null') {
+                sanitizedSerial = null;
+            }
+
             let sql_kiem_tra_trung = `SELECT TenMH, MaVach_Serial FROM MoHinh WHERE TenMH = ? AND MaMoHinh != ? LIMIT 1`;
             let params_kiem_tra = [TenMH.trim(), MaMH];
 
-            // Chỉ đưa mã vạch vào vòng kiểm tra NẾU người dùng thực sự có nhập mã vạch
-            if (MaVach_Serial && MaVach_Serial.trim() !== '') {
+            // Chỉ đưa mã vạch vào vòng kiểm tra NẾU nó khác null
+            if (sanitizedSerial !== null) {
                 sql_kiem_tra_trung = `SELECT TenMH, MaVach_Serial FROM MoHinh WHERE (TenMH = ? OR MaVach_Serial = ?) AND MaMoHinh != ? LIMIT 1`;
-                params_kiem_tra = [TenMH.trim(), MaVach_Serial.trim(), MaMH];
+                params_kiem_tra = [TenMH.trim(), sanitizedSerial, MaMH];
             }
 
             const [so_sanh_trung_lap] = await connection.query(sql_kiem_tra_trung, params_kiem_tra);
@@ -828,7 +849,7 @@ const product_admin = {
             const [updateSp] = await connection.query(sql_sua_tt_san_pham, [
                 TenMH, MaHSX, MaDM, MaChiTietDM || null, TenNhanVat || null, Series || null, ChatLieu, 
                 DonGia, finalTrangThai, ThongTinChiTiet, KichThuoc, NgayPhatHanh || null, 
-                LoaiHinhBan, TienCocToiThieu || 0, isVisible, MaVach_Serial, MaMH
+                LoaiHinhBan, TienCocToiThieu || 0, isVisible, sanitizedSerial, MaMH
             ]);
 
             if (updateSp.affectedRows === 0) {
