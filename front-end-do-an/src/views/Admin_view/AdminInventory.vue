@@ -1439,6 +1439,14 @@
     }
   });
 
+  watch(() => form.value.LoaiHinhBan, (newVal) => {
+    if (newVal === 'Pre-order') {
+      form.value.TrangThai = 'Chưa phát hành';
+    } else if (newVal === 'Order' || newVal === 'Có sẵn') {
+      form.value.TrangThai = 'Đã phát hành';
+    }
+  });
+
 
   const openAddModal = () => {
     newProduct.value = {

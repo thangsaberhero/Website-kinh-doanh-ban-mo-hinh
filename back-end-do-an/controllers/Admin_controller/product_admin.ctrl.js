@@ -554,6 +554,13 @@ const product_admin = {
                 LoaiHinhBan, KichThuoc, NgayPhatHanh, TienCocToiThieu, SoLuong, HienThi, MaVach_Serial 
             } = req.body;
 
+            let finalTrangThai = TrangThai;
+            if (LoaiHinhBan === 'Pre-order') {
+                finalTrangThai = 'Chưa phát hành';
+            } else if (LoaiHinhBan === 'Order' || LoaiHinhBan === 'Có sẵn') {
+                finalTrangThai = 'Đã phát hành';
+            }
+
             // 1. KIỂM TRA TRÙNG LẶP (TÊN VÀ SERIAL)
             const [so_sanh_trung_lap] = await connection.query(`SELECT MaMoHinh FROM MoHinh WHERE TenMH = ? OR MaVach_Serial = ?`, [TenMH, MaVach_Serial]);
             if (so_sanh_trung_lap.length > 0) {
@@ -598,7 +605,7 @@ const product_admin = {
             `;
             const isVisible = HienThi !== 'undefined' ? HienThi : 0;
             const [them_san_pham] = await connection.query(sql_them_san_pham, [
-                TenMH, MaHSX, MaDM, MaChiTietDM || null, TenNhanVat, Series, ChatLieu, GiaNhap, DonGia, TrangThai, 
+                TenMH, MaHSX, MaDM, MaChiTietDM || null, TenNhanVat, Series, ChatLieu, GiaNhap, DonGia, finalTrangThai, 
                 ThongTinChiTiet, KichThuoc, NgayPhatHanh, LoaiHinhBan, TienCocToiThieu, isVisible, tenAnhDaiDien, MaVach_Serial
             ]);
             
